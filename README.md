@@ -1,2 +1,2 @@
 # js-client
-JS Client for Bundlr No
+JS Client for Bundlr Nodes
