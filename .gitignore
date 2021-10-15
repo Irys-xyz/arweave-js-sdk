@@ -4,3 +4,4 @@ node_modules
 wallet.json
 .vscode
 build
+temp
