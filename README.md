@@ -1,6 +1,6 @@
 # js-client
-JS Client Lib for Bundlr Nodes
-Usage:
+JS Client Lib for Bundlr Nodes.\
+Example Usage:
 ```ts
 // Initialise a new instance:
 
