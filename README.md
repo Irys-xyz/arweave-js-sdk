@@ -12,16 +12,16 @@ const bundler = new Bundler({wallet: JWK}, {host: "bundler.arweave.net"});
 // additional constructor options:
 
 {
-    wallet: JWK object,
-    address: address of the wallet (Optional - automatically filled out by init)
+    wallet: //JWK object,
+    address: //address of the wallet (Optional - automatically filled out by init)
 }
 {
-    host: bundler hostname (eg 'bundler.arweave.net')
-    protocol: HTTP/S as applicable (optional)
-    port: port the bundler webserver is listening on (optional)
-    timeout: ms to wait before aborting a request (optional - default 20000)
-    logging: true/false (optional)
-    logger: function to pass logging info to (optional)
+    host: //bundler hostname (eg 'bundler.arweave.net')
+    protocol: //HTTP/S as applicable (optional)
+    port: //port the bundler webserver is listening on (optional)
+    timeout: //ms to wait before aborting a request (optional - default 20000)
+    logging: //true/false (optional)
+    logger: //function to pass logging info to (optional)
 }
 
 // Initialise bundler fully
@@ -37,15 +37,15 @@ await bundler.getBalance() // => the loaded account's balance
 await bundler.utils.getBalance(<address>) // get an arbitrary address' balance
 
 // Request a withdrawl of <amount> winston from the bundler (will be sent back to current account).
-await bundler.withdrawBalance(<amount>) // => <response> from the bundler for the withdrawl.
+let response = await bundler.withdrawBalance(<amount>) // => response from the bundler for the withdrawl.
 // withdrawl request status
-<response>.status => 200, 400, etc
+response.status => 200, 400, etc
 // withdrawl request data
-<response>.data => {
-    requested : the requested amount,
-    reward: the reward required by the network,
-    total: the total amount taken from your balance
-    tx_id: the Arweave ID of the withdrawl transaction
+response.data => {
+    requested : //the requested amount,
+    reward: //the reward required by the network,
+    total: //the total amount taken from your balance
+    tx_id: //the Arweave ID of the withdrawl transaction
 }
 // in the event a withdrawl transaction is dropped, bundler will refund the withdrawl amount after 100 blocks of the withdrawl request, and you can try again.
 // the bundler will try to take the reward from the requested amount if you don't have enough in your account - this will naturally caused a reduced payment.
