@@ -1,13 +1,16 @@
 # js-client
 JS Client Lib for Bundlr Nodes
 Usage:
-Initialise a new instance:
+```ts
+// Initialise a new instance:
+
 // Load JWK from file (Node)
 const JWK = JSON.parse(readFileSync("wallet.json").toString());
 // Create instance for the account (JWK) on the bundler (host)
 const bundler = new Bundler({wallet: JWK}, {host: "bundler.arweave.net"});
 
-additional constructor options:
+// additional constructor options:
+
 {
     wallet: JWK object,
     address: address of the wallet (Optional - automatically filled out by init)
