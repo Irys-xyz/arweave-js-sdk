@@ -1,6 +1,7 @@
 import arweave from "arweave";
 import { deepHash } from "arbundles";
 import { stringToBuffer } from "arweave/node/lib/utils";
+import { AxiosResponse } from 'axios';
 //import { jwkTopem } from "arweave/node/lib/crypto/pem";
 
 interface data {
@@ -13,7 +14,7 @@ interface data {
 
 
 
-export async function withdrawBalance(amount) {
+export async function withdrawBalance(amount): Promise<AxiosResponse<any>> {
     //const address = await this.Utils.getAddress();
 
     //const balance = await this.Utils.getBalance(address);
@@ -36,5 +37,5 @@ export async function withdrawBalance(amount) {
     // console.log(isValid);
     //let res = await axios.post(`http://${bundler}/account/withdraw`, data);
 
-    return (await this.API.post("/account/withdraw", data));
+    return this.API.post("/account/withdraw", data);
 }

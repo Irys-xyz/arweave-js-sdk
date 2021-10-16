@@ -1,11 +1,10 @@
-import Bundler from "./src/index";
+import Bundlr from "./src/index";
 import { readFileSync } from 'fs';
 
 async function a() {
     try {
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundler = new Bundler({ wallet: JWK }, { host: "node1.bundlr.network" });
-        await bundler.init();
+        let bundler = await Bundlr.init({ wallet: JWK, APIConfig: { host: "node1.bundlr.network" } });
         console.log(await bundler.getAddress());
         console.log(`balance: ${await bundler.getBalance()}`);
         console.log(`bundler balance: ${await bundler.utils.getBalance("OXcT1sVRSA5eGwt2k6Yuz8-3e3g9WJi5uSE99CWqsBs")}`);

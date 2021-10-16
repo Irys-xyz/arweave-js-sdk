@@ -6,7 +6,8 @@ import { withdrawBalance } from "./withdrawl";
 
 export interface Config {
     wallet: JWKInterface,
-    address?: string
+    address?: string,
+    APIConfig: ApiConfig
 }
 
 // export interface ApiConfig {
@@ -20,7 +21,7 @@ export interface Config {
 
 
 
-export default class Bundler {
+export default class Bundlr {
     private config: Config
     public getBalance;
     public addBalance;
@@ -30,10 +31,9 @@ export default class Bundler {
     public APIConfig;
     public utils;
 
-    constructor(config: Config, APIConfig: ApiConfig) {
-
-        this.API = new Api(APIConfig); //borrow their nice Axios API :p
-        this.APIConfig = APIConfig;
+    private constructor(config: Config) {
+        this.APIConfig = config.APIConfig;
+        this.API = new Api(this.APIConfig); //borrow their nice Axios API :p
         this.config = config;
         this.utils = new Utils(this.API, this.config);
         //proxy the 'proper' value.
@@ -43,10 +43,15 @@ export default class Bundler {
         this.withdrawBalance = withdrawBalance;
 
     }
-    public async init() {
+    private async _init() {
         // for any async constructor operations
         // as async constructors are generally hacky
         this.config.address = await this.getAddress();
+    }
+    static async init(config: Config): Promise<Bundlr> {
+        const instance = new Bundlr(config);
+        await instance._init();
+        return instance;
     }
 
 
