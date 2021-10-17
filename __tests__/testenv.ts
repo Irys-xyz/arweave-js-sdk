@@ -1,6 +1,5 @@
 import { JWKInterface } from "arweave/node/lib/wallet";
 import { config } from "dotenv";
-import { Url } from "url";
 import { readFileSync } from "fs";
 
 config();
