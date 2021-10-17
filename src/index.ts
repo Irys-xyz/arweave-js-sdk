@@ -31,7 +31,7 @@ export default class Bundlr {
     public APIConfig;
     public utils;
 
-    private constructor(config: Config) {
+    constructor(config: Config) {
         this.APIConfig = config.APIConfig;
         this.API = new Api(this.APIConfig); //borrow their nice Axios API :p
         this.config = config;
@@ -41,18 +41,19 @@ export default class Bundlr {
         this.getAddress = this.utils.getAddress;
         // this.withdrawBalance = (new WithdrawBalance(this.utils, this.config.wallet)).withdrawBalance;
         this.withdrawBalance = withdrawBalance;
+        this.config.address = this.getAddress();
 
     }
-    private async _init() {
-        // for any async constructor operations
-        // as async constructors are generally hacky
-        this.config.address = await this.getAddress();
-    }
-    static async init(config: Config): Promise<Bundlr> {
-        const instance = new Bundlr(config);
-        await instance._init();
-        return instance;
-    }
+    // private async _init() {
+    //     // for any async constructor operations
+    //     // as async constructors are generally hacky
+    //     this.config.address = await this.getAddress();
+    // }
+    // static async init(config: Config): Promise<Bundlr> {
+    //     const instance = new Bundlr(config);
+    //     await instance._init();
+    //     return instance;
+    // }
 
 
 }
