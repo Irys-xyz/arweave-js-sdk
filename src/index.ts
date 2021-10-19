@@ -30,18 +30,23 @@ export default class Bundlr {
     public API;
     public APIConfig;
     public utils;
+    public address
 
     constructor(config: Config) {
         this.APIConfig = config.APIConfig;
         this.API = new Api(this.APIConfig); //borrow their nice Axios API :p
         this.config = config;
+        this.address = config.address;
         this.utils = new Utils(this.API, this.config);
         //proxy the 'proper' value.
         this.getBalance = async () => { return this.utils.getBalance(this.config.address) };
         this.getAddress = this.utils.getAddress;
         // this.withdrawBalance = (new WithdrawBalance(this.utils, this.config.wallet)).withdrawBalance;
         this.withdrawBalance = withdrawBalance;
-        this.config.address = this.getAddress();
+        if (!this.config.address) {
+            console.log(this.config.address)
+            this.config.address = this.getAddress();
+        }
 
     }
     // private async _init() {
