@@ -23,6 +23,7 @@ program
         try {
             let balance;
             options.address = address;
+            options.wallet = undefined;
             let bundlr = await init(options);
             balance = await bundlr.utils.getBalance(address)
             console.log(`Balance: ${balance} Winston (${(balance / 1000000000000).toFixed(5)}AR)`);
@@ -45,7 +46,10 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
 options = program.opts();
 
 async function init(opts) {
-    let wallet = await loadWallet(opts.wallet);
+    let wallet;
+    if (opts.wallet) {
+        wallet = await loadWallet(opts.wallet);
+    }
     const bundlr = new Bundlr({ wallet, address: opts?.address, APIConfig: { host: opts.host, protocol: opts?.protocol, port: opts?.port, timeout: opts?.timeout } });
     console.log(`Loaded Address: ${bundlr.address}`);
     return bundlr;

@@ -15,10 +15,12 @@ export default class Utils {
 
     public async getNonce(): Promise<number> {
         return (await this.API.get(`/account/withdrawls?address=${this.config.address}`)).data;
+
     }
 
     public async getBalance(address: string): Promise<number> {
         return (await this.API.get(`/account/balance?address=${address}`)).data.balance;
+
     }
 
     public getAddress(): string {

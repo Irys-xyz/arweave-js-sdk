@@ -3,7 +3,7 @@ import Api, { ApiConfig } from "arweave/node/lib/api";
 import { JWKInterface } from "arweave/node/lib/wallet";
 import Utils from "./utils";
 import { withdrawBalance } from "./withdrawl";
-
+import Uploader from "./upload";
 export interface Config {
     wallet: JWKInterface,
     address?: string,
@@ -30,7 +30,9 @@ export default class Bundlr {
     public API;
     public APIConfig;
     public utils;
-    public address
+    public address;
+    private uploader;
+    public upload;
 
     constructor(config: Config) {
         this.APIConfig = config.APIConfig;
@@ -47,6 +49,8 @@ export default class Bundlr {
             console.log(this.config.address)
             this.config.address = this.getAddress();
         }
+        this.uploader = new Uploader(this.APIConfig, this.config);
+        this.upload = this.uploader.upload;
 
     }
     // private async _init() {
