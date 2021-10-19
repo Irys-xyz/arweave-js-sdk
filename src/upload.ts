@@ -1,16 +1,16 @@
 
 import { ArweaveSigner } from 'arbundles';
 import { createData } from 'arbundles/file/createData'
-import { ApiConfig } from 'arweave/node/lib/api';
+
 import { Config } from '.';
 import { statSync, readFileSync } from 'fs';
 import mime from 'mime-types';
 
 export default class Uploader {
-    private API: ApiConfig;
+    private API;
     private config: Config;
 
-    constructor(API: ApiConfig, config: Config) {
+    constructor(API, config: Config) {
         this.API = API;
         this.config = config;
     }
@@ -24,9 +24,8 @@ export default class Uploader {
             let mimeType = mime.lookup(path);
             const tags = [{ name: "Content-Type", value: mimeType }]
             let dataItem = await createData(readFileSync(path), signer, { tags });
-            dataItem.sign(signer);
-            console.log(dataItem.owner);
-            const { protocol, host, port } = this.API;
+            await dataItem.sign(signer);
+            const { protocol, host, port } = this.API.config;
             const res = await dataItem.sendToBundler(`${protocol}://${host}:${port}`);
             return res;
 

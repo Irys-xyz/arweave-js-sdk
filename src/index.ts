@@ -33,6 +33,7 @@ export default class Bundlr {
     public address;
     private uploader;
     public upload;
+    public getLoadedBalance;
 
     constructor(config: Config) {
         this.APIConfig = config.APIConfig;
@@ -41,28 +42,17 @@ export default class Bundlr {
         this.address = config.address;
         this.utils = new Utils(this.API, this.config);
         //proxy the 'proper' value.
-        this.getBalance = async () => { return this.utils.getBalance(this.config.address) };
+        this.getLoadedBalance = async () => { return this.utils.getBalance(this.config.address) };
+        this.getBalance = async (address) => { return this.utils.getBalance(address) };
         this.getAddress = this.utils.getAddress;
-        // this.withdrawBalance = (new WithdrawBalance(this.utils, this.config.wallet)).withdrawBalance;
         this.withdrawBalance = withdrawBalance;
         if (!this.config.address) {
-            console.log(this.config.address)
             this.config.address = this.getAddress();
         }
+        //console.log(`init: address: ${this.config.address}`);
         this.uploader = new Uploader(this.APIConfig, this.config);
         this.upload = this.uploader.upload;
 
     }
-    // private async _init() {
-    //     // for any async constructor operations
-    //     // as async constructors are generally hacky
-    //     this.config.address = await this.getAddress();
-    // }
-    // static async init(config: Config): Promise<Bundlr> {
-    //     const instance = new Bundlr(config);
-    //     await instance._init();
-    //     return instance;
-    // }
-
 
 }

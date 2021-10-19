@@ -23,7 +23,6 @@ program
         try {
             let balance;
             options.address = address;
-            options.wallet = undefined;
             let bundlr = await init(options);
             balance = await bundlr.utils.getBalance(address)
             console.log(`Balance: ${balance} Winston (${(balance / 1000000000000).toFixed(5)}AR)`);
@@ -32,7 +31,7 @@ program
         }
     });
 
-program.command("withdraw").description("Sends a withdraw request to the bundler ").argument("<amount>", "amount")
+program.command("withdraw").description("Sends a withdraw request to the bundler ").argument("<amount>", "amount to withdraw in Winston")
     .action(async (amount) => {
         try {
             let bundlr = await init(options);
@@ -42,7 +41,17 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
             console.error(`Error whilst sending withdrawl request:\n${err}`);
         }
     });
-
+program.command("upload").description("Uploads a specified file to the specified bundler").argument("<file>", "relative path to the file you want to upload")
+    .action(async (file) => {
+        try {
+            let bundlr = await init(options);
+            let res = await bundlr.upload(file);
+            console.log(`Status: ${res.status}\nData: ${JSON.stringify(res.data)}`);
+        }
+        catch (err) {
+            console.error(`Error whilst uploading file:\n${err}`);
+        }
+    })
 options = program.opts();
 
 async function init(opts) {
@@ -51,7 +60,6 @@ async function init(opts) {
         wallet = await loadWallet(opts.wallet);
     }
     const bundlr = new Bundlr({ wallet, address: opts?.address, APIConfig: { host: opts.host, protocol: opts?.protocol, port: opts?.port, timeout: opts?.timeout } });
-    console.log(`Loaded Address: ${bundlr.address}`);
     return bundlr;
 }
 
@@ -63,7 +71,7 @@ async function loadWallet(path: string) {
             throw new Error(`Unable to load wallet: ${path}`)
         }
     } catch (e) {
-        console.log(`Error reading wallet:\n${e}`);
+        throw new Error(`Error reading wallet:\n${e}`);
     }
 }
 
