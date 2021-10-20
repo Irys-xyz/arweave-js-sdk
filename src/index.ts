@@ -30,7 +30,6 @@ export default class Bundlr {
     public api: Api;
     public utils: Utils;
     public address: string;
-    public upload;
     private uploader;
     private funder;
 
@@ -42,9 +41,9 @@ export default class Bundlr {
                 .update(base64url.toBuffer(wallet.n))
                 .digest()) : undefined;
         this.utils = new Utils(this.api, { address: this.address, wallet });
-        this.withdrawBalance = async (amount :number) => await withdrawBalance(this.utils, this.api, wallet, amount);
-        this.uploader = new Uploader(this.api.config, { wallet });
-        this.upload = this.uploader.upload;
+        this.withdrawBalance = async (amount: number) => await withdrawBalance(this.utils, this.api, wallet, amount);
+        this.uploader = new Uploader(this.api.config, wallet);
+        // this.upload = this.uploader.upload; note to self: don't do this, this destorys 'this' scoping for instantiated subclasses
         this.funder = new Fund(this.utils, wallet);
     }
 
@@ -58,5 +57,8 @@ export default class Bundlr {
 
     async fund(amount) {
         return this.funder.fund(amount)
+    }
+    async upload(path) {
+        return this.uploader.upload(path);
     };
 }

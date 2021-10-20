@@ -10,7 +10,7 @@ async function a() {
         const bAddress = await bundler.utils.getBundlerAddress();
         console.log(`bundler address: ${bAddress}`);
         console.log(`bundler balance: ${await bundler.getBalance(bAddress)}`);
-        console.log(`invalid balance: ${await bundler.getBalance("sadndgfijadijga")}`);
+        //console.log(`invalid balance: ${await bundler.getBalance("sadndgfijadijga")}`);
         let tx = await bundler.fund(1000);
         console.log(tx);
         console.log(`Funding receipt:\nAmount: ${tx.quantity} with Reward: ${tx.reward} to ${tx.target}\nID: ${tx.id}`)

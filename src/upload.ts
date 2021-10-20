@@ -6,12 +6,12 @@ import { ApiConfig } from "arweave/node/lib/api";
 import { JWKInterface } from "arweave/node/lib/wallet";
 
 export default class Uploader {
-    private readonly api: ApiConfig;
-    private config: { wallet: JWKInterface };
+    private readonly api: ApiConfig
+    private wallet: JWKInterface;
 
-    constructor(api: ApiConfig, config: { wallet: JWKInterface }) {
+    constructor(api: ApiConfig, wallet: JWKInterface) {
         this.api = api;
-        this.config = config;
+        this.wallet = wallet;
     }
 
     public async upload(path) {
@@ -19,7 +19,7 @@ export default class Uploader {
             if (!statSync(path)) {
                 throw new Error(`Unable to access path: ${path}`);
             }
-            const signer = new ArweaveSigner(this.config.wallet);
+            const signer = new ArweaveSigner(this.wallet);
             const mimeType = mime.lookup(path);
             const tags = [{ name: "Content-Type", value: mimeType }]
             const dataItem = await createData(readFileSync(path), signer, { tags });
