@@ -1,23 +1,27 @@
 import Arweave from "arweave";
+import { JWKPublicInterface } from "arweave/node/lib/wallet";
 
 export default class Fund {
-    private config;
-    private gatewayConfig
     private utils;
-    constructor(config, utils) {
-        this.config = config;
-        this.gatewayConfig = config.gatewayConfig;
-        this.utils = utils
+    private readonly jwk;
 
-
+    constructor(utils, jwk: JWKPublicInterface) {
+        this.utils = utils;
+        this.jwk = jwk;
     }
+
     public async fund(amount) {
-        const arweave = Arweave.init(this.gatewayConfig);
+        const arweave = Arweave.init({
+            host: "arweave.net",
+            port: "443",
+            protocol: "https",
+            timeout: 10000
+        });
         const tx = await arweave.createTransaction({
             target: await this.utils.getBundlerAddress(),
             quantity: amount
-        }, this.config.wallet);
-        await arweave.transactions.sign(tx, this.config.wallet);
+        }, this.jwk);
+        await arweave.transactions.sign(tx, this.jwk);
         await arweave.transactions.post(tx);
         return tx;
     }

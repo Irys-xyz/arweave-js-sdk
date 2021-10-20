@@ -1,7 +1,7 @@
 import arweave from "arweave";
 import { deepHash } from "arbundles";
 import { stringToBuffer } from "arweave/node/lib/utils";
-import { AxiosResponse } from 'axios';
+import { AxiosResponse } from "axios";
 //import { jwkTopem } from "arweave/node/lib/crypto/pem";
 
 interface data {
@@ -26,8 +26,8 @@ export async function withdrawBalance(amount): Promise<AxiosResponse<any>> {
     const JWK = this.config.wallet;
     const publicKey: string = JWK.n
     //todo: make util functions directly return data rather than having to post-return mutate
-    let data = await { publicKey, currency: "arweave", amount, nonce: await this.utils.getNonce() } as data;
-    let deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
+    const data = await { publicKey, currency: "arweave", amount, nonce: await this.utils.getNonce() } as data;
+    const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
     data.signature = await arweave.crypto.sign(JWK, deephash);
 
 

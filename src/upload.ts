@@ -1,17 +1,16 @@
-
-import { ArweaveSigner } from 'arbundles';
-import { createData } from 'arbundles/file/createData'
-
-import { Config } from '.';
-import { statSync, readFileSync } from 'fs';
-import mime from 'mime-types';
+import { ArweaveSigner } from "arbundles";
+import { createData } from "arbundles/file/createData"
+import { readFileSync, statSync } from "fs";
+import mime from "mime-types";
+import { ApiConfig } from "arweave/node/lib/api";
+import { JWKInterface } from "arweave/node/lib/wallet";
 
 export default class Uploader {
-    private API;
-    private config: Config;
+    private readonly api: ApiConfig;
+    private config: { wallet: JWKInterface };
 
-    constructor(API, config: Config) {
-        this.API = API;
+    constructor(api: ApiConfig, config: { wallet: JWKInterface }) {
+        this.api = api;
         this.config = config;
     }
 
@@ -21,16 +20,15 @@ export default class Uploader {
                 throw new Error(`Unable to access path: ${path}`);
             }
             const signer = new ArweaveSigner(this.config.wallet);
-            let mimeType = mime.lookup(path);
+            const mimeType = mime.lookup(path);
             const tags = [{ name: "Content-Type", value: mimeType }]
-            let dataItem = await createData(readFileSync(path), signer, { tags });
+            const dataItem = await createData(readFileSync(path), signer, { tags });
             await dataItem.sign(signer);
-            const { protocol, host, port } = this.API.config;
-            const res = await dataItem.sendToBundler(`${protocol}://${host}:${port}`);
-            return res;
+            const { protocol, host, port } = this.api;
+            return await dataItem.sendToBundler(`${protocol}://${host}:${port}`);
 
         } catch (err) {
-            throw new Error(`error whilst sending: ${err}`);
+            throw new Error(`Error whilst sending: ${err}`);
         }
     }
 }
