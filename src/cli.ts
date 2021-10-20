@@ -11,18 +11,17 @@ let options;
 
 program
     .option("-h, --host <string>", "bundle hostname")
-    // .option("-a, --address <string>", "Override address")
     .option("-w, --wallet <string>", "Path to the .json file containing the JWK", "wallet.json")
     .option("--protocol <string>", "The protocol to use to connect to the bundler")
     .option("--port <number>", "The port used to connect to the bundler")
     .option("--timeout <number>", "the timeout (in ms) for API HTTP requests")
     .option("--no-confirmation", "Disable confirmations for fund and withdraw actions")
-    .option("-gHost, --gatewayHost", "The gateway host to use (default arweave.net)", "arweave.net")
-    .option("-gPort, --gatewayPort", "The port to use for the gateway", "80")
-    .option("-gPort, --gatewayProtocol", "the protocol to use for the gateway", "HTTP")
-    .option("-gTimeout, --gatewayTimeout", "Gateway request timeout", "40000")
+    .option("--gatewayHost <string>", "The gateway host to use (default arweave.net)", "arweave.net")
+    .option("--gatewayPort <number>", "The port to use for the gateway", "80")
+    .option("--gatewayProtocol <string>", "the protocol to use for the gateway", "HTTP")
+    .option("---gatewayTimeout <number>", "Gateway request timeout", "40000")
 
-//.option("-v, --verbose", "Toggles verbose mode");
+
 
 
 program
@@ -43,8 +42,14 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
     .action(async (amount) => {
         try {
             let bundlr = await init(options);
-            let res = await bundlr.withdrawBalance(parseInt(amount));
-            console.log(`Status: ${res.status}\nData: ${JSON.stringify(res.data)}`);
+            confirmation(`Confirmation: withdraw ${amount} winston from ${bundlr.APIConfig.host} (${await bundlr.utils.getBundlerAddress()})?\n Y/N `).then(async (confirmed) => {
+                if (confirmed) {
+                    let res = await bundlr.withdrawBalance(parseInt(amount));
+                    console.log(`Status: ${res.status}\nData: ${JSON.stringify(res.data)}`);
+                } else {
+                    console.log("confirmation failed");
+                }
+            })
         } catch (err) {
             console.error(`Error whilst sending withdrawl request:\n${err}`);
         }
@@ -62,31 +67,32 @@ program.command("upload").description("Uploads a specified file to the specified
     });
 program.command("fund").description("Sends the specified amount of Winston to the specified bundler").argument("<amount>", "Amount to add in Winston")
     .action(async (amount) => {
-        let bundlr = await init(options);
-        await confirmation(`Comfirmation: send ${amount} Winston to ${bundlr.APIConfig.host} (${await bundlr.utils.getBundlerAddress()})?\n Y/N`).then(async (confirmed) => {
-            if (confirmed) {
-                let tx = await bundlr.fund(amount);
-                console.log(tx);
-                console.log(`Funding receipt:\nAmount: ${tx.quantity} with Reward: ${tx.reward} to ${tx.target}\nID: ${tx.id}`)
-                console.log("note: funds can take up to 50 blocks to be detected by the bundler - funding can also fail if the tx is dropped by the network.")
-            } else {
-                console.log("confirmation failed")
-            }
-        })
+        try {
+            let bundlr = await init(options);
+            confirmation(`Confirmation: send ${amount} Winston to ${bundlr.APIConfig.host} (${await bundlr.utils.getBundlerAddress()})?\n Y/N`).then(async (confirmed) => {
+                if (confirmed) {
+                    let tx = await bundlr.fund(amount);
+                    console.log(`Funding receipt:\nAmount: ${tx.quantity} with Reward: ${tx.reward} to ${tx.target}\nID: ${tx.id}`)
+                    console.log("note: funds can take up to 50 blocks to be detected by the bundler - funding can also fail if the tx is dropped by the network.")
+                } else {
+                    console.log("confirmation failed")
+                }
+            })
 
+        } catch (err) {
+            console.error(`Error whilst funding: ${err}`);
+        }
     })
-options = program.opts();
+
 
 
 async function confirmation(message) {
-    if (options.noConfirmation) {
+    if (!options.confirmation) {
         return true;
     }
-    const answers = inquirer.prompt([
-        {type: 'input', name: 'confirmation', message}
-    ])
-
-    console.log(answers);
+    const answers = await inquirer.prompt([
+        { type: 'input', name: 'confirmation', message }
+    ]);
     return answers.confirmation.toLowerCase() == "y";
 }
 
@@ -97,7 +103,6 @@ async function init(opts) {
     if (!opts.address) {
         wallet = await loadWallet(opts.wallet);
     }
-    console.log(JSON.stringify(opts));
     const bundlr = new Bundlr({
         wallet, address: opts?.address,
         APIConfig: { host: opts.host, protocol: opts?.protocol, port: opts?.port, timeout: opts?.timeout },
@@ -118,4 +123,5 @@ async function loadWallet(path: string) {
     }
 }
 
+options = program.opts();
 program.parse(process.argv);

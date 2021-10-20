@@ -14,13 +14,16 @@ export default class Utils {
     };
 
     public async getNonce(): Promise<number> {
-        return (await this.API.get(`/account/withdrawls?address=${this.config.address}`)).data;
+        let res = await this.API.get(`/account/withdrawls?address=${this.config.address}`);
+        this.checkAndThrow(res);
+        return (res).data;
 
     }
 
     public async getBalance(address: string): Promise<number> {
-        return (await this.API.get(`/account/balance?address=${address}`)).data.balance;
-
+        let res = await this.API.get(`/account/balance?address=${address}`);
+        this.checkAndThrow(res);
+        return (res).data.balance;
     }
 
     public getAddress(): string {
@@ -35,5 +38,12 @@ export default class Utils {
     public async getBundlerAddress() {
         let res = await this.API.get("/info");
         return res.data.address;
+    }
+    private checkAndThrow(res) {
+        if (res.status != 200) {
+            //console.log(Object.keys(res));
+            throw new Error(`error: ${res.status} ${JSON.stringify(res.data)}`);
+        }
+        return;
     }
 }
