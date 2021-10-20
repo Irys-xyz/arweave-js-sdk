@@ -3,50 +3,45 @@ JS Client Lib for Bundlr Nodes.\
 Example Usage:
 ```ts
 // Initialise a new instance:
+// all values are representative examples
 
 // Load JWK from file (Node)
-const JWK = JSON.parse(readFileSync("wallet.json").toString());
+import Bundlr from '@bundlr-network/bundlr';
+const JWK = JSON.parse(fs.readFileSync("wallet.json").toString());
 // Create instance for the account (JWK) on the bundler (host)
-const bundler = new Bundler({wallet: JWK}, {host: "bundler.arweave.net"});
+const bundler = new Bundlr("http://example.bundlr.network", JWK);
 
-// additional constructor options:
 
-{
-    wallet: //JWK object,
-    address: //address of the wallet (Optional - automatically filled out by init)
-}
-{
-    host: //bundler hostname (eg 'bundler.arweave.net')
-    protocol: //HTTP/S as applicable (optional)
-    port: //port the bundler webserver is listening on (optional)
-    timeout: //ms to wait before aborting a request (optional - default 20000)
-    logging: //true/false (optional)
-    logger: //function to pass logging info to (optional)
-}
+// Get the loaded wallet's arweave address
+bundler.address //  "vpcXXvh7dHCiKPot8Xeglsqz4o4OcITiHl8PiG21B-U"
 
-// Initialise bundler fully
-await bundler.init();
+// Get the loaded account's balance with the current bundler (in winston).
+await bundler.getLoadedBalance() // 109864
 
-// Get the wallet's Arweave address
-await bundler.getAddress() // => the loaded account's arweave address
+// Get the balance of an arbitrary address with the current bundler (in winston).
+await bundler.getBalance(address) // 10000 
 
-// Get the loaded account's balance with the current bundler.
-await bundler.getBalance() // => the loaded account's balance
+// Get the bundler's Arweave address (address of example.bundlr.network in this example)
+await bundler.getBundlerAddress(); //  "OXcT1sVRSA5eGwt2k6Yuz8-3e3g9WJi5uSE99CWqsBs"
 
-// Get the balance of an arbitrary address with the current bundler.
-await bundler.utils.getBalance(<address>) // get an arbitrary address' balance
+//Fund (add balance to) the bundler
+await bundler.fund(amount) // standard arweave TX object (see https://github.com/ArweaveTeam/arweave-js/blob/master/src/common/lib/transaction.ts )
+
+//Upload a file to the bundler (this is NOT reccomended for extensive use!)
+await bundler.upload("./llama.jpg") // Returns an axios response from the gateway
 
 // Request a withdrawl of <amount> winston from the bundler (will be sent back to current account).
-let response = await bundler.withdrawBalance(<amount>) // => response from the bundler for the withdrawl.
+let response = await bundler.withdrawBalance(amount)
 // withdrawl request status
-response.status => 200, 400, etc
-// withdrawl request data
-response.data => {
-    requested : //the requested amount,
-    reward: //the reward required by the network,
-    total: //the total amount taken from your balance
-    tx_id: //the Arweave ID of the withdrawl transaction
+response.status // http status code, 200 = ok, 400 = something went wrong
+// status code 400 - data is the error message of the error encountered by the bundler
+response.data // "Not enough balance for requested withdrawl"
+// status code 200 - data is your withdrawl 'receipt'
+response.data = {
+    requested, //the requested amount,
+    fee, //the reward required by the network (network fee)
+    final, //the amount you will receive (requested - fee)
+    tx_id, //the Arweave ID of the withdrawl transaction
 }
 // in the event a withdrawl transaction is dropped, bundler will refund the withdrawl amount after 100 blocks of the withdrawl request, and you can try again.
 // the bundler will try to take the reward from the requested amount if you don't have enough in your account - this will naturally caused a reduced payment.
-
