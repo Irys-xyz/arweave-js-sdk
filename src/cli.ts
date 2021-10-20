@@ -79,22 +79,15 @@ options = program.opts();
 
 
 async function confirmation(message) {
-    return new Promise(async (resolve) => {
-        if (options.noConfirmation) {
-            resolve(true);
-        }
-        inquirer.prompt([
-            { type: 'input', name: 'confirmation', message }
-        ]).then(answers => {
-            console.log(answers);
-            if (answers.confirmation == "Y" || answers.confirmation == "y") {
-                resolve(false)
-            }
-            resolve(false)
-        });
-        resolve(false)
-    })
+    if (options.noConfirmation) {
+        return true;
+    }
+    const answers = inquirer.prompt([
+        {type: 'input', name: 'confirmation', message}
+    ])
 
+    console.log(answers);
+    return answers.confirmation.toLowerCase() == "y";
 }
 
 
