@@ -4,10 +4,16 @@ import { readFileSync } from 'fs';
 async function a() {
     try {
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundler = new Bundlr({ wallet: JWK, APIConfig: { host: "dev.bundlr.network" } });
+        let bundler = new Bundlr({ wallet: JWK, APIConfig: { host: "dev.bundlr.network" }, gatewayConfig: { host: "arweave.net" } });
         console.log(bundler.getAddress());
         console.log(`balance: ${await bundler.getLoadedBalance()}`);
-        console.log(`bundler balance: ${await bundler.getBalance("OXcT1sVRSA5eGwt2k6Yuz8-3e3g9WJi5uSE99CWqsBs")}`);
+        const bAddress = await bundler.utils.getBundlerAddress();
+        console.log(`bundler address: ${bAddress}`);
+        console.log(`bundler balance: ${await bundler.getBalance(bAddress)}`);
+        let tx = await bundler.fund(1000);
+        console.log(tx);
+        console.log(`Funding receipt:\nAmount: ${tx.quantity} with Reward: ${tx.reward} to ${tx.target}\nID: ${tx.id}`)
+        console.log("note: funds can take up to 50 blocks to be detected by the bundler - funding can also fail if the tx is dropped by the network.")
         let rec = await bundler.upload("a.txt");
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));

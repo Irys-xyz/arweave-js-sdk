@@ -32,4 +32,8 @@ export default class Utils {
                 .update(arweave.utils.b64UrlToBuffer(this.config.wallet.n))
                 .digest());
     }
+    public async getBundlerAddress() {
+        let res = await this.API.get("/info");
+        return res.data.address;
+    }
 }

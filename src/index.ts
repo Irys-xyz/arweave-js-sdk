@@ -4,10 +4,12 @@ import { JWKInterface } from "arweave/node/lib/wallet";
 import Utils from "./utils";
 import { withdrawBalance } from "./withdrawl";
 import Uploader from "./upload";
+import Fund from "./fund";
 export interface Config {
     wallet: JWKInterface,
     address?: string,
-    APIConfig: ApiConfig
+    APIConfig: ApiConfig,
+    gatewayConfig: ApiConfig,
 }
 
 // export interface ApiConfig {
@@ -34,9 +36,13 @@ export default class Bundlr {
     private uploader;
     public upload;
     public getLoadedBalance;
+    public gatewayConfig;
+    public fund
+    private funder;
 
     constructor(config: Config) {
         this.APIConfig = config.APIConfig;
+        this.gatewayConfig = config.gatewayConfig
         this.API = new Api(this.APIConfig); //borrow their nice Axios API :p
         this.config = config;
         this.address = config.address;
@@ -52,6 +58,8 @@ export default class Bundlr {
         //console.log(`init: address: ${this.config.address}`);
         this.uploader = new Uploader(this.APIConfig, this.config);
         this.upload = this.uploader.upload;
+        this.funder = new Fund(this.config, this.utils);
+        this.fund = async (amount) => { return this.funder.fund(amount) };
 
     }
 
