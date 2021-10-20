@@ -101,7 +101,7 @@ async function confirmation(message) {
 
 async function init(opts) {
     let wallet;
-    if (opts.wallet) {
+    if (!opts.address) {
         wallet = await loadWallet(opts.wallet);
     }
     console.log(JSON.stringify(opts));
