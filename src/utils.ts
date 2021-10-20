@@ -21,7 +21,7 @@ export default class Utils {
     }
 
     public async getNonce(): Promise<number> {
-        const res = await this.api.get(`/account/withdrawls?address=${this.config.address}`);
+        const res = await this.api.get(`/account/withdrawals?address=${this.config.address}`);
         Utils.checkAndThrow(res);
         return (res).data;
 

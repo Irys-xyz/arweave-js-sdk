@@ -42,7 +42,7 @@ export default class Bundlr {
                 .update(base64url.toBuffer(wallet.n))
                 .digest()) : undefined;
         this.utils = new Utils(this.api, { address: this.address, wallet });
-        this.withdrawBalance = withdrawBalance;
+        this.withdrawBalance = async (amount :number) => await withdrawBalance(this.utils, this.api, wallet, amount);
         this.uploader = new Uploader(this.api.config, { wallet });
         this.upload = this.uploader.upload;
         this.funder = new Fund(this.utils, wallet);

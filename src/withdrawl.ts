@@ -14,28 +14,12 @@ interface data {
 
 
 
-export async function withdrawBalance(amount): Promise<AxiosResponse<any>> {
-    //const address = await this.Utils.getAddress();
-
-    //const balance = await this.Utils.getBalance(address);
-    //console.log(`balance: ${balance?.data.balance}`);
-    //const bunBalance = (await this.Utils.getBalance("OXcT1sVRSA5eGwt2k6Yuz8-3e3g9WJi5uSE99CWqsBs")).data.balance;
-    //console.log(`bunBalance: ${bunBalance}`);
-
-    // for RSA: jwkTopem({ kty: jwk.kty, n: jwk.n, e: jwk.e });
-    const JWK = this.config.wallet;
-    const publicKey: string = JWK.n
+export async function withdrawBalance(utils, api, wallet, amount): Promise<AxiosResponse> {
+    const publicKey: string = wallet.n
     //todo: make util functions directly return data rather than having to post-return mutate
-    const data = await { publicKey, currency: "arweave", amount, nonce: await this.utils.getNonce() } as data;
+    const data = { publicKey, currency: "arweave", amount, nonce: await utils.getNonce() } as data;
     const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
-    data.signature = await arweave.crypto.sign(JWK, deephash);
+    data.signature = await arweave.crypto.sign(wallet, deephash);
 
-
-    //console.log(JSON.stringify(data));
-    // let dh2 = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
-    // let isValid = await arweave.crypto.verify(data.publicKey, dh2, data.signature);
-    // console.log(isValid);
-    //let res = await axios.post(`http://${bundler}/account/withdraw`, data);
-
-    return this.API.post("/account/withdraw", data);
+    return api.post("/account/withdraw", data);
 }
