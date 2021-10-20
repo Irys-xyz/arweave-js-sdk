@@ -4,8 +4,8 @@ import { readFileSync } from 'fs';
 async function a() {
     try {
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundler = new Bundlr({ wallet: JWK, APIConfig: { host: "dev.bundlr.network" }, gatewayConfig: { host: "arweave.net" } });
-        console.log(bundler.getAddress());
+        let bundler = new Bundlr("http://dev.bundlr.network", JWK);
+        console.log(bundler.address);
         console.log(`balance: ${await bundler.getLoadedBalance()}`);
         const bAddress = await bundler.utils.getBundlerAddress();
         console.log(`bundler address: ${bAddress}`);

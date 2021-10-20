@@ -32,9 +32,9 @@ program
             const bundlr = await init(options);
             // eslint-disable-next-line prefer-const
             balance = await bundlr.utils.getBalance(address)
-            console.log(`Balance: ${balance} Winston (${(balance / 1000000000000).toFixed(5)}AR)`);
+            console.log(`Balance: ${balance} Winston (${(balance / 1000000000000).toPrecision(7)}AR)`);
         } catch (err) {
-            console.error(`Error whilst getting balance:\n${err}`);
+            console.error(`Error whilst getting balance: \n${err} `);
         }
     });
 
@@ -42,16 +42,16 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
     .action(async (amount) => {
         try {
             const bundlr = await init(options);
-            confirmation(`Confirmation: withdraw ${amount} winston from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress()})?\n Y/N `).then(async (confirmed) => {
+            confirmation(`Confirmation: withdraw ${amount} winston from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress()})?\n Y / N`).then(async (confirmed) => {
                 if (confirmed) {
                     const res = await bundlr.withdrawBalance(parseInt(amount));
-                    console.log(`Status: ${res.status}\nData: ${JSON.stringify(res.data)}`);
+                    console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data)} `);
                 } else {
                     console.log("confirmation failed");
                 }
             })
         } catch (err) {
-            console.error(`Error whilst sending withdrawl request:\n${err}`);
+            console.error(`Error whilst sending withdrawl request: \n${err} `);
         }
     });
 program.command("upload").description("Uploads a specified file to the specified bundler").argument("<file>", "relative path to the file you want to upload")
@@ -59,26 +59,26 @@ program.command("upload").description("Uploads a specified file to the specified
         try {
             const bundlr = await init(options);
             const res = await bundlr.upload(file);
-            console.log(`Status: ${res.status}\nData: ${JSON.stringify(res.data)}`);
+            console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data)} `);
         } catch (err) {
-            console.error(`Error whilst uploading file:\n${err}`);
+            console.error(`Error whilst uploading file: \n${err} `);
         }
     });
 program.command("fund").description("Sends the specified amount of Winston to the specified bundler").argument("<amount>", "Amount to add in Winston")
     .action(async (amount) => {
         try {
             const bundlr = await init(options);
-            confirmation(`Confirmation: send ${amount} Winston to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress()})?\n Y/N`).then(async (confirmed) => {
+            confirmation(`Confirmation: send ${amount} Winston to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress()})?\n Y / N`).then(async (confirmed) => {
                 if (confirmed) {
                     const tx = await bundlr.fund(amount);
-                    console.log(`Funding receipt:\nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target}\nID: ${tx.id}`)
+                    console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nID: ${tx.id} `)
                 } else {
                     console.log("confirmation failed")
                 }
             })
 
         } catch (err) {
-            console.error(`Error whilst funding: ${err}`);
+            console.error(`Error whilst funding: ${err} `);
         }
     })
 
