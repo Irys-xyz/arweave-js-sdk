@@ -27,12 +27,10 @@ program
     .command("balance").description("Gets the specified user's balance for the current bundler").argument("<address>", "address")
     .action(async (address) => {
         try {
-            let balance;
             options.address = address;
             const bundlr = await init(options);
-            // eslint-disable-next-line prefer-const
-            balance = await bundlr.utils.getBalance(address)
-            console.log(`Balance: ${balance} Winston (${(balance / 1000000000000).toPrecision(7)}AR)`);
+            const balance = await bundlr.utils.getBalance(address);
+            console.log(`Balance: ${balance} Winston (${(balance / 1000000000000).toFixed(14)}AR)`);
         } catch (err) {
             console.error(`Error whilst getting balance: \n${err} `);
         }
@@ -52,6 +50,7 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
             })
         } catch (err) {
             console.error(`Error whilst sending withdrawl request: \n${err} `);
+            return;
         }
     });
 program.command("upload").description("Uploads a specified file to the specified bundler").argument("<file>", "relative path to the file you want to upload")
@@ -62,6 +61,7 @@ program.command("upload").description("Uploads a specified file to the specified
             console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data)} `);
         } catch (err) {
             console.error(`Error whilst uploading file: \n${err} `);
+            return;
         }
     });
 program.command("fund").description("Sends the specified amount of Winston to the specified bundler").argument("<amount>", "Amount to add in Winston")
@@ -78,7 +78,8 @@ program.command("fund").description("Sends the specified amount of Winston to th
             })
 
         } catch (err) {
-            console.error(`Error whilst funding: ${err} `);
+            console.error(`Error whilst funding: \n${err} `);
+            return;
         }
     })
 
@@ -104,6 +105,9 @@ async function init(opts) {
     if (!opts.address) {
         wallet = await loadWallet(opts.wallet);
     }
+    if (!opts.host) {
+        throw new Error("Host parameter (-h) is required!");
+    }
     const protocol = opts.protocol ?? "http";
     const url = `${protocol}://${opts.host}:${opts.port ?? protocolToPort(protocol)}`;
     return new Bundlr(url, wallet);
@@ -114,7 +118,7 @@ async function loadWallet(path: string) {
         if (statSync(path)) {
             return JSON.parse(readFileSync(path).toString());
         } else {
-            throw new Error(`Unable to load wallet: ${path}`)
+            console.error(`Unable to load wallet: ${path}`);
         }
     } catch (e) {
         throw new Error(`Error reading wallet:\n${e}`);
