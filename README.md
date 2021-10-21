@@ -1,6 +1,16 @@
 # js-client
-JS Client Lib for Bundlr Nodes.\
-Example Usage:
+JS Client Lib for interacting with Bundlr Nodes.
+## Installing the Library
+using npm:
+
+```npm install @bundlr-network/bundlr```
+
+using Yarn:
+
+```yarn add @bundlr-network/bundlr```
+
+## Create a new Bundlr instance
+
 ```ts
 // Initialise a new instance:
 // all values are representative examples
@@ -10,27 +20,46 @@ import Bundlr from '@bundlr-network/bundlr';
 const JWK = JSON.parse(fs.readFileSync("wallet.json").toString());
 // Create instance for the account (JWK) on the bundler (host)
 const bundler = new Bundlr("http://example.bundlr.network", JWK);
+```
 
-
-// Get the loaded wallet's arweave address
+### Get the loaded wallet's arweave address
+ 
+```ts
 bundler.address //  "vpcXXvh7dHCiKPot8Xeglsqz4o4OcITiHl8PiG21B-U"
+```
 
-// Get the loaded account's balance with the current bundler (in winston).
+### Get the loaded account's balance with the current bundler (in winston).
+```ts
 await bundler.getLoadedBalance() // 109864
+```
 
-// Get the balance of an arbitrary address with the current bundler (in winston).
+### Get the balance of an arbitrary address with the current bundler (in winston).
+
+```ts
 await bundler.getBalance(address) // 10000 
+```
+### Get the bundler's Arweave address (address of example.bundlr.network in this example)
 
-// Get the bundler's Arweave address (address of example.bundlr.network in this example)
+```ts
 await bundler.getBundlerAddress(); //  "OXcT1sVRSA5eGwt2k6Yuz8-3e3g9WJi5uSE99CWqsBs"
+```
 
-//Fund (add balance to) the bundler
-await bundler.fund(amount) // standard arweave TX object (see https://github.com/ArweaveTeam/arweave-js/blob/master/src/common/lib/transaction.ts )
+### Fund (add balance to) the bundler
 
-//Upload a file to the bundler (this is NOT reccomended for extensive use!)
+```ts
+await bundler.fund(amount) // standard arweave TX object 
+// (see https://github.com/ArweaveTeam/arweave-js/blob/master/src/common/lib/transaction.ts )
+```
+
+### Upload a file to the bundler (this is NOT reccomended for extensive use!)
+
+```ts
 await bundler.upload("./llama.jpg") // Returns an axios response from the gateway
+```
 
-// Request a withdrawl of <amount> winston from the bundler (will be sent back to current account).
+### Request a withdrawl of <amount> winston from the bundler (will be sent back to current account).
+
+```ts
 let response = await bundler.withdrawBalance(amount)
 // withdrawl request status
 response.status // http status code, 200 = ok, 400 = something went wrong
@@ -43,5 +72,7 @@ response.data = {
     final, //the amount you will receive (requested - fee)
     tx_id, //the Arweave ID of the withdrawl transaction
 }
-// in the event a withdrawl transaction is dropped, bundler will refund the withdrawl amount after 100 blocks of the withdrawl request, and you can try again.
-// the bundler will try to take the reward from the requested amount if you don't have enough in your account - this will naturally caused a reduced payment.
+    
+// in the event a withdrawl transaction is dropped, bundler will refund the withdrawl amount
+// after 100 blocks of the withdrawl request, and you can try again.
+```
