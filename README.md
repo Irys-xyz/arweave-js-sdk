@@ -63,10 +63,10 @@ response.status // http status code, 200 = ok, 400 = something went wrong
 response.data // "Not enough balance for requested withdrawl"
 // status code 200 - data is your withdrawl 'receipt'
 response.data = {
-    requested, //the requested amount,
-    fee, //the reward required by the network (network fee)
-    final, //the amount you will receive (requested - fee)
-    tx_id, //the Arweave ID of the withdrawl transaction
+    requested, // the requested amount,
+    fee,       // the reward required by the network (network fee)
+    final,     // the amount you will receive (requested - fee)
+    tx_id,     // the Arweave ID of the withdrawl transaction
 }
 ```
 In the event a withdrawl transaction is dropped, your Bundlr balance won't be affected
