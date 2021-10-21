@@ -70,3 +70,64 @@ response.data = {
 }
 ```
 In the event a withdrawl transaction is dropped, your Bundlr balance won't be affected
+# CLI usage
+```Usage: bundlr [options] [command]
+
+Options:
+  -h, --host <string>    bundle hostname
+  -w, --wallet <string>  Path to the .json file containing the JWK (default: "wallet.json")
+  --protocol <string>    The protocol to use to connect to the bundler
+  --port <number>        The port used to connect to the bundler
+  --timeout <number>     the timeout (in ms) for API HTTP requests
+  --no-confirmation      Disable confirmations for fund and withdraw actions
+  --help                 display help for command
+
+Commands:
+  balance <address>      Gets the specified user's balance for the current bundler
+  withdraw <amount>      Sends a withdraw request to the bundler
+  upload <file>          Uploads a specified file to the specified bundler
+  fund <amount>          Sends the specified amount of Winston to the specified bundler
+  help [command]         display help for command
+```
+## Example Usage
+ Note: to disable the confirmations for non-interactive operation, use the `--no-confirmation` flag. \
+ Anything that requires a wallet file (withdraw, fund, upload) will automatically try to load `"./wallet.json"`, unless overridden by the `-w` flag.
+
+ ### Get a user's balance
+ 
+```sh
+$ bundlr balance Ry2bDGfBIvYtvDPYnf0eg_ijH4A1EDKaaEEecyjbUQ4 -h example.bundlr.network
+> Balance: 49999940705312 Winston (49.99994AR)
+```
+ 
+### Withdraw balance from the bundler
+ 
+```sh
+$ bundlr withdraw 1479016 -h example.bundlr.network -w wallet.json
+> ? Confirmation: withdraw 1479016 winston from example.bundlr.network (Ry2bDGfBIvYtvDPYnf0eg_ijH4A1EDKaaEEecyjbUQ4)?
+> Y / N y
+> Status: 200 
+> Data: {"tx_id":"xcmxJmHyNS502fzqiT66rNeIOSldKGDWR8XsL9auDfs","requested":1479016,"fee":1379016,"final":100000}
+```
+ #### Note: as the network fee is taken from the requested amount, the amount you will actually recieve is the 'final' field
+ #### This also means you cannot withdraw any amount lower than the current network fee.
+ 
+### Fund (add balance to) A bundler
+
+```sh
+$ bundlr fund 1479016 -h example.bundlr.network -w wallet.json
+> ? Confirmation: send 1479016 Winston to dev.bundlr.network (Ry2bDGfBIvYtvDPYnf0eg_ijH4A1EDKaaEEecyjbUQ4)?
+> Y / N y
+> Funding receipt: 
+> Amount: 1479016 with Fee: 1379016 to Ry2bDGfBIvYtvDPYnf0eg_ijH4A1EDKaaEEecyjbUQ4 
+> ID: 7cI6jpfpx6A2z8F5AoVHvZn9Az_BWPgvKzBCoE5w07A
+```
+ 
+ ### Upload a file to the bundler
+ 
+```sh
+$ bundlr upload a.txt -h dev.bundlr.network
+> Status: 200 
+> Data: {"id":"A-Vj5TdHkcgjT_V7xnO_MTLYXfwKXfRtCCivTD1fzvY","signature":"c...NqDQ","block":794646}
+```
+ 
