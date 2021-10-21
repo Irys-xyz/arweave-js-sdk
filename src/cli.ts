@@ -11,7 +11,7 @@ const program = new Command();
 let options;
 
 program
-    .option("-h, --host <string>", "bundle hostname")
+    .option("-h, --host <string>", "Bundler hostname")
     .option("-w, --wallet <string>", "Path to the .json file containing the JWK", "wallet.json")
     .option("--protocol <string>", "The protocol to use to connect to the bundler")
     .option("--port <number>", "The port used to connect to the bundler")
@@ -33,6 +33,7 @@ program
             console.log(`Balance: ${balance} Winston (${(balance / 1000000000000).toFixed(14)}AR)`);
         } catch (err) {
             console.error(`Error whilst getting balance: \n${err} `);
+            return;
         }
     });
 
@@ -105,6 +106,7 @@ async function init(opts) {
     if (!opts.address) {
         wallet = await loadWallet(opts.wallet);
     }
+    // every option needs a host so ensure it's present
     if (!opts.host) {
         throw new Error("Host parameter (-h) is required!");
     }
