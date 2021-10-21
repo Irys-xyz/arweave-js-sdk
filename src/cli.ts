@@ -123,7 +123,8 @@ async function loadWallet(path: string) {
             console.error(`Unable to load wallet: ${path}`);
         }
     } catch (e) {
-        throw new Error(`Error reading wallet:\n${e}`);
+        console.error(`Error reading wallet:\n${e}`);
+        process.exit(1);
     }
 }
 
