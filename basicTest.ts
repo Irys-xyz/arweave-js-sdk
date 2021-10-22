@@ -15,7 +15,7 @@ async function a() {
         console.log(tx);
         console.log(`Funding receipt:\nAmount: ${tx.quantity} with Reward: ${tx.reward} to ${tx.target}\nID: ${tx.id}`)
         console.log("note: funds can take up to 50 blocks to be detected by the bundler - funding can also fail if the tx is dropped by the network.")
-        let rec = await bundler.upload("a.txt");
+        let rec = await bundler.uploadFile("a.txt");
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
 

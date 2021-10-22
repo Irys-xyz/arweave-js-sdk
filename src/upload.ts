@@ -14,7 +14,7 @@ export default class Uploader {
         this.wallet = wallet;
     }
 
-    public async upload(path) {
+    public async uploadFile(path) {
         try {
             if (!statSync(path)) {
                 throw new Error(`Unable to access path: ${path}`);

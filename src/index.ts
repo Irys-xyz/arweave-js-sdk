@@ -58,7 +58,7 @@ export default class Bundlr {
     async fund(amount) {
         return this.funder.fund(amount)
     }
-    async upload(path) {
-        return this.uploader.upload(path);
+    async uploadFile(path) {
+        return this.uploader.uploadFile(path);
     };
 }

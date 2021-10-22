@@ -58,7 +58,7 @@ program.command("upload").description("Uploads a specified file to the specified
     .action(async (file) => {
         try {
             const bundlr = await init(options);
-            const res = await bundlr.upload(file);
+            const res = await bundlr.uploadFile(file);
             console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data, null, 4)} `);
         } catch (err) {
             console.error(`Error whilst uploading file: \n${err} `);
