@@ -57,11 +57,14 @@ await bundler.upload("./llama.jpg") // Returns an axios response from the gatewa
 
 ```ts
 let response = await bundler.withdrawBalance(amount)
+ 
 // withdrawl request status
-response.status // http status code, 200 = ok, 400 = something went wrong
-// status code 400 - data is the error message of the error encountered by the bundler
-response.data // "Not enough balance for requested withdrawl"
-// status code 200 - data is your withdrawl 'receipt'
+response.status // http status code
+ 
+// 400 - something went wrong
+response.data  = "Not enough balance for requested withdrawl"
+ 
+// 200 - Ok
 response.data = {
     requested, // the requested amount,
     fee,       // the reward required by the network (network fee)
