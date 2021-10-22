@@ -21,7 +21,7 @@ const bundler = new Bundlr("http://example.bundlr.network", jwk);
 ### Get the wallet's address
  
 ```ts
-bundler.address //  "vpcXXvh7dHCiKPot8Xeglsqz4o4OcITiHl8PiG21B-U"
+bundler.address // "vpcXXvh7dHCiKPot8Xeglsqz4o4OcITiHl8PiG21B-U"
 ```
 
 ### Get the account's balance with the current bundler (in winston)
@@ -37,14 +37,14 @@ await bundler.getBalance(address) // 10000
 ### Get the bundler's Arweave address
 
 ```ts
-await bundler.getBundlerAddress(); //  "OXcT1sVRSA5eGwt2k6Yuz8-3e3g9WJi5uSE99CWqsBs"
+await bundler.getBundlerAddress(); // "OXcT1sVRSA5eGwt2k6Yuz8-3e3g9WJi5uSE99CWqsBs"
 ```
 
 ### Move funds (add balance to) the bundler
 
 ```ts
 await bundler.fund(amount) // standard arweave TX object 
-// (see https://github.com/ArweaveTeam/arweave-js/blob/master/src/common/lib/transaction.ts )
+// see https://github.com/ArweaveTeam/arweave-js/blob/master/src/common/lib/transaction.ts
 ```
 
 ### Upload a file to the bundler
@@ -73,6 +73,7 @@ response.data = {
 }
 ```
 In the event a withdrawl transaction is dropped, your Bundlr balance won't be affected
+
 # CLI usage
 ```Usage: bundlr [options] [command]
 
@@ -110,7 +111,12 @@ $ bundlr withdraw 1479016 -h example.bundlr.network -w wallet.json
 > ? Confirmation: withdraw 1479016 winston from example.bundlr.network (Ry2bDGfBIvYtvDPYnf0eg_ijH4A1EDKaaEEecyjbUQ4)?
 > Y / N y
 > Status: 200 
-> Data: {"tx_id":"xcmxJmHyNS502fzqiT66rNeIOSldKGDWR8XsL9auDfs","requested":1479016,"fee":1379016,"final":100000}
+> Data: {
+>    "tx_id":"xcmxJmHyNS502fzqiT66rNeIOSldKGDWR8XsL9auDfs",
+>    "requested":1479016,
+>    "fee":1379016,
+>    "final":100000
+> }
 ```
  #### Note: as the network fee is taken from the requested amount, the amount you will actually recieve is the 'final' field
  #### This also means you cannot withdraw any amount lower than the current network fee.
@@ -131,6 +137,10 @@ $ bundlr fund 1479016 -h example.bundlr.network -w wallet.json
 ```sh
 $ bundlr upload a.txt -h dev.bundlr.network
 > Status: 200 
-> Data: {"id":"A-Vj5TdHkcgjT_V7xnO_MTLYXfwKXfRtCCivTD1fzvY","signature":"c...NqDQ","block":794646}
+> Data: {
+>    "id":"A-Vj5TdHkcgjT_V7xnO_MTLYXfwKXfRtCCivTD1fzvY",
+>    "signature":"c...NqDQ",
+>    "block":794646
+ }
 ```
  
