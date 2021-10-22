@@ -44,7 +44,7 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
             confirmation(`Confirmation: withdraw ${amount} winston from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress()})?\n Y / N`).then(async (confirmed) => {
                 if (confirmed) {
                     const res = await bundlr.withdrawBalance(parseInt(amount));
-                    console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data)} `);
+                    console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data, null, 4)} `);
                 } else {
                     console.log("confirmation failed");
                 }
@@ -59,7 +59,7 @@ program.command("upload").description("Uploads a specified file to the specified
         try {
             const bundlr = await init(options);
             const res = await bundlr.upload(file);
-            console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data)} `);
+            console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data, null, 4)} `);
         } catch (err) {
             console.error(`Error whilst uploading file: \n${err} `);
             return;
