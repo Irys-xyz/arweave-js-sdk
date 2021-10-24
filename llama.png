@@ -1,0 +1,11 @@
+--2021-10-23 20:44:21--  https://cdn.discordapp.com/attachments/841409342808653834/885670673064796180/large_llama.png
+Resolving cdn.discordapp.com (cdn.discordapp.com)... 162.159.130.233, 162.159.129.233, 162.159.135.233, ...
+Connecting to cdn.discordapp.com (cdn.discordapp.com)|162.159.130.233|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 28809 (28K) [image/png]
+Saving to: ‘large_llama.png’
+
+     0K .......... .......... ........                        100% 4.23M=0.006s
+
+2021-10-23 20:44:21 (4.23 MB/s) - ‘large_llama.png’ saved [28809/28809]
+

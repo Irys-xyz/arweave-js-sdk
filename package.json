@@ -1,11 +1,11 @@
 {
   "name": "@bundlr-network/client",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
   "license": "Apache-2.0",
-  "main": "index.js",
+  "main": "build/src/index.js",
   "files": [
     "/build/**/*.js",
     "/build/**/*.ts"
@@ -14,7 +14,7 @@
     "prod:build": "tsc -p tsconfig.release.json"
   },
   "bin": {
-    "bundlr": "./build/src/cli.js"
+    "bundlr": "build/src/cli.js"
   },
   "dependencies": {
     "@types/base64url": "^2.0.0",
