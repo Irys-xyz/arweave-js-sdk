@@ -5,8 +5,16 @@
     "rootDir": ".",
     "outDir": "build",
     "sourceMap": true,
+<<<<<<< HEAD
     "declaration": true,
     "removeComments": true
+=======
+    "removeComments": true,
+    "module": "commonjs",
+    "esModuleInterop": true,
+    // "resolveJsonModule": true,
+    "moduleResolution": "node"
+>>>>>>> 0fe72f501dd55744a9bd61f9a9854d3828f966cd
   },
   "include": [
     "src/**/*"
