@@ -1,5 +1,6 @@
 # js-client
 JS Client Lib for interacting with Bundlr Nodes.
+(check out our docs on [docs.bundlr.network](https://docs.bundlr.network))
 ## Installing the Library
 using npm:
 
