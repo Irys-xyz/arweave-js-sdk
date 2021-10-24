@@ -5,6 +5,7 @@
     "rootDir": ".",
     "outDir": "build",
     "sourceMap": true,
+    "declaration": true,
     "removeComments": true
   },
   "include": [
