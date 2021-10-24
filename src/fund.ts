@@ -1,4 +1,5 @@
 import Arweave from "arweave";
+import Transaction from "arweave/node/lib/transaction";
 import { JWKPublicInterface } from "arweave/node/lib/wallet";
 
 export default class Fund {
@@ -10,7 +11,12 @@ export default class Fund {
         this.jwk = jwk;
     }
 
-    public async fund(amount) {
+    /**
+     * Create a Arweave TX to send amount winston to the bundler
+     * @param amount the amount to send in winston
+     * @returns the Arweave transaction
+     */
+    public async fund(amount: number): Promise<Transaction> {
         const arweave = Arweave.init({
             host: "arweave.net",
             port: "443",
@@ -19,7 +25,7 @@ export default class Fund {
         });
         const tx = await arweave.createTransaction({
             target: await this.utils.getBundlerAddress(),
-            quantity: amount
+            quantity: amount.toString()
         }, this.jwk);
         await arweave.transactions.sign(tx, this.jwk);
         await arweave.transactions.post(tx);
