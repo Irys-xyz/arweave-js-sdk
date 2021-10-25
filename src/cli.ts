@@ -72,11 +72,12 @@ program.command("upload").description("Uploads a specified file to the specified
 // Fund command - Sends the specified bundler n winston from the loaded wallet
 program.command("fund").description("Sends the specified amount of Winston to the specified bundler").argument("<amount>", "Amount to add in Winston")
     .action(async (amount: string) => {
+        if (isNaN(+amount)) throw new Error("Amount must be an integer");
         try {
             const bundlr = await init(options);
             confirmation(`Confirmation: send ${amount} Winston to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress()})?\n Y / N`).then(async (confirmed) => {
                 if (confirmed) {
-                    const tx = await bundlr.fund(amount);
+                    const tx = await bundlr.fund(+amount);
                     console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nID: ${tx.id} `)
                 } else {
                     console.log("confirmation failed")

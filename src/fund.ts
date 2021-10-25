@@ -1,12 +1,13 @@
 import Arweave from "arweave";
 import Transaction from "arweave/node/lib/transaction";
 import { JWKPublicInterface } from "arweave/node/lib/wallet";
+import Utils from "./utils";
 
 export default class Fund {
-    private utils;
-    private readonly jwk;
+    private utils: Utils;
+    private readonly jwk: JWKPublicInterface;
 
-    constructor(utils, jwk: JWKPublicInterface) {
+    constructor(utils: Utils, jwk: JWKPublicInterface) {
         this.utils = utils;
         this.jwk = jwk;
     }
@@ -17,6 +18,7 @@ export default class Fund {
      * @returns the Arweave transaction
      */
     public async fund(amount: number): Promise<Transaction> {
+        if (!Number.isInteger(amount)) throw new Error(`Must use an integer when funding a bundler. You tried with ${amount}`);
         const arweave = Arweave.init({
             host: "arweave.net",
             port: "443",

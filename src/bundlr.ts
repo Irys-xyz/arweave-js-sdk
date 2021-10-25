@@ -32,8 +32,8 @@ export default class Bundlr {
     public api: Api;
     public utils: Utils;
     public address: string;
-    private uploader;
-    private funder;
+    private uploader: Uploader;
+    private funder: Fund;
     /**
      * Constructs a new Bundlr instance, as well as supporting subclasses
      * @param url - URL to the bundler
@@ -64,7 +64,7 @@ export default class Bundlr {
      * @param address address to query for
      * @returns the balance (in winston)
      */
-    async getBalance(address): Promise<number> {
+    async getBalance(address: string): Promise<number> {
         return this.utils.getBalance(address)
     }
     /**
@@ -72,7 +72,7 @@ export default class Bundlr {
      * @param amount amount to send in winston
      * @returns Arweave transaction
      */
-    async fund(amount): Promise<Transaction> {
+    async fund(amount: number): Promise<Transaction> {
         return this.funder.fund(amount)
     }
     /**
@@ -80,7 +80,7 @@ export default class Bundlr {
      * @param path path to the file to upload
      * @returns bundler response
      */
-    async uploadFile(path): Promise<AxiosResponse<any>> {
+    async uploadFile(path: string): Promise<AxiosResponse<any>> {
         return this.uploader.uploadFile(path);
     };
 }

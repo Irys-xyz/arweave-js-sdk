@@ -21,7 +21,7 @@ export default class Uploader {
      * @returns the response from the bundler
      */
 
-    public async uploadFile(path): Promise<AxiosResponse<any>> {
+    public async uploadFile(path: string): Promise<AxiosResponse<any>> {
         try {
             if (!statSync(path)) {
                 throw new Error(`Unable to access path: ${path}`);
