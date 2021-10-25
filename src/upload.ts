@@ -4,6 +4,7 @@ import { readFileSync, statSync } from "fs";
 import mime from "mime-types";
 import { ApiConfig } from "arweave/node/lib/api";
 import { JWKInterface } from "arweave/node/lib/wallet";
+import { AxiosResponse } from "axios";
 
 export default class Uploader {
     private readonly api: ApiConfig
@@ -14,7 +15,13 @@ export default class Uploader {
         this.wallet = wallet;
     }
 
-    public async uploadFile(path) {
+    /**
+     * Uploads a file to the bundler
+     * @param path to the file to be uploaded
+     * @returns the response from the bundler
+     */
+
+    public async uploadFile(path: string): Promise<AxiosResponse<any>> {
         try {
             if (!statSync(path)) {
                 throw new Error(`Unable to access path: ${path}`);
