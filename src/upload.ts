@@ -1,6 +1,5 @@
-import { ArweaveSigner } from "arbundles";
-import { createData } from "arbundles/file/createData"
-import { readFileSync, statSync } from "fs";
+import { ArweaveSigner, createData } from "arbundles";
+import * as fs from "fs";
 import mime from "mime-types";
 import { ApiConfig } from "arweave/node/lib/api";
 import { JWKInterface } from "arweave/node/lib/wallet";
@@ -20,23 +19,43 @@ export default class Uploader {
      * @param path to the file to be uploaded
      * @returns the response from the bundler
      */
-
     public async uploadFile(path: string): Promise<AxiosResponse<any>> {
         try {
-            if (!statSync(path)) {
+            if (!fs.promises.stat(path).then(_ => true).catch(_ => false)) {
                 throw new Error(`Unable to access path: ${path}`);
             }
             const signer = new ArweaveSigner(this.wallet);
             const mimeType = mime.lookup(path);
             const tags = [{ name: "Content-Type", value: mimeType }]
-            const dataItem = await createData(readFileSync(path), signer, { tags });
+            const dataItem = await createData(path, signer, { tags });
             await dataItem.sign(signer);
             const { protocol, host, port } = this.api;
             return await dataItem.sendToBundler(`${protocol}://${host}:${port}`);
 
         } catch (err) {
-            throw new Error(`Error whilst sending: ${err}`);
+            throw new Error(`Error whilst sending: ${err.message}`);
+        }
+    }
+
+    /**
+     * Uploads data to the bundler
+     * @param data
+     * @param tags
+     * @returns the response from the bundler
+     */
+    public async upload(data: Buffer, tags: { name: string, value: string }[]): Promise<AxiosResponse<any>> {
+        try {
+            const signer = new ArweaveSigner(this.wallet);
+            const dataItem = createData(
+                data,
+                signer,
+                { tags }
+            );
+            await dataItem.sign(signer);
+            const { protocol, host, port } = this.api;
+            return await dataItem.sendToBundler(`${protocol}://${host}:${port}`);
+        } catch (err) {
+            throw new Error(`Error whilst sending: ${err.message}`);
         }
     }
 }
-

@@ -3,11 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="647b3442-9757-4618-b59c-4ae3b8917144" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/a.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/bundlr.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/bundlr.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/cli.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/cli.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fund.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/fund.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/upload.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/upload.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -51,6 +46,7 @@
       <option name="presentableId" value="Default" />
       <updated>1634728303782</updated>
       <workItem from="1634728311984" duration="7435000" />
+      <workItem from="1635167923388" duration="3014000" />
     </task>
     <servers />
   </component>
