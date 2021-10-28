@@ -10,10 +10,12 @@ using Yarn:
 
 ```yarn add @bundlr-network/client```
 
+To add the CLI to path (allow it to be used anywhere), use the global option whilst installing (i.e `npm install -g @bundlr-network/client`)
+
 ## Create a new Bundlr instance
 
 ```ts
-import Bundlr from '@bundlr-network/bundlr';
+import Bundlr from '@bundlr-network/client';
 const jwk = JSON.parse(fs.readFileSync("wallet.json").toString());
 // Create instance for the account (JWK) on the bundler (host)
 const bundler = new Bundlr("http://example.bundlr.network", jwk);
@@ -136,7 +138,7 @@ $ bundlr fund 1479016 -h example.bundlr.network -w wallet.json
  ### Upload a file to the bundler
  
 ```sh
-$ bundlr upload a.txt -h dev.bundlr.network
+$ bundlr upload a.txt -h example.bundlr.network
 > Status: 200 
 > Data: {
 >    "id":"A-Vj5TdHkcgjT_V7xnO_MTLYXfwKXfRtCCivTD1fzvY",
