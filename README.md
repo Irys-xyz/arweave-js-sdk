@@ -10,12 +10,12 @@ using Yarn:
 
 ```yarn add @bundlr-network/client```
 
-To add the CLI to path (allow it to be used anywhere), use the global option whilst installing (i.e npm install -g @bundlr-network/client)
+To add the CLI to path (allow it to be used anywhere), use the global option whilst installing (i.e `npm install -g @bundlr-network/client`)
 
 ## Create a new Bundlr instance
 
 ```ts
-import Bundlr from '@bundlr-network/bundlr';
+import Bundlr from '@bundlr-network/client';
 const jwk = JSON.parse(fs.readFileSync("wallet.json").toString());
 // Create instance for the account (JWK) on the bundler (host)
 const bundler = new Bundlr("http://example.bundlr.network", jwk);
@@ -43,7 +43,7 @@ await bundler.getBalance(address) // 10000
 await bundler.getBundlerAddress(); // "OXcT1sVRSA5eGwt2k6Yuz8-3e3g9WJi5uSE99CWqsBs"
 ```
 
-### Move funds (add balance to) the bundler
+### Fund a bundler
 
 ```ts
 await bundler.fund(amount) // standard arweave TX object 
@@ -97,7 +97,7 @@ Commands:
   help [command]         display help for command
 ```
 ## Example Usage
- Note: to disable the confirmations for non-interactive operation, use the `--no-confirmation` flag. \
+ <b>Note:</b> to disable the confirmations for non-interactive operation, use the `--no-confirmation` flag. \
  Anything that requires a wallet file (withdraw, fund, upload) will automatically try to load `"./wallet.json"`, unless overridden by the `-w` flag.
 
  ### Get a user's balance
@@ -121,10 +121,10 @@ $ bundlr withdraw 1479016 -h example.bundlr.network -w wallet.json
 >    "final":100000
 > }
 ```
- #### Note: as the network fee is taken from the requested amount, the amount you will actually recieve is the 'final' field
- #### This also means you cannot withdraw any amount lower than the current network fee.
+ <b>Note:</b> as the network fee is taken from the requested amount, the amount you will actually recieve is the 'final' field
+This also means you cannot withdraw any amount lower than the current network fee.
  
-### Fund (add balance to) A bundler
+### Fund a bundler
 
 ```sh
 $ bundlr fund 1479016 -h example.bundlr.network -w wallet.json
@@ -138,7 +138,7 @@ $ bundlr fund 1479016 -h example.bundlr.network -w wallet.json
  ### Upload a file to the bundler
  
 ```sh
-$ bundlr upload a.txt -h dev.bundlr.network
+$ bundlr upload a.txt -h example.bundlr.network
 > Status: 200 
 > Data: {
 >    "id":"A-Vj5TdHkcgjT_V7xnO_MTLYXfwKXfRtCCivTD1fzvY",
