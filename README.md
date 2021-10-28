@@ -4,11 +4,13 @@ JS Client Lib for interacting with Bundlr Nodes.
 ## Installing the Library
 using npm:
 
-```npm install @bundlr-network/bundlr```
+```npm install @bundlr-network/client```
 
 using Yarn:
 
-```yarn add @bundlr-network/bundlr```
+```yarn add @bundlr-network/client```
+
+To add the CLI to path (allow it to be used anywhere), use the global option whilst installing (i.e npm install -g @bundlr-network/client)
 
 ## Create a new Bundlr instance
 

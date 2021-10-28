@@ -27,8 +27,9 @@ export default class Fund {
         });
         const tx = await arweave.createTransaction({
             target: await this.utils.getBundlerAddress(),
-            quantity: amount.toString()
+            quantity: amount.toString(),
         }, this.jwk);
+        tx.reward = (parseInt(tx.reward) + 20000).toString();
         await arweave.transactions.sign(tx, this.jwk);
         await arweave.transactions.post(tx);
         return tx;
