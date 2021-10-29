@@ -72,8 +72,8 @@ export default class Bundlr {
      * @param amount amount to send in winston
      * @returns Arweave transaction
      */
-    async fund(amount: number): Promise<Transaction> {
-        return this.funder.fund(amount)
+    async fund(amount: number, multiplier?: number): Promise<Transaction> {
+        return this.funder.fund(amount, multiplier)
     }
     /**
      * Upload a file at the specified path to the bundler

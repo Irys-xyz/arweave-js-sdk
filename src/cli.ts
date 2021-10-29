@@ -12,9 +12,10 @@ program
     .option("-h, --host <string>", "Bundler hostname")
     .option("-w, --wallet <string>", "Path to the .json file containing the JWK", "wallet.json")
     .option("--protocol <string>", "The protocol to use to connect to the bundler")
-    .option("--port <number>", "The port used to connect to the bundler")
+    .option("-p, --port <number>", "The port used to connect to the bundler")
     .option("--timeout <number>", "the timeout (in ms) for API HTTP requests")
     .option("--no-confirmation", "Disable confirmations for fund and withdraw actions")
+    .option("--multiplier <number>", "Adjust the multiplier used for arweave tx rewards - the higher the faster the network will process the transaction.", "1.00")
 // .option("--gatewayHost <string>", "The gateway host to use (default arweave.net)", "arweave.net")
 // .option("--gatewayPort <number>", "The port to use for the gateway", "80")
 // .option("--gatewayProtocol <string>", "the protocol to use for the gateway", "HTTP")
@@ -75,10 +76,10 @@ program.command("fund").description("Sends the specified amount of Winston to th
         if (isNaN(+amount)) throw new Error("Amount must be an integer");
         try {
             const bundlr = await init(options);
-            confirmation(`Confirmation: send ${amount} Winston to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress()})?\n Y / N`).then(async (confirmed) => {
+            confirmation(`Confirmation: send ${amount} Winston (${(+amount / 1000000000000).toFixed(14)}AR) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress()})?\n Y / N`).then(async (confirmed) => {
                 if (confirmed) {
-                    const tx = await bundlr.fund(+amount);
-                    console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nID: ${tx.id} `)
+                    const tx = await bundlr.fund(+amount, options.multiplier);
+                    console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `)
                 } else {
                     console.log("confirmation failed")
                 }

@@ -17,7 +17,7 @@ export default class Fund {
      * @param amount the amount to send in winston
      * @returns the Arweave transaction
      */
-    public async fund(amount: number): Promise<Transaction> {
+    public async fund(amount: number, multiplier = 1.0): Promise<Transaction> {
         if (!Number.isInteger(amount)) throw new Error(`Must use an integer when funding a bundler. You tried with ${amount}`);
         const arweave = Arweave.init({
             host: "arweave.net",
@@ -29,6 +29,7 @@ export default class Fund {
             target: await this.utils.getBundlerAddress(),
             quantity: amount.toString()
         }, this.jwk);
+        tx.reward = Math.max(Math.ceil(parseInt(tx.reward) * multiplier), parseInt(tx.reward)).toString();
         await arweave.transactions.sign(tx, this.jwk);
         await arweave.transactions.post(tx);
         return tx;
