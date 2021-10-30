@@ -43,7 +43,7 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
     .action(async (amount: string) => {
         try {
             const bundlr = await init(options);
-            confirmation(`Confirmation: withdraw ${amount} winston from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress()})?\n Y / N`).then(async (confirmed) => {
+            confirmation(`Confirmation: withdraw ${amount} winston from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress("arweave")})?\n Y / N`).then(async (confirmed) => {
                 if (confirmed) {
                     const res = await bundlr.withdrawBalance(parseInt(amount));
                     console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data, null, 4)} `);
@@ -76,7 +76,7 @@ program.command("fund").description("Sends the specified amount of Winston to th
         if (isNaN(+amount)) throw new Error("Amount must be an integer");
         try {
             const bundlr = await init(options);
-            confirmation(`Confirmation: send ${amount} Winston (${(+amount / 1000000000000).toFixed(14)}AR) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress()})?\n Y / N`).then(async (confirmed) => {
+            confirmation(`Confirmation: send ${amount} Winston (${(+amount / 1000000000000).toFixed(14)}AR) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress("arweave")})?\n Y / N`).then(async (confirmed) => {
                 if (confirmed) {
                     const tx = await bundlr.fund(+amount, options.multiplier);
                     console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `)

@@ -23,10 +23,10 @@ export default class Fund {
             host: "arweave.net",
             port: "443",
             protocol: "https",
-            timeout: 10000
+            timeout: 30000
         });
         const tx = await arweave.createTransaction({
-            target: await this.utils.getBundlerAddress(),
+            target: await this.utils.getBundlerAddress("arweave"),
             quantity: amount.toString()
         }, this.jwk);
         tx.reward = Math.max(Math.ceil(parseInt(tx.reward) * multiplier), parseInt(tx.reward)).toString();

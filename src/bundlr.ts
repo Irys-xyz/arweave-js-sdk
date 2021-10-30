@@ -5,16 +5,27 @@ import { withdrawBalance } from "./withdrawl";
 import Uploader from "./upload";
 import Fund from "./fund";
 import { URL } from "url";
-import * as crypto from "crypto";
-import base64url from "base64url";
+import fs from "fs";
+// import * as crypto from "crypto";
+// import base64url from "base64url";
 import Transaction from "arweave/node/lib/transaction";
 import { AxiosResponse } from "axios";
+import Arweave from "arweave";
+import { currencies } from "./currencies";
 
 export interface Config {
     wallet: JWKInterface,
     address?: string,
     APIConfig: ApiConfig,
     gatewayConfig: ApiConfig,
+}
+
+
+export enum Currency {
+    ARWEAVE = "arweave",
+    SOLANA = "solana",
+    AVALANCHE = "avalanche",
+    MATIC = "matic"
 }
 
 // export interface ApiConfig {
@@ -34,18 +45,25 @@ export default class Bundlr {
     public address: string;
     private uploader: Uploader;
     private funder: Fund;
+    private currency;
+    public wallet;
     /**
      * Constructs a new Bundlr instance, as well as supporting subclasses
      * @param url - URL to the bundler
      * @param wallet - JWK in JSON
      */
-    constructor(url: string, wallet?: JWKInterface) {
+    constructor(url: string, currency: string, wallet?: JWKInterface) {
+
         const parsed = new URL(url);
+
+
         this.api = new Api({ ...parsed, host: parsed.hostname }); //borrow their nice Axios API :p
-        this.address = wallet ? base64url.encode(
-            crypto.createHash("sha256")
-                .update(base64url.toBuffer(wallet.n))
-                .digest()) : undefined;
+        // this.address = wallet ? base64url.encode(
+        //     crypto.createHash("sha256")
+        //         .update(base64url.toBuffer(wallet.n))
+        //         .digest()) : undefined;
+
+
         this.utils = new Utils(this.api, { address: this.address, wallet });
         this.withdrawBalance = async (amount: number) => await withdrawBalance(this.utils, this.api, wallet, amount);
         this.uploader = new Uploader(this.api.config, wallet);

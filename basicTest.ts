@@ -7,7 +7,7 @@ async function a() {
         let bundler = new Bundlr("http://dev.bundlr.network", JWK);
         console.log(bundler.address);
         console.log(`balance: ${await bundler.getLoadedBalance()}`);
-        const bAddress = await bundler.utils.getBundlerAddress();
+        const bAddress = await bundler.utils.getBundlerAddress("arweave");
         console.log(`bundler address: ${bAddress}`);
         console.log(`bundler balance: ${await bundler.getBalance(bAddress)}`);
         //console.log(`invalid balance: ${await bundler.getBalance("sadndgfijadijga")}`);

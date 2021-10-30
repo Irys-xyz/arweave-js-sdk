@@ -60,8 +60,8 @@ export default class Utils {
      * Queries the bundler to get it's Arweave address
      * @returns the bundler's Arweave address
      */
-    public async getBundlerAddress(): Promise<string> {
+    public async getBundlerAddress(currency: string): Promise<string> {
         const res = await this.api.get("/info");
-        return res.data.address;
+        return res.data.addresses[currency];
     }
 }
