@@ -133,7 +133,12 @@ async function init(opts) {
     }
     const protocol = opts.protocol ?? "http";
     const url = `${protocol}://${opts.host}:${opts.port ?? protocolToPort(protocol)}`;
-    return new Bundlr(url, wallet);
+    try {
+        return new Bundlr(url, wallet);
+    } catch (err) {
+        console.error(`Error initialising Bundlr client - ${JSON.stringify(err)}`);
+    }
+
 }
 
 /**

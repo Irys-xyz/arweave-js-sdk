@@ -4,8 +4,9 @@ import { readFileSync } from 'fs';
 async function a() {
     try {
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundler = new Bundlr("http://dev.bundlr.network", JWK);
+        let bundler = new Bundlr("http://dev.bundlr.network", "arweave", JWK);
         console.log(bundler.address);
+
         console.log(`balance: ${await bundler.getLoadedBalance()}`);
         const bAddress = await bundler.utils.getBundlerAddress("arweave");
         console.log(`bundler address: ${bAddress}`);
@@ -18,7 +19,6 @@ async function a() {
         let rec = await bundler.uploadFile("a.txt");
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
-
         let res = await bundler.withdrawBalance(1000);
         console.log(`withdrawl: ${JSON.stringify(res.data)}`);
 
