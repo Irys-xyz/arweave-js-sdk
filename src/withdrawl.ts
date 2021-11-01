@@ -8,7 +8,7 @@ import Api from "arweave/node/lib/api";
 //import { jwkTopem } from "arweave/node/lib/crypto/pem";
 
 interface data {
-    publicKey: Buffer,
+    publicKey: string,
     currency: string,
     amount: number,
     nonce: number,
@@ -27,7 +27,7 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: number): P
     const c = utils.currencyConfig;
     // const publicKey: string = wallet.n
     // //todo: make util functions directly return data rather than having to post-return mutate
-    const data = { publicKey: Buffer.from(await c.getPublicKey()), currency: utils.currency, amount, nonce: await utils.getNonce() } as data;
+    const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount, nonce: await utils.getNonce() } as data;
     const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
     data.signature = Buffer.from(await c.sign(deephash))
     const isValid = await c.verify(data.publicKey, deephash, Uint8Array.from(data.signature))
