@@ -4,15 +4,16 @@ import { stringToBuffer } from "arweave/node/lib/utils";
 import { AxiosResponse } from "axios";
 import Utils from "./utils";
 import Api from "arweave/node/lib/api";
+import BigNumber from "bignumber.js";
 // import { JWKInterface } from "arweave/node/lib/wallet";
 //import { jwkTopem } from "arweave/node/lib/crypto/pem";
 
 interface data {
-    publicKey: string,
+    publicKey: string | Buffer,
     currency: string,
-    amount: number,
+    amount: string,
     nonce: number,
-    signature: Buffer
+    signature: Buffer | Uint8Array
 }
 
 /**
@@ -23,16 +24,32 @@ interface data {
  * @param amount amount to withdraw in winston
  * @returns the response from the bundler
  */
-export async function withdrawBalance(utils: Utils, api: Api, amount: number): Promise<AxiosResponse> {
+export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber): Promise<AxiosResponse> {
     const c = utils.currencyConfig;
     // const publicKey: string = wallet.n
     // //todo: make util functions directly return data rather than having to post-return mutate
-    const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount, nonce: await utils.getNonce() } as data;
+    const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount: amount.toString(), nonce: await utils.getNonce() } as data;
     const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
-    data.signature = Buffer.from(await c.sign(deephash))
-    const isValid = await c.verify(data.publicKey, deephash, Uint8Array.from(data.signature))
+    data.signature = await c.sign(deephash)
+    const isValid = await c.verify(data.publicKey, deephash, data.signature)
     console.log(isValid);
     console.log(c.ownerToAddress(data.publicKey));
     //console.log(Buffer.from())
+    const ds = JSON.stringify(data);
+    const du = JSON.parse(ds);
+
+    if (du.publicKey.type === "Buffer") {
+        du.publicKey = Buffer.from(du.publicKey);
+    }
+    if (du.signature.type === "Buffer") {
+        du.signature = Buffer.from(du.signature);
+    } else {
+        du.signature = Uint8Array.from(Object.values(du.signature));
+    }
+    const isParsedValid = await c.verify(du.publicKey, deephash, du.signature);
+
+    console.log(isParsedValid);
+    console.log(ds);
+
     return api.post("/account/withdraw", data);
 }

@@ -14,9 +14,6 @@ export async function polygonGetSigner() {
 }
 
 export async function polygonVerify(pub, data, sig): Promise<boolean> {
-    if (typeof pub === "string") {
-        pub = Buffer.from(pub, "hex");
-    }
     return PolygonSigner.verify(pub, data, sig);
 }
 
@@ -105,11 +102,7 @@ export async function sendMaticTx(tx: string): Promise<void> {
         throw e;
     }
 }
-export function getPublicKey(): string {
-    return Buffer.from(publicKeyCreate(Buffer.from(currencies["matic"].account.key, "hex"), false)).toString("hex");
+export function getPublicKey(): Buffer {
+    return Buffer.from(publicKeyCreate(Buffer.from(currencies["matic"].account.key, "hex"), false));
     //return Buffer.from((publicKeyCreate(Buffer.from(currencies["matic"].account.key, "hex")))).toString("hex");
-}
-export function getAddress() {
-    const currency = currencies["matic"];
-    return currency.ownerToAddress(Buffer.from(currency.getPublicKey(), "hex"));
 }

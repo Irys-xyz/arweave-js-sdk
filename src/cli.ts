@@ -181,12 +181,11 @@ const options = program.opts();
 // to debug CLI: log wanted argv, load into var, and get it to parse.
 //console.log(JSON.stringify(process.argv));
 
-//program.parse(process.argv);
+program.parse(process.argv);
 //const testArgv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "balance", "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU", "-h", "dev.bundlr.network"];
 
-const testArgv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "withdraw", "1000", "-h", "dev.bundlr.network", "-w", "29c17feb590ef5471d4f1d203e3525cbcb3073ccbdc593cd39a9cfff2415eeb0", "-c", "matic", "--no-confirmation"]
 //const testArgv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "withdraw", "1000", "-h", "dev.bundlr.network", "-c", "arweave", "--no-confirmation"]
 
 //const testArgv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "upload", "./a.txt", "-h", "dev.bundlr.network", "-w", "29c17feb590ef5471d4f1d203e3525cbcb3073ccbdc593cd39a9cfff2415eeb0", "-c", "matic"];
 
-program.parse(testArgv);
+//program.parse(testArgv);

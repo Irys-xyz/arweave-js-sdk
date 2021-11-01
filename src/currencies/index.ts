@@ -12,7 +12,6 @@ import { arweave, keys } from "../bundlr";
 
 import {
     createMaticTx,
-    getAddress,
     getMaticFee,
     getPolygonTx,
     getPublicKey,
@@ -63,9 +62,7 @@ export interface Currency {
 
     createTx(data: CreateTxData, key: any): Promise<{ txId: string, tx: any }>;
 
-    getPublicKey(): string;
-
-    getAddress(): string;
+    getPublicKey(): string | Buffer;
 }
 
 interface CurrencyConfig {
@@ -104,10 +101,6 @@ export const currencies: CurrencyConfig = {
             return { txId: tx.id, tx };
         },
         getPublicKey: () => { return currencies["arweave"].account.key.n },
-        getAddress: () => {
-            const currency = currencies["arweave"];
-            return currency.ownerToAddress(currency.getPublicKey());
-        }
 
     } : undefined,
     // "solana": {
@@ -136,8 +129,7 @@ export const currencies: CurrencyConfig = {
         getFee: getMaticFee,
         sendTx: sendMaticTx,
         createTx: createMaticTx,
-        getPublicKey: getPublicKey,
-        getAddress: getAddress
+        getPublicKey: getPublicKey
     } : undefined,
 };
 
