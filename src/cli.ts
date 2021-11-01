@@ -124,6 +124,7 @@ function protocolToPort(protocol: string) {
  */
 async function init(opts) {
     let wallet;
+    let bundler;
     if (!opts.address) {
         wallet = await loadWallet(opts.wallet);
     }
@@ -134,11 +135,11 @@ async function init(opts) {
     const protocol = opts.protocol ?? "http";
     const url = `${protocol}://${opts.host}:${opts.port ?? protocolToPort(protocol)}`;
     try {
-        return new Bundlr(url, wallet);
+        bundler = new Bundlr(url, "arweave", wallet);
     } catch (err) {
-        console.error(`Error initialising Bundlr client - ${JSON.stringify(err)}`);
+        throw new Error(`Error initialising Bundlr client - ${JSON.stringify(err)}`);
     }
-
+    return bundler;
 }
 
 /**
@@ -151,7 +152,8 @@ async function loadWallet(path: string) {
         if (statSync(path)) {
             return JSON.parse(readFileSync(path).toString());
         } else {
-            console.error(`Unable to load wallet: ${path}`);
+            console.error(`path: ${path} unavailable - assuming -w is a key...`);
+            return path;
         }
     } catch (e) {
         console.error(`Error reading wallet:\n${e}`);
@@ -161,3 +163,8 @@ async function loadWallet(path: string) {
 
 const options = program.opts();
 program.parse(process.argv);
+
+// to debug CLI: log wanted argv, load into var, and get it to parse.
+//console.log(JSON.stringify(process.argv));
+//const testArgv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "balance", "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU", "-h", "dev.bundlr.network"];
+//program.parse(testArgv);

@@ -60,12 +60,15 @@ export default class Bundlr {
      * @param wallet - JWK in JSON
      */
     constructor(url: string, currency: string, wallet?: any) {
+        // hacky for the moment...
+        // specifically about ordering - some stuff here seems silly but leave it for now it works
         this.currency = currency;
-
+        if (!wallet) {
+            wallet = "default";
+        }
         keys[currency] = { key: wallet, address: undefined };
         this.wallet = wallet;
         const parsed = new URL(url);
-
         this.api = new Api({ ...parsed, host: parsed.hostname }); //borrow their nice Axios API :p
         if (currency === "arweave") {
             arweave = new Arweave(this.api.getConfig());
@@ -76,20 +79,17 @@ export default class Bundlr {
             throw new Error(`Unknown/Unsuported currency ${currency}`);
         }
         this.currencyConfig = currencies[currency];
-        this.address = this.currencyConfig.ownerToAddress(this.currencyConfig.getPublicKey());
+
+        if (!(wallet === "default")) {
+            this.address = this.currencyConfig.ownerToAddress(this.currencyConfig.getPublicKey());
+        }
         this.currencyConfig.account.address = this.address;
-
-
         //this.address = address;
-
-
-
         this.utils = new Utils(this.api, this.currency, this.currencyConfig, { address: this.address, wallet });
         // this.withdrawBalance = async (amount: number) => await withdrawBalance(this.utils, this.api, wallet, amount);
         this.uploader = new Uploader(this.api.config, wallet);
         // this.upload = this.uploader.upload; note to self: don't do this, this destorys 'this' scoping for instantiated subclasses
         this.funder = new Fund(this.utils, wallet);
-        // hacky for the moment...
 
     }
     async withdrawBalance(amount) {
