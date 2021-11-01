@@ -9,6 +9,9 @@ export async function polygonSign(message: Uint8Array): Promise<Uint8Array> {
     const signer = new PolygonSigner(currencies["matic"].account.key);
     return signer.sign(message);
 }
+export async function polygonGetSigner() {
+    return new PolygonSigner(currencies["matic"].account.key);
+}
 
 export async function polygonVerify(pub, data, sig): Promise<boolean> {
     return PolygonSigner.verify(pub, data, sig);
@@ -99,6 +102,6 @@ export async function sendMaticTx(tx: string): Promise<void> {
         throw e;
     }
 }
-export function getPublicKey() {
+export function getPublicKey(): string {
     return Buffer.from(publicKeyCreate(Buffer.from(currencies["matic"].account.key, "hex"), false)).toString();
 }

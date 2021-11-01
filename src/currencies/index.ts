@@ -16,11 +16,13 @@ import {
     getPolygonTx,
     getPublicKey,
     polygonGetHeight,
+    polygonGetSigner,
     polygonOwnerToAddress,
     polygonSign,
     polygonVerify, sendMaticTx,
 } from "./matic";
 import { bufferTob64Url, b64UrlToBuffer } from "arweave/node/lib/utils";
+import { ArweaveSigner, Signer } from "arbundles/build/signing";
 
 export interface Tx {
     from: string;
@@ -47,6 +49,8 @@ export interface Currency {
     price(): Promise<number>;
 
     sign(data: Uint8Array): Promise<Uint8Array>;
+
+    getSigner(): Promise<Signer>;
 
     verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean>;
 
@@ -79,6 +83,9 @@ export const currencies: CurrencyConfig = {
         price: () => getRedstonePrice("AR"),
         sign: async (data) => {
             return Arweave.crypto.sign(currencies["arweave"].account.key, data);
+        },
+        getSigner: async () => {
+            return new ArweaveSigner(currencies["arweave"].account.key);
         },
         verify: async (pub, data, sig) => {
             return Arweave.crypto.verify(pub, data, sig);
@@ -115,6 +122,7 @@ export const currencies: CurrencyConfig = {
         ownerToAddress: polygonOwnerToAddress,
         price: () => getRedstonePrice("MATIC"),
         sign: polygonSign,
+        getSigner: polygonGetSigner,
         verify: polygonVerify,
         getCurrentHeight: polygonGetHeight,
         getFee: getMaticFee,

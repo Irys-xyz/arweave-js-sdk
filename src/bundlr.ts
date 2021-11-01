@@ -81,13 +81,13 @@ export default class Bundlr {
         this.currencyConfig = currencies[currency];
 
         if (!(wallet === "default")) {
-            this.address = this.currencyConfig.ownerToAddress(this.currencyConfig.getPublicKey());
+            this.address = this.currencyConfig.ownerToAddress(Buffer.from(this.currencyConfig.getPublicKey()));
         }
         this.currencyConfig.account.address = this.address;
         //this.address = address;
         this.utils = new Utils(this.api, this.currency, this.currencyConfig, { address: this.address, wallet });
         // this.withdrawBalance = async (amount: number) => await withdrawBalance(this.utils, this.api, wallet, amount);
-        this.uploader = new Uploader(this.api.config, wallet);
+        this.uploader = new Uploader(this.api, currency, this.currencyConfig);
         // this.upload = this.uploader.upload; note to self: don't do this, this destorys 'this' scoping for instantiated subclasses
         this.funder = new Fund(this.utils, wallet);
 
