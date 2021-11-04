@@ -27,6 +27,7 @@ program
     .command("balance").description("Gets the specified user's balance for the current bundler").argument("<address>", "address")
     .action(async (address: string) => {
         try {
+            address = address.substring(1);
             options.address = address;
             const bundlr = await init(options);
             const balance = await bundlr.utils.getBalance(address);
@@ -154,4 +155,9 @@ async function loadWallet(path: string) {
 }
 
 const options = program.opts();
-program.parse(process.argv);
+const Argv = process.argv;
+
+if (Argv[2] == "balance") {
+    Argv[3] = "[" + Argv[3];
+}
+program.parse(Argv);

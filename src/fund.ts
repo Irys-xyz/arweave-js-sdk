@@ -29,7 +29,7 @@ export default class Fund {
             target: await this.utils.getBundlerAddress(),
             quantity: amount.toString(),
         }, this.jwk);
-        tx.reward = (parseInt(tx.reward) + 20000).toString();
+        tx.reward = parseInt(tx.reward).toString();
         await arweave.transactions.sign(tx, this.jwk);
         await arweave.transactions.post(tx);
         return tx;
