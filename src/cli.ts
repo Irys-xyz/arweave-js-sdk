@@ -187,6 +187,6 @@ const options = program.opts();
 //console.log(JSON.stringify(process.argv));
 
 //const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "balance", "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU", "-h", "dev.bundlr.network"];
-const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "fund", "1000", "-h", "dev.bundlr.network", "-c", "matic", "-w", "29c17feb590ef5471d4f1d203e3525cbcb3073ccbdc593cd39a9cfff2415eeb0", "--no-confirmation"];
-//const Argv = process.argv;
+//const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "fund", "1000", "-h", "dev.bundlr.network", "-c", "matic", "-w", "29c17feb590ef5471d4f1d203e3525cbcb3073ccbdc593cd39a9cfff2415eeb0", "--no-confirmation"];
+const Argv = process.argv;
 program.parse(Argv);
