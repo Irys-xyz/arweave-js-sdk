@@ -7,7 +7,7 @@ import { Currency } from "./currencies";
 
 
 export default class Utils {
-    private api: Api;
+    public api: Api;
     private config: { address: string, wallet: JWKInterface };
     public currency: string;
     public currencyConfig: Currency;

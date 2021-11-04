@@ -1,13 +1,13 @@
 import Api, { ApiConfig } from "arweave/node/lib/api";
 import { JWKInterface } from "arweave/node/lib/wallet";
 import Utils from "./utils";
-import { withdrawBalance } from "./withdrawl";
+import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
 import { URL } from "url";
 // import * as crypto from "crypto";
 // import base64url from "base64url";
-import Transaction from "arweave/node/lib/transaction";
+//import Transaction from "arweave/node/lib/transaction";
 import { AxiosResponse } from "axios";
 
 //import { Currency, currencies } from "./currencies/class ver.";
@@ -90,7 +90,7 @@ export default class Bundlr {
         // this.withdrawBalance = async (amount: number) => await withdrawBalance(this.utils, this.api, wallet, amount);
         this.uploader = new Uploader(this.api, currency, this.currencyConfig);
         // this.upload = this.uploader.upload; note to self: don't do this, this destorys 'this' scoping for instantiated subclasses
-        this.funder = new Fund(this.utils, wallet);
+        this.funder = new Fund(this.utils);
 
     }
     async withdrawBalance(amount) {
@@ -118,7 +118,7 @@ export default class Bundlr {
      * @param amount amount to send in winston
      * @returns Arweave transaction
      */
-    async fund(amount: number, multiplier?: number): Promise<Transaction> {
+    async fund(amount: number, multiplier?: number): Promise<any> {
         return this.funder.fund(amount, multiplier)
     }
     /**

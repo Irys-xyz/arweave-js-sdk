@@ -31,6 +31,7 @@ program
     .action(async (address: string) => {
         try {
             options.address = address;
+            console.log(address);
             const bundlr = await init(options);
             const balance = await bundlr.utils.getBalance(address);
             console.log(`Balance: ${balance} ${bundlr.currencyConfig.base[0]} (${(balance / bundlr.currencyConfig.base[1])} ${bundlr.currency})`);
@@ -179,13 +180,11 @@ async function loadWallet(path: string) {
 
 const options = program.opts();
 // to debug CLI: log wanted argv, load into var, and get it to parse.
-//console.log(JSON.stringify(process.argv));
+console.log(JSON.stringify(process.argv));
 
-program.parse(process.argv);
-//const testArgv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "balance", "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU", "-h", "dev.bundlr.network"];
-
-//const testArgv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "withdraw", "1000", "-h", "dev.bundlr.network", "-c", "arweave", "--no-confirmation"]
-
-//const testArgv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "upload", "./a.txt", "-h", "dev.bundlr.network", "-w", "29c17feb590ef5471d4f1d203e3525cbcb3073ccbdc593cd39a9cfff2415eeb0", "-c", "matic"];
-
-//program.parse(testArgv);
+//const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "balance", "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU", "-h", "dev.bundlr.network"];
+//const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "withdraw", "1000", "-h", "dev.bundlr.network", "-c", "arweave", "--no-confirmation"]
+//const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "fund", "1000", "-h", "dev.bundlr.network", "-w", "29c17feb590ef5471d4f1d203e3525cbcb3073ccbdc593cd39a9cfff2415eeb0", "-c", "matic", "--no-confirmation"];
+//const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "upload", "./a.txt", "-h", "dev.bundlr.network", "-w", "29c17feb590ef5471d4f1d203e3525cbcb3073ccbdc593cd39a9cfff2415eeb0", "-c", "matic"];
+const Argv = process.argv;
+program.parse(Argv);
