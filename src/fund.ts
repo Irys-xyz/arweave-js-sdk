@@ -13,17 +13,17 @@ export default class Fund {
         //this.jwk = jwk;
     }
 
-    public async fund(amount: number, multiplier = 1.0) {
+    public async fund(amount: number, multiplier = 1.0): Promise<any> {
         if (!Number.isInteger(amount)) { throw new Error("must use an integer for funding amount") }
         const c = this.utils.currencyConfig;
-        const to = await this.utils.getBundlerAddress("matic");
+        const to = await this.utils.getBundlerAddress(this.utils.currency);
         const fee = ((await c.getFee(amount, to)).multipliedBy(multiplier)).toString();
         console.log(`Fee for sending ${amount} ${c.base[0]} to ${to} is ${fee}`)
         const tx = await c.createTx({ amount, fee: fee.toString(), to }, c.account.key)
         console.log(JSON.stringify(tx));
         await c.sendTx(tx.tx);
         if (this.utils.currency == "matic") {
-            const res = await this.utils.api.post("/account/balance/matic", { tx_id: tx.tx });
+            const res = await this.utils.api.post("/account/balance/matic", { tx_id: tx.txId });
             console.log(res);
         }
         return tx;
