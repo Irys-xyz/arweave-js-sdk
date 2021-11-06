@@ -24,7 +24,7 @@ program
 
 // Define commands
 
-program.version(execSync("npm view @bundlr-network/client version").toString(), "-v", "Gets the current package version of the bundlr client");
+program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
 
 // Balance command - gets the provided address' balance on the specified bundler
 program
