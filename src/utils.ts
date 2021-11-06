@@ -62,6 +62,6 @@ export default class Utils {
      */
     public async getBundlerAddress(): Promise<string> {
         const res = await this.api.get("/info");
-        return res.data.addresses["arweave"];
+        return res.data.address ?? res.data.addresses.arweave;
     }
 }
