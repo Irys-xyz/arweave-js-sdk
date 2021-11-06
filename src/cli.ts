@@ -4,6 +4,7 @@ import { Command } from "commander";
 import { readFileSync, statSync } from "fs";
 import Bundlr from ".";
 import inquirer from "inquirer";
+import { execSync } from "child_process"
 
 const program = new Command();
 
@@ -15,12 +16,15 @@ program
     .option("--port <number>", "The port used to connect to the bundler")
     .option("--timeout <number>", "the timeout (in ms) for API HTTP requests")
     .option("--no-confirmation", "Disable confirmations for fund and withdraw actions")
+
 // .option("--gatewayHost <string>", "The gateway host to use (default arweave.net)", "arweave.net")
 // .option("--gatewayPort <number>", "The port to use for the gateway", "80")
 // .option("--gatewayProtocol <string>", "the protocol to use for the gateway", "HTTP")
 // .option("---gatewayTimeout <number>", "Gateway request timeout", "40000")
 
 // Define commands
+
+program.version(execSync("npm view @bundlr-network/client version").toString(), "-v", "Gets the current package version of the bundlr client");
 
 // Balance command - gets the provided address' balance on the specified bundler
 program
