@@ -18,15 +18,14 @@ export default class Fund {
         const c = this.utils.currencyConfig;
         const to = await this.utils.getBundlerAddress(this.utils.currency);
         const fee = ((await c.getFee(amount, to)).multipliedBy(multiplier)).toString();
-        console.log(`Fee for sending ${amount} ${c.base[0]} to ${to} is ${fee}`)
+        // console.log(`Fee for sending ${amount} ${c.base[0]} to ${to} is ${fee}`)
         const tx = await c.createTx({ amount, fee: fee.toString(), to }, c.account.key)
-        console.log(JSON.stringify(tx));
+        //console.log(JSON.stringify(tx));
         await c.sendTx(tx.tx);
         if (this.utils.currency == "matic") {
-            const res = await this.utils.api.post("/account/balance/matic", { tx_id: tx.txId });
-            console.log(res);
+            await this.utils.api.post("/account/balance/matic", { tx_id: tx.txId });
         }
-        return tx;
+        return { reward: fee, target: to, quantity: amount, id: tx.txId };
     }
 
     // /**
