@@ -307,6 +307,20 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@bundlr-network/client@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@bundlr-network/client/-/client-0.0.10.tgz#6b74c16f2f60266fac95a959d83989750060b498"
+  integrity sha512-NEn2LvlPx1jU0EdLLcwx2iDvd9wVb7dLMPZR/4f8Sum2tJdzuTWIEwqCluLz9BjdtFT1//mtr0da4PAMhlmlsw==
+  dependencies:
+    arbundles "^0.2.10"
+    arweave "^1.10.17"
+    base64url "^3.0.1"
+    commander "^8.2.0"
+    dotenv "^10.0.0"
+    inquirer "^8.2.0"
+    mime-types "^2.1.33"
+    typescript "^4.4.3"
+
 "@cspotcode/source-map-consumer@0.8.0":
   version "0.8.0"
   resolved "https://registry.yarnpkg.com/@cspotcode/source-map-consumer/-/source-map-consumer-0.8.0.tgz#33bf4b7b39c178821606f669bbc447a6a629786b"
@@ -1340,7 +1354,7 @@ ar-gql@^0.0.6:
   dependencies:
     axios "^0.21.1"
 
-"arbundles@git://github.com/Bundlr-Network/arbundles#feature/crosschain":
+arbundles@^0.2.10, "arbundles@git://github.com/Bundlr-Network/arbundles#feature/crosschain":
   version "0.2.10"
   resolved "git://github.com/Bundlr-Network/arbundles#5eaae86245f9c8c13729658e7a0e271b25a1ec53"
   dependencies:

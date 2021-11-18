@@ -63,10 +63,10 @@ export default class Uploader {
         );
         await dataItem.sign(signer);
         const { protocol, host, port } = this.api.getConfig();
-        const headers = { "Content-Type": "application/octet-stream" };
+        //const headers = { "Content-Type": "application/octet-stream" };
         //return await dataItem.sendToBundler(`${protocol}://${host}:${port}`);
         const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
-            headers,
+            headers: { "Content-Type": "application/octet-stream", },
             timeout: 100000,
             maxBodyLength: Infinity,
             validateStatus: (status) => (status > 200 && status < 300) || status !== 402

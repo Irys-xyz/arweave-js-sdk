@@ -91,7 +91,7 @@ export const currencies: CurrencyConfig = {
             return Arweave.crypto.verify(pub, data, sig);
         },
         getCurrentHeight: async () => arweave.network.getInfo().then(r => new BigNumber(r.height)),
-        getFee: async (_amount, to) => { return new BigNumber(parseInt(await arweave.transactions.getPrice(0, to))) },
+        getFee: async (_amount, _to) => { return new BigNumber(parseInt(await arweave.transactions.getPrice(0))) },
         sendTx: async (tx) => {
             return await arweave.transactions.post(tx);
         },

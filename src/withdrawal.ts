@@ -31,9 +31,9 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber)
     const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount: amount.toString(), nonce: await utils.getNonce() } as data;
     const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
     data.signature = await c.sign(deephash)
-    const isValid = await c.verify(data.publicKey, deephash, data.signature)
-    console.log(isValid);
-    console.log(c.ownerToAddress(data.publicKey));
+    //const isValid = await c.verify(data.publicKey, deephash, data.signature)
+    //console.log(isValid);
+    //console.log(c.ownerToAddress(data.publicKey));
     //console.log(Buffer.from())
     const ds = JSON.stringify(data);
     const du = JSON.parse(ds);
@@ -46,10 +46,10 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber)
     } else {
         du.signature = Uint8Array.from(Object.values(du.signature));
     }
-    const isParsedValid = await c.verify(du.publicKey, deephash, du.signature);
+    //const isParsedValid = await c.verify(du.publicKey, deephash, du.signature);
 
-    console.log(isParsedValid);
-    console.log(ds);
+    //console.log(isParsedValid);
+    //console.log(ds);
 
     return api.post("/account/withdraw", data);
 }
