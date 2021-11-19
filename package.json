@@ -17,13 +17,18 @@
     "bundlr": "build/src/cli.js"
   },
   "dependencies": {
-    "arbundles": "^0.2.10",
+    "@bundlr-network/client": "^0.0.10",
+    "arbundles": "git://github.com/Bundlr-Network/arbundles#feature/crosschain",
     "arweave": "^1.10.17",
     "base64url": "^3.0.1",
+    "bignumber.js": "^9.0.1",
     "commander": "^8.2.0",
     "dotenv": "^10.0.0",
+    "ethers": "^5.5.1",
     "inquirer": "^8.2.0",
+    "keccak256": "^1.0.3",
     "mime-types": "^2.1.33",
+    "redstone-api": "^0.4.6",
     "typescript": "^4.4.3"
   },
   "devDependencies": {

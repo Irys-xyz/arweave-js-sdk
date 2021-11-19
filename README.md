@@ -12,6 +12,7 @@ using Yarn:
 
 To add the CLI to path (allow it to be used anywhere), use the global option whilst installing (i.e `npm install -g @bundlr-network/client`)
 
+
 ## Create a new Bundlr instance
 
 ```ts

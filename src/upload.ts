@@ -1,18 +1,19 @@
-import { ArweaveSigner } from "arbundles";
-import { createData } from "arbundles/file/createData"
-import { readFileSync, statSync } from "fs";
+import { createData } from "arbundles";
+import { readFileSync, promises } from "fs";
 import mime from "mime-types";
-import { ApiConfig } from "arweave/node/lib/api";
-import { JWKInterface } from "arweave/node/lib/wallet";
+import Api from "arweave/node/lib/api";
 import { AxiosResponse } from "axios";
+import { Currency } from "./currencies";
 
 export default class Uploader {
-    private readonly api: ApiConfig
-    private wallet: JWKInterface;
+    private readonly api: Api
+    private currency: string;
+    private currencyConfig: Currency;
 
-    constructor(api: ApiConfig, wallet: JWKInterface) {
+    constructor(api: Api, currency: string, currencyConfig: Currency) {
         this.api = api;
-        this.wallet = wallet;
+        this.currency = currency;
+        this.currencyConfig = currencyConfig;
     }
 
     /**
@@ -20,23 +21,42 @@ export default class Uploader {
      * @param path to the file to be uploaded
      * @returns the response from the bundler
      */
-
     public async uploadFile(path: string): Promise<AxiosResponse<any>> {
-        try {
-            if (!statSync(path)) {
-                throw new Error(`Unable to access path: ${path}`);
-            }
-            const signer = new ArweaveSigner(this.wallet);
-            const mimeType = mime.lookup(path);
-            const tags = [{ name: "Content-Type", value: mimeType }]
-            const dataItem = await createData(readFileSync(path), signer, { tags });
-            await dataItem.sign(signer);
-            const { protocol, host, port } = this.api;
-            return await dataItem.sendToBundler(`${protocol}://${host}:${port}`);
-
-        } catch (err) {
-            throw new Error(`Error whilst sending: ${err}`);
+        if (!promises.stat(path).then(_ => true).catch(_ => false)) {
+            throw new Error(`Unable to access path: ${path}`);
         }
+        //const signer = await this.currencyConfig.getSigner();
+        const mimeType = mime.lookup(path);
+        const tags = [{ name: "Content-Type", value: mimeType }]
+        const data = readFileSync(path);
+        return await this.upload(data, tags)
+    }
+
+    /**
+     * Uploads data to the bundler
+     * @param data
+     * @param tags
+     * @returns the response from the bundler
+     */
+    public async upload(data: Buffer, tags: { name: string, value: string }[]): Promise<AxiosResponse<any>> {
+        // try {
+        const signer = await this.currencyConfig.getSigner();
+        const dataItem = createData(
+            data,
+            signer,
+            { tags }
+        );
+        await dataItem.sign(signer);
+        const { protocol, host, port } = this.api.getConfig();
+        const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
+            headers: { "Content-Type": "application/octet-stream", },
+            timeout: 100000,
+            maxBodyLength: Infinity,
+            validateStatus: (status) => (status > 200 && status < 300) || status !== 402
+        })
+        if (res.status === 402) {
+            throw new Error("Not enough funds to send data")
+        }
+        return res;
     }
 }
-
