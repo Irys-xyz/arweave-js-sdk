@@ -102,7 +102,6 @@ export default class Bundlr {
      * @returns balance (in winston)
      */
     async getLoadedBalance(): Promise<number> {
-        console.log(this.address);
         return this.utils.getBalance(this.address)
     }
     /**

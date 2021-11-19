@@ -28,7 +28,6 @@ export async function getPolygonTx(txId: string): Promise<Tx> {
 
     if (!response) throw new Error("Tx doesn't exist");
 
-    console.log(response);
 
     return {
         from: response.from,
@@ -65,30 +64,26 @@ export async function getMaticFee(amount: BigNumber, to: string): Promise<BigNum
 }
 
 export async function createMaticTx({ amount, to }: CreateTxData, key: Buffer): Promise<any> {
-    try {
-        const provider = new ethers.providers.JsonRpcProvider(currencies["matic"].provider);
+    const provider = new ethers.providers.JsonRpcProvider(currencies["matic"].provider);
 
-        await provider._ready();
-        const wallet = new Wallet(key, provider);
-        const _amount = ethers.utils.hexlify(BigNumber.isBigNumber(amount) ? "0x" + amount.toString(16) : amount);
+    await provider._ready();
+    const wallet = new Wallet(key, provider);
+    const _amount = ethers.utils.hexlify(BigNumber.isBigNumber(amount) ? "0x" + amount.toString(16) : amount);
 
-        const estimatedGas = await provider.estimateGas({ to, value: _amount });
-        const gasPrice = await provider.getGasPrice();
+    const estimatedGas = await provider.estimateGas({ to, value: _amount });
+    const gasPrice = await provider.getGasPrice();
 
-        const tx = await wallet.populateTransaction({
-            to,
-            value: _amount,
-            gasPrice,
-            gasLimit: estimatedGas
-        });
+    const tx = await wallet.populateTransaction({
+        to,
+        value: _amount,
+        gasPrice,
+        gasLimit: estimatedGas
+    });
 
-        const signedTx = await wallet.signTransaction(tx);
-        const txId = "0x" + keccak256(Buffer.from(signedTx.slice(2), "hex")).toString("hex");
-        return { txId, tx: signedTx };
-    } catch (e) {
-        console.log(e);
-        throw e;
-    }
+    const signedTx = await wallet.signTransaction(tx);
+    const txId = "0x" + keccak256(Buffer.from(signedTx.slice(2), "hex")).toString("hex");
+    return { txId, tx: signedTx };
+
 }
 
 export async function sendMaticTx(tx: string): Promise<void> {
