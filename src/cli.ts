@@ -26,7 +26,7 @@ program
     .command("balance").description("Gets the specified user's balance for the current bundler").argument("<address>", "address")
     .action(async (address: string) => {
         try {
-            address = address.substring(1);
+            address = address.substring(0);
             options.address = address;
             const bundlr = await init(options);
             const balance = await bundlr.utils.getBalance(address);
