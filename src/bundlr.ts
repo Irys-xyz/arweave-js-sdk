@@ -5,19 +5,13 @@ import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
 import { URL } from "url";
-// import * as crypto from "crypto";
-// import base64url from "base64url";
-//import Transaction from "arweave/node/lib/transaction";
 import { AxiosResponse } from "axios";
-
-//import { Currency, currencies } from "./currencies/class ver.";
 import Arweave from "arweave";
+
 let currencies;
 
 export let arweave;
 export const keys: { [key: string]: { key: string, address: string } } = {};
-
-// import { currencies } from "./currencies";
 
 export interface Config {
     wallet: JWKInterface,
@@ -42,7 +36,6 @@ export interface Config {
 //     logging?: boolean;
 //     logger?: Function;
 //   }
-
 
 export default class Bundlr {
     public api: Api;

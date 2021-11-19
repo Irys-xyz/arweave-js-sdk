@@ -3,11 +3,11 @@ JS Client Lib for interacting with Bundlr Nodes.
 ## Installing the Library
 using npm:
 
-```npm install @bundlr-network/bundlr```
+```npm install @bundlr-network/client```
 
 using Yarn:
 
-```yarn add @bundlr-network/bundlr```
+```yarn add @bundlr-network/client```
 
 ## Create a new Bundlr instance
 

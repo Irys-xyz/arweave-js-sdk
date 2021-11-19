@@ -30,21 +30,6 @@ export default class Uploader {
         const tags = [{ name: "Content-Type", value: mimeType }]
         const data = readFileSync(path);
         return await this.upload(data, tags)
-        // const dataItem = await createData(path, signer, { tags });
-        // await dataItem.sign(signer);
-        // const { protocol, host, port } = this.api.getConfig();
-        // const headers = { "Content-Type": "application/octet-stream" };
-        // //return await dataItem.sendToBundler(`${protocol}://${host}:${port}`);
-        // const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
-        //     headers,
-        //     timeout: 100000,
-        //     maxBodyLength: Infinity,
-        //     validateStatus: (status) => (status > 200 && status < 300) || status !== 402
-        // })
-        // if (res.status === 402) {
-        //     throw new Error("Not enough funds to send data")
-        // }
-        // return res;
     }
 
     /**
@@ -63,8 +48,6 @@ export default class Uploader {
         );
         await dataItem.sign(signer);
         const { protocol, host, port } = this.api.getConfig();
-        //const headers = { "Content-Type": "application/octet-stream" };
-        //return await dataItem.sendToBundler(`${protocol}://${host}:${port}`);
         const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
             headers: { "Content-Type": "application/octet-stream", },
             timeout: 100000,
@@ -75,9 +58,5 @@ export default class Uploader {
             throw new Error("Not enough funds to send data")
         }
         return res;
-        //return await dataItem.sendToBundler(`${protocol}://${host}:${port}`);
-        // } catch (err) {
-        //     throw new Error(`Error whilst sending: ${err.message}`);
-        // }
     }
 }

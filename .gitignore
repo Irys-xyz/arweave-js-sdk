@@ -7,3 +7,5 @@ build
 temp
 test.ts
 yarn.lock
+yarn-error.log
+.idea

@@ -3,9 +3,6 @@ import { JWKInterface } from "arweave/node/lib/wallet";
 import { AxiosResponse } from "axios";
 import { Currency } from "./currencies";
 
-
-
-
 export default class Utils {
     public api: Api;
     private config: { address: string, wallet: JWKInterface };
@@ -16,7 +13,6 @@ export default class Utils {
         this.config = config;
         this.currency = currency;
         this.currencyConfig = currencyConfig;
-
     };
 
     /**
@@ -39,8 +35,8 @@ export default class Utils {
         const res = await this.api.get(`/account/withdrawals/${this.currency}?address=${this.config.address}`);
         Utils.checkAndThrow(res);
         return (res).data;
-
     }
+
     /**
      * Gets the balance on the current bundler for the specified user
      * @param address the user's address to query
@@ -52,20 +48,9 @@ export default class Utils {
         return res.data.balance;
     }
 
-    // /**
-    //  * Gets the Arweave address of the loaded walletfile
-    //  * @returns Arweave address
-    //  */
-    // public getAddress(): string {
-    //     return arweave.utils.bufferTob64Url(
-    //         crypto.createHash("sha256")
-    //             .update(arweave.utils.b64UrlToBuffer(this.config.wallet.n))
-    //             .digest());
-    // }
-
     /**
      * Queries the bundler to get it's address for a specific currency
-     * @returns the bundler's Arweave address
+     * @returns the bundler's address
      */
     public async getBundlerAddress(currency: string): Promise<string> {
         const res = await this.api.get("/info");

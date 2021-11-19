@@ -4,26 +4,21 @@ import { Command } from "commander";
 import { readFileSync, statSync } from "fs";
 import Bundlr from ".";
 import inquirer from "inquirer";
+import { execSync } from "child_process"
 
 const program = new Command();
 
 // Define the CLI flags for the program
 program
-    .option("-h, --host <string>", "Bundler hostname")
+    .option("-h, --host <string>", "Bundler hostname/URL (eg node1.bundlr.network)")
     .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "wallet.json")
     .option("-c, --currency <string>", "the currency to use")
-    .option("--protocol <string>", "The protocol to use to connect to the bundler")
-    .option("-p, --port <number>", "The port used to connect to the bundler")
     .option("--timeout <number>", "the timeout (in ms) for API HTTP requests")
     .option("--no-confirmation", "Disable confirmations for fund and withdraw actions")
     .option("--multiplier <number>", "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.", "1.00")
 
-// .option("--gatewayHost <string>", "The gateway host to use (default arweave.net)", "arweave.net")
-// .option("--gatewayPort <number>", "The port to use for the gateway", "80")
-// .option("--gatewayProtocol <string>", "the protocol to use for the gateway", "HTTP")
-// .option("---gatewayTimeout <number>", "Gateway request timeout", "40000")
-
 // Define commands
+program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
 
 // Balance command - gets the provided address' balance on the specified bundler
 program
@@ -59,16 +54,6 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
         }
     });
 
-
-// program.command("convert").description("converts standard currency units to base units for use with this tool").argument("<amount>", "amount to convert")
-//     .action(async (amount: string) => {
-//         try {
-
-//         } catch (err) {
-//             console.error(`Error converting: \n${err}`);
-//         }
-//     })
-
 // Upload command - Uploads a specified file to the specified bundler using the loaded wallet
 program.command("upload").description("Uploads a specified file to the specified bundler").argument("<file>", "relative path to the file you want to upload")
     .action(async (file: string) => {
@@ -88,7 +73,6 @@ program.command("fund").description("Sends the specified amount of Winston to th
         if (isNaN(+amount)) throw new Error("Amount must be an integer");
         try {
             const bundlr = await init(options);
-            //confirmation(`Confirmation: send ${amount} Winston (${(+amount / 1000000000000).toFixed(14)}AR) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress("arweave")})?\n Y / N`)
             confirmation(`Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${(+amount / bundlr.currencyConfig.base[1])} ${bundlr.currency}) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
                 .then(async (confirmed) => {
                     if (confirmed) {
@@ -120,16 +104,6 @@ async function confirmation(message: string): Promise<boolean> {
     return answers.confirmation.toLowerCase() == "y";
 }
 
-/**
- * Converts a protocol to the proper port
- * @param protocol protocol to convert (http/https)
- * @returns the proper port (80/443)
- */
-function protocolToPort(protocol: string) {
-    if (protocol === "http") return 80
-    else if (protocol === "https") return 443
-    else throw new Error("Not a valid protocol");
-}
 
 /**
  * Initialisation routine for the CLI, mainly for initialising a Bundlr instance
@@ -151,8 +125,8 @@ async function init(opts) {
         throw new Error("Host parameter (-h) is required!");
     }
 
-    const protocol = opts.protocol ?? "http";
-    const url = `${protocol}://${opts.host}:${opts.port ?? protocolToPort(protocol)}`;
+    const url = opts.host
+
     try {
         bundler = new Bundlr(url, opts.currency.toLowerCase(), wallet);
     } catch (err) {
@@ -184,9 +158,8 @@ async function loadWallet(path: string) {
 
 const options = program.opts();
 // to debug CLI: log wanted argv, load into var, and get it to parse.
-//console.log(JSON.stringify(process.argv));
-
-//const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "balance", "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU", "-h", "dev.bundlr.network"];
-//const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "fund", "1000", "-h", "dev.bundlr.network", "-c", "matic", "-w", "29c17feb590ef5471d4f1d203e3525cbcb3073ccbdc593cd39a9cfff2415eeb0", "--no-confirmation"];
+// console.log(JSON.stringify(process.argv));
+// example ArgV
+// const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "balance", "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU", "-h", "dev.bundlr.network"];
 const Argv = process.argv;
 program.parse(Argv);

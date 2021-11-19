@@ -1,4 +1,4 @@
-import Bundlr from "./src/index";
+import Bundlr from "../src/index";
 import { readFileSync } from 'fs';
 
 async function a() {
