@@ -17,6 +17,7 @@ program
     .option("--no-confirmation", "Disable confirmations for fund and withdraw actions")
     .option("--multiplier <number>", "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.", "1.00")
 
+
 // Define commands
 program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
 
@@ -25,6 +26,7 @@ program
     .command("balance").description("Gets the specified user's balance for the current bundler").argument("<address>", "address")
     .action(async (address: string) => {
         try {
+            address = address.substring(1);
             options.address = address;
             const bundlr = await init(options);
             const balance = await bundlr.utils.getBalance(address);
@@ -162,4 +164,8 @@ const options = program.opts();
 // example ArgV
 // const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "balance", "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU", "-h", "dev.bundlr.network"];
 const Argv = process.argv;
+
+if (Argv[2] == "balance") {
+    Argv[3] = "[" + Argv[3];
+}
 program.parse(Argv);
