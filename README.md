@@ -12,14 +12,17 @@ using Yarn:
 
 To add the CLI to path (allow it to be used anywhere), use the global option whilst installing (i.e `npm install -g @bundlr-network/client`)
 
+All the below examples are for payment in Arweave. Simply change your wallet (`-w`) and currency (`-c`) flags.
 
+For more docs on native cross-chain storage (including $MATIC) and usage examples - go to [here](https://docs.bundlr.network)
 ## Create a new Bundlr instance
 
 ```ts
 import Bundlr from '@bundlr-network/client';
+
 const jwk = JSON.parse(fs.readFileSync("wallet.json").toString());
-// Create instance for the account (JWK) on the bundler (host)
-const bundler = new Bundlr("http://example.bundlr.network", jwk);
+
+const bundler = new Bundlr("http://example.bundlr.network", "arweave", jwk);
 ```
 
 ### Get the wallet's address
@@ -79,23 +82,31 @@ response.data = {
 In the event a withdrawl transaction is dropped, your Bundlr balance won't be affected
 
 # CLI usage
-```Usage: bundlr [options] [command]
+```
+Usage: bundlr [options] [command]
 
 Options:
-  -h, --host <string>    bundle hostname
-  -w, --wallet <string>  Path to the .json file containing the JWK (default: "wallet.json")
-  --protocol <string>    The protocol to use to connect to the bundler
-  --port <number>        The port used to connect to the bundler
-  --timeout <number>     the timeout (in ms) for API HTTP requests
-  --no-confirmation      Disable confirmations for fund and withdraw actions
-  --help                 display help for command
+  -h, --host <string>      Bundler hostname/URL (eg node1.bundlr.network)
+  -w, --wallet <string>    Path to keyfile or the private key itself (default:
+                           "wallet.json")
+  -c, --currency <string>  the currency to use
+  --timeout <number>       the timeout (in ms) for API HTTP requests
+  --no-confirmation        Disable confirmations for fund and withdraw actions
+  --multiplier <number>    Adjust the multiplier used for tx rewards - the
+                           higher the faster the network will process the
+                           transaction. (default: "1.00")
+  -v, --version            Gets the current package version of the bundlr
+                           client
+  --help                   display help for command
 
 Commands:
-  balance <address>      Gets the specified user's balance for the current bundler
-  withdraw <amount>      Sends a withdraw request to the bundler
-  upload <file>          Uploads a specified file to the specified bundler
-  fund <amount>          Sends the specified amount of Winston to the specified bundler
-  help [command]         display help for command
+  balance <address>        Gets the specified user's balance for the current
+                           bundler
+  withdraw <amount>        Sends a withdraw request to the bundler
+  upload <file>            Uploads a specified file to the specified bundler
+  fund <amount>            Sends the specified amount of Winston to the
+                           specified bundler
+  help [command]           display help for command
 ```
 ## Example Usage
  <b>Note:</b> to disable the confirmations for non-interactive operation, use the `--no-confirmation` flag. \
@@ -104,14 +115,14 @@ Commands:
  ### Get a user's balance
  
 ```sh
-$ bundlr balance Ry2bDGfBIvYtvDPYnf0eg_ijH4A1EDKaaEEecyjbUQ4 -h example.bundlr.network
+$ bundlr balance Ry2bDGfBIvYtvDPYnf0eg_ijH4A1EDKaaEEecyjbUQ4 -h https://example.bundlr.network -c arweave
 > Balance: 49999940705312 Winston (49.99994AR)
 ```
  
 ### Withdraw balance from the bundler
  
 ```sh
-$ bundlr withdraw 1479016 -h example.bundlr.network -w wallet.json
+$ bundlr withdraw 1479016 -h https://example.bundlr.network -w wallet.json -c arweave
 > ? Confirmation: withdraw 1479016 winston from example.bundlr.network (Ry2bDGfBIvYtvDPYnf0eg_ijH4A1EDKaaEEecyjbUQ4)?
 > Y / N y
 > Status: 200 
@@ -128,7 +139,7 @@ This also means you cannot withdraw any amount lower than the current network fe
 ### Fund a bundler
 
 ```sh
-$ bundlr fund 1479016 -h example.bundlr.network -w wallet.json
+$ bundlr fund 1479016 -h https://example.bundlr.network -w wallet.json -c arweave
 > ? Confirmation: send 1479016 Winston to dev.bundlr.network (Ry2bDGfBIvYtvDPYnf0eg_ijH4A1EDKaaEEecyjbUQ4)?
 > Y / N y
 > Funding receipt: 
@@ -139,7 +150,7 @@ $ bundlr fund 1479016 -h example.bundlr.network -w wallet.json
  ### Upload a file to the bundler
  
 ```sh
-$ bundlr upload a.txt -h example.bundlr.network
+$ bundlr upload image.png -h https://example.bundlr.network -w wallet.json -c arweave
 > Status: 200 
 > Data: {
 >    "id":"A-Vj5TdHkcgjT_V7xnO_MTLYXfwKXfRtCCivTD1fzvY",
