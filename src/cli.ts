@@ -26,7 +26,7 @@ program
     .command("balance").description("Gets the specified user's balance for the current bundler").argument("<address>", "address")
     .action(async (address: string) => {
         try {
-            address = address.substring(0);
+            address = address.substring(1);
             options.address = address;
             const bundlr = await init(options);
             const balance = await bundlr.utils.getBalance(address);
@@ -163,9 +163,11 @@ const options = program.opts();
 // console.log(JSON.stringify(process.argv));
 // example ArgV
 // const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "balance", "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU", "-h", "dev.bundlr.network"];
-const Argv = process.argv;
+const argV = process.argv;
 
-if (Argv[2] == "balance") {
-    Argv[3] = "[" + Argv[3];
+const bal = argV.indexOf("balance");
+if (bal != -1 && argV[bal + 1]) {
+    argV[bal + 1] = "[" + argV[bal + 1];
 }
-program.parse(Argv);
+
+program.parse(argV);
