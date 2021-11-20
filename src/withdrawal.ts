@@ -22,6 +22,7 @@ interface data {
  * @returns the response from the bundler
  */
 export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber): Promise<AxiosResponse> {
+    throw new Error("Withdrawals are currently disabled")
     const c = utils.currencyConfig;
     // //todo: make util functions directly return data rather than having to post-return mutate
     const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount: amount.toString(), nonce: await utils.getNonce() } as data;
