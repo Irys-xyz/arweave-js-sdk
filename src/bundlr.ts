@@ -64,7 +64,8 @@ export default class Bundlr {
         const parsed = new URL(url);
         this.api = new Api({ ...parsed, host: parsed.hostname }); //borrow their nice Axios API :p
         if (currency === "arweave") {
-            arweave = new Arweave(this.api.getConfig());
+            //arweave = new Arweave(this.api.getConfig());
+            arweave = Arweave.init({ host: "arweave.net", protocol: "https", port: 443 });
         }
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         currencies = (require("./currencies/index")).currencies; //delay so that keys object can be properly constructed

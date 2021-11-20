@@ -11,7 +11,7 @@ export default class Fund {
         if (!Number.isInteger(amount)) { throw new Error("must use an integer for funding amount") }
         const c = this.utils.currencyConfig;
         const to = await this.utils.getBundlerAddress(this.utils.currency);
-        const fee = ((await c.getFee(amount, to)).multipliedBy(multiplier)).toString();
+        const fee = ((await c.getFee(amount, to)).multipliedBy(multiplier)).toFixed(0).toString();
         const tx = await c.createTx({ amount, fee: fee.toString(), to }, c.account.key)
         await c.sendTx(tx.tx);
         if (this.utils.currency == "matic") {
