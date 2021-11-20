@@ -5,13 +5,15 @@ import { readFileSync, statSync } from "fs";
 import Bundlr from ".";
 import inquirer from "inquirer";
 import { execSync } from "child_process"
+import BigNumber from "bignumber.js";
+
 
 const program = new Command();
 
 // Define the CLI flags for the program
 program
-    .option("-h, --host <string>", "Bundler hostname/URL (eg node1.bundlr.network)")
-    .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "wallet.json")
+    .option("-h, --host <string>", "Bundler hostname/URL (eg http://node1.bundlr.network)")
+    .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "default")
     .option("-c, --currency <string>", "the currency to use")
     .option("--timeout <number>", "the timeout (in ms) for API HTTP requests")
     .option("--no-confirmation", "Disable confirmations for fund and withdraw actions")
@@ -91,6 +93,19 @@ program.command("fund").description("Sends the specified amount of Winston to th
         }
     })
 
+program.command("price").description("Check how much of a specific currency is required for an upload of <amount> bytes").argument("<bytes>", "The number of bytes to get the price for")
+    .action(async (bytes: string) => {
+        if (isNaN(+bytes)) throw new Error("Amount must be an integer");
+        try {
+            const bundlr = await init(options);
+            await bundlr.utils.getBundlerAddress(options.currency) //will throw if the bundler doesn't support the currency
+            const cost = (await bundlr.api.get(`/price/${options.currency}/${bytes}`)).data
+            console.log(`Price for ${bytes} bytes in currency ${options.currency} is ${new BigNumber(cost).toFixed(0)} ${bundlr.currencyConfig.base[0]}`);
+        } catch (err) {
+            console.error(`Error whilst getting price: \n${err} `);
+            return;
+        }
+    })
 /**
  * Interactive CLI prompt allowing a user to confirm an action
  * @param message the message specifying the action they are asked to confirm
@@ -115,10 +130,7 @@ async function confirmation(message: string): Promise<boolean> {
 async function init(opts) {
     let wallet;
     let bundler;
-    if (!opts.address) {
-        wallet = await loadWallet(opts.wallet);
 
-    }
     if (!opts.currency) {
         throw new Error("currency flag (-c) is required!");
     }
@@ -127,14 +139,16 @@ async function init(opts) {
         throw new Error("Host parameter (-h) is required!");
     }
 
-    const url = opts.host
+    if (opts.wallet === "default" && opts.currency == "arweave") {
+        wallet = await loadWallet("./wallet.json");
+    }
 
     try {
-        bundler = new Bundlr(url, opts.currency.toLowerCase(), wallet);
+        bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet);
     } catch (err) {
         throw new Error(`Error initialising Bundlr client - ${JSON.stringify(err)}`);
     }
-    if (!opts.address) {
+    if (bundler.wallet != "default") {
         console.log(`Loaded address: ${bundler.address}`);
     }
 
@@ -160,14 +174,16 @@ async function loadWallet(path: string) {
 
 const options = program.opts();
 // to debug CLI: log wanted argv, load into var, and get it to parse.
-// console.log(JSON.stringify(process.argv));
-// example ArgV
-// const Argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "balance", "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU", "-h", "dev.bundlr.network"];
-const argV = process.argv;
+//console.log(JSON.stringify(process.argv));
+//process.exit(1);
 
-const bal = argV.indexOf("balance");
-if (bal != -1 && argV[bal + 1]) {
-    argV[bal + 1] = "[" + argV[bal + 1];
+// replace this with dumped array.
+const argv = process.argv;
+
+//balance padding hack
+const bal = argv.indexOf("balance");
+if (bal != -1 && argv[bal + 1]) {
+    argv[bal + 1] = "[" + argv[bal + 1];
 }
 
-program.parse(argV);
+program.parse(argv);

@@ -75,7 +75,6 @@ export default class Bundlr {
         this.currencyConfig = currencies[currency];
 
         if (!(wallet === "default")) {
-            //this.address = this.currencyConfig.ownerToAddress(Buffer.from(this.currencyConfig.getPublicKey(), "hex"));
             this.address = this.currencyConfig.ownerToAddress(this.currencyConfig.getPublicKey());
         }
         this.currencyConfig.account.address = this.address;

@@ -91,7 +91,7 @@ export const currencies: CurrencyConfig = {
             return Arweave.crypto.verify(pub, data, sig);
         },
         getCurrentHeight: async () => arweave.network.getInfo().then(r => new BigNumber(r.height)),
-        getFee: async (_amount, _to) => { return new BigNumber(parseInt(await arweave.transactions.getPrice(0))) },
+        getFee: async (amount, to) => { return new BigNumber(parseInt(await arweave.transactions.getPrice(amount, to))) },
         sendTx: async (tx) => {
             return await arweave.transactions.post(tx);
         },
@@ -136,25 +136,3 @@ export const currencies: CurrencyConfig = {
 export async function getRedstonePrice(currency: string): Promise<number> {
     return (await redstone.getPrice(currency)).value;
 }
-
-
-/**
- * Returns the ratio between currency2 base units and currency1 base units based on their USD price.
- * @param currency1 - the currency you want to compare (relative)
- * @param currency2  - the currency you are basing the comparison on (base)
- */
-export async function getConversionRatio(currency1: string, currency2: string): Promise<BigNumber> {
-    const c1 = currencies[currency1];
-    const c2 = currencies[currency2];
-    // get the bup (base unit price) in USD
-    const c1bup = new BigNumber(await c1.price()).div(c1.base[1]); // 1 base unit
-    const c2bup = new BigNumber(await c2.price()).div(c2.base[1]);
-    // get the ratio of c1 to c2
-    const ratio = c1bup.div(c2bup);
-    console.debug(`1 ${c1.base[0]} is ${ratio.toString()} ${c2.base[0]} ($${c1bup.toString()})`);
-    return ratio;
-}
-
-
-
-
