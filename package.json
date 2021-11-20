@@ -17,8 +17,7 @@
     "bundlr": "build/src/cli.js"
   },
   "dependencies": {
-    "@bundlr-network/client": "^0.0.10",
-    "arbundles": "git://github.com/Bundlr-Network/arbundles#feature/crosschain",
+    "arbundles": "^0.3.2",
     "arweave": "^1.10.17",
     "base64url": "^3.0.1",
     "bignumber.js": "^9.0.1",
