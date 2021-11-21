@@ -4,7 +4,6 @@ import Utils from "./utils";
 import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
-import { URL } from "url";
 import { AxiosResponse } from "axios";
 import Arweave from "arweave";
 

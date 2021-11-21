@@ -5,6 +5,7 @@ async function a() {
     try {
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
         let bundler = new Bundlr("http://dev1.bundlr.network", "arweave", JWK);
+        //let bundler = new Bundlr("http://node1.bundlr.network", "matic");
         console.log(bundler.address);
 
         console.log(`balance: ${await bundler.getLoadedBalance()}`);
