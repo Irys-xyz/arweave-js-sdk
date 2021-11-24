@@ -31,15 +31,14 @@ export async function solanaVerify(pub, data, sig) {
 
 // assuming "owner" is the pubkey
 export function solanaOwnerToAddress(owner: Uint8Array): string {
-    // const key = web3.Keypair.fromSecretKey(owner);
-    // return key.publicKey.toBase58();
-    return owner.toString();
+    return bs58.encode(owner);
 }
 
 export function solanaGetPublicKey(): Buffer {
     // derive from privkey to ensure it's correct.
     const key = web3.Keypair.fromSecretKey(bs58.decode(currencies["solana"].account.key));
-    return Buffer.from(key.publicKey.toBase58())
+    //return Buffer.from(key.publicKey.toBase58())
+    return key.publicKey.toBuffer()
 }
 
 export async function solanaGetCurrentHeight(): Promise<BigNumber> {
@@ -107,6 +106,6 @@ export async function solanaGetTx(txid: string): Promise<Tx> {
 
 export async function solanaGetSigner() {
     const keyp = getKeyPair();
-    const keypb = Buffer.concat([keyp.publicKey.toBuffer(), keyp.secretKey])
-    return new SolanaSigner(keypb.toString());
+    const keypb = bs58.encode(Buffer.concat([keyp.secretKey, keyp.publicKey.toBuffer()]))
+    return new SolanaSigner(keypb);
 }

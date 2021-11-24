@@ -187,8 +187,7 @@ const options = program.opts();
 // process.exit(1);
 
 // replace this with dumped array.
-// const argv = process.argv;
-const argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "fund", "1000", "-h", "https://dev1.bundlr.network", "-c", "solana", "-w", "NhA1egsagc9mAxGnzsjZ64eCiDdEeN18SZpYkvEBbLbsGzDyQbGFHbJK8t7ip1EcQNvuHn7RRiykKu1aPmWDWDs", "--no-confirmation"];
+const argv = process.argv;
 //balance padding hack
 // this is beacuse addresses/wallets can start with a "-" which makes commander think it's a flag
 // so we pad it with a char that is not part of the B64 char set to prevent wrongful detection

@@ -5,7 +5,7 @@ import Arweave from "arweave";
 import { FileDataItem } from "arbundles/file";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-// import crypto from "crypto"
+import crypto from "crypto"
 
 import { arweave, keys } from "../bundlr";
 
@@ -13,7 +13,7 @@ import { arweave, keys } from "../bundlr";
 import { maticCreateTx, maticGetFee, maticGetHeight, maticGetPublicKey, maticGetSigner, maticGetTx, maticOwnerToAddress, maticSendTx, maticSign, maticVerify } from "./matic";
 // import { bufferTob64Url, b64UrlToBuffer } from "arweave/node/lib/utils";
 import { ArweaveSigner, Signer } from "arbundles/build/signing";
-import { solanaCreateTx, solanaGetCurrentHeight, solanaGetFee, solanaGetPublicKey, solanaGetTx, solanaOwnerToAddress, solanaSendTx, solanaSign, solanaVerify } from "./solana";
+import { solanaCreateTx, solanaGetCurrentHeight, solanaGetFee, solanaGetPublicKey, solanaGetSigner, solanaGetTx, solanaOwnerToAddress, solanaSendTx, solanaSign, solanaVerify } from "./solana";
 
 export interface Tx {
     from: string;
@@ -30,7 +30,6 @@ export interface Currency {
     base: [string, number];
     account: { key: any, address: string };
     provider?: string;
-
 
     getTx(txId: string): Promise<Tx>;
 
@@ -67,7 +66,11 @@ export const currencies: CurrencyConfig = {
         account: { key: keys.arweave.key, address: keys.arweave.address },
         getTx: null,
         ownerToAddress: (owner) => {
-            return arweave.wallets.ownerToAddress(Buffer.isBuffer(owner) ? base64url(owner) : owner);
+            return Arweave.utils.bufferTob64Url(crypto
+                .createHash("sha256")
+                .update((Arweave.utils.b64UrlToBuffer((Buffer.isBuffer(owner) ? base64url(owner) : owner))))
+                .digest()
+            );
         },
         getId: async (item) => {
             return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
@@ -125,7 +128,7 @@ export const currencies: CurrencyConfig = {
         ownerToAddress: solanaOwnerToAddress,
         price: () => getRedstonePrice("SOL"),
         sign: solanaSign,
-        getSigner: undefined,
+        getSigner: solanaGetSigner,
         verify: solanaVerify,
         getCurrentHeight: solanaGetCurrentHeight,
         getFee: solanaGetFee,
