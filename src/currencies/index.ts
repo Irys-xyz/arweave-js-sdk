@@ -5,24 +5,15 @@ import Arweave from "arweave";
 import { FileDataItem } from "arbundles/file";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import crypto from "crypto"
+// import crypto from "crypto"
 
 import { arweave, keys } from "../bundlr";
 
 
-import {
-    createMaticTx,
-    getMaticFee,
-    getPolygonTx,
-    getPublicKey,
-    polygonGetHeight,
-    polygonGetSigner,
-    polygonOwnerToAddress,
-    polygonSign,
-    polygonVerify, sendMaticTx,
-} from "./matic";
-import { bufferTob64Url, b64UrlToBuffer } from "arweave/node/lib/utils";
+import { maticCreateTx, maticGetFee, maticGetHeight, maticGetPublicKey, maticGetSigner, maticGetTx, maticOwnerToAddress, maticSendTx, maticSign, maticVerify } from "./matic";
+// import { bufferTob64Url, b64UrlToBuffer } from "arweave/node/lib/utils";
 import { ArweaveSigner, Signer } from "arbundles/build/signing";
+import { solanaCreateTx, solanaGetCurrentHeight, solanaGetFee, solanaGetPublicKey, solanaGetTx, solanaOwnerToAddress, solanaSendTx, solanaSign, solanaVerify } from "./solana";
 
 export interface Tx {
     from: string;
@@ -39,6 +30,7 @@ export interface Currency {
     base: [string, number];
     account: { key: any, address: string };
     provider?: string;
+
 
     getTx(txId: string): Promise<Tx>;
 
@@ -60,7 +52,7 @@ export interface Currency {
 
     sendTx(data: any): Promise<any>; //TODO: make signature(s) more specific
 
-    createTx(data: CreateTxData, key: any): Promise<{ txId: string, tx: any }>;
+    createTx(amount: BigNumber | number, to: string, fee?: string): Promise<{ txId: string, tx: any }>;
 
     getPublicKey(): string | Buffer;
 }
@@ -75,7 +67,7 @@ export const currencies: CurrencyConfig = {
         account: { key: keys.arweave.key, address: keys.arweave.address },
         getTx: null,
         ownerToAddress: (owner) => {
-            return bufferTob64Url(crypto.createHash("sha256").update(b64UrlToBuffer(Buffer.isBuffer(owner) ? base64url(owner) : owner)).digest())
+            return arweave.wallets.ownerToAddress(Buffer.isBuffer(owner) ? base64url(owner) : owner);
         },
         getId: async (item) => {
             return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
@@ -91,45 +83,55 @@ export const currencies: CurrencyConfig = {
             return Arweave.crypto.verify(pub, data, sig);
         },
         getCurrentHeight: async () => arweave.network.getInfo().then(r => new BigNumber(r.height)),
-        getFee: async (amount, to) => { return new BigNumber(parseInt(await arweave.transactions.getPrice(amount, to))) },
+        getFee: async (amount, to) => { return new BigNumber(parseInt(await arweave.transactions.getPrice(amount as number, to))) },
         sendTx: async (tx) => {
-            return await arweave.transactions.post(tx);
+            return await arweave.transactions.post(tx)
         },
-        createTx: async ({ amount, fee, to }, key) => {
+        createTx: async (amount, fee, to) => {
+            const key = currencies["arweave"].account.key;
             const tx = await arweave.createTransaction({ quantity: amount.toString(), reward: fee, target: to }, key)
             await arweave.transactions.sign(tx, key)
             return { txId: tx.id, tx };
         },
         getPublicKey: () => { return currencies["arweave"].account.key.n },
-
     } : undefined,
-    // "solana": {
-    //     base: ["lamport", 1000000000],
-    //     account: { address: "aaaaa" },
-    //     getTx: async () => { return 0 },
-    //     ownerToAddress: () => { return 0 },
-    //     price: getRedstonePrice("SOL"),
-    //     sign: async (k, d) => { return [k, d] },
-    //     verify: async (k, d, s) => { return [k, d, s] }
-    // },
     "matic": keys.matic ? {
         base: ["wei", 1e18],
         account: { key: keys.matic.key, address: keys.matic.address },
         provider: "https://polygon-rpc.com",
-        getTx: getPolygonTx,
+        getTx: maticGetTx,
         getId: async (item) => {
             return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
         },
-        ownerToAddress: polygonOwnerToAddress,
+        ownerToAddress: maticOwnerToAddress,
         price: () => getRedstonePrice("MATIC"),
-        sign: polygonSign,
-        getSigner: polygonGetSigner,
-        verify: polygonVerify,
-        getCurrentHeight: polygonGetHeight,
-        getFee: getMaticFee,
-        sendTx: sendMaticTx,
-        createTx: createMaticTx,
-        getPublicKey: getPublicKey
+        sign: maticSign,
+        getSigner: maticGetSigner,
+        verify: maticVerify,
+        getCurrentHeight: maticGetHeight,
+        getFee: maticGetFee,
+        sendTx: maticSendTx,
+        createTx: maticCreateTx,
+        getPublicKey: maticGetPublicKey
+    } : undefined,
+    "solana": keys.solana ? {
+        base: ["lamports", 1_000_000_000], // 1e9
+        account: { key: keys.solana.key, address: keys.solana.address },
+        provider: "devnet",
+        getTx: solanaGetTx,
+        getId: async (item) => {
+            return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
+        },
+        ownerToAddress: solanaOwnerToAddress,
+        price: () => getRedstonePrice("SOL"),
+        sign: solanaSign,
+        getSigner: undefined,
+        verify: solanaVerify,
+        getCurrentHeight: solanaGetCurrentHeight,
+        getFee: solanaGetFee,
+        sendTx: solanaSendTx,
+        createTx: solanaCreateTx,
+        getPublicKey: solanaGetPublicKey,
     } : undefined,
 };
 

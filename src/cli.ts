@@ -5,7 +5,6 @@ import { readFileSync, statSync } from "fs";
 import Bundlr from ".";
 import inquirer from "inquirer";
 import { execSync } from "child_process"
-import BigNumber from "bignumber.js";
 
 
 const program = new Command();
@@ -100,7 +99,8 @@ program.command("price").description("Check how much of a specific currency is r
         try {
             const bundlr = await init(options, "price");
             await bundlr.utils.getBundlerAddress(options.currency) //will throw if the bundler doesn't support the currency
-            const cost = new BigNumber((await bundlr.api.get(`/price/${options.currency}/${bytes}`)).data)
+            //const cost = new BigNumber((await bundlr.api.get(`/price/${options.currency}/${bytes}`)).data)
+            const cost = await bundlr.utils.getStorageCost(options.currency, bytes);
             console.log(`Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${cost.dividedBy(bundlr.currencyConfig.base[1])})`);
         } catch (err) {
             console.error(`Error whilst getting price: \n${err} `);
@@ -184,12 +184,12 @@ async function loadWallet(path: string) {
 const options = program.opts();
 
 // to debug CLI: log wanted argv, load into var, and get it to parse.
-//console.log(JSON.stringify(process.argv));
-//process.exit(1);
+console.log(JSON.stringify(process.argv));
+// process.exit(1);
 
 // replace this with dumped array.
-const argv = process.argv;
-
+// const argv = process.argv;
+const argv = ["/usr/local/bin/node", "/usr/local/share/npm-global/bin/bundlr", "fund", "1000", "-h", "https://dev1.bundlr.network", "-c", "solana", "-w", "NhA1egsagc9mAxGnzsjZ64eCiDdEeN18SZpYkvEBbLbsGzDyQbGFHbJK8t7ip1EcQNvuHn7RRiykKu1aPmWDWDs", "--no-confirmation"];
 //balance padding hack
 // this is beacuse addresses/wallets can start with a "-" which makes commander think it's a flag
 // so we pad it with a char that is not part of the B64 char set to prevent wrongful detection

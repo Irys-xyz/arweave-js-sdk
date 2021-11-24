@@ -18,11 +18,9 @@ export default class Fund {
             baseFee = await c.getFee(amount, to)
         }
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
-        const tx = await c.createTx({ amount, fee: fee.toString(), to }, c.account.key)
+        const tx = await c.createTx(amount, to, fee.toString())
         await c.sendTx(tx.tx);
-        if (this.utils.currency == "matic") {
-            await this.utils.api.post("/account/balance/matic", { tx_id: tx.txId });
-        }
+        await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
         return { reward: fee, target: to, quantity: amount, id: tx.txId };
     }
 }
