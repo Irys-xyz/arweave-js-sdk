@@ -19,7 +19,6 @@ program
     .option("--no-confirmation", "Disable confirmations for fund and withdraw actions")
     .option("--multiplier <number>", "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.", "1.00")
 
-
 // Define commands
 // uses NPM view to query the package's version.
 program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
@@ -148,14 +147,14 @@ async function init(opts, operation) {
                 throw new Error("Wallet (-w) required for this operation!")
             }
         } else {
-            wallet = opts.wallet.substring(1);
+            wallet = await loadWallet(opts.wallet.substring(1));
         }
     }
 
     try {
         bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet);
     } catch (err) {
-        throw new Error(`Error initialising Bundlr client - ${err}`);
+        throw new Error(`Error initialising Bundlr client - ${err.stack}`);
     }
     if (bundler.wallet != "default") {
         console.log(`Loaded address: ${bundler.address}`);
@@ -184,8 +183,8 @@ async function loadWallet(path: string) {
 const options = program.opts();
 
 // to debug CLI: log wanted argv, load into var, and get it to parse.
-//console.log(JSON.stringify(process.argv));
-//process.exit(1);
+// console.log(JSON.stringify(process.argv));
+// process.exit(1);
 
 // replace this with dumped array.
 const argv = process.argv;

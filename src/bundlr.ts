@@ -39,8 +39,8 @@ export interface Config {
 export default class Bundlr {
     public api: Api;
     public utils: Utils;
-    private uploader: Uploader;
-    private funder: Fund;
+    public uploader: Uploader;
+    public funder: Fund;
     public address;
     public currency;
     public wallet;
