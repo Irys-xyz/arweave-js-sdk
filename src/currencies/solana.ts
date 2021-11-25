@@ -14,7 +14,11 @@ async function createConnection() {
 }
 
 function getKeyPair(): web3.Keypair {
-    return web3.Keypair.fromSecretKey(bs58.decode(currencies["solana"].account.key));
+    let key = currencies["solana"].account.key
+    if (typeof key !== "string") {
+        key = bs58.encode(Buffer.from(key))
+    }
+    return web3.Keypair.fromSecretKey(bs58.decode(key));
 }
 
 // where data is tx.serialiseMessage() 
@@ -36,7 +40,8 @@ export function solanaOwnerToAddress(owner: Uint8Array): string {
 
 export function solanaGetPublicKey(): Buffer {
     // derive from privkey to ensure it's correct.
-    const key = web3.Keypair.fromSecretKey(bs58.decode(currencies["solana"].account.key));
+    const key = getKeyPair()
+    //const key = web3.Keypair.fromSecretKey(bs58.decode(currencies["solana"].account.key));
     //return Buffer.from(key.publicKey.toBase58())
     return key.publicKey.toBuffer()
 }
