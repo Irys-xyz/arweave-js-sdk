@@ -23,7 +23,7 @@ export default class Utils {
      */
     private static checkAndThrow(res: AxiosResponse) {
         if (res.status != 200) {
-            throw new Error(`Error: ${res.status} ${JSON.stringify(res.data)}`);
+            throw new Error(`HTTP Error: ${res.status} ${JSON.stringify(res.data)}`);
         }
         return;
     }
@@ -54,7 +54,9 @@ export default class Utils {
      * @returns the bundler's address
      */
     public async getBundlerAddress(currency: string): Promise<string> {
-        const res = await this.api.get("/info");
+
+        const res = await this.api.get("/info")
+        Utils.checkAndThrow(res);
         const address = res.data.addresses[currency]
         if (!address) {
             throw new Error(`Specified bundler does not support currency ${currency}`);
