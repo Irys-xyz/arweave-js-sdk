@@ -38,7 +38,7 @@ export interface Currency {
 
     sign(data: Uint8Array): Promise<Uint8Array>;
 
-    getSigner(): Promise<Signer>;
+    getSigner(): Signer;
 
     verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean>;
 

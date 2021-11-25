@@ -109,7 +109,7 @@ export async function solanaGetTx(txid: string): Promise<Tx> {
     return tx;
 }
 
-export async function solanaGetSigner() {
+export function solanaGetSigner() {
     const keyp = getKeyPair();
     const keypb = bs58.encode(Buffer.concat([keyp.secretKey, keyp.publicKey.toBuffer()]))
     return new SolanaSigner(keypb);

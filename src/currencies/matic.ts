@@ -9,7 +9,7 @@ export async function maticSign(message: Uint8Array): Promise<Uint8Array> {
     const signer = new PolygonSigner(currencies["matic"].account.key);
     return signer.sign(message);
 }
-export async function maticGetSigner() {
+export function maticGetSigner() {
     return new PolygonSigner(currencies["matic"].account.key);
 }
 
@@ -72,7 +72,7 @@ export async function maticCreateTx(amount, to, _fee?): Promise<any> {
     if (BigNumber.isBigNumber(amount)) {
         bigNumberAmount = amount
     } else {
-        bigNumberAmount =  new BigNumber(amount)
+        bigNumberAmount = new BigNumber(amount)
     }
     const _amount = "0x" + bigNumberAmount.toString(16);
 

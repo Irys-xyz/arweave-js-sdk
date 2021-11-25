@@ -44,7 +44,7 @@ export async function arweaveSign(data) {
     return Arweave.crypto.sign(currencies["arweave"].account.key, data);
 }
 
-export async function arweaveGetSigner() {
+export function arweaveGetSigner() {
     return new ArweaveSigner(currencies["arweave"].account.key);
 }
 
