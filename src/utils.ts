@@ -21,8 +21,8 @@ export default class Utils {
      * @param res an axios response
      * @returns nothing if the status code is 200
      */
-    private static checkAndThrow(res: AxiosResponse) {
-        if (res.status != 200) {
+    public static checkAndThrow(res: AxiosResponse) {
+        if (res?.status && res.status != 200) {
             throw new Error(`HTTP Error: ${res.status} ${JSON.stringify(res.data)}`);
         }
         return;

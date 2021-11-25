@@ -183,8 +183,8 @@ async function loadWallet(path: string) {
 const options = program.opts();
 
 // to debug CLI: log wanted argv, load into var, and get it to parse.
-// console.log(JSON.stringify(process.argv));
-// process.exit(1);
+//console.log(JSON.stringify(process.argv));
+//process.exit(1);
 
 // replace this with dumped array.
 const argv = process.argv;

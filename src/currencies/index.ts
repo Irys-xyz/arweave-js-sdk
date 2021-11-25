@@ -5,15 +5,12 @@ import Arweave from "arweave";
 import { FileDataItem } from "arbundles/file";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import crypto from "crypto"
 
-import { arweave, keys } from "../bundlr";
-
-
+import { keys } from "../bundlr";
 import { maticCreateTx, maticGetFee, maticGetHeight, maticGetPublicKey, maticGetSigner, maticGetTx, maticOwnerToAddress, maticSendTx, maticSign, maticVerify } from "./matic";
-// import { bufferTob64Url, b64UrlToBuffer } from "arweave/node/lib/utils";
-import { ArweaveSigner, Signer } from "arbundles/build/signing";
+import { Signer } from "arbundles/build/signing";
 import { solanaCreateTx, solanaGetCurrentHeight, solanaGetFee, solanaGetPublicKey, solanaGetSigner, solanaGetTx, solanaOwnerToAddress, solanaSendTx, solanaSign, solanaVerify } from "./solana";
+import { arweaveCreateTx, arweaveGetCurrentHeight, arweaveGetFee, arweaveGetId, arweaveGetPublicKey, arweaveGetSigner, arweaveGetTx, arweaveOwnerToAddress, arweaveSendTx, arweaveSign, arweaveVerify } from "./arweave";
 
 export interface Tx {
     from: string;
@@ -64,39 +61,18 @@ export const currencies: CurrencyConfig = {
     "arweave": keys.arweave ? {
         base: ["winston", 1e12],
         account: { key: keys.arweave.key, address: keys.arweave.address },
-        getTx: null,
-        ownerToAddress: (owner) => {
-            return Arweave.utils.bufferTob64Url(crypto
-                .createHash("sha256")
-                .update((Arweave.utils.b64UrlToBuffer((Buffer.isBuffer(owner) ? base64url(owner) : owner))))
-                .digest()
-            );
-        },
-        getId: async (item) => {
-            return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
-        },
+        getTx: arweaveGetTx,
+        ownerToAddress: arweaveOwnerToAddress,
+        getId: arweaveGetId,
         price: () => getRedstonePrice("AR"),
-        sign: async (data) => {
-            return Arweave.crypto.sign(currencies["arweave"].account.key, data);
-        },
-        getSigner: async () => {
-            return new ArweaveSigner(currencies["arweave"].account.key);
-        },
-        verify: async (pub, data, sig) => {
-            return Arweave.crypto.verify(pub, data, sig);
-        },
-        getCurrentHeight: async () => arweave.network.getInfo().then(r => new BigNumber(r.height)),
-        getFee: async (amount, to) => { return new BigNumber(parseInt(await arweave.transactions.getPrice(amount as number, to))) },
-        sendTx: async (tx) => {
-            return await arweave.transactions.post(tx)
-        },
-        createTx: async (amount, fee, to) => {
-            const key = currencies["arweave"].account.key;
-            const tx = await arweave.createTransaction({ quantity: amount.toString(), reward: fee, target: to }, key)
-            await arweave.transactions.sign(tx, key)
-            return { txId: tx.id, tx };
-        },
-        getPublicKey: () => { return currencies["arweave"].account.key.n },
+        sign: arweaveSign,
+        getSigner: arweaveGetSigner,
+        verify: arweaveVerify,
+        getCurrentHeight: arweaveGetCurrentHeight,
+        getFee: arweaveGetFee,
+        sendTx: arweaveSendTx,
+        createTx: arweaveCreateTx,
+        getPublicKey: arweaveGetPublicKey
     } : undefined,
     "matic": keys.matic ? {
         base: ["wei", 1e18],
