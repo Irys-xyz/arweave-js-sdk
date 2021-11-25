@@ -64,13 +64,6 @@ export default class Utils {
         return address;
     }
 
-    public async createTx(amount: BigNumber | number, to: string, fee?: string) {
-        //return this.currencyConfig.createTx(amount,to,fee)
-    }
-    public async signTx(data: Uint8Array): Promise<Uint8Array> {
-        return this.currencyConfig.sign(data)
-    }
-
     public async getStorageCost(currency: string, bytes: number): Promise<BigNumber> {
         const res = await this.api.get(`/price/${currency}/${bytes}`)
         Utils.checkAndThrow(res);
