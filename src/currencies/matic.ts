@@ -1,27 +1,27 @@
 import PolygonSigner from "arbundles/build/signing/chains/PolygonSigner";
-import { CreateTxData, currencies, Tx } from "./index";
+import { currencies, Tx } from "./index";
 import keccak256 from "keccak256";
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet } from "ethers";
 import BigNumber from "bignumber.js";
 
-export async function polygonSign(message: Uint8Array): Promise<Uint8Array> {
+export async function maticSign(message: Uint8Array): Promise<Uint8Array> {
     const signer = new PolygonSigner(currencies["matic"].account.key);
     return signer.sign(message);
 }
-export async function polygonGetSigner() {
+export async function maticGetSigner() {
     return new PolygonSigner(currencies["matic"].account.key);
 }
 
-export async function polygonVerify(pub, data, sig): Promise<boolean> {
+export async function maticVerify(pub, data, sig): Promise<boolean> {
     return PolygonSigner.verify(pub, data, sig);
 }
 
-export function polygonOwnerToAddress(owner: Uint8Array): string {
+export function maticOwnerToAddress(owner: Uint8Array): string {
     return "0x" + keccak256(owner.slice(1)).slice(-20).toString("hex");
 }
 
-export async function getPolygonTx(txId: string): Promise<Tx> {
+export async function maticGetTx(txId: string): Promise<Tx> {
     const provider = new ethers.providers.JsonRpcProvider(currencies["matic"].provider);
 
     const response = await provider.getTransaction(txId);
@@ -39,7 +39,7 @@ export async function getPolygonTx(txId: string): Promise<Tx> {
     };
 }
 
-export async function polygonGetHeight(): Promise<BigNumber> {
+export async function maticGetHeight(): Promise<BigNumber> {
     const provider = new ethers.providers.JsonRpcProvider(currencies["matic"].provider);
 
     const response = await provider.send("eth_blockNumber", []);
@@ -47,7 +47,7 @@ export async function polygonGetHeight(): Promise<BigNumber> {
     return new BigNumber(response, 16);
 }
 
-export async function getMaticFee(amount: BigNumber, to: string): Promise<BigNumber> {
+export async function maticGetFee(amount: BigNumber, to: string): Promise<BigNumber> {
     const provider = new ethers.providers.JsonRpcProvider(currencies["matic"].provider);
 
     await provider._ready();
@@ -63,9 +63,9 @@ export async function getMaticFee(amount: BigNumber, to: string): Promise<BigNum
     return new BigNumber(estimatedGas.mul(gasPrice).toString());
 }
 
-export async function createMaticTx({ amount, to }: CreateTxData, key: Buffer): Promise<any> {
+export async function maticCreateTx(amount, to, _fee?): Promise<any> {
     const provider = new ethers.providers.JsonRpcProvider(currencies["matic"].provider);
-
+    const key = currencies["matic"].account.key;
     await provider._ready();
     const wallet = new Wallet(key, provider);
     let bigNumberAmount: BigNumber;
@@ -92,7 +92,7 @@ export async function createMaticTx({ amount, to }: CreateTxData, key: Buffer): 
 
 }
 
-export async function sendMaticTx(tx: string): Promise<void> {
+export async function maticSendTx(tx: string): Promise<void> {
     try {
         const provider = new ethers.providers.JsonRpcProvider(currencies["matic"].provider);
         await provider._ready();
@@ -103,7 +103,7 @@ export async function sendMaticTx(tx: string): Promise<void> {
         throw e;
     }
 }
-export function getPublicKey(): Buffer {
+
+export function maticGetPublicKey(): Buffer {
     return Buffer.from(publicKeyCreate(Buffer.from(currencies["matic"].account.key, "hex"), false));
-    //return Buffer.from((publicKeyCreate(Buffer.from(currencies["matic"].account.key, "hex")))).toString("hex");
 }

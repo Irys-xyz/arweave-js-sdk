@@ -9,4 +9,5 @@ test.ts
 yarn.lock
 yarn-error.log
 .idea
+solwallet.json
 a.txt

@@ -2,7 +2,7 @@ import Api from "arweave/node/lib/api";
 import { JWKInterface } from "arweave/node/lib/wallet";
 import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
-import { CreateTxData, Currency } from "./currencies";
+import { Currency } from "./currencies";
 
 export default class Utils {
     public api: Api;
@@ -21,9 +21,9 @@ export default class Utils {
      * @param res an axios response
      * @returns nothing if the status code is 200
      */
-    private static checkAndThrow(res: AxiosResponse) {
-        if (res.status != 200) {
-            throw new Error(`Error: ${res.status} ${JSON.stringify(res.data)}`);
+    public static checkAndThrow(res: AxiosResponse) {
+        if (res?.status && res.status != 200) {
+            throw new Error(`HTTP Error: ${res.status} ${JSON.stringify(res.data)}`);
         }
         return;
     }
@@ -54,7 +54,9 @@ export default class Utils {
      * @returns the bundler's address
      */
     public async getBundlerAddress(currency: string): Promise<string> {
-        const res = await this.api.get("/info");
+
+        const res = await this.api.get("/info")
+        Utils.checkAndThrow(res);
         const address = res.data.addresses[currency]
         if (!address) {
             throw new Error(`Specified bundler does not support currency ${currency}`);
@@ -67,5 +69,11 @@ export default class Utils {
     }
     public async signTx(data: Uint8Array): Promise<Uint8Array> {
         return this.currencyConfig.sign(data)
+    }
+
+    public async getStorageCost(currency: string, bytes: number): Promise<BigNumber> {
+        const res = await this.api.get(`/price/${currency}/${bytes}`)
+        Utils.checkAndThrow(res);
+        return new BigNumber((res).data);
     }
 }
