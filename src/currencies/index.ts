@@ -96,7 +96,7 @@ export const currencies: CurrencyConfig = {
     "solana": keys.solana ? {
         base: ["lamports", 1_000_000_000], // 1e9
         account: { key: keys.solana.key, address: keys.solana.address },
-        provider: "devnet",
+        provider: "mainnet-beta",
         getTx: solanaGetTx,
         getId: async (item) => {
             return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
