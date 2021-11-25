@@ -1,7 +1,8 @@
 import Api from "arweave/node/lib/api";
 import { JWKInterface } from "arweave/node/lib/wallet";
 import { AxiosResponse } from "axios";
-import { Currency } from "./currencies";
+import BigNumber from "bignumber.js";
+import { CreateTxData, Currency } from "./currencies";
 
 export default class Utils {
     public api: Api;
@@ -59,5 +60,12 @@ export default class Utils {
             throw new Error(`Specified bundler does not support currency ${currency}`);
         }
         return address;
+    }
+
+    public async createTx(amount: BigNumber | number, to: string, fee?: string) {
+        //return this.currencyConfig.createTx(amount,to,fee)
+    }
+    public async signTx(data: Uint8Array): Promise<Uint8Array> {
+        return this.currencyConfig.sign(data)
     }
 }
