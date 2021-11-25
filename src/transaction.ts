@@ -9,7 +9,7 @@ export default class BundlrTransaction {
 
     constructor(data: string | Uint8Array, bundlr: Bundlr, opts?: DataItemCreateOptions) {
         this.bundlr = bundlr;
-        this.signer = this.bundlr.currencyConfig.getSigner() //change this to sync.
+        this.signer = this.bundlr.currencyConfig.getSigner()
         this.dataItem = arbundles.createData(data, this.signer, opts)
     }
 
@@ -19,6 +19,5 @@ export default class BundlrTransaction {
     public async upload() {
         this.bundlr.currencyConfig.sendTx(this.dataItem)
     }
-
 
 }
