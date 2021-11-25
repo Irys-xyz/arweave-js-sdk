@@ -68,7 +68,13 @@ export async function createMaticTx({ amount, to }: CreateTxData, key: Buffer): 
 
     await provider._ready();
     const wallet = new Wallet(key, provider);
-    const _amount = ethers.utils.hexlify(BigNumber.isBigNumber(amount) ? "0x" + amount.toString(16) : amount);
+    let bigNumberAmount: BigNumber;
+    if (BigNumber.isBigNumber(amount)) {
+        bigNumberAmount = amount
+    } else {
+        bigNumberAmount =  new BigNumber(amount)
+    }
+    const _amount = "0x" + bigNumberAmount.toString(16);
 
     const estimatedGas = await provider.estimateGas({ to, value: _amount });
     const gasPrice = await provider.getGasPrice();
