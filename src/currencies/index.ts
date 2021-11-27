@@ -61,6 +61,7 @@ export const currencies: CurrencyConfig = {
     "arweave": keys.arweave ? {
         base: ["winston", 1e12],
         account: { key: keys.arweave.key, address: keys.arweave.address },
+        provider: "arweave.net",
         getTx: arweaveGetTx,
         ownerToAddress: arweaveOwnerToAddress,
         getId: arweaveGetId,
