@@ -200,7 +200,7 @@ async function init(opts, operation): Promise<Bundlr> {
  * @param path path to the JWK file
  * @returns JWK interface
  */
-async function loadWallet(path: string) {
+async function loadWallet(path: string): Promise<string> {
     try {
         statSync(path)
         console.log("loading wallet file");

@@ -13,10 +13,10 @@ export default class BundlrTransaction {
         this.dataItem = arbundles.createData(data, this.signer, opts)
     }
 
-    public async sign() {
+    public async sign(): Promise<void> {
         this.dataItem.sign(this.signer)
     }
-    public async upload() {
+    public async upload(): Promise<void> {
         this.bundlr.currencyConfig.sendTx(this.dataItem)
     }
 

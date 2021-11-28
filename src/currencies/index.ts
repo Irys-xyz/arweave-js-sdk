@@ -65,7 +65,7 @@ export const currencies: CurrencyConfig = {
         getTx: arweaveGetTx,
         ownerToAddress: arweaveOwnerToAddress,
         getId: arweaveGetId,
-        price: () => getRedstonePrice("AR"),
+        price: (): Promise<number> => getRedstonePrice("AR"),
         sign: arweaveSign,
         getSigner: arweaveGetSigner,
         verify: arweaveVerify,
@@ -80,11 +80,11 @@ export const currencies: CurrencyConfig = {
         account: { key: keys.matic.key, address: keys.matic.address },
         provider: "https://polygon-rpc.com",
         getTx: maticGetTx,
-        getId: async (item) => {
+        getId: async (item): Promise<string> => {
             return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
         },
         ownerToAddress: maticOwnerToAddress,
-        price: () => getRedstonePrice("MATIC"),
+        price: (): Promise<number> => getRedstonePrice("MATIC"),
         sign: maticSign,
         getSigner: maticGetSigner,
         verify: maticVerify,
@@ -100,11 +100,11 @@ export const currencies: CurrencyConfig = {
         provider: "mainnet-beta",
         //provider: "devnet",
         getTx: solanaGetTx,
-        getId: async (item) => {
+        getId: async (item): Promise<string> => {
             return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
         },
         ownerToAddress: solanaOwnerToAddress,
-        price: () => getRedstonePrice("SOL"),
+        price: (): Promise<number> => getRedstonePrice("SOL"),
         sign: solanaSign,
         getSigner: solanaGetSigner,
         verify: solanaVerify,
