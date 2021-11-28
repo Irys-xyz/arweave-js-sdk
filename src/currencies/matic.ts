@@ -4,12 +4,14 @@ import keccak256 from "keccak256";
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet } from "ethers";
 import BigNumber from "bignumber.js";
+import { sleep } from "./utils";
+import { Signer } from "arbundles";
 
 export async function maticSign(message: Uint8Array): Promise<Uint8Array> {
     const signer = new PolygonSigner(currencies["matic"].account.key);
     return signer.sign(message);
 }
-export function maticGetSigner() {
+export function maticGetSigner(): Signer {
     return new PolygonSigner(currencies["matic"].account.key);
 }
 
@@ -98,6 +100,7 @@ export async function maticSendTx(tx: string): Promise<void> {
         await provider._ready();
 
         await provider.sendTransaction(tx);
+        await sleep(3000);
     } catch (e) {
         console.error(`Error occurred while sending a MATIC tx - ${e}`);
         throw e;

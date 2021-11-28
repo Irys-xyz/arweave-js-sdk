@@ -88,7 +88,7 @@ export default class Bundlr {
         this.funder = new Fund(this.utils);
 
     }
-    async withdrawBalance(amount) {
+    async withdrawBalance(amount): Promise<AxiosResponse<any>> {
         return await withdrawBalance(this.utils, this.api, amount);
     }
 
@@ -120,8 +120,8 @@ export default class Bundlr {
      * @param path path to the file to upload
      * @returns bundler response
      */
-    async uploadFile(path: string): Promise<AxiosResponse<any>> {
-        return this.uploader.uploadFile(path);
+    async uploadFile(path: string, onDemandTx?: string): Promise<AxiosResponse<any>> {
+        return this.uploader.uploadFile(path, onDemandTx);
     };
     /**
      * Create a new BundlrTransactions (flex currency arbundles dataItem)

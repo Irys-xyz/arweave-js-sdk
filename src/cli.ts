@@ -2,9 +2,10 @@
 // Note: DO NOT REMOVE/ALTER THE ABOVE LINE - it is called a 'shebang' and is vital for CLI execution.
 import { Command } from "commander";
 import { readFileSync, statSync } from "fs";
-import Bundlr from ".";
+import Bundlr from "./index";
 import inquirer from "inquirer";
 import { execSync } from "child_process"
+import BigNumber from "bignumber.js";
 
 
 const program = new Command();
@@ -70,6 +71,37 @@ program.command("upload").description("Uploads a specified file to the specified
         }
     });
 
+// Upload command that allows a user to pay on demand for storage in supported currencies.
+program.command("uploadAndPay").description("Uploads a specified file to the specified bundler - paying on demand").argument("<file>", "relative path to the file you want to upload")
+    .action(async (file: string) => {
+        try {
+            const bundlr = await init(options, "upload");
+            if (["arweave"].includes(options.currency)) { //todo: integrate supported modes into currencyConfig
+                console.log("Unsupported currency for Pay-on-demand");
+                return;
+            }
+            const size = statSync(file).size
+            const price = await (await bundlr.utils.getStorageCost(bundlr.currency, size))
+            const fee = await bundlr.currencyConfig.getFee(price)
+            const base = bundlr.currencyConfig.base
+            confirmation(`Upload and Pay for ${size} Bytes (${price} ${base[0]} - ${price.dividedToIntegerBy(base[1])} ${bundlr.currency}) with fee ${fee} ${base[0]}?\n Y / N`)
+                .then(async (confirmed) => {
+                    if (confirmed) {
+                        const tx = await bundlr.fund(price.integerValue(BigNumber.ROUND_CEIL).toNumber());
+                        const res = await bundlr.uploadFile(file, tx?.id);
+                        console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data, null, 4)} `);
+                    } else {
+                        console.log("confirmation failed")
+                    }
+                })
+            const res = await bundlr.uploadFile(file);
+            console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data, null, 4)} `);
+        } catch (err) {
+            console.error(`Error whilst uploading file: \n${err} `);
+            return;
+        }
+    });
+
 // Fund command - Sends the specified bundler n winston from the loaded wallet
 program.command("fund").description("Sends the specified amount of Winston to the specified bundler").argument("<amount>", "Amount to add in Winston")
     .action(async (amount: string) => {
@@ -99,7 +131,7 @@ program.command("price").description("Check how much of a specific currency is r
             const bundlr = await init(options, "price");
             await bundlr.utils.getBundlerAddress(options.currency) //will throw if the bundler doesn't support the currency
             //const cost = new BigNumber((await bundlr.api.get(`/price/${options.currency}/${bytes}`)).data)
-            const cost = await bundlr.utils.getStorageCost(options.currency, bytes);
+            const cost = await bundlr.utils.getStorageCost(options.currency, +bytes);
             console.log(`Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${cost.dividedBy(bundlr.currencyConfig.base[1])} ${bundlr.currency})`);
         } catch (err) {
             console.error(`Error whilst getting price: \n${err} `);
@@ -127,7 +159,7 @@ async function confirmation(message: string): Promise<boolean> {
  * @param opts the parsed options from the cli
  * @returns a new Bundlr instance
  */
-async function init(opts, operation) {
+async function init(opts, operation): Promise<Bundlr> {
     let wallet;
     let bundler;
 

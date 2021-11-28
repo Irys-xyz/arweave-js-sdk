@@ -20,6 +20,7 @@ export default class Fund {
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
         const tx = await c.createTx(amount, to, fee.toString())
         const nres = await c.sendTx(tx.tx);
+        console.log(tx.txId);
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
         Utils.checkAndThrow(bres, "Posting transaction information to the bundler");
