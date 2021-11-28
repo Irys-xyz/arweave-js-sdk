@@ -9,7 +9,7 @@ export async function maticSign(message: Uint8Array): Promise<Uint8Array> {
     const signer = new PolygonSigner(currencies["matic"].account.key);
     return signer.sign(message);
 }
-export async function maticGetSigner() {
+export function maticGetSigner() {
     return new PolygonSigner(currencies["matic"].account.key);
 }
 
@@ -68,7 +68,13 @@ export async function maticCreateTx(amount, to, _fee?): Promise<any> {
     const key = currencies["matic"].account.key;
     await provider._ready();
     const wallet = new Wallet(key, provider);
-    const _amount = ethers.utils.hexlify(BigNumber.isBigNumber(amount) ? "0x" + amount.toString(16) : amount);
+    let bigNumberAmount: BigNumber;
+    if (BigNumber.isBigNumber(amount)) {
+        bigNumberAmount = amount
+    } else {
+        bigNumberAmount = new BigNumber(amount)
+    }
+    const _amount = "0x" + bigNumberAmount.toString(16);
 
     const estimatedGas = await provider.estimateGas({ to, value: _amount });
     const gasPrice = await provider.getGasPrice();

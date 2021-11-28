@@ -5,7 +5,10 @@ import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
 import { AxiosResponse } from "axios";
-import Arweave from "arweave";
+// import Arweave from "arweave";
+import { Currency } from "./currencies";
+import { DataItemCreateOptions } from "arbundles";
+import BundlrTransaction from "./transaction";
 
 let currencies;
 
@@ -44,7 +47,7 @@ export default class Bundlr {
     public address;
     public currency;
     public wallet;
-    public currencyConfig;
+    public currencyConfig: Currency;
 
     /**
      * Constructs a new Bundlr instance, as well as supporting subclasses
@@ -62,10 +65,10 @@ export default class Bundlr {
         this.wallet = wallet;
         const parsed = new URL(url);
         this.api = new Api({ ...parsed, host: parsed.hostname }); //borrow their nice Axios API :p
-        if (currency === "arweave") {
-            //arweave = new Arweave(this.api.getConfig());
-            arweave = Arweave.init({ host: "arweave.net", protocol: "https", port: 443 });
-        }
+        // if (currency === "arweave") {
+        //     //arweave = new Arweave(this.api.getConfig());
+        //     arweave = Arweave.init({ host: "arweave.net", protocol: "https", port: 443 });
+        // }
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         currencies = (require("./currencies/index")).currencies; //delay so that keys object can be properly constructed
         if (!currencies[currency]) {
@@ -120,4 +123,13 @@ export default class Bundlr {
     async uploadFile(path: string): Promise<AxiosResponse<any>> {
         return this.uploader.uploadFile(path);
     };
+    /**
+     * Create a new BundlrTransactions (flex currency arbundles dataItem)
+     * @param data 
+     * @param opts - dataItemCreateOptions
+     * @returns - a new BundlrTransaction instance
+     */
+    createTransaction(data: string | Uint8Array, opts?: DataItemCreateOptions): BundlrTransaction {
+        return new BundlrTransaction(data, this, opts);
+    }
 }

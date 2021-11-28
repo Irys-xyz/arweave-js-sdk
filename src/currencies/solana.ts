@@ -6,6 +6,9 @@ import nacl from "tweetnacl";
 
 import BigNumber from "bignumber.js";
 import bs58 from "bs58";
+import { Signer } from "arbundles";
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function createConnection() {
     return new web3.Connection(
@@ -22,14 +25,14 @@ function getKeyPair(): web3.Keypair {
 }
 
 // where data is tx.serialiseMessage() 
-export async function solanaSign(data: any) {
+export async function solanaSign(data: any): Promise<Uint8Array> {
     // const keyp = getKeyPair();
     // const keypb = Buffer.concat([keyp.publicKey.toBuffer(), keyp.secretKey])
     // const signer = new SolanaSigner(keypb.toString());
     return await (await solanaGetSigner()).sign(data)
 }
 
-export async function solanaVerify(pub, data, sig) {
+export async function solanaVerify(pub, data, sig): Promise<boolean> {
     return SolanaSigner.verify(pub, data, sig)
 }
 
@@ -61,11 +64,15 @@ export async function solanaGetFee(_amount: BigNumber | number, _to?: string): P
 
 export async function solanaSendTx(tx: web3.Transaction): Promise<any> {
     const connection = await createConnection();
+    let res;
     // if it's already been signed...
     if (tx.signature) {
-        return web3.sendAndConfirmRawTransaction(connection, tx.serialize());
+        res = web3.sendAndConfirmRawTransaction(connection, tx.serialize());
+    } else {
+        res = web3.sendAndConfirmTransaction(connection, tx, [getKeyPair()]);
     }
-    return web3.sendAndConfirmTransaction(connection, tx, [getKeyPair()]);
+    await sleep(1000); // sleep so the chain has enough time to sync so the bundler doesn't erroneously reject.
+    return res
 }
 
 export async function solanaCreateTx(amount, to, _fee?): Promise<{ txId: string, tx: any }> {
@@ -109,7 +116,7 @@ export async function solanaGetTx(txid: string): Promise<Tx> {
     return tx;
 }
 
-export async function solanaGetSigner() {
+export function solanaGetSigner(): Signer {
     const keyp = getKeyPair();
     const keypb = bs58.encode(Buffer.concat([keyp.secretKey, keyp.publicKey.toBuffer()]))
     return new SolanaSigner(keypb);

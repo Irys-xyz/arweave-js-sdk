@@ -21,9 +21,10 @@ export default class Utils {
      * @param res an axios response
      * @returns nothing if the status code is 200
      */
-    public static checkAndThrow(res: AxiosResponse) {
+    public static checkAndThrow(res: AxiosResponse, context?: string) {
         if (res?.status && res.status != 200) {
-            throw new Error(`HTTP Error: ${res.status} ${JSON.stringify(res.data)}`);
+            throw new Error(`HTTP Error: ${context}: ${res.status} ${JSON.stringify(res.data)}`);
+
         }
         return;
     }
@@ -34,7 +35,7 @@ export default class Utils {
      */
     public async getNonce(): Promise<number> {
         const res = await this.api.get(`/account/withdrawals/${this.currency}?address=${this.config.address}`);
-        Utils.checkAndThrow(res);
+        Utils.checkAndThrow(res, "Getting withdrawal nonce");
         return (res).data;
     }
 
@@ -45,7 +46,7 @@ export default class Utils {
      */
     public async getBalance(address: string): Promise<number> {
         const res = await this.api.get(`/account/balance/${this.currency}?address=${address}`);
-        Utils.checkAndThrow(res);
+        Utils.checkAndThrow(res, "Getting balance");
         return res.data.balance;
     }
 
@@ -56,7 +57,7 @@ export default class Utils {
     public async getBundlerAddress(currency: string): Promise<string> {
 
         const res = await this.api.get("/info")
-        Utils.checkAndThrow(res);
+        Utils.checkAndThrow(res, "Getting Bundler address");
         const address = res.data.addresses[currency]
         if (!address) {
             throw new Error(`Specified bundler does not support currency ${currency}`);
@@ -66,7 +67,7 @@ export default class Utils {
 
     public async getStorageCost(currency: string, bytes: number): Promise<BigNumber> {
         const res = await this.api.get(`/price/${currency}/${bytes}`)
-        Utils.checkAndThrow(res);
+        Utils.checkAndThrow(res, "Getting storage cost");
         return new BigNumber((res).data);
     }
 }

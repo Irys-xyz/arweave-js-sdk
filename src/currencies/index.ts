@@ -38,7 +38,7 @@ export interface Currency {
 
     sign(data: Uint8Array): Promise<Uint8Array>;
 
-    getSigner(): Promise<Signer>;
+    getSigner(): Signer;
 
     verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean>;
 
@@ -61,6 +61,7 @@ export const currencies: CurrencyConfig = {
     "arweave": keys.arweave ? {
         base: ["winston", 1e12],
         account: { key: keys.arweave.key, address: keys.arweave.address },
+        provider: "arweave.net",
         getTx: arweaveGetTx,
         ownerToAddress: arweaveOwnerToAddress,
         getId: arweaveGetId,
@@ -96,7 +97,7 @@ export const currencies: CurrencyConfig = {
     "solana": keys.solana ? {
         base: ["lamports", 1_000_000_000], // 1e9
         account: { key: keys.solana.key, address: keys.solana.address },
-        provider: "devnet",
+        provider: "mainnet-beta",
         getTx: solanaGetTx,
         getId: async (item) => {
             return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));

@@ -1,12 +1,20 @@
 import Arweave from "arweave";
-import { arweave } from "../bundlr";
+//import { arweave } from "../bundlr";
 import crypto from "crypto";
 import BigNumber from "bignumber.js";
 import base64url from "base64url";
-import { currencies } from ".";
+import { currencies } from "./index";
 import { ArweaveSigner } from "arbundles/build/signing";
 
+
+
+async function createArweave() {
+    const gateway = currencies["arweave"].provider;
+    return Arweave.init({ host: gateway, protocol: "http", port: 80 });
+}
+
 export async function arweaveGetTx(txId) {
+    const arweave = await createArweave();
     const txs = await arweave.transactions.getStatus(txId);
     let tx;
     if (txs.status == 200) {
@@ -44,7 +52,7 @@ export async function arweaveSign(data) {
     return Arweave.crypto.sign(currencies["arweave"].account.key, data);
 }
 
-export async function arweaveGetSigner() {
+export function arweaveGetSigner() {
     return new ArweaveSigner(currencies["arweave"].account.key);
 }
 
@@ -53,19 +61,23 @@ export async function arweaveVerify(pub, data, sig) {
 }
 
 export async function arweaveGetCurrentHeight() {
+    const arweave = await createArweave();
     return arweave.network.getInfo().then(r => new BigNumber(r.height))
 }
 
 export async function arweaveGetFee(amount, to) {
+    const arweave = await createArweave();
     return new BigNumber(parseInt(await arweave.transactions.getPrice(amount as number, to)))
 }
 
 export async function arweaveSendTx(tx) {
+    const arweave = await createArweave();
     return await arweave.transactions.post(tx)
 
 }
 
 export async function arweaveCreateTx(amount, to, fee) {
+    const arweave = await createArweave();
     const key = currencies["arweave"].account.key;
     const tx = await arweave.createTransaction({ quantity: amount.toString(), reward: fee, target: to }, key)
     await arweave.transactions.sign(tx, key)
