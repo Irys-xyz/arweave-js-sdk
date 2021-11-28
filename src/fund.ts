@@ -7,7 +7,12 @@ export default class Fund {
         this.utils = utils;
     }
 
-    public async fund(amount: number, multiplier = 1.0): Promise<any> {
+    public async fund(amount: number, multiplier = 1.0): Promise<{
+        reward: string,
+        target: string,
+        quantity: number,
+        id: string
+    }> {
         if (!Number.isInteger(amount)) { throw new Error("must use an integer for funding amount") }
         const c = this.utils.currencyConfig;
         const to = await this.utils.getBundlerAddress(this.utils.currency);
