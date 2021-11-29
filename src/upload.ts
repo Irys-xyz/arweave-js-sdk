@@ -27,7 +27,7 @@ export default class Uploader {
         }
         //const signer = await this.currencyConfig.getSigner();
         const mimeType = mime.lookup(path);
-        const tags = [{ name: "Content-Type", value: mimeType }]
+        const tags = [{ name: "Content-Type", value: (mimeType ? mimeType : "application/octet-stream") }]
         const data = readFileSync(path);
         return await this.upload(data, tags)
     }
