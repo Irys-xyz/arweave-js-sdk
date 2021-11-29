@@ -6,7 +6,6 @@ import Bundlr from ".";
 import inquirer from "inquirer";
 import { execSync } from "child_process"
 
-
 const program = new Command();
 
 // Define the CLI flags for the program
