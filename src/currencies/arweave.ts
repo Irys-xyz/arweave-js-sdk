@@ -10,7 +10,7 @@ import { ArweaveSigner } from "arbundles/build/signing";
 
 async function createArweave() {
     const gateway = currencies["arweave"].provider;
-    return Arweave.init({ host: gateway, protocol: "http", port: 80 });
+    return Arweave.init({ host: gateway, protocol: "https", port: 443 });
 }
 
 export async function arweaveGetTx(txId) {
