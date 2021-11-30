@@ -25,6 +25,8 @@ export default class Utils {
         if (res?.status && res.status != 200) {
             throw new Error(`HTTP Error: ${context}: ${res.status} ${JSON.stringify(res.data)}`);
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return;
     }
 
