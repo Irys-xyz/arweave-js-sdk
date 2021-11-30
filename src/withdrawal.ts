@@ -4,13 +4,14 @@ import { AxiosResponse } from "axios";
 import Utils from "./utils";
 import Api from "arweave/node/lib/api";
 import BigNumber from "bignumber.js";
+import base64url from 'base64url';
 
-interface data {
-    publicKey: string | Buffer,
+interface WithdrawData {
+    publicKey: string,
     currency: string,
     amount: string,
     nonce: number,
-    signature: Buffer | Uint8Array
+    signature: string;
 }
 
 /**
@@ -23,20 +24,20 @@ interface data {
  */
 export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber): Promise<AxiosResponse> {
     const c = utils.currencyConfig;
-    // //todo: make util functions directly return data rather than having to post-return mutate
-    const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount: amount.toString(), nonce: await utils.getNonce() } as data;
-    const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
-    data.signature = await c.sign(deephash)
-    const ds = JSON.stringify(data);
-    const du = JSON.parse(ds);
 
-    if (du.publicKey.type === "Buffer") {
-        du.publicKey = Buffer.from(du.publicKey);
+    const nonce = await utils.getNonce();
+
+    const deephash = await deepHash([stringToBuffer(utils.currency), stringToBuffer(amount.toString(10)), stringToBuffer(nonce.toString())]);
+
+    const signature = await c.sign(deephash);
+
+    const data: WithdrawData = {
+        publicKey: base64url(await c.getPublicKey()),
+        currency: utils.currency,
+        amount: amount.toString(10),
+        nonce,
+        signature: base64url(Buffer.from(signature))
     }
-    if (du.signature.type === "Buffer") {
-        du.signature = Buffer.from(du.signature);
-    } else {
-        du.signature = Uint8Array.from(Object.values(du.signature));
-    }
+
     return api.post("/account/withdraw", data);
 }

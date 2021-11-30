@@ -34,7 +34,7 @@ export async function arweaveGetTx(txId): Promise<Tx> {
     }
 }
 
-export function arweaveOwnerToAddress(owner): string {
+export function arweaveOwnerToAddress(owner: Buffer): string {
 
     return Arweave.utils.bufferTob64Url(crypto
         .createHash("sha256")
@@ -88,6 +88,6 @@ export async function arweaveCreateTx(amount, to, fee): Promise<{ txId: string, 
     return { txId: tx.id, tx };
 }
 
-export function arweaveGetPublicKey(): string {
-    return currencies["arweave"].account.key.n
+export function arweaveGetPublicKey(): Buffer {
+    return base64url.toBuffer(currencies["arweave"].account.key.n);
 }

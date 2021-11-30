@@ -50,7 +50,7 @@ export interface Currency {
 
     createTx(amount: BigNumber | number, to: string, fee?: string): Promise<{ txId: string, tx: any }>;
 
-    getPublicKey(): string | Buffer;
+    getPublicKey(): Buffer;
 }
 
 interface CurrencyConfig {
