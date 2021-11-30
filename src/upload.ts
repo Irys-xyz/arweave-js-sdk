@@ -1,4 +1,4 @@
-import { createData } from "arbundles";
+import { createData, DataItem } from "arbundles";
 import { readFileSync, promises } from "fs";
 import mime from "mime-types";
 import Api from "arweave/node/lib/api";
@@ -38,7 +38,7 @@ export default class Uploader {
      * @param tags
      * @returns the response from the bundler
      */
-    public async upload(data: Buffer, tags: { name: string, value: string }[]): Promise<AxiosResponse<any>> {
+    public async upload(data: Buffer, tags?: { name: string, value: string }[]): Promise<AxiosResponse<any>> {
         // try {
         const signer = await this.currencyConfig.getSigner();
         const dataItem = createData(
@@ -47,6 +47,14 @@ export default class Uploader {
             { tags }
         );
         await dataItem.sign(signer);
+        return this.dataItemUploader(dataItem);
+    }
+    /**
+     * Assumes the dataItem needs no further preperation, and directly posts it to the bundlr node.
+     * @param dataItem 
+     * @returns 
+     */
+    public async dataItemUploader(dataItem: DataItem): Promise<AxiosResponse<any>> {
         const { protocol, host, port } = this.api.getConfig();
         const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
             headers: { "Content-Type": "application/octet-stream", },

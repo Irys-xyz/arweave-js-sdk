@@ -1,23 +1,21 @@
-import { DataItem, DataItemCreateOptions, Signer } from "arbundles";
-import arbundles from "arbundles"
+import { createData, DataItem, DataItemCreateOptions, Signer } from "arbundles";
 import Bundlr from "./bundlr";
 
-export default class BundlrTransaction {
-    public dataItem: DataItem;
+export default class BundlrTransaction extends DataItem {
     private bundlr: Bundlr;
     private signer: Signer;
 
     constructor(data: string | Uint8Array, bundlr: Bundlr, opts?: DataItemCreateOptions) {
+        super(createData(data, bundlr.currencyConfig.getSigner(), opts).getRaw())
         this.bundlr = bundlr;
-        this.signer = this.bundlr.currencyConfig.getSigner()
-        this.dataItem = arbundles.createData(data, this.signer, opts)
+        this.signer = bundlr.currencyConfig.getSigner();
     }
 
-    public async sign() {
-        this.dataItem.sign(this.signer)
+    public sign(): Promise<Buffer> {
+        return super.sign(this.signer);
     }
-    public async upload() {
-        this.bundlr.currencyConfig.sendTx(this.dataItem)
+    async upload(): Promise<any> {
+        return this.bundlr.uploader.dataItemUploader(this);
     }
 
 }
