@@ -8,8 +8,8 @@ import { sleep } from "./currencies/utils"
 
 export default class Uploader {
     private readonly api: Api
-    private currency: string;
-    private currencyConfig: Currency;
+    private readonly currency: string;
+    private readonly currencyConfig: Currency;
 
     constructor(api: Api, currency: string, currencyConfig: Currency) {
         this.api = api;

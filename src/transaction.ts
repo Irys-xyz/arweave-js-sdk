@@ -14,8 +14,8 @@ export default class BundlrTransaction extends DataItem {
     public sign(): Promise<Buffer> {
         return super.sign(this.signer);
     }
+
     async upload(): Promise<any> {
         return this.bundlr.uploader.dataItemUploader(this);
     }
-
 }

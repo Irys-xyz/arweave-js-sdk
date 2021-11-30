@@ -37,7 +37,7 @@ export async function maticGetTx(txId: string): Promise<Tx> {
         blockHeight: new BigNumber(response.blockNumber),
         amount: new BigNumber(response.value.toHexString(), 16),
         pending: !response.blockHash,
-        confirmed: response.confirmations >= 10
+        confirmed: response.confirmations >= 5
     };
 }
 
