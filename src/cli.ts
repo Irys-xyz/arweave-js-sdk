@@ -7,7 +7,6 @@ import inquirer from "inquirer";
 import { execSync } from "child_process"
 import BigNumber from "bignumber.js";
 
-
 const program = new Command();
 
 // Define the CLI flags for the program

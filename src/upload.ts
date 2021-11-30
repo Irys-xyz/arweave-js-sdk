@@ -1,4 +1,4 @@
-import { createData } from "arbundles";
+import { createData, DataItem } from "arbundles";
 import { readFileSync, promises } from "fs";
 import mime from "mime-types";
 import Api from "arweave/node/lib/api";
@@ -29,7 +29,7 @@ export default class Uploader {
         }
         //const signer = await this.currencyConfig.getSigner();
         const mimeType = mime.lookup(path);
-        const tags = [{ name: "Content-Type", value: mimeType }]
+        const tags = [{ name: "Content-Type", value: (mimeType ? mimeType : "application/octet-stream") }]
         const data = readFileSync(path);
         return await this.upload(data, tags, onDemandtx)
     }
@@ -40,7 +40,7 @@ export default class Uploader {
      * @param tags
      * @returns the response from the bundler
      */
-    public async upload(data: Buffer, tags: { name: string, value: string }[], onDemandTx?: string): Promise<AxiosResponse<any>> {
+    public async upload(data: Buffer, tags?: { name: string, value: string }[], onDemandTx?: string): Promise<AxiosResponse<any>> {
         // try {
         const signer = await this.currencyConfig.getSigner();
         const dataItem = createData(
@@ -49,6 +49,14 @@ export default class Uploader {
             { tags }
         );
         await dataItem.sign(signer);
+        return this.dataItemUploader(dataItem, onDemandTx);
+    }
+    /**
+     * Assumes the dataItem needs no further preperation, and directly posts it to the bundlr node.
+     * @param dataItem 
+     * @returns 
+     */
+    public async dataItemUploader(dataItem: DataItem, onDemandTx?: string): Promise<AxiosResponse<any>> {
         const { protocol, host, port } = this.api.getConfig();
         const headers = { "Content-Type": "application/octet-stream", }
         if (onDemandTx) {
@@ -66,8 +74,6 @@ export default class Uploader {
             Object.assign({ "x-bundlr-pay": onDemandTx }, headers);
         }
         //onDemandTx is confirmed
-
-
         const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
             headers,
             timeout: 100000,

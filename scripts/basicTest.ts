@@ -7,12 +7,12 @@ async function a() {
         let bundler = new Bundlr("http://dev1.bundlr.network", "arweave", JWK);
         //let bundler = new Bundlr("http://node1.bundlr.network", "matic");
         console.log(bundler.address);
-
+        const transaction = await bundler.createTransaction("aaa");
+        await transaction.sign();
+        console.log(transaction.isSigned());
         console.log(`balance: ${await bundler.getLoadedBalance()}`);
         const bAddress = await bundler.utils.getBundlerAddress("arweave");
         console.log(`bundler address: ${bAddress}`);
-        console.log(`bundler balance: ${await bundler.getBalance(bAddress)}`);
-        //console.log(`invalid balance: ${await bundler.getBalance("sadndgfijadijga")}`);
         let tx = await bundler.fund(1000, 1.2);
         console.log(tx);
         console.log(`Funding receipt:\nAmount: ${tx.quantity} with Reward: ${tx.reward} to ${tx.target}\nID: ${tx.id}`)
