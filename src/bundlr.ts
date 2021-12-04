@@ -64,7 +64,8 @@ export default class Bundlr {
         keys[currency] = { key: wallet, address: undefined };
         this.wallet = wallet;
         const parsed = new URL(url);
-        this.api = new Api({ ...parsed, host: parsed.hostname }); //borrow their nice Axios API :p
+        // can't destructure this 
+        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname }); //borrow their nice Axios API :p
 
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         currencies = (require("./currencies/index")).currencies; //delay so that keys object can be properly constructed
