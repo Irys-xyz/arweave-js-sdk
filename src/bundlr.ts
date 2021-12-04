@@ -64,7 +64,7 @@ export default class Bundlr {
         keys[currency] = { key: wallet, address: undefined };
         this.wallet = wallet;
         const parsed = new URL(url);
-        this.api = new Api({ ...parsed, host: parsed.hostname }); //borrow their nice Axios API :p
+        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname }); //borrow their nice Axios API :p
         // if (currency === "arweave") {
         //     //arweave = new Arweave(this.api.getConfig());
         //     arweave = Arweave.init({ host: "arweave.net", protocol: "https", port: 443 });

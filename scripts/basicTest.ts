@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 async function a() {
     try {
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundler = new Bundlr("http://dev1.bundlr.network", "arweave", JWK);
+        let bundler = new Bundlr("https://dev1.bundlr.network", "arweave", JWK);
         //let bundler = new Bundlr("http://node1.bundlr.network", "matic");
         console.log(bundler.address);
         const transaction = await bundler.createTransaction("aaa");
