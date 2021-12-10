@@ -1,12 +1,12 @@
 import * as web3 from "@solana/web3.js";
 import { currencies, Tx } from "./index";
-import SolanaSigner from "arbundles/build/signing/chains/SolanaSigner"
 import "bs58";
 import nacl from "tweetnacl";
 
 import BigNumber from "bignumber.js";
 import bs58 from "bs58";
-import { Signer } from "arbundles";
+import { Signer } from "arbundles/src/signing";
+import SolanaSigner from "arbundles/src/signing/chains/SolanaSigner";
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

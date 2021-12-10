@@ -8,7 +8,7 @@ import { FileDataItem } from "arbundles/file";
 
 import { keys } from "../bundlr";
 import { maticCreateTx, maticGetFee, maticGetHeight, maticGetPublicKey, maticGetSigner, maticGetTx, maticOwnerToAddress, maticSendTx, maticSign, maticVerify } from "./matic";
-import { Signer } from "arbundles/build/signing";
+import { Signer } from "arbundles/src/signing";
 import { solanaCreateTx, solanaGetCurrentHeight, solanaGetFee, solanaGetPublicKey, solanaGetSigner, solanaGetTx, solanaOwnerToAddress, solanaSendTx, solanaSign, solanaVerify } from "./solana";
 import { arweaveCreateTx, arweaveGetCurrentHeight, arweaveGetFee, arweaveGetId, arweaveGetPublicKey, arweaveGetSigner, arweaveGetTx, arweaveOwnerToAddress, arweaveSendTx, arweaveSign, arweaveVerify } from "./arweave";
 

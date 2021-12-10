@@ -1,4 +1,4 @@
-import PolygonSigner from "arbundles/build/signing/chains/PolygonSigner";
+import { PolygonSigner } from "arbundles/src/signing";
 import { currencies, Tx } from "./index";
 import keccak256 from "keccak256";
 import { publicKeyCreate } from "secp256k1";
