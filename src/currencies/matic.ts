@@ -1,9 +1,10 @@
-import PolygonSigner from "arbundles/build/signing/chains/PolygonSigner";
+import { PolygonSigner } from "arbundles/src/signing";
 import { currencies, Tx } from "./index";
 import keccak256 from "keccak256";
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet } from "ethers";
 import BigNumber from "bignumber.js";
+
 
 export async function maticSign(message: Uint8Array): Promise<Uint8Array> {
     const signer = new PolygonSigner(currencies["matic"].account.key);

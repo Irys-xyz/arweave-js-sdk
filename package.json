@@ -18,19 +18,20 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.30.2",
-    "arbundles": "^0.3.2",
+    "arbundles": "^0.5.5",
     "arweave": "^1.10.17",
     "base64url": "^3.0.1",
     "bignumber.js": "^9.0.1",
     "commander": "^8.2.0",
     "dotenv": "^10.0.0",
     "ethers": "^5.5.1",
+    "fast-glob": "^3.2.7",
     "inquirer": "^8.2.0",
     "keccak256": "^1.0.3",
     "mime-types": "^2.1.33",
     "redstone-api": "^0.4.6",
-    "typescript": "^4.4.3",
-    "tslib": "^2.3.1"
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.3"
   },
   "devDependencies": {
     "@types/base64url": "^2.0.0",

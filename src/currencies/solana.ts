@@ -1,16 +1,16 @@
 import * as web3 from "@solana/web3.js";
 import { currencies, Tx } from "./index";
-import SolanaSigner from "arbundles/build/signing/chains/SolanaSigner"
 import "bs58";
 import nacl from "tweetnacl";
 
 import BigNumber from "bignumber.js";
 import bs58 from "bs58";
-import { Signer } from "arbundles";
+import { sleep } from "../upload";
+import SolanaSigner from "arbundles/src/signing/chains/SolanaSigner";
+import { Signer } from "arbundles/src/signing";
 
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function createConnection() {
+async function createConnection(): Promise<web3.Connection> {
     return new web3.Connection(
         web3.clusterApiUrl(currencies["solana"].provider as web3.Cluster), "confirmed"
     );

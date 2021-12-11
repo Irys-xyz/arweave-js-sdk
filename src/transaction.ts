@@ -1,6 +1,7 @@
-import { DataItem, DataItemCreateOptions, Signer } from "arbundles";
+import { DataItem, DataItemCreateOptions } from "arbundles";
 import arbundles from "arbundles"
 import Bundlr from "./bundlr";
+import { Signer } from "arbundles/src/signing";
 
 export default class BundlrTransaction {
     public dataItem: DataItem;

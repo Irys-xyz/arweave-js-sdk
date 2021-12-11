@@ -99,7 +99,7 @@ program.command("price").description("Check how much of a specific currency is r
             const bundlr = await init(options, "price");
             await bundlr.utils.getBundlerAddress(options.currency) //will throw if the bundler doesn't support the currency
             //const cost = new BigNumber((await bundlr.api.get(`/price/${options.currency}/${bytes}`)).data)
-            const cost = await bundlr.utils.getStorageCost(options.currency, bytes);
+            const cost = await bundlr.utils.getPrice(options.currency, bytes);
             console.log(`Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${cost.dividedBy(bundlr.currencyConfig.base[1])} ${bundlr.currency})`);
         } catch (err) {
             console.error(`Error whilst getting price: \n${err} `);
