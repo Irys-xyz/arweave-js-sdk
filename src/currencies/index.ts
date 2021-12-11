@@ -3,8 +3,6 @@ import BigNumber from "bignumber.js";
 import base64url from "base64url";
 import Arweave from "arweave";
 import { FileDataItem } from "arbundles/file";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 
 import { keys } from "../bundlr";
 import { maticCreateTx, maticGetFee, maticGetHeight, maticGetPublicKey, maticGetSigner, maticGetTx, maticOwnerToAddress, maticSendTx, maticSign, maticVerify } from "./matic";

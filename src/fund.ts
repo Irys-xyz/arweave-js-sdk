@@ -21,6 +21,7 @@ export default class Fund {
         const tx = await c.createTx(amount, to, fee.toString())
         const nres = await c.sendTx(tx.tx);
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
+        if (!await this.utils.confirmationPoll(tx.txId)) { throw new Error("Fund transaction didn't confirm after 10 seconds.") }
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
         Utils.checkAndThrow(bres, "Posting transaction information to the bundler");
         return { reward: fee, target: to, quantity: amount, id: tx.txId };

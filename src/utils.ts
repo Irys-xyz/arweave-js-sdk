@@ -4,6 +4,8 @@ import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
 import { Currency } from "./currencies";
 
+export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
 export default class Utils {
     public api: Api;
     private config: { address: string, wallet: JWKInterface };
@@ -69,5 +71,15 @@ export default class Utils {
         const res = await this.api.get(`/price/${currency}/${bytes}`)
         Utils.checkAndThrow(res, "Getting storage cost");
         return new BigNumber((res).data);
+    }
+    public async confirmationPoll(txid: string): Promise<boolean> {
+        if (["arweave"].includes(this.currency)) { return true; }
+        for (let i = 0; i < 10; i++) {
+            await sleep(1000);
+            if (!(await this.currencyConfig.getTx(txid)).pending) {
+                return true;
+            }
+        }
+        return false;
     }
 }

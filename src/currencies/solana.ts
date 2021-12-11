@@ -8,7 +8,6 @@ import bs58 from "bs58";
 import { Signer } from "arbundles/src/signing";
 import SolanaSigner from "arbundles/src/signing/chains/SolanaSigner";
 
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function createConnection() {
     return new web3.Connection(
@@ -71,7 +70,6 @@ export async function solanaSendTx(tx: web3.Transaction): Promise<any> {
     } else {
         res = web3.sendAndConfirmTransaction(connection, tx, [getKeyPair()]);
     }
-    await sleep(1000); // sleep so the chain has enough time to sync so the bundler doesn't erroneously reject.
     return res
 }
 
