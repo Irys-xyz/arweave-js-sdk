@@ -5,10 +5,11 @@ import Arweave from "arweave";
 import { FileDataItem } from "arbundles/file";
 
 import { keys } from "../bundlr";
-import { maticCreateTx, maticGetFee, maticGetHeight, maticGetPublicKey, maticGetSigner, maticGetTx, maticOwnerToAddress, maticSendTx, maticSign, maticVerify } from "./matic";
+//import { maticCreateTx, maticGetFee, maticGetHeight, maticGetPublicKey, maticGetSigner, maticGetTx, maticOwnerToAddress, maticSendTx, maticSign, maticVerify } from "./matic";
 import { Signer } from "arbundles/src/signing";
 import { solanaCreateTx, solanaGetCurrentHeight, solanaGetFee, solanaGetPublicKey, solanaGetSigner, solanaGetTx, solanaOwnerToAddress, solanaSendTx, solanaSign, solanaVerify } from "./solana";
 import { arweaveCreateTx, arweaveGetCurrentHeight, arweaveGetFee, arweaveGetId, arweaveGetPublicKey, arweaveGetSigner, arweaveGetTx, arweaveOwnerToAddress, arweaveSendTx, arweaveSign, arweaveVerify } from "./arweave";
+import { ethConfigFactory } from "./ethereum";
 
 export interface Tx {
     from: string;
@@ -73,25 +74,12 @@ export const currencies: CurrencyConfig = {
         createTx: arweaveCreateTx,
         getPublicKey: arweaveGetPublicKey
     } : undefined,
-    "matic": keys.matic ? {
-        base: ["wei", 1e18],
-        account: { key: keys.matic.key, address: keys.matic.address },
-        provider: "https://polygon-rpc.com",
-        getTx: maticGetTx,
-        getId: async (item) => {
-            return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
-        },
-        ownerToAddress: maticOwnerToAddress,
-        price: () => getRedstonePrice("MATIC"),
-        sign: maticSign,
-        getSigner: maticGetSigner,
-        verify: maticVerify,
-        getCurrentHeight: maticGetHeight,
-        getFee: maticGetFee,
-        sendTx: maticSendTx,
-        createTx: maticCreateTx,
-        getPublicKey: maticGetPublicKey
-    } : undefined,
+    "ethereum": keys.ethereum
+        ? ethConfigFactory({ name: "ethereum", ticker: "ETH", minConfirm: 5, account: keys.ethereum })
+        : undefined,
+    "matic": keys.matic
+        ? ethConfigFactory({ name: "matic", ticker: "MATIC", providerUrl: "https://polygon-rpc.com", minConfirm: 5, account: keys.matic })
+        : undefined,
     "solana": keys.solana ? {
         base: ["lamports", 1_000_000_000], // 1e9
         account: { key: keys.solana.key, address: keys.solana.address },
