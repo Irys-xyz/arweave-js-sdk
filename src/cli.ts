@@ -5,6 +5,7 @@ import { readFileSync, statSync } from "fs";
 import Bundlr from ".";
 import inquirer from "inquirer";
 import { execSync } from "child_process"
+import BigNumber from "bignumber.js";
 
 
 const program = new Command();
@@ -45,7 +46,7 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
             const bundlr = await init(options, "withdraw");
             confirmation(`Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`).then(async (confirmed) => {
                 if (confirmed) {
-                    const res = await bundlr.withdrawBalance(parseInt(amount));
+                    const res = await bundlr.withdrawBalance(new BigNumber(amount));
                     console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data, null, 4)} `);
                 } else {
                     console.log("confirmation failed");
@@ -69,6 +70,18 @@ program.command("upload").description("Uploads a specified file to the specified
             return;
         }
     });
+
+
+program.command("deploy").description("Deploys a folder (with a manifest) to the specified bundler").argument("<folder>", "relative path to the folder you want to deploy")
+    .action(async (folder: string) => {
+        try {
+            const bundler = await init(options, "deploy");
+            const res = await bundler.uploader.uploadFolder(folder);
+            console.log(`Deployed to ${res}`);
+        } catch (e) {
+            console.error(`Whilst deploying ${folder} - ${e}`)
+        }
+    })
 
 // Fund command - Sends the specified bundler n winston from the loaded wallet
 program.command("fund").description("Sends the specified amount of Winston to the specified bundler").argument("<amount>", "Amount to add in Winston")
@@ -99,7 +112,7 @@ program.command("price").description("Check how much of a specific currency is r
             const bundlr = await init(options, "price");
             await bundlr.utils.getBundlerAddress(options.currency) //will throw if the bundler doesn't support the currency
             //const cost = new BigNumber((await bundlr.api.get(`/price/${options.currency}/${bytes}`)).data)
-            const cost = await bundlr.utils.getPrice(options.currency, bytes);
+            const cost = await bundlr.utils.getPrice(options.currency, +bytes);
             console.log(`Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${cost.dividedBy(bundlr.currencyConfig.base[1])} ${bundlr.currency})`);
         } catch (err) {
             console.error(`Error whilst getting price: \n${err} `);
@@ -127,7 +140,7 @@ async function confirmation(message: string): Promise<boolean> {
  * @param opts the parsed options from the cli
  * @returns a new Bundlr instance
  */
-async function init(opts, operation) {
+async function init(opts, operation): Promise<Bundlr> {
     let wallet;
     let bundler;
 
@@ -168,7 +181,7 @@ async function init(opts, operation) {
  * @param path path to the JWK file
  * @returns JWK interface
  */
-async function loadWallet(path: string) {
+async function loadWallet(path: string): Promise<any> {
     try {
         statSync(path)
         console.log("loading wallet file");

@@ -4,15 +4,17 @@ import { readFileSync } from 'fs';
 async function a() {
     try {
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundler = new Bundlr("https://node1.bundlr.network", "arweave", JWK);
+        let bundler = new Bundlr("https://dev1.bundlr.network", "arweave", JWK);
         console.log(bundler.address);
 
-        let rec = await bundler.uploader.uploadFolder("./testFolder", "index.html")
-        console.log(JSON.stringify(rec));
-
-        //const transaction = await bundler.createTransaction("aaa");
+        // const transaction = await bundler.createTransaction(readFileSync("./testFolder/image1.jpg"));
         // await transaction.sign();
         // console.log(transaction.id);
+
+        let rec = await bundler.uploader.uploadFolder("./testFolder")
+        console.log(`Deployed to: ${rec}`);
+
+
         // console.log(`https://node1.bundlr.network/tx/${transaction.id}/data`);
         // console.log(`https://arweave.net/${transaction.id}/data`);
         // await transaction.upload();

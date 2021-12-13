@@ -36,6 +36,7 @@
   "devDependencies": {
     "@types/base64url": "^2.0.0",
     "@types/jest": "^27.0.2",
+    "@types/node": "^16.11.12",
     "@typescript-eslint/eslint-plugin": "^5.1.0",
     "@typescript-eslint/parser": "^5.1.0",
     "eslint": "^8.0.1",
