@@ -9,6 +9,7 @@ import { AxiosResponse } from "axios";
 import { Currency } from "./currencies";
 import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
+import BigNumber from "bignumber.js";
 
 let currencies;
 
@@ -83,12 +84,12 @@ export default class Bundlr {
         //this.address = address;
         this.utils = new Utils(this.api, this.currency, this.currencyConfig, { address: this.address, wallet });
         // this.withdrawBalance = async (amount: number) => await withdrawBalance(this.utils, this.api, wallet, amount);
-        this.uploader = new Uploader(this.api, currency, this.currencyConfig);
+        this.uploader = new Uploader(this.api, this.utils, currency, this.currencyConfig);
         // this.upload = this.uploader.upload; note to self: don't do this, this destorys 'this' scoping for instantiated subclasses
         this.funder = new Fund(this.utils);
 
     }
-    async withdrawBalance(amount) {
+    async withdrawBalance(amount: BigNumber): Promise<AxiosResponse<any>> {
         return await withdrawBalance(this.utils, this.api, amount);
     }
 

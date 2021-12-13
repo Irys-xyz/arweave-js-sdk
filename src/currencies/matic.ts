@@ -1,15 +1,16 @@
-import { PolygonSigner } from "arbundles/src/signing";
+import { PolygonSigner, Signer } from "arbundles/src/signing";
 import { currencies, Tx } from "./index";
 import keccak256 from "keccak256";
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet } from "ethers";
 import BigNumber from "bignumber.js";
 
+
 export async function maticSign(message: Uint8Array): Promise<Uint8Array> {
     const signer = new PolygonSigner(currencies["matic"].account.key);
     return signer.sign(message);
 }
-export function maticGetSigner() {
+export function maticGetSigner(): Signer {
     return new PolygonSigner(currencies["matic"].account.key);
 }
 
@@ -18,7 +19,7 @@ export async function maticVerify(pub, data, sig): Promise<boolean> {
 }
 
 export function maticOwnerToAddress(owner: Uint8Array): string {
-    return "0x" + keccak256(owner.slice(1)).slice(-20).toString("hex");
+    return "0x" + keccak256(Buffer.from(owner.slice(1))).slice(-20).toString("hex");
 }
 
 export async function maticGetTx(txId: string): Promise<Tx> {

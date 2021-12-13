@@ -1,13 +1,9 @@
 import Arweave from "arweave";
-//import { arweave } from "../bundlr";
 import crypto from "crypto";
 import BigNumber from "bignumber.js";
 import base64url from "base64url";
 import { currencies } from "./index";
 import { ArweaveSigner } from "arbundles/src/signing";
-
-
-
 
 async function createArweave() {
     const gateway = currencies["arweave"].provider;

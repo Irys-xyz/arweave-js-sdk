@@ -5,11 +5,11 @@ import nacl from "tweetnacl";
 
 import BigNumber from "bignumber.js";
 import bs58 from "bs58";
-import { Signer } from "arbundles/src/signing";
 import SolanaSigner from "arbundles/src/signing/chains/SolanaSigner";
+import { Signer } from "arbundles/src/signing";
 
 
-async function createConnection() {
+async function createConnection(): Promise<web3.Connection> {
     return new web3.Connection(
         web3.clusterApiUrl(currencies["solana"].provider as web3.Cluster), "confirmed"
     );
