@@ -1,11 +1,13 @@
 import Axios, { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios";
 
+// taken from the arweave.js lib
 export interface ApiConfig {
     host?: string;
     protocol?: string;
     port?: string | number;
     timeout?: number;
     logging?: boolean;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     logger?: Function;
 }
 
@@ -19,11 +21,11 @@ export default class Api {
         this.applyConfig(config);
     }
 
-    public applyConfig(config: ApiConfig) {
+    public applyConfig(config: ApiConfig): void {
         this.config = this.mergeDefaults(config);
     }
 
-    public getConfig() {
+    public getConfig(): ApiConfig {
         return this.config;
     }
 
@@ -72,10 +74,6 @@ export default class Api {
         }
     }
 
-    /**
-     * Get an AxiosInstance with the base configuration setup to fire off
-     * a request to the network.
-     */
     public request(): AxiosInstance {
         const instance = Axios.create({
             baseURL: `${this.config.protocol}://${this.config.host}:${this.config.port}`,

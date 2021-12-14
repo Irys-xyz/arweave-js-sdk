@@ -23,27 +23,10 @@ export interface Config {
     gatewayConfig: ApiConfig,
 }
 
-
-// export enum Currencies {
-//     ARWEAVE = "arweave",
-//     SOLANA = "solana",
-//     AVALANCHE = "avalanche",
-//     MATIC = "matic"
-// }
-
-// export interface ApiConfig {
-//     host?: string;
-//     protocol?: string;
-//     port?: string | number;
-//     timeout?: number;
-//     logging?: boolean;
-//     logger?: Function;
-//   }
-
 export default abstract class Bundlr {
     public api: Api;
     public utils: Utils;
-    public uploader: Uploader | NodeUploader;
+    public uploader: Uploader;
     public funder: Fund;
     public address;
     public currency;
@@ -65,7 +48,7 @@ export default abstract class Bundlr {
         keys[currency] = { key: wallet, address: undefined };
         this.wallet = wallet;
         const parsed = new URL(url);
-        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname }); //borrow their nice Axios API :p
+        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname });
         // if (currency === "arweave") {
         //     //arweave = new Arweave(this.api.getConfig());
         //     arweave = Arweave.init({ host: "arweave.net", protocol: "https", port: 443 });

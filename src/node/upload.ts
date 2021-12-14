@@ -1,15 +1,12 @@
 import { readFileSync, promises } from "fs";
 import mime from "mime-types";
-// import Api from "arweave/node/lib/api";
 import { AxiosResponse } from "axios";
 import { Currency } from "../common/currencies";
 import Uploader from "../common/upload";
 import Api from "../common/api";
 
 export default class NodeUploader extends Uploader {
-    // protected api: Api;
-    // protected currency: string;
-    // protected currencyConfig: Currency;
+
     constructor(api: Api, currency: string, currencyConfig: Currency) {
         super(api, currency, currencyConfig);
     }

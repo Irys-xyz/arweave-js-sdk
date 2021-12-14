@@ -9,6 +9,11 @@
     "project": "tsconfig.json",
     "sourceType": "module"
   },
+  "overrides": [
+    {
+      "files": ["**/*.ts"] //ignore .js files
+    }
+  ],
   "plugins": ["@typescript-eslint"],
   "extends": [
     "eslint:recommended",
