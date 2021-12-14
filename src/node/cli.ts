@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Note: DO NOT REMOVE/ALTER THE ABOVE LINE - it is called a 'shebang' and is vital for CLI execution.
-import { Command } from "commander";
+import { Command, OptionValues } from "commander";
 import { readFileSync, statSync } from "fs";
 import Bundlr from ".";
 import inquirer from "inquirer";
@@ -126,9 +126,9 @@ async function confirmation(message: string): Promise<boolean> {
  * @param opts the parsed options from the cli
  * @returns a new Bundlr instance
  */
-async function init(opts, operation) {
-    let wallet;
-    let bundler;
+async function init(opts: OptionValues, operation: string): Promise<Bundlr> {
+    let wallet: any;
+    let bundler: Bundlr;
 
     if (!opts.currency) {
         throw new Error("currency flag (-c) is required!");
@@ -167,7 +167,7 @@ async function init(opts, operation) {
  * @param path path to the JWK file
  * @returns JWK interface
  */
-async function loadWallet(path: string) {
+async function loadWallet(path: string): Promise<any> {
     try {
         statSync(path)
         console.log("loading wallet file");

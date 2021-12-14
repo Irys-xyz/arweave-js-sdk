@@ -1,7 +1,8 @@
-import Api from "arweave/node/lib/api";
+// import Api from "arweave/node/lib/api";
 import { JWKInterface } from "arweave/node/lib/wallet";
 import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
+import Api from "./api";
 import { Currency } from "./currencies";
 
 export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
@@ -72,6 +73,7 @@ export default class Utils {
         Utils.checkAndThrow(res, "Getting storage cost");
         return new BigNumber((res).data);
     }
+
     public async confirmationPoll(txid: string): Promise<boolean> {
         if (["arweave"].includes(this.currency)) { return true; }
         for (let i = 0; i < 10; i++) {

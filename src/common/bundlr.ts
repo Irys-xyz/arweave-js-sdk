@@ -1,14 +1,15 @@
-import Api, { ApiConfig } from "arweave/node/lib/api";
+// import Api, { ApiConfig } from "arweave/node/lib/api";
 import { JWKInterface } from "arweave/node/lib/wallet";
 import Utils from "./utils";
 import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
-import { AxiosResponse } from "axios";
-// import Arweave from "arweave";
+
 import { Currency } from "./currencies";
 import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
+import NodeUploader from "../node/upload";
+import Api, { ApiConfig } from "./api";
 
 let currencies;
 
@@ -39,10 +40,10 @@ export interface Config {
 //     logger?: Function;
 //   }
 
-export default class Bundlr {
+export default abstract class Bundlr {
     public api: Api;
     public utils: Utils;
-    public uploader: Uploader;
+    public uploader: Uploader | NodeUploader;
     public funder: Fund;
     public address;
     public currency;
@@ -115,14 +116,7 @@ export default class Bundlr {
     async fund(amount: number, multiplier?: number): Promise<any> {
         return this.funder.fund(amount, multiplier)
     }
-    /**
-     * Upload a file at the specified path to the bundler
-     * @param path path to the file to upload
-     * @returns bundler response
-     */
-    async uploadFile(path: string): Promise<AxiosResponse<any>> {
-        return this.uploader.uploadFile(path);
-    };
+
     /**
      * Create a new BundlrTransactions (flex currency arbundles dataItem)
      * @param data 

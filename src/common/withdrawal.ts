@@ -2,8 +2,9 @@ import { deepHash } from "arbundles";
 import { stringToBuffer } from "arweave/node/lib/utils";
 import { AxiosResponse } from "axios";
 import Utils from "./utils";
-import Api from "arweave/node/lib/api";
+// import Api from "arweave/node/lib/api";
 import BigNumber from "bignumber.js";
+import Api from "./api";
 
 interface data {
     publicKey: string | Buffer,

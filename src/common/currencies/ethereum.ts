@@ -33,7 +33,7 @@ export function ethConfigFactory(config: { name: string, ticker: string, provide
     }
 
     function ethOwnerToAddress(owner: Uint8Array): string {
-        return "0x" + keccak256(owner.slice(1)).slice(-20).toString("hex");
+        return "0x" + keccak256(Buffer.from(owner.slice(1))).slice(-20).toString("hex");
     }
 
     async function ethGetTx(txId: string): Promise<Tx> {
@@ -128,11 +128,11 @@ export function ethConfigFactory(config: { name: string, ticker: string, provide
         account,
         provider: providerUrl,
         getTx: ethGetTx,
-        getId: async (item) => {
+        getId: async (item): Promise<string> => {
             return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
         },
         ownerToAddress: ethOwnerToAddress,
-        price: () => getRedstonePrice(ticker),
+        price: (): Promise<number> => getRedstonePrice(ticker),
         sign: ethSign,
         getSigner: ethGetSigner,
         verify: ethVerify,

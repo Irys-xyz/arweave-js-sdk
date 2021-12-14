@@ -1,35 +1,18 @@
 import { createData, DataItem } from "arbundles";
-import { readFileSync, promises } from "fs";
-import mime from "mime-types";
-import Api from "arweave/node/lib/api";
+// import Api from "arweave/node/lib/api";
 import { AxiosResponse } from "axios";
+import Api from "./api";
 import { Currency } from "./currencies";
 
 export default class Uploader {
-    private readonly api: Api
-    private currency: string;
-    private currencyConfig: Currency;
+    protected api: Api
+    protected currency: string;
+    protected currencyConfig: Currency;
 
     constructor(api: Api, currency: string, currencyConfig: Currency) {
         this.api = api;
         this.currency = currency;
         this.currencyConfig = currencyConfig;
-    }
-
-    /**
-     * Uploads a file to the bundler
-     * @param path to the file to be uploaded
-     * @returns the response from the bundler
-     */
-    public async uploadFile(path: string): Promise<AxiosResponse<any>> {
-        if (!promises.stat(path).then(_ => true).catch(_ => false)) {
-            throw new Error(`Unable to access path: ${path}`);
-        }
-        //const signer = await this.currencyConfig.getSigner();
-        const mimeType = mime.lookup(path);
-        const tags = [{ name: "Content-Type", value: (mimeType ? mimeType : "application/octet-stream") }]
-        const data = readFileSync(path);
-        return await this.upload(data, tags)
     }
 
     /**
@@ -54,6 +37,7 @@ export default class Uploader {
      * @param dataItem 
      * @returns 
      */
+
     public async dataItemUploader(dataItem: DataItem): Promise<AxiosResponse<any>> {
         const { protocol, host, port } = this.api.getConfig();
         const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
