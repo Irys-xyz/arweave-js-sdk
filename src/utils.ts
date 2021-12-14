@@ -71,14 +71,13 @@ export default class Utils {
         Utils.checkAndThrow(res, "Getting storage cost");
         return new BigNumber((res).data);
     }
-    public async confirmationPoll(txid: string): Promise<boolean> {
-        if (["arweave"].includes(this.currency)) { return true; }
-        for (let i = 0; i < 10; i++) {
+
+
+    public async confirmationPoll(txid: string): Promise<void> {
+        if (["arweave"].includes(this.currency)) { return }
+        while ((await this.currencyConfig.getTx(txid)).pending) {
             await sleep(1000);
-            if (!(await this.currencyConfig.getTx(txid)).pending) {
-                return true;
-            }
         }
-        return false;
+        return;
     }
 }

@@ -91,6 +91,7 @@ program.command("fund").description("Sends the specified amount of Winston to th
             confirmation(`Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${(+amount / bundlr.currencyConfig.base[1])} ${bundlr.currency}) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
                 .then(async (confirmed) => {
                     if (confirmed) {
+                        console.log("note: for certain currencies this process might take a while.");
                         const tx = await bundlr.fund(+amount, options.multiplier);
                         console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `)
                     } else {
