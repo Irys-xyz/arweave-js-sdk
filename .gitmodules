@@ -1,0 +1,3 @@
+[submodule "demo-app"]
+	path = demo-app
+	url = https://github.com/Bundlr-Network/metamask-demo-app.git
