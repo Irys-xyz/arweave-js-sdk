@@ -24,10 +24,9 @@ export default class Utils {
      * @param res an axios response
      * @returns nothing if the status code is 200
      */
-    public static checkAndThrow(res: AxiosResponse, context?: string) {
+    public static checkAndThrow(res: AxiosResponse, context?: string): void {
         if (res?.status && res.status != 200) {
             throw new Error(`HTTP Error: ${context}: ${res.status} ${JSON.stringify(res.data)}`);
-
         }
         return;
     }
@@ -47,10 +46,10 @@ export default class Utils {
      * @param address the user's address to query
      * @returns the balance in winston
      */
-    public async getBalance(address: string): Promise<number> {
+    public async getBalance(address: string): Promise<BigNumber> {
         const res = await this.api.get(`/account/balance/${this.currency}?address=${address}`);
         Utils.checkAndThrow(res, "Getting balance");
-        return res.data.balance;
+        return new BigNumber(res.data.balance);
     }
 
     /**
@@ -74,14 +73,11 @@ export default class Utils {
         return new BigNumber((res).data);
     }
 
-    public async confirmationPoll(txid: string): Promise<boolean> {
-        if (["arweave"].includes(this.currency)) { return true; }
-        for (let i = 0; i < 10; i++) {
+    public async confirmationPoll(txid: string): Promise<void> {
+        if (["arweave"].includes(this.currency)) { return }
+        while ((await this.currencyConfig.getTx(txid)).pending) {
             await sleep(1000);
-            if (!(await this.currencyConfig.getTx(txid)).pending) {
-                return true;
-            }
         }
-        return false;
+        return;
     }
 }

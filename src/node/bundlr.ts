@@ -15,6 +15,9 @@ export default class NodeBundlr extends Bundlr {
     constructor(url: string, currency: string, wallet?: any) {
         super(url, currency, wallet);
         this.uploader = new NodeUploader(this.api, currency, this.currencyConfig)
+        if (!(wallet === "default")) {
+            this.address = this.currencyConfig.ownerToAddress(this.currencyConfig.getPublicKey());
+        }
     }
 
     /**

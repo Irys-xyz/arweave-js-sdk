@@ -10,6 +10,7 @@ import { Signer } from "arbundles/src/signing";
 import { solanaCreateTx, solanaGetCurrentHeight, solanaGetFee, solanaGetPublicKey, solanaGetSigner, solanaGetTx, solanaOwnerToAddress, solanaSendTx, solanaSign, solanaVerify } from "./solana";
 import { arweaveCreateTx, arweaveGetCurrentHeight, arweaveGetFee, arweaveGetId, arweaveGetPublicKey, arweaveGetSigner, arweaveGetTx, arweaveOwnerToAddress, arweaveSendTx, arweaveSign, arweaveVerify } from "./arweave";
 import { ethConfigFactory } from "./ethereum";
+import { injectedEthConfigFactory } from "./injectedEthereum";
 
 export interface Tx {
     from: string;
@@ -53,7 +54,7 @@ export interface Currency {
 }
 
 interface CurrencyConfig {
-    [key: string]: Currency;
+    [key: string]: any;
 }
 
 export const currencies: CurrencyConfig = {
@@ -64,7 +65,7 @@ export const currencies: CurrencyConfig = {
         getTx: arweaveGetTx,
         ownerToAddress: arweaveOwnerToAddress,
         getId: arweaveGetId,
-        price: () => getRedstonePrice("AR"),
+        price: (): Promise<number> => getRedstonePrice("AR"),
         sign: arweaveSign,
         getSigner: arweaveGetSigner,
         verify: arweaveVerify,
@@ -77,19 +78,22 @@ export const currencies: CurrencyConfig = {
     "ethereum": keys.ethereum
         ? ethConfigFactory({ name: "ethereum", ticker: "ETH", minConfirm: 5, account: keys.ethereum })
         : undefined,
+    // "matic": keys.matic
+    //     ? ethConfigFactory({ name: "matic", ticker: "MATIC", providerUrl: "https://polygon-rpc.com", minConfirm: 5, account: keys.matic })
+    //     : undefined,
     "matic": keys.matic
-        ? ethConfigFactory({ name: "matic", ticker: "MATIC", providerUrl: "https://polygon-rpc.com", minConfirm: 5, account: keys.matic })
+        ? injectedEthConfigFactory({ name: "matic", ticker: "MATIC", minConfirm: 5, account: keys.matic, providerUrl: "https://polygon-rpc.com" })
         : undefined,
     "solana": keys.solana ? {
         base: ["lamports", 1_000_000_000], // 1e9
         account: { key: keys.solana.key, address: keys.solana.address },
         provider: "mainnet-beta",
         getTx: solanaGetTx,
-        getId: async (item) => {
+        getId: async (item): Promise<string> => {
             return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
         },
         ownerToAddress: solanaOwnerToAddress,
-        price: () => getRedstonePrice("SOL"),
+        price: (): Promise<number> => getRedstonePrice("SOL"),
         sign: solanaSign,
         getSigner: solanaGetSigner,
         verify: solanaVerify,
@@ -99,6 +103,9 @@ export const currencies: CurrencyConfig = {
         createTx: solanaCreateTx,
         getPublicKey: solanaGetPublicKey,
     } : undefined,
+    // "injectedEthereum": keys.injectedEthereum
+    //     ? injectedEthConfigFactory({ name: "ethereum", ticker: "ETH", minConfirm: 5, account: keys.injectedEthereum })
+    //     : undefined,
 };
 
 export async function getRedstonePrice(currency: string): Promise<number> {

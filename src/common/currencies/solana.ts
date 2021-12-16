@@ -9,7 +9,7 @@ import { Signer } from "arbundles/src/signing";
 import SolanaSigner from "arbundles/src/signing/chains/SolanaSigner";
 
 
-async function createConnection() {
+async function createConnection(): Promise<web3.Connection> {
     return new web3.Connection(
         web3.clusterApiUrl(currencies["solana"].provider as web3.Cluster), "confirmed"
     );

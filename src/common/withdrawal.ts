@@ -2,7 +2,6 @@ import { deepHash } from "arbundles";
 import { stringToBuffer } from "arweave/node/lib/utils";
 import { AxiosResponse } from "axios";
 import Utils from "./utils";
-// import Api from "arweave/node/lib/api";
 import BigNumber from "bignumber.js";
 import Api from "./api";
 
@@ -24,7 +23,6 @@ interface data {
  */
 export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber): Promise<AxiosResponse> {
     const c = utils.currencyConfig;
-    // //todo: make util functions directly return data rather than having to post-return mutate
     const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount: amount.toString(), nonce: await utils.getNonce() } as data;
     const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
     data.signature = await c.sign(deephash)

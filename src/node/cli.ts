@@ -5,6 +5,7 @@ import { readFileSync, statSync } from "fs";
 import Bundlr from ".";
 import inquirer from "inquirer";
 import { execSync } from "child_process"
+import BigNumber from "bignumber.js";
 
 const program = new Command();
 
@@ -30,7 +31,7 @@ program
             options.address = address;
             const bundlr = await init(options, "balance");
             const balance = await bundlr.utils.getBalance(address);
-            console.log(`Balance: ${balance} ${bundlr.currencyConfig.base[0]} (${(balance / bundlr.currencyConfig.base[1])} ${bundlr.currency})`);
+            console.log(`Balance: ${balance} ${bundlr.currencyConfig.base[0]} (${(balance.dividedToIntegerBy(bundlr.currencyConfig.base[1]))} ${bundlr.currency})`);
         } catch (err) {
             console.error(`Error whilst getting balance: \n${err} `);
             return;
@@ -44,7 +45,7 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
             const bundlr = await init(options, "withdraw");
             confirmation(`Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`).then(async (confirmed) => {
                 if (confirmed) {
-                    const res = await bundlr.withdrawBalance(parseInt(amount));
+                    const res = await bundlr.withdrawBalance(new BigNumber(amount));
                     console.log(`Status: ${res.status} \nData: ${JSON.stringify(res.data, null, 4)} `);
                 } else {
                     console.log("confirmation failed");
@@ -78,7 +79,7 @@ program.command("fund").description("Sends the specified amount of Winston to th
             confirmation(`Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${(+amount / bundlr.currencyConfig.base[1])} ${bundlr.currency}) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
                 .then(async (confirmed) => {
                     if (confirmed) {
-                        const tx = await bundlr.fund(+amount, options.multiplier);
+                        const tx = await bundlr.fund(new BigNumber(amount), options.multiplier);
                         console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `)
                     } else {
                         console.log("confirmation failed")
@@ -98,7 +99,7 @@ program.command("price").description("Check how much of a specific currency is r
             const bundlr = await init(options, "price");
             await bundlr.utils.getBundlerAddress(options.currency) //will throw if the bundler doesn't support the currency
             //const cost = new BigNumber((await bundlr.api.get(`/price/${options.currency}/${bytes}`)).data)
-            const cost = await bundlr.utils.getStorageCost(options.currency, bytes);
+            const cost = await bundlr.utils.getStorageCost(options.currency, parseInt(bytes));
             console.log(`Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${cost.dividedBy(bundlr.currencyConfig.base[1])} ${bundlr.currency})`);
         } catch (err) {
             console.error(`Error whilst getting price: \n${err} `);

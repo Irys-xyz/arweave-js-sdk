@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import Utils from "./utils";
 
 export default class Fund {
@@ -7,8 +8,8 @@ export default class Fund {
         this.utils = utils;
     }
 
-    public async fund(amount: number, multiplier = 1.0): Promise<any> {
-        if (!Number.isInteger(amount)) { throw new Error("must use an integer for funding amount") }
+    public async fund(amount: BigNumber, multiplier = 1.0): Promise<any> {
+        if (!amount.isInteger()) { throw new Error("must use an integer for funding amount") }
         const c = this.utils.currencyConfig;
         const to = await this.utils.getBundlerAddress(this.utils.currency);
         let baseFee;
@@ -18,10 +19,11 @@ export default class Fund {
             baseFee = await c.getFee(amount, to)
         }
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
-        const tx = await c.createTx(amount, to, fee.toString())
+        const tx = await c.createTx(amount, to, fee.toString()).then((tx) => { console.log("created TX (then)"); return tx; })
+        console.log(`created TX: ${tx}`);
         const nres = await c.sendTx(tx.tx);
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
-        if (!await this.utils.confirmationPoll(tx.txId)) { throw new Error("Fund transaction didn't confirm after 10 seconds.") }
+        await this.utils.confirmationPoll(tx.txId)
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
         Utils.checkAndThrow(bres, "Posting transaction information to the bundler");
         return { reward: fee, target: to, quantity: amount, id: tx.txId };

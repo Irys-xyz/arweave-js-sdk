@@ -1,5 +1,4 @@
 import { createData, DataItem } from "arbundles";
-// import Api from "arweave/node/lib/api";
 import { AxiosResponse } from "axios";
 import Api from "./api";
 import { Currency } from "./currencies";

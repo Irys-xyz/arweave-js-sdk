@@ -1,27 +1,25 @@
-// import Api, { ApiConfig } from "arweave/node/lib/api";
-import { JWKInterface } from "arweave/node/lib/wallet";
 import Utils from "./utils";
 import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
-
+import { AxiosResponse } from "axios";
 import { Currency } from "./currencies";
 import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
-import NodeUploader from "../node/upload";
-import Api, { ApiConfig } from "./api";
+import Api from "./api";
+import BigNumber from "bignumber.js";
 
 let currencies;
 
 export let arweave;
 export const keys: { [key: string]: { key: string, address: string } } = {};
 
-export interface Config {
-    wallet: JWKInterface,
-    address?: string,
-    APIConfig: ApiConfig,
-    gatewayConfig: ApiConfig,
-}
+// export interface Config {
+//     wallet: JWKInterface,
+//     address?: string,
+//     APIConfig: ApiConfig,
+//     gatewayConfig: ApiConfig,
+// }
 
 export default abstract class Bundlr {
     public api: Api;
@@ -36,11 +34,14 @@ export default abstract class Bundlr {
     /**
      * Constructs a new Bundlr instance, as well as supporting subclasses
      * @param url - URL to the bundler
-     * @param wallet - JWK in JSON
+     * @param wallet - any data/object that subsequent currency code requires for cryptographic functions. can be a key, a web3 provider, etc.
      */
     constructor(url: string, currency: string, wallet?: any) {
         // hacky for the moment...
         // specifically about ordering - some stuff here seems silly but leave it for now it works
+        console.log(`loading currency ${currency}`)
+        console.log(`wallet is: ${Object.keys(wallet)}`)
+
         this.currency = currency;
         if (!wallet) {
             wallet = "default";
@@ -60,9 +61,6 @@ export default abstract class Bundlr {
         }
         this.currencyConfig = currencies[currency];
 
-        if (!(wallet === "default")) {
-            this.address = this.currencyConfig.ownerToAddress(this.currencyConfig.getPublicKey());
-        }
         this.currencyConfig.account.address = this.address;
         //this.address = address;
         this.utils = new Utils(this.api, this.currency, this.currencyConfig, { address: this.address, wallet });
@@ -72,7 +70,7 @@ export default abstract class Bundlr {
         this.funder = new Fund(this.utils);
 
     }
-    async withdrawBalance(amount) {
+    async withdrawBalance(amount: BigNumber): Promise<AxiosResponse<any>> {
         return await withdrawBalance(this.utils, this.api, amount);
     }
 
@@ -80,7 +78,7 @@ export default abstract class Bundlr {
      * Gets the balance for the loaded wallet
      * @returns balance (in winston)
      */
-    async getLoadedBalance(): Promise<number> {
+    async getLoadedBalance(): Promise<BigNumber> {
         return this.utils.getBalance(this.address)
     }
     /**
@@ -88,7 +86,7 @@ export default abstract class Bundlr {
      * @param address address to query for
      * @returns the balance (in winston)
      */
-    async getBalance(address: string): Promise<number> {
+    async getBalance(address: string): Promise<BigNumber> {
         return this.utils.getBalance(address)
     }
     /**
@@ -96,7 +94,7 @@ export default abstract class Bundlr {
      * @param amount amount to send in winston
      * @returns Arweave transaction
      */
-    async fund(amount: number, multiplier?: number): Promise<any> {
+    async fund(amount: BigNumber, multiplier?: number): Promise<any> {
         return this.funder.fund(amount, multiplier)
     }
 

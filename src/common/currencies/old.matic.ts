@@ -18,7 +18,7 @@ export async function maticVerify(pub, data, sig): Promise<boolean> {
 }
 
 export function maticOwnerToAddress(owner: Uint8Array): string {
-    return "0x" + keccak256(owner.slice(1)).slice(-20).toString("hex");
+    return "0x" + keccak256(Buffer.from(owner.slice(1))).slice(-20).toString("hex");
 }
 
 export async function maticGetTx(txId: string): Promise<Tx> {
