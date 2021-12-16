@@ -22,16 +22,21 @@ const EthereumSigner = InjectedEthereumSigner
 export function injectedEthConfigFactory(config: { name: string, ticker: string, providerUrl?: string, minConfirm: number, account: Currency["account"] }) {
     const { ticker, minConfirm, account, providerUrl } = config;
     const w3provider = account.key as ethers.providers.Web3Provider //TODO: fix
+    let signer;
     console.log("loading injectedEthereum");
 
 
     async function ethSign(message: Uint8Array): Promise<Uint8Array> {
+        console.log(`signing message: ${message}`)
         const signer = await ethGetSigner();
         return signer.sign(message);
     }
 
     function ethGetSigner(): Signer {
-        return new InjectedEthereumSigner(w3provider)
+        if (!signer) {
+            signer = new InjectedEthereumSigner(w3provider);
+        }
+        return signer
     }
 
     async function ethVerify(pub, data, sig): Promise<boolean> {
@@ -88,24 +93,19 @@ export function injectedEthConfigFactory(config: { name: string, ticker: string,
         const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() })
         const gasPrice = await signer.getGasPrice();
         const txr = await signer.populateTransaction({ to, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas })
-        //const tx = await signer.signTransaction(txr)
-        //const txId = "0x" + keccak256(Buffer.from(tx.slice(2), "hex")).toString("hex");
         return { txId: "", tx: txr };
     }
 
     async function ethSendTx(tx: ethers.providers.TransactionRequest): Promise<any> {
-        console.log(`sending tx: ${tx}`)
         const signer = await w3provider.getSigner();
         const receipt = await signer.sendTransaction(tx).catch((e) => { console.error(`Sending tx: ${e}`) })
-        console.log(receipt)
-        return receipt;
+        return receipt ? receipt.hash : undefined
     }
 
     async function ethGetPublicKey(): Promise<Buffer> {
         const signer = await ethGetSigner() as InjectedEthereumSigner
         await signer.setPublicKey();
         return signer.publicKey;
-        //return Buffer.from(publicKeyCreate(Buffer.from(currencies[name].account.key, "hex"), false));
     }
 
 

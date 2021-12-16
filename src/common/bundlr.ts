@@ -14,12 +14,6 @@ let currencies;
 export let arweave;
 export const keys: { [key: string]: { key: string, address: string } } = {};
 
-// export interface Config {
-//     wallet: JWKInterface,
-//     address?: string,
-//     APIConfig: ApiConfig,
-//     gatewayConfig: ApiConfig,
-// }
 
 export default abstract class Bundlr {
     public api: Api;
@@ -63,7 +57,7 @@ export default abstract class Bundlr {
 
         this.currencyConfig.account.address = this.address;
         //this.address = address;
-        this.utils = new Utils(this.api, this.currency, this.currencyConfig, { address: this.address, wallet });
+        this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         // this.withdrawBalance = async (amount: number) => await withdrawBalance(this.utils, this.api, wallet, amount);
         this.uploader = new Uploader(this.api, currency, this.currencyConfig);
         // this.upload = this.uploader.upload; note to self: don't do this, this destorys 'this' scoping for instantiated subclasses

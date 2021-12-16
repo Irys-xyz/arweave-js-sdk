@@ -1,5 +1,4 @@
 // import Api from "arweave/node/lib/api";
-import { JWKInterface } from "arweave/node/lib/wallet";
 import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
 import Api from "./api";
@@ -9,12 +8,10 @@ export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(re
 
 export default class Utils {
     public api: Api;
-    private config: { address: string, wallet: JWKInterface };
     public currency: string;
     public currencyConfig: Currency;
-    constructor(api: Api, currency: string, currencyConfig: Currency, config: { address: string, wallet: JWKInterface }) {
+    constructor(api: Api, currency: string, currencyConfig: Currency,) {
         this.api = api;
-        this.config = config;
         this.currency = currency;
         this.currencyConfig = currencyConfig;
     };
@@ -36,7 +33,7 @@ export default class Utils {
      * @returns nonce for the current user
      */
     public async getNonce(): Promise<number> {
-        const res = await this.api.get(`/account/withdrawals/${this.currency}?address=${this.config.address}`);
+        const res = await this.api.get(`/account/withdrawals/${this.currency}?address=${this.currencyConfig.account.address}`);
         Utils.checkAndThrow(res, "Getting withdrawal nonce");
         return (res).data;
     }

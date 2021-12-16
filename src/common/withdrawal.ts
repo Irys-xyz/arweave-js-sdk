@@ -4,14 +4,15 @@ import { AxiosResponse } from "axios";
 import Utils from "./utils";
 import BigNumber from "bignumber.js";
 import Api from "./api";
+import base64url from "base64url";
 
-interface data {
-    publicKey: string | Buffer,
-    currency: string,
-    amount: string,
-    nonce: number,
-    signature: Buffer | Uint8Array
-}
+// interface data {
+//     publicKey: string | Buffer,
+//     currency: string,
+//     amount: string,
+//     nonce: number,
+//     signature: Buffer | Uint8Array
+// }
 
 /**
  * Create and send a withdrawl request 
@@ -23,19 +24,19 @@ interface data {
  */
 export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber): Promise<AxiosResponse> {
     const c = utils.currencyConfig;
-    const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount: amount.toString(), nonce: await utils.getNonce() } as data;
+    const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount: amount.toString(), nonce: await utils.getNonce(), signature: undefined }
     const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
+    console.log("preparing to sign");
     data.signature = await c.sign(deephash)
-    const ds = JSON.stringify(data);
-    const du = JSON.parse(ds);
-
-    if (du.publicKey.type === "Buffer") {
-        du.publicKey = Buffer.from(du.publicKey);
-    }
-    if (du.signature.type === "Buffer") {
-        du.signature = Buffer.from(du.signature);
-    } else {
-        du.signature = Uint8Array.from(Object.values(du.signature));
-    }
+    console.log("Signed data");
+    const isValid = await c.verify(data.publicKey, deephash, data.signature)
+    console.log("pk, sig, dh")
+    console.log(data.publicKey);
+    console.log(data.signature);
+    console.log(deephash);
+    console.log(`request is valid? : ${isValid}`)
+    data.publicKey = base64url.encode(data.publicKey)
+    data.signature = base64url.encode(Buffer.from(data.signature))
+    console.log(JSON.stringify(data));
     return api.post("/account/withdraw", data);
 }

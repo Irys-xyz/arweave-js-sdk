@@ -1,4 +1,5 @@
 import Bundlr from "../common/bundlr";
+import Utils from "../common/utils";
 import WebFund from "./fund";
 
 export default class WebBundlr extends Bundlr {
@@ -12,7 +13,11 @@ export default class WebBundlr extends Bundlr {
     public async ready(): Promise<void> {
         console.log("webBundlr readied!")
         const pkey = await this.currencyConfig.getPublicKey();
-        console.log(`pkey: ${pkey}`);
-        this.address = this.currencyConfig.ownerToAddress(pkey);
+        console.log(`pKey: ${JSON.stringify(pkey)}`)
+        const address = this.currencyConfig.ownerToAddress(pkey);
+        this.address = address;
+        this.currencyConfig.account.address = address
+
+        this.utils = new Utils(this.api, this.currency, this.currencyConfig);
     }
 }

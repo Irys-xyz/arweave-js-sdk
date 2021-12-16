@@ -1,9 +1,6 @@
 import { AxiosResponse } from "axios";
 import Bundlr from "../common/bundlr";
 import NodeUploader from "./upload";
-// import Api from "arweave/node/lib/api";
-
-
 
 export default class NodeBundlr extends Bundlr {
     public uploader: NodeUploader; //re-define type
@@ -16,7 +13,9 @@ export default class NodeBundlr extends Bundlr {
         super(url, currency, wallet);
         this.uploader = new NodeUploader(this.api, currency, this.currencyConfig)
         if (!(wallet === "default")) {
-            this.address = this.currencyConfig.ownerToAddress(this.currencyConfig.getPublicKey());
+            const address = this.currencyConfig.ownerToAddress(this.currencyConfig.getPublicKey());
+            this.address = address;
+            this.currencyConfig.account.address = address;
         }
     }
 

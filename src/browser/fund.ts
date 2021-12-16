@@ -19,11 +19,12 @@ export default class WebFund extends Fund {
             baseFee = await c.getFee(amount, to)
         }
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
-        const tx = await c.createTx(amount, to, fee.toString()).then((tx) => { console.log("created TX (then)"); return tx; });
-        const txId = await c.sendTx(tx.tx); // should give the txId
+        const tx = await c.createTx(amount, to, fee.toString());
+        tx.txId = await c.sendTx(tx.tx);
         await this.utils.confirmationPoll(tx.txId)
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
         Utils.checkAndThrow(bres, "Posting transaction information to the bundler");
+        console.log(`sucessfully posted tx ${tx.txId}`)
         return { reward: fee, target: to, quantity: amount, id: tx.txId };
     }
 }
