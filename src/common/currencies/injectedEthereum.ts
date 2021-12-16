@@ -6,6 +6,7 @@ import BigNumber from "bignumber.js";
 import base64url from "base64url";
 import { InjectedEthereumSigner, Signer } from "arbundles/src/signing";
 import Arweave from "arweave";
+const ethBigNumber = ethers.BigNumber
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 
@@ -78,22 +79,21 @@ export function injectedEthConfigFactory(config: { name: string, ticker: string,
 
         const estimatedGas = await provider.estimateGas(tx);
         const gasPrice = await provider.getGasPrice();
-        console.log("gotten fee");
         return new BigNumber(estimatedGas.mul(gasPrice).toString());
     }
 
-    async function ethCreateTx(amount, to, _fee?): Promise<any> {
-        const estimatedGas = await w3provider.estimateGas({ to, value: amount.toHexString() })
-        const gasPrice = await w3provider.getGasPrice();
+    async function ethCreateTx(amount: BigNumber, to: string, _fee?: BigNumber): Promise<any> {
+        const amountc = ethBigNumber.from(amount.toString())
         const signer = await w3provider.getSigner();
-        const txr = await signer.populateTransaction({ to, value: amount.toHexString(), gasPrice, gasLimit: estimatedGas })
+        const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() })
+        const gasPrice = await signer.getGasPrice();
+        const txr = await signer.populateTransaction({ to, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas })
         const tx = await signer.signTransaction(txr)
         const txId = "0x" + keccak256(Buffer.from(tx.slice(2), "hex")).toString("hex");
         return { txId, tx };
     }
 
     async function ethSendTx(tx: string): Promise<void> {
-        if (tx == undefined) { return }
         console.log(`sending tx: ${tx}`)
         await w3provider.sendTransaction(tx).catch((e) => { console.error(`Sending tx: ${e}`) })
     }
