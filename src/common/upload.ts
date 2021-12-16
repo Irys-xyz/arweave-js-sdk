@@ -1,7 +1,7 @@
 import { createData, DataItem } from "arbundles";
 import { AxiosResponse } from "axios";
 import Api from "./api";
-import { Currency } from "./currencies";
+import { Currency } from "../node/currencies";
 
 export default class Uploader {
     protected api: Api

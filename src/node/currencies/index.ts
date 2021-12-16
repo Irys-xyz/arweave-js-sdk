@@ -4,13 +4,12 @@ import base64url from "base64url";
 import Arweave from "arweave";
 import { FileDataItem } from "arbundles/file";
 
-import { keys } from "../bundlr";
+import { keys } from "../../common/bundlr";
 //import { maticCreateTx, maticGetFee, maticGetHeight, maticGetPublicKey, maticGetSigner, maticGetTx, maticOwnerToAddress, maticSendTx, maticSign, maticVerify } from "./matic";
 import { Signer } from "arbundles/src/signing";
 import { solanaCreateTx, solanaGetCurrentHeight, solanaGetFee, solanaGetPublicKey, solanaGetSigner, solanaGetTx, solanaOwnerToAddress, solanaSendTx, solanaSign, solanaVerify } from "./solana";
 import { arweaveCreateTx, arweaveGetCurrentHeight, arweaveGetFee, arweaveGetId, arweaveGetPublicKey, arweaveGetSigner, arweaveGetTx, arweaveOwnerToAddress, arweaveSendTx, arweaveSign, arweaveVerify } from "./arweave";
 import { ethConfigFactory } from "./ethereum";
-import { injectedEthConfigFactory } from "./injectedEthereum";
 
 export interface Tx {
     from: string;
@@ -78,12 +77,12 @@ export const currencies: CurrencyConfig = {
     "ethereum": keys.ethereum
         ? ethConfigFactory({ name: "ethereum", ticker: "ETH", minConfirm: 5, account: keys.ethereum })
         : undefined,
-    // "matic": keys.matic
-    //     ? ethConfigFactory({ name: "matic", ticker: "MATIC", providerUrl: "https://polygon-rpc.com", minConfirm: 5, account: keys.matic })
-    //     : undefined,
     "matic": keys.matic
-        ? injectedEthConfigFactory({ name: "matic", ticker: "MATIC", minConfirm: 5, account: keys.matic, providerUrl: "https://polygon-rpc.com" })
+        ? ethConfigFactory({ name: "matic", ticker: "MATIC", providerUrl: "https://polygon-rpc.com", minConfirm: 5, account: keys.matic })
         : undefined,
+    // "matic": keys.matic
+    //     ? injectedEthConfigFactory({ name: "matic", ticker: "MATIC", minConfirm: 5, account: keys.matic, providerUrl: "https://polygon-rpc.com" })
+    //     : undefined,
     "solana": keys.solana ? {
         base: ["lamports", 1_000_000_000], // 1e9
         account: { key: keys.solana.key, address: keys.solana.address },

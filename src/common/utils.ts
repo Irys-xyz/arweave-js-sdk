@@ -2,7 +2,7 @@
 import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
 import Api from "./api";
-import { Currency } from "./currencies";
+import { Currency } from "../node/currencies";
 
 export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 

@@ -1,7 +1,7 @@
 import { readFileSync, promises } from "fs";
 import mime from "mime-types";
 import { AxiosResponse } from "axios";
-import { Currency } from "../common/currencies";
+import { Currency } from "./currencies";
 import Uploader from "../common/upload";
 import Api from "../common/api";
 

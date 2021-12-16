@@ -1,29 +1,28 @@
 import { Currency, getRedstonePrice, Tx } from "./index";
 import keccak256 from "keccak256";
-
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
 import base64url from "base64url";
 import { InjectedEthereumSigner, Signer } from "arbundles/src/signing";
 import Arweave from "arweave";
-const ethBigNumber = ethers.BigNumber
+const ethBigNumber = ethers.BigNumber //required for hexString conversions (w/ 0x padding)
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 
 
-export interface AsyncCurrency extends Currency {
-    getPublicKey(): Promise<Buffer | string>;
-    ownerToAddress(): Promise<string>;
-}
+// export interface AsyncCurrency extends Currency {
+//     getPublicKey(): Promise<Buffer | string>;
+//     ownerToAddress(): Promise<string>;
+// }
 
 const EthereumSigner = InjectedEthereumSigner
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function injectedEthConfigFactory(config: { name: string, ticker: string, providerUrl?: string, minConfirm: number, account: Currency["account"] }) {
+export function ethConfigFactory(config: { name: string, ticker: string, providerUrl?: string, minConfirm: number, account: Currency["account"] }) {
     const { ticker, minConfirm, account, providerUrl } = config;
-    const w3provider = account.key as ethers.providers.Web3Provider //TODO: fix
+    const w3provider = account.key as ethers.providers.Web3Provider //TODO: OOP rewrite
     let signer;
-    console.log("loading injectedEthereum");
+    // console.log("loading injectedEthereum");
 
 
     async function ethSign(message: Uint8Array): Promise<Uint8Array> {
