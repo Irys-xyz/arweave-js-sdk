@@ -88,14 +88,17 @@ export function injectedEthConfigFactory(config: { name: string, ticker: string,
         const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() })
         const gasPrice = await signer.getGasPrice();
         const txr = await signer.populateTransaction({ to, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas })
-        const tx = await signer.signTransaction(txr)
-        const txId = "0x" + keccak256(Buffer.from(tx.slice(2), "hex")).toString("hex");
-        return { txId, tx };
+        //const tx = await signer.signTransaction(txr)
+        //const txId = "0x" + keccak256(Buffer.from(tx.slice(2), "hex")).toString("hex");
+        return { txId: "", tx: txr };
     }
 
-    async function ethSendTx(tx: string): Promise<void> {
+    async function ethSendTx(tx: ethers.providers.TransactionRequest): Promise<any> {
         console.log(`sending tx: ${tx}`)
-        await w3provider.sendTransaction(tx).catch((e) => { console.error(`Sending tx: ${e}`) })
+        const signer = await w3provider.getSigner();
+        const receipt = await signer.sendTransaction(tx).catch((e) => { console.error(`Sending tx: ${e}`) })
+        console.log(receipt)
+        return receipt;
     }
 
     async function ethGetPublicKey(): Promise<Buffer> {

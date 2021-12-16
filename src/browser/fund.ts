@@ -1,11 +1,11 @@
 import BigNumber from "bignumber.js";
-import Utils from "./utils";
+import Fund from "../common/fund";
+import Utils from "../common/utils";
 
-export default class Fund {
-    protected utils: Utils;
+export default class WebFund extends Fund {
 
     constructor(utils: Utils) {
-        this.utils = utils;
+        super(utils)
     }
 
     public async fund(amount: BigNumber, multiplier = 1.0): Promise<any> {
@@ -19,10 +19,8 @@ export default class Fund {
             baseFee = await c.getFee(amount, to)
         }
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
-        const tx = await c.createTx(amount, to, fee.toString()).then((tx) => { console.log("created TX (then)"); return tx; })
-        console.log(`created TX: ${tx}`);
-        const nres = await c.sendTx(tx.tx);
-        Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
+        const tx = await c.createTx(amount, to, fee.toString()).then((tx) => { console.log("created TX (then)"); return tx; });
+        const txId = await c.sendTx(tx.tx); // should give the txId
         await this.utils.confirmationPoll(tx.txId)
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
         Utils.checkAndThrow(bres, "Posting transaction information to the bundler");

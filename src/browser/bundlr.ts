@@ -1,9 +1,11 @@
 import Bundlr from "../common/bundlr";
+import WebFund from "./fund";
 
 export default class WebBundlr extends Bundlr {
 
     constructor(url: string, currency: string, provider?: any) {
         super(url, currency, provider);
+        this.funder = new WebFund(this.utils);
     }
 
     //async initialisation 
