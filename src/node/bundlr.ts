@@ -6,7 +6,7 @@ import Utils from "../common/utils";
 import NodeUploader from "./upload";
 
 let currencies;
-export const keys: { [key: string]: { key: string, address: string } } = {};
+export const keys: { [key: string]: { key: any, address: string } } = {};
 
 export default class NodeBundlr extends Bundlr {
     public uploader: NodeUploader; //re-define type
@@ -19,8 +19,6 @@ export default class NodeBundlr extends Bundlr {
         super();
         // hacky for the moment...
         // specifically about ordering - some stuff here seems silly but leave it for now it works
-        console.log(`loading currency ${currency}`)
-        console.log(`wallet is: ${Object.keys(wallet)}`)
 
         this.currency = currency;
         if (!wallet) {
@@ -37,14 +35,16 @@ export default class NodeBundlr extends Bundlr {
             throw new Error(`Unknown/Unsuported currency ${currency}`);
         }
 
+        this.currencyConfig = currencies[currency];
+        this.currencyConfig.account.address = this.address;
+
         if (!(wallet === "default")) {
             const address = this.currencyConfig.ownerToAddress(this.currencyConfig.getPublicKey());
             this.address = address;
             this.currencyConfig.account.address = address;
         }
 
-        this.currencyConfig = currencies[currency];
-        this.currencyConfig.account.address = this.address;
+
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
         this.uploader = new NodeUploader(this.api, currency, this.currencyConfig)

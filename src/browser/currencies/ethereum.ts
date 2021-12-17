@@ -22,11 +22,10 @@ export function ethConfigFactory(config: { name: string, ticker: string, provide
     const { ticker, minConfirm, account, providerUrl } = config;
     const w3provider = account.key as ethers.providers.Web3Provider //TODO: OOP rewrite
     let signer;
-    // console.log("loading injectedEthereum");
 
 
     async function ethSign(message: Uint8Array): Promise<Uint8Array> {
-        console.log(`signing message: ${message}`)
+
         const signer = await ethGetSigner();
         return signer.sign(message);
     }

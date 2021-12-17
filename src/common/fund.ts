@@ -19,8 +19,7 @@ export default class Fund {
             baseFee = await c.getFee(amount, to)
         }
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
-        const tx = await c.createTx(amount, to, fee.toString()).then((tx) => { console.log("created TX (then)"); return tx; })
-        console.log(`created TX: ${tx}`);
+        const tx = await c.createTx(amount, to, fee.toString())
         const nres = await c.sendTx(tx.tx);
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
         await this.utils.confirmationPoll(tx.txId)

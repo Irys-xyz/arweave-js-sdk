@@ -11,10 +11,6 @@ import BigNumber from "bignumber.js";
 
 // let currencies;
 
-export let arweave;
-export const keys: { [key: string]: { key: string, address: string } } = {};
-
-
 export default abstract class Bundlr {
     public api: Api;
     public utils: Utils;

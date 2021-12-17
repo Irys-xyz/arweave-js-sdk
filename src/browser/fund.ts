@@ -24,7 +24,6 @@ export default class WebFund extends Fund {
         await this.utils.confirmationPoll(tx.txId)
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
         Utils.checkAndThrow(bres, "Posting transaction information to the bundler");
-        console.log(`sucessfully posted tx ${tx.txId}`)
         return { reward: fee, target: to, quantity: amount, id: tx.txId };
     }
 }

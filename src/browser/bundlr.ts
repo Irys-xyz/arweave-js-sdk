@@ -34,7 +34,6 @@ export default class WebBundlr extends Bundlr {
 
     //async initialisation 
     public async ready(): Promise<void> {
-        console.log("webBundlr readied!")
         const pkey = await this.currencyConfig.getPublicKey();
         const address = this.currencyConfig.ownerToAddress(pkey);
         this.address = address;

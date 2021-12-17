@@ -26,17 +26,13 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber)
     const c = utils.currencyConfig;
     const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount: amount.toString(), nonce: await utils.getNonce(), signature: undefined }
     const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
-    console.log("preparing to sign");
+
     data.signature = await c.sign(deephash)
-    console.log("Signed data");
-    const isValid = await c.verify(data.publicKey, deephash, data.signature)
-    console.log("pk, sig, dh")
-    console.log(data.publicKey);
-    console.log(data.signature);
-    console.log(deephash);
-    console.log(`request is valid? : ${isValid}`)
+
+    if (! await c.verify(data.publicKey, deephash, data.signature)) { throw new Error("Internal withdrawal validation failed") }
+
     data.publicKey = base64url.encode(data.publicKey)
     data.signature = base64url.encode(Buffer.from(data.signature))
-    console.log(JSON.stringify(data));
+
     return api.post("/account/withdraw", data);
 }

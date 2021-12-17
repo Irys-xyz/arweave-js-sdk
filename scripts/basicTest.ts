@@ -1,4 +1,5 @@
-import Bundlr from "../src/index";
+import BigNumber from "bignumber.js";
+import Bundlr from "../src/node";
 //import { readFileSync } from 'fs';
 
 async function a() {
@@ -14,12 +15,12 @@ async function a() {
         console.log(`Upload: ${JSON.stringify(res.data)}`);
         const bAddress = await bundler.utils.getBundlerAddress("arweave");
         console.log(`bundler address: ${bAddress}`);
-        let tx = await bundler.fund(1000, 1.2);
+        let tx = await bundler.fund(new BigNumber("1000"), 1.2);
         console.log(tx);
         let rec = await bundler.uploadFile("a.txt");
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
-        let resw = await bundler.withdrawBalance(1000);
+        let resw = await bundler.withdrawBalance(new BigNumber(1000));
         console.log(`withdrawl: ${JSON.stringify(resw.data)}`);
 
         console.log("done");
