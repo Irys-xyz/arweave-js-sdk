@@ -1,8 +1,10 @@
-import Bundlr from "../src/index";
+import Bundlr from "../src/node/index";
 import { readFileSync } from "fs";
 
 //const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// this is a test script to see how many parallell upload operations a node can handle 
+// DO NOT USE THIS ON A NODE YOU DO NOT OWN/OPERATE. EVER.
 async function a() {
     const start = performance.now();
     let p = []

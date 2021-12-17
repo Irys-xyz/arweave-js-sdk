@@ -15,7 +15,7 @@ async function a() {
         console.log(`Upload: ${JSON.stringify(res.data)}`);
         const bAddress = await bundler.utils.getBundlerAddress("arweave");
         console.log(`bundler address: ${bAddress}`);
-        let tx = await bundler.fund(new BigNumber("1000"), 1.2);
+        let tx = await bundler.fund(new BigNumber("1000"), 1);
         console.log(tx);
         let rec = await bundler.uploadFile("a.txt");
         console.log(JSON.stringify(rec.data));
