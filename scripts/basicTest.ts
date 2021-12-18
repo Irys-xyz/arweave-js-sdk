@@ -1,12 +1,11 @@
 import BigNumber from "bignumber.js";
 import Bundlr from "../src/node";
-//import { readFileSync } from 'fs';
+import { readFileSync } from 'fs';
 
 async function a() {
     try {
-        //const JWK = JSON.parse(readFileSync("wallet.json").toString());
-        //let bundler = new Bundlr("https://dev1.bundlr.network", "arweave", JWK);
-        let bundler = new Bundlr("http://dev1.bundlr.network", "matic", "29c17feb590ef5471d4f1d203e3525cbcb3073ccbdc593cd39a9cfff2415eeb0");
+        const JWK = JSON.parse(readFileSync("wallet.json").toString());
+        let bundler = new Bundlr("https://dev1.bundlr.network", "arweave", JWK);
         console.log(bundler.address);
         console.log(`balance: ${await bundler.getLoadedBalance()}`);
         const transaction = await bundler.createTransaction("aaa");

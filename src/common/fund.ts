@@ -23,7 +23,8 @@ export default class Fund {
         const nres = await c.sendTx(tx.tx);
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
         await this.utils.confirmationPoll(tx.txId)
-        const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
+        const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId })
+            .catch(_ => { throw new Error(`failed to post funding tx - ${tx.txId} - keep this id!`) })
         Utils.checkAndThrow(bres, "Posting transaction information to the bundler");
         return { reward: fee, target: to, quantity: amount, id: tx.txId };
     }

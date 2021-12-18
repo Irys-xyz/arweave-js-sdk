@@ -80,9 +80,9 @@ export const currencies: CurrencyConfig = {
     "matic": keys.matic
         ? ethConfigFactory({ name: "matic", ticker: "MATIC", providerUrl: "https://polygon-rpc.com", minConfirm: 5, account: keys.matic })
         : undefined,
-    // "matic": keys.matic
-    //     ? injectedEthConfigFactory({ name: "matic", ticker: "MATIC", minConfirm: 5, account: keys.matic, providerUrl: "https://polygon-rpc.com" })
-    //     : undefined,
+    "bnb": keys.bnb
+        ? ethConfigFactory({ name: "bnb", ticker: "BNB", minConfirm: 5, providerUrl: "https://bsc-dataseed.binance.org", account: keys.bnb })
+        : undefined,
     "solana": keys.solana ? {
         base: ["lamports", 1_000_000_000], // 1e9
         account: { key: keys.solana.key, address: keys.solana.address },

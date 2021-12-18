@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "lib": ["es5", "es6", "dom", "esnext"],
-    "rootDir": ".",
+    "rootDir": "src",
     "outDir": "build",
     "sourceMap": true,
     "declaration": true,

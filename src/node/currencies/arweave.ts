@@ -86,5 +86,5 @@ export async function arweaveCreateTx(amount, to, fee) {
 }
 
 export function arweaveGetPublicKey() {
-    return currencies["arweave"].account.key.n
+    return base64url.toBuffer(currencies["arweave"].account.key.n);
 }
