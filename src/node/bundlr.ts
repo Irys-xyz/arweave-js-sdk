@@ -61,3 +61,4 @@ export default class NodeBundlr extends Bundlr {
     };
 
 }
+

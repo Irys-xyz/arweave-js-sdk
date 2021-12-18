@@ -1,20 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2019",
     "module": "commonjs",
     "moduleResolution": "node",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
-    "importHelpers": true,
-    "declaration": false,
-    "outDir": "lib",
-    "jsx": "react",
-    "lib": [
-      "dom",
-      "es6",
-      "esnext"
-    ],
+    "declaration": true,
+    "lib": ["es2019", "dom"],
     "esModuleInterop": true,
     "alwaysStrict": true,
     "sourceMap": true,
@@ -25,12 +18,9 @@
     "noUnusedParameters": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
-    "strictNullChecks": false
+    "strictNullChecks": false,
+    "outDir": "build"
   },
-  "include": [
-    "src/**/*",
-    "__tests__/**/*"
-  ],
-  "exclude": [
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["src/__tests__/**"]
 }

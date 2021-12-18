@@ -1,21 +1,22 @@
 {
   "name": "@bundlr-network/client",
-  "version": "0.4.0",
+  "version": "0.3.8",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
   "license": "Apache-2.0",
-  "main": "build/node/index.js",
-  "browser": "build/web/index.js",
+  "main": "index.js",
+  "browser": "./web/index.js",
+  "types": "./index.d.ts",
   "files": [
-    "/build/**/*.js",
-    "/build/**/*.ts"
+    "./**/*.js",
+    "./**/*.ts"
   ],
   "scripts": {
-    "prod:build": "rm -rf build && tsc -p tsconfig.release.json"
+    "prod:build": "rm -rf build && tsc -p tsconfig.json"
   },
   "bin": {
-    "bundlr": "build/node/cli.js"
+    "bundlr": "./node/cli.js"
   },
   "dependencies": {
     "@solana/web3.js": "^1.30.2",

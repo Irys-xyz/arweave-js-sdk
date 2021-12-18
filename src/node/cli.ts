@@ -2,7 +2,7 @@
 // Note: DO NOT REMOVE/ALTER THE ABOVE LINE - it is called a 'shebang' and is vital for CLI execution.
 import { Command, OptionValues } from "commander";
 import { readFileSync, statSync } from "fs";
-import Bundlr from ".";
+import Bundlr from "./bundlr";
 import inquirer from "inquirer";
 import { execSync } from "child_process"
 import BigNumber from "bignumber.js";
