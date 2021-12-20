@@ -1,18 +1,24 @@
 import { createData, DataItem } from "arbundles";
 import { AxiosResponse } from "axios";
+import { Currency } from "./types";
+import Utils from "./utils"
 import Api from "./api";
-import { Currency } from "../node/currencies";
+
+export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 export default class Uploader {
-    protected api: Api
+    protected readonly api: Api
     protected currency: string;
     protected currencyConfig: Currency;
+    protected utils: Utils
 
-    constructor(api: Api, currency: string, currencyConfig: Currency) {
+    constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency) {
         this.api = api;
         this.currency = currency;
         this.currencyConfig = currencyConfig;
+        this.utils = utils;
     }
+
 
     /**
      * Uploads data to the bundler
@@ -29,25 +35,29 @@ export default class Uploader {
             { tags }
         );
         await dataItem.sign(signer);
-        return this.dataItemUploader(dataItem);
+        return await this.dataItemUploader(dataItem);
     }
-    /**
-     * Assumes the dataItem needs no further preperation, and directly posts it to the bundlr node.
-     * @param dataItem 
-     * @returns 
-     */
 
+
+    /**
+     * Uploads a given dataItem to the bundler
+     * @param dataItem
+     */
     public async dataItemUploader(dataItem: DataItem): Promise<AxiosResponse<any>> {
-        const { protocol, host, port } = this.api.getConfig();
+
+        const { protocol, host, port, timeout } = this.api.getConfig();
         const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
             headers: { "Content-Type": "application/octet-stream", },
-            timeout: 100000,
+            timeout,
             maxBodyLength: Infinity,
-            validateStatus: (status) => (status > 200 && status < 300) || status !== 402
+            validateStatus: (status) => (status > 202 && status < 300) || status !== 402
         })
         if (res.status === 402) {
             throw new Error("Not enough funds to send data")
         }
         return res;
     }
+
+
+
 }

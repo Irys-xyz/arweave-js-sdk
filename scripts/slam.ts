@@ -1,4 +1,4 @@
-import Bundlr from "../src/node/index";
+import { Bundlr } from "../src";
 import { readFileSync } from "fs";
 
 //const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));

@@ -1,14 +1,19 @@
-import { readFileSync, promises } from "fs";
-import mime from "mime-types";
+import { readFileSync, promises, PathLike } from "fs";
 import { AxiosResponse } from "axios";
 import { Currency } from "./currencies";
-import Uploader from "../common/upload";
+import Uploader, { sleep } from "../common/upload";
 import Api from "../common/api";
+import Utils from "../common/utils";
+import * as p from "path"
+import mime from "mime-types";
+import { DataItem } from "arbundles";
+
+export const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false) }
 
 export default class NodeUploader extends Uploader {
 
-    constructor(api: Api, currency: string, currencyConfig: Currency) {
-        super(api, currency, currencyConfig);
+    constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency) {
+        super(api, utils, currency, currencyConfig);
     }
     /**
      * Uploads a file to the bundler
@@ -19,11 +24,182 @@ export default class NodeUploader extends Uploader {
         if (!promises.stat(path).then(_ => true).catch(_ => false)) {
             throw new Error(`Unable to access path: ${path}`);
         }
-        //const signer = await this.currencyConfig.getSigner();
         const mimeType = mime.lookup(path);
         const tags = [{ name: "Content-Type", value: (mimeType ? mimeType : "application/octet-stream") }]
         const data = readFileSync(path);
         return await this.upload(data, tags)
+    }
+
+    // the cleanest dir walking code I've ever seen... it's beautiful. 
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    private async* walk(dir) {
+        for await (const d of await promises.opendir(dir)) {
+            const entry = p.join(dir, d.name);
+            if (d.isDirectory()) yield* await this.walk(entry);
+            else if (d.isFile()) yield entry;
+        }
+    }
+
+    public async uploadFolder(path: string, indexFile?: string): Promise<string> {
+        path = p.resolve(path);
+        let alreadyProcessed = [];
+        if (! await checkPath(path)) {
+            throw new Error(`Unable to access path: ${path}`);
+        }
+
+        // manifest operations
+        const manifestPath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.json`)
+        let manifest = {
+            "manifest": "arweave/paths",
+            "version": "0.1.0",
+            "paths": {}
+        }
+        if (await checkPath(manifestPath)) {
+            const d = await promises.readFile(manifestPath);
+            manifest = d.length > 0 ? JSON.parse((d).toString()) : manifest
+            alreadyProcessed = Object.keys(manifest.paths);
+        }
+        if (indexFile) {
+            indexFile = p.join(path, indexFile);
+            if (!await checkPath(indexFile)) {
+                throw new Error(`Unable to access path: ${indexFile}`)
+            }
+            manifest["index"] = { path: p.relative(path, indexFile) };
+
+        }
+        await this.syncManifest(manifest, manifestPath);
+        const files = []
+        let total = 0;
+        for await (const f of this.walk(path)) {
+            if (!alreadyProcessed.includes(p.relative(path, f))) {
+                files.push(f)
+                total += await (await promises.stat(f)).size
+            }
+        }
+
+
+        if (files.length == 0) {
+            console.log("No items to process")
+            //return the txID of the last deploy
+            const idpath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`)
+            if (await checkPath(idpath)) {
+                return (await promises.readFile(idpath)).toString();
+            }
+            return undefined;
+        }
+        // TODO: add preflight balance check.
+
+        const price = await this.utils.getPrice(this.currency, total);
+        console.log(`Total amount of data: ${total} bytes - cost: ${price} ${this.currencyConfig.base[0]}`)
+
+        return (await this.bulkUploader(files, path)).manifestTx ?? "none"
+    }
+
+
+    private async syncManifest(manifest: { manifest: string; version: string; paths: Record<string, any>; }, manifestPath: PathLike | promises.FileHandle): Promise<void> {
+        promises.writeFile(manifestPath, Buffer.from(JSON.stringify(manifest))).catch(e => {
+            console.log(`Error syncing manifest: ${e}`);
+        })
+    }
+
+
+    /**
+     * Asynchronous chunking uploader, able to upload an array of dataitems or paths
+     * Paths allow for an optional arweave manifest, provided they all have a common base path <path>
+     * Syncs manifest to disk every 5 (or less) items.
+     * currently logs directly to console (will be changed to event emission for progress/etc in future)
+     * @param items - Array of DataItems or paths
+     * @param path  - Common base path for provided path items
+     * @returns - object containing responses for successful and failed items, as well as the manifest Txid if applicable
+     */
+    public async bulkUploader(items: DataItem[] | string[], path?: string): Promise<{ processed: Map<string, any>, failed: Map<string, any>, manifestTx?: string }> {
+
+        const promiseFactory = (d: string | DataItem, x: number): Promise<Record<string, any>> => {
+            return new Promise((r, e) => {
+                (typeof d === "string" ? this.uploadFile(d as string) : this.dataItemUploader(d as DataItem))
+                    .then(re => r({ i: x, d: re })).catch(er => e({ i: x, e: er }))
+            })
+        }
+
+
+        const uploaderBlockSize = 5; //TODO: evaluate exposing this as an arg with a default.
+        const manifestPath = path ? p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.json`) : undefined
+        const manifest = path ? JSON.parse((await promises.readFile(manifestPath)).toString()) : undefined
+        const hasManifest = (manifestPath && typeof items[0] === "string")
+
+        const failed = new Map();
+        const processed = new Map()
+
+        try {
+            for (let i = 0; i < items.length; i = Math.min(i + uploaderBlockSize, items.length)) {
+                const upperb = Math.min(i + uploaderBlockSize, items.length);
+                console.log(`processing items ${i} to ${upperb}`);
+                const toProcess = items.slice(i, upperb);
+                let x = 0;
+                const promises = toProcess.map((d: any) => {
+                    x++
+                    const p = promiseFactory(d, (i + x - 1));
+                    return p;
+                })
+                const processing = await Promise.allSettled(promises);
+                //re-process failed promises and add fulfilled ones
+                // TODO: fix type
+                outerLoop: //loop label magic
+                for (let x = 0; x < processing.length; x++) {
+                    let pr = processing[x] as any;
+                    if (pr.status === "rejected") {
+                        const dataItem = items[pr.reason.i]
+                        for (let y = 0; y < 3; y++) {
+                            await sleep(1000);
+                            const d = (await Promise.allSettled([promiseFactory(dataItem, i)]))[0] as any
+                            if (d.status === "rejected") {
+                                if (d.reason.e.message === "Not enough funds to send data") {
+                                    // sync last good state then stop upload.
+                                    if (hasManifest) { await this.syncManifest(manifest, manifestPath) }
+                                    throw new Error("Ran out of funds");
+                                }
+                                // console.log(`Error on retry iteration ${i} - ${d.reason}`)
+                                if (i == 3) {
+                                    failed[d.reason.i] = d.reason.e
+                                    break outerLoop
+                                }
+                            } else {
+                                pr = d;
+                            }
+                        }
+                    }
+                    //only gets here if the promise/upload succeeded
+                    processed.set(pr.value.id, pr.value.d)
+
+                    if (hasManifest) {
+                        // add to manifest
+                        const ind = pr.value.i
+                        const it = items[ind];
+                        const rel = p.relative(path, it as string);
+                        manifest.paths[rel] = { id: pr.value.d.data.id }
+                    }
+                }
+                if (hasManifest) { await this.syncManifest(manifest, manifestPath) }; //checkpoint state then start a new block.
+            }
+
+            console.log(`Finished deploying ${items.length} items (${failed.size} failures)`)
+            let manifestTx;
+            if (hasManifest) {
+                if (failed.size > 0) {
+                    console.log("Failures detected - not deploying manifest")
+                } else {
+                    const tags = [{ name: "Type", value: "manifest" }, { name: "Content-Type", value: "application/x.arweave-manifest+json" }]
+                    manifestTx = await this.upload(Buffer.from(JSON.stringify(manifest)), tags).catch((e) => { throw new Error(`Failed to deploy manifest: ${e}`) })
+                    await promises.writeFile(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`), manifestTx.data.id)
+                }
+            }
+            return { processed, failed, manifestTx: manifestTx?.data.id }
+
+        } catch (err) {
+            console.log(`Error whilst deploying: ${err} `);
+            await this.syncManifest(manifest, manifestPath);
+            return { processed, failed }
+        }
     }
 
 }

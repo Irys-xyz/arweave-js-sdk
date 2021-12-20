@@ -15,7 +15,7 @@ export default class NodeBundlr extends Bundlr {
      * @param url - URL to the bundler
      * @param wallet - JWK in JSON
      */
-    constructor(url: string, currency: string, wallet?: any) {
+    constructor(url: string, currency: string, wallet?: any, config?: { timeout?: number }) {
         super();
         // hacky for the moment...
         // specifically about ordering - some stuff here seems silly but leave it for now it works
@@ -27,7 +27,7 @@ export default class NodeBundlr extends Bundlr {
         keys[currency] = { key: wallet, address: undefined };
         this.wallet = wallet;
         const parsed = new URL(url);
-        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname });
+        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
 
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         currencies = (require("./currencies/index")).currencies; //delay so that keys object can be properly constructed
@@ -47,7 +47,7 @@ export default class NodeBundlr extends Bundlr {
 
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
-        this.uploader = new NodeUploader(this.api, currency, this.currencyConfig)
+        this.uploader = new NodeUploader(this.api, this.utils, currency, this.currencyConfig)
 
     }
 

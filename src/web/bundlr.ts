@@ -9,7 +9,7 @@ let currencies;
 export const keys: { [key: string]: { key: string, address: string } } = {};
 export default class WebBundlr extends Bundlr {
 
-    constructor(url: string, currency: string, provider?: any) {
+    constructor(url: string, currency: string, provider?: any, config?: { timeout?: number }) {
         super();
         this.currency = currency;
         if (!provider) {
@@ -19,7 +19,7 @@ export default class WebBundlr extends Bundlr {
         this.wallet = provider;
         const parsed = new URL(url);
 
-        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname });
+        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         currencies = (require("./currencies/index")).currencies;
         if (!currencies[currency]) {
@@ -28,7 +28,7 @@ export default class WebBundlr extends Bundlr {
         this.currencyConfig = currencies[currency];
         this.currencyConfig.account.address = this.address;
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
-        this.uploader = new Uploader(this.api, currency, this.currencyConfig);
+        this.uploader = new Uploader(this.api, this.utils, currency, this.currencyConfig);
         this.funder = new WebFund(this.utils);
     }
 

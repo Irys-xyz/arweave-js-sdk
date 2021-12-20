@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // Note: DO NOT REMOVE/ALTER THE ABOVE LINE - it is called a 'shebang' and is vital for CLI execution.
-import { Command, OptionValues } from "commander";
-import { readFileSync, statSync } from "fs";
+import { Command } from "commander";
+import { readFileSync } from "fs";
 import Bundlr from "./bundlr";
 import inquirer from "inquirer";
 import { execSync } from "child_process"
 import BigNumber from "bignumber.js";
+import { checkPath } from "./upload";
 
 const program = new Command();
 
@@ -31,7 +32,7 @@ program
             options.address = address;
             const bundlr = await init(options, "balance");
             const balance = await bundlr.utils.getBalance(address);
-            console.log(`Balance: ${balance} ${bundlr.currencyConfig.base[0]} (${(balance.dividedToIntegerBy(bundlr.currencyConfig.base[1]))} ${bundlr.currency})`);
+            console.log(`Balance: ${balance} ${bundlr.currencyConfig.base[0]} (${(balance.dividedBy(bundlr.currencyConfig.base[1]))} ${bundlr.currency})`);
         } catch (err) {
             console.error(`Error whilst getting balance: \n${err} `);
             return;
@@ -70,6 +71,18 @@ program.command("upload").description("Uploads a specified file to the specified
         }
     });
 
+
+program.command("deploy").description("Deploys a folder (with a manifest) to the specified bundler").argument("<folder>", "relative path to the folder you want to deploy")
+    .action(async (folder: string) => {
+        try {
+            const bundler = await init(options, "deploy");
+            const res = await bundler.uploader.uploadFolder(folder);
+            console.log(`Deployed to ${res}`);
+        } catch (e) {
+            console.error(`Whilst deploying ${folder} - ${e}`)
+        }
+    })
+
 // Fund command - Sends the specified bundler n winston from the loaded wallet
 program.command("fund").description("Sends the specified amount of Winston to the specified bundler").argument("<amount>", "Amount to add in Winston")
     .action(async (amount: string) => {
@@ -99,7 +112,7 @@ program.command("price").description("Check how much of a specific currency is r
             const bundlr = await init(options, "price");
             await bundlr.utils.getBundlerAddress(options.currency) //will throw if the bundler doesn't support the currency
             //const cost = new BigNumber((await bundlr.api.get(`/price/${options.currency}/${bytes}`)).data)
-            const cost = await bundlr.utils.getStorageCost(options.currency, parseInt(bytes));
+            const cost = await bundlr.utils.getPrice(options.currency, +bytes);
             console.log(`Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${cost.dividedBy(bundlr.currencyConfig.base[1])} ${bundlr.currency})`);
         } catch (err) {
             console.error(`Error whilst getting price: \n${err} `);
@@ -127,9 +140,9 @@ async function confirmation(message: string): Promise<boolean> {
  * @param opts the parsed options from the cli
  * @returns a new Bundlr instance
  */
-async function init(opts: OptionValues, operation: string): Promise<Bundlr> {
-    let wallet: any;
-    let bundler: Bundlr;
+async function init(opts, operation): Promise<Bundlr> {
+    let wallet;
+    let bundler;
 
     if (!opts.currency) {
         throw new Error("currency flag (-c) is required!");
@@ -141,7 +154,7 @@ async function init(opts: OptionValues, operation: string): Promise<Bundlr> {
     if (!(["balance", "price"].includes(operation))) {
         // require a wallet
         if (opts.wallet === "default") {
-            if (opts.currency === "arweave") {
+            if (opts.currency === "arweave" && await checkPath("./wallet.json")) {
                 wallet = await loadWallet("./wallet.json");
             } else {
                 throw new Error("Wallet (-w) required for this operation!")
@@ -169,11 +182,10 @@ async function init(opts: OptionValues, operation: string): Promise<Bundlr> {
  * @returns JWK interface
  */
 async function loadWallet(path: string): Promise<any> {
-    try {
-        statSync(path)
+    if (await checkPath(path)) {
         console.log("loading wallet file");
         return JSON.parse(readFileSync(path).toString());
-    } catch (err) {
+    } else {
         console.log("assuming raw key instead of keyfile path");
         return path;
     }

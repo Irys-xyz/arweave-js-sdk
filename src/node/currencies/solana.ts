@@ -25,9 +25,6 @@ function getKeyPair(): web3.Keypair {
 
 // where data is tx.serialiseMessage() 
 export async function solanaSign(data: any): Promise<Uint8Array> {
-    // const keyp = getKeyPair();
-    // const keypb = Buffer.concat([keyp.publicKey.toBuffer(), keyp.secretKey])
-    // const signer = new SolanaSigner(keypb.toString());
     return await (await solanaGetSigner()).sign(data)
 }
 

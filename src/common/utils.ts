@@ -64,7 +64,7 @@ export default class Utils {
         return address;
     }
 
-    public async getStorageCost(currency: string, bytes: number): Promise<BigNumber> {
+    public async getPrice(currency: string, bytes: number): Promise<BigNumber> {
         const res = await this.api.get(`/price/${currency}/${bytes}`)
         Utils.checkAndThrow(res, "Getting storage cost");
         return new BigNumber((res).data);
