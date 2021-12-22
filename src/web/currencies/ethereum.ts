@@ -1,10 +1,11 @@
-import { Currency, getRedstonePrice, Tx } from "./index";
+import { Currency, getRedstonePrice } from "./index";
 import keccak256 from "keccak256";
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
 import base64url from "base64url";
 import { InjectedEthereumSigner, Signer } from "arbundles/src/signing";
 import Arweave from "arweave";
+import { Tx } from "../../common/types";
 const ethBigNumber = ethers.BigNumber //required for hexString conversions (w/ 0x padding)
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore

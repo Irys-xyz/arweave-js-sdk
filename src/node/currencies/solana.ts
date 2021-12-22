@@ -1,5 +1,5 @@
 import * as web3 from "@solana/web3.js";
-import { currencies, Tx } from "./index";
+import { currencies } from "./index";
 import "bs58";
 import nacl from "tweetnacl";
 
@@ -7,6 +7,7 @@ import BigNumber from "bignumber.js";
 import bs58 from "bs58";
 import { Signer } from "arbundles/src/signing";
 import SolanaSigner from "arbundles/src/signing/chains/SolanaSigner";
+import { Tx } from "../../common/types";
 
 
 async function createConnection(): Promise<web3.Connection> {

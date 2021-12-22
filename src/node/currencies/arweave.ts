@@ -2,8 +2,9 @@ import Arweave from "arweave";
 import crypto from "crypto";
 import BigNumber from "bignumber.js";
 import base64url from "base64url";
-import { currencies, Tx } from "./index";
+import { currencies } from "./index";
 import { ArweaveSigner, Signer } from "arbundles/src/signing";
+import { Tx } from "../../common/types";
 
 
 

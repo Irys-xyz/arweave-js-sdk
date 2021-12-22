@@ -10,17 +10,9 @@ import { Signer } from "arbundles/src/signing";
 import { solanaCreateTx, solanaGetCurrentHeight, solanaGetFee, solanaGetPublicKey, solanaGetSigner, solanaGetTx, solanaOwnerToAddress, solanaSendTx, solanaSign, solanaVerify } from "./solana";
 import { arweaveCreateTx, arweaveGetCurrentHeight, arweaveGetFee, arweaveGetId, arweaveGetPublicKey, arweaveGetSigner, arweaveGetTx, arweaveOwnerToAddress, arweaveSendTx, arweaveSign, arweaveVerify } from "./arweave";
 import { ethConfigFactory } from "./ethereum";
+import { Tx } from "../../common/types";
 
-export interface Tx {
-    from: string;
-    to: string;
-    amount: BigNumber;
-    blockHeight?: BigNumber;
-    pending: boolean;
-    confirmed: boolean
-}
 
-export interface CreateTxData { amount: BigNumber | number, to: string, fee?: string };
 
 export interface Currency {
     base: [string, number];

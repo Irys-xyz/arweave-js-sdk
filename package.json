@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.30.2",
-    "arbundles": "^0.6.3",
+    "arbundles": "^0.6.6",
     "arweave": "^1.10.17",
     "base64url": "^3.0.1",
     "bignumber.js": "^9.0.1",
@@ -50,7 +50,8 @@
     "longjohn": "^0.2.12",
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
-    "ts-node": "^10.2.1",
+    "ts-node": "^10.4.0",
+    "v8-profiler-next": "^1.5.1",
     "webpack-cli": "^4.9.1",
     "webpack-node-externals": "^3.0.0"
   }

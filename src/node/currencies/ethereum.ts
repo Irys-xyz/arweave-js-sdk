@@ -1,4 +1,4 @@
-import { currencies, Currency, getRedstonePrice, Tx } from "./index";
+import { currencies, Currency, getRedstonePrice } from "./index";
 import keccak256 from "keccak256";
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet } from "ethers";
@@ -10,6 +10,7 @@ import Arweave from "arweave";
 // @ts-ignore
 
 import { Signer } from "arbundles/src/signing";
+import { Tx } from "../../common/types";
 
 
 const EthereumSigner = signers.EthereumSigner;

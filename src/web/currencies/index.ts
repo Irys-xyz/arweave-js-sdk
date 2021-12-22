@@ -5,18 +5,10 @@ import { FileDataItem } from "arbundles/file";
 import { keys } from "../bundlr";
 import { Signer } from "arbundles/src/signing";
 import { ethConfigFactory } from "./ethereum";
+import { Tx } from "../../common/types";
 
 
-export interface Tx {
-    from: string;
-    to: string;
-    amount: BigNumber;
-    blockHeight?: BigNumber;
-    pending: boolean;
-    confirmed: boolean
-}
 
-export interface CreateTxData { amount: BigNumber | number, to: string, fee?: string };
 
 export interface Currency {
     base: [string, number];

@@ -1,3 +1,17 @@
+import BigNumber from "bignumber.js";
+import { Signer } from "arbundles/src/signing";
+import { FileDataItem } from "arbundles/file";
+
+
+export interface CreateTxData { amount: BigNumber | number, to: string, fee?: string };
+export interface Tx {
+    from: string;
+    to: string;
+    amount: BigNumber;
+    blockHeight?: BigNumber;
+    pending: boolean;
+    confirmed: boolean
+}
 export interface Currency {
     base: [string, number];
     account: { key: any, address: string };
