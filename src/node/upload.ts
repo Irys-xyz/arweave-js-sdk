@@ -97,7 +97,7 @@ export default class NodeUploader extends Uploader {
 
 
     private async syncManifest(manifest: { manifest: string; version: string; paths: Record<string, any>; }, manifestPath: PathLike | promises.FileHandle): Promise<void> {
-        promises.writeFile(manifestPath, Buffer.from(JSON.stringify(manifest))).catch(e => {
+        promises.writeFile(manifestPath, Buffer.from(JSON.stringify(manifest, null, 4))).catch(e => {
             console.log(`Error syncing manifest: ${e}`);
         })
     }
