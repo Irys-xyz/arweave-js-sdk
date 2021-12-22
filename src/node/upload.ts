@@ -40,7 +40,7 @@ export default class NodeUploader extends Uploader {
         }
     }
 
-    public async uploadFolder(path: string, indexFile?: string): Promise<string> {
+    public async uploadFolder(path: string, indexFile?: string, batchSize?: number): Promise<string> {
         path = p.resolve(path);
         let alreadyProcessed = [];
         if (! await checkPath(path)) {
@@ -76,7 +76,7 @@ export default class NodeUploader extends Uploader {
                 total += await (await promises.stat(f)).size
             }
         }
-
+        console.log()
 
         if (files.length == 0) {
             console.log("No items to process")
@@ -92,7 +92,7 @@ export default class NodeUploader extends Uploader {
         const price = await this.utils.getPrice(this.currency, total);
         console.log(`Total amount of data: ${total} bytes - cost: ${price} ${this.currencyConfig.base[0]}`)
 
-        return (await this.bulkUploader(files, path)).manifestTx ?? "none"
+        return (await this.bulkUploader(files, path, batchSize)).manifestTx ?? "none"
     }
 
 
@@ -112,7 +112,7 @@ export default class NodeUploader extends Uploader {
      * @param path  - Common base path for provided path items
      * @returns - object containing responses for successful and failed items, as well as the manifest Txid if applicable
      */
-    public async bulkUploader(items: DataItem[] | string[], path?: string): Promise<{ processed: Map<string, any>, failed: Map<string, any>, manifestTx?: string }> {
+    public async bulkUploader(items: DataItem[] | string[], path?: string, batchSize?: number): Promise<{ processed: Map<string, any>, failed: Map<string, any>, manifestTx?: string }> {
 
         const promiseFactory = (d: string | DataItem, x: number): Promise<Record<string, any>> => {
             return new Promise((r, e) => {
@@ -122,7 +122,7 @@ export default class NodeUploader extends Uploader {
         }
 
 
-        const uploaderBlockSize = 5; //TODO: evaluate exposing this as an arg with a default.
+        const uploaderBlockSize = (batchSize > 0) ? batchSize : 5; //TODO: evaluate exposing this as an arg with a default.
         const manifestPath = path ? p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.json`) : undefined
         const manifest = path ? JSON.parse((await promises.readFile(manifestPath)).toString()) : undefined
         const hasManifest = (manifestPath && typeof items[0] === "string")
@@ -133,7 +133,7 @@ export default class NodeUploader extends Uploader {
         try {
             for (let i = 0; i < items.length; i = Math.min(i + uploaderBlockSize, items.length)) {
                 const upperb = Math.min(i + uploaderBlockSize, items.length);
-                console.log(`processing items ${i} to ${upperb}`);
+                console.log(`Uploading items ${i} to ${upperb}`);
                 const toProcess = items.slice(i, upperb);
                 let x = 0;
                 const promises = toProcess.map((d: any) => {

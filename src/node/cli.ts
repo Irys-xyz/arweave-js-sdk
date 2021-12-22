@@ -18,6 +18,7 @@ program
     .option("--timeout <number>", "the timeout (in ms) for API HTTP requests")
     .option("--no-confirmation", "Disable confirmations for fund and withdraw actions")
     .option("--multiplier <number>", "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.", "1.00")
+    .option("--batch-size <number>", "Adjust the Deploy batch size (process more items at once)", "5");
 
 // Define commands
 // uses NPM view to query the package's version.
@@ -76,7 +77,7 @@ program.command("deploy").description("Deploys a folder (with a manifest) to the
     .action(async (folder: string) => {
         try {
             const bundler = await init(options, "deploy");
-            const res = await bundler.uploader.uploadFolder(folder);
+            const res = await bundler.uploader.uploadFolder(folder, null, +options.batchSize);
             console.log(`Deployed to ${res}`);
         } catch (e) {
             console.error(`Whilst deploying ${folder} - ${e}`)
