@@ -2,7 +2,7 @@
 import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
 import Api from "./api";
-import { Currency } from "../node/currencies";
+import { Currency } from "./types";
 
 export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -10,7 +10,7 @@ export default class Utils {
     public api: Api;
     public currency: string;
     public currencyConfig: Currency;
-    constructor(api: Api, currency: string, currencyConfig: Currency,) {
+    constructor(api: Api, currency: string, currencyConfig: Currency) {
         this.api = api;
         this.currency = currency;
         this.currencyConfig = currencyConfig;
@@ -33,7 +33,7 @@ export default class Utils {
      * @returns nonce for the current user
      */
     public async getNonce(): Promise<number> {
-        const res = await this.api.get(`/account/withdrawals/${this.currency}?address=${this.currencyConfig.account.address}`);
+        const res = await this.api.get(`/account/withdrawals/${this.currency}?address=${this.currencyConfig.address}`);
         Utils.checkAndThrow(res, "Getting withdrawal nonce");
         return (res).data;
     }

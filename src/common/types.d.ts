@@ -1,7 +1,5 @@
 import BigNumber from "bignumber.js";
-import { Signer } from "arbundles/src/signing";
-import { FileDataItem } from "arbundles/file";
-
+// common types shared between web and node versions
 
 export interface CreateTxData { amount: BigNumber | number, to: string, fee?: string };
 export interface Tx {
@@ -12,10 +10,15 @@ export interface Tx {
     pending: boolean;
     confirmed: boolean
 }
+export interface CurrencyConfig { name: string, ticker: string, minConfirm: number, wallet, provider?: any }
+
+
 export interface Currency {
     base: [string, number];
-    account: { key: any, address: string };
-    provider?: string;
+
+    get address(): string;
+
+    ready(): Promise<void>
 
     getTx(txId: string): Promise<Tx>;
 
@@ -39,5 +42,6 @@ export interface Currency {
 
     createTx(amount: BigNumber | number, to: string, fee?: string): Promise<{ txId: string, tx: any }>;
 
-    getPublicKey(): string | Buffer;
+    getPublicKey(): Promise<string | Buffer>;
+
 }

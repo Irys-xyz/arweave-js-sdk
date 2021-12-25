@@ -3,11 +3,11 @@ import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
 import { AxiosResponse } from "axios";
-import { Currency } from "../node/currencies";
 import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
+import { Currency } from "./types";
 
 // let currencies;
 
@@ -18,10 +18,14 @@ export default abstract class Bundlr {
     public funder: Fund;
     public address;
     public currency;
-    public wallet;
     public currencyConfig: Currency;
 
     constructor() { return }
+
+    public async ready(): Promise<void> {
+        await this.currencyConfig.ready();
+        this.address = this.currencyConfig.address;
+    }
 
     async withdrawBalance(amount: BigNumber): Promise<AxiosResponse<any>> {
         return await withdrawBalance(this.utils, this.api, amount);

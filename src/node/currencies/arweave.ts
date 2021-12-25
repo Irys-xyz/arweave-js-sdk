@@ -1,94 +1,96 @@
 import Arweave from "arweave";
-import crypto from "crypto";
-import BigNumber from "bignumber.js";
-import base64url from "base64url";
-import { currencies } from "./index";
+import BaseCurrency from "../../common/currency";
 import { ArweaveSigner, Signer } from "arbundles/src/signing";
+import BigNumber from "bignumber.js";
+import crypto from "crypto";
 import { Tx } from "../../common/types";
+import { CurrencyConfig } from "../types";
+import base64url from "base64url";
+//import base64url from "base64url";
 
 
+export default class ArweaveConfig extends BaseCurrency {
+    protected providerInstance: Arweave;
 
-
-async function createArweave(): Promise<Arweave> {
-    const gateway = currencies["arweave"].provider;
-    return Arweave.init({ host: gateway, protocol: "https", port: 443 });
-}
-
-export async function arweaveGetTx(txId): Promise<Tx> {
-    const arweave = await createArweave();
-    const txs = await arweave.transactions.getStatus(txId);
-    let tx;
-    if (txs.status == 200) {
-        tx = await arweave.transactions.get(txId)
+    constructor(config: CurrencyConfig) {
+        super(config)
+        this.base = ["winston", 1e12];
     }
-    const confirmed = (txs.status !== 202 && txs.confirmed?.number_of_confirmations >= 20)
-    let owner;
-    if (tx?.owner) {
-        owner = arweaveOwnerToAddress(tx.owner);
+
+    public async ready(): Promise<void> {
+        this.providerInstance = await Arweave.init({ host: this.provider ?? "arweave.net", protocol: "https", port: 443 });
+        await super.ready();
     }
-    return {
-        from: owner ?? undefined,
-        to: tx?.target ?? undefined,
-        amount: new BigNumber(tx?.quantity ?? 0),
-        pending: (txs.status == 202),
-        confirmed
+
+    async getTx(txId: string): Promise<Tx> {
+        const arweave = this.providerInstance
+        const txs = await arweave.transactions.getStatus(txId);
+        let tx;
+        if (txs.status == 200) {
+            tx = await arweave.transactions.get(txId)
+        }
+        const confirmed = (txs.status !== 202 && txs.confirmed?.number_of_confirmations >= 10)
+        let owner;
+        if (tx?.owner) {
+            owner = this.ownerToAddress(tx.owner);
+        }
+        return {
+            from: owner ?? undefined,
+            to: tx?.target ?? undefined,
+            amount: new BigNumber(tx?.quantity ?? 0),
+            pending: (txs.status == 202),
+            confirmed
+        }
     }
-}
 
-export function arweaveOwnerToAddress(owner): string {
+    ownerToAddress(owner: any): string {
 
-    return Arweave.utils.bufferTob64Url(crypto
-        .createHash("sha256")
-        .update((Arweave.utils.b64UrlToBuffer((Buffer.isBuffer(owner) ? base64url(owner) : owner))))
-        .digest()
-    );
+        return Arweave.utils.bufferTob64Url(crypto
+            .createHash("sha256")
+            .update((Arweave.utils.b64UrlToBuffer((Buffer.isBuffer(owner) ? base64url(owner) : owner))))
+            //.update((Arweave.utils.b64UrlToBuffer(owner)))
+            .digest()
+        )
+    }
 
-}
+    async sign(data: Uint8Array): Promise<Uint8Array> {
+        return Arweave.crypto.sign(this.wallet, data);
+    }
 
-export async function arweaveGetId(item): Promise<string> {
-    return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
-}
+    getSigner(): Signer {
+        return new ArweaveSigner(this.wallet);
+    }
 
-export async function arweaveSign(data): Promise<Uint8Array> {
-    return Arweave.crypto.sign(currencies["arweave"].account.key, data);
-}
+    async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
+        if (Buffer.isBuffer(pub)) {
+            pub = pub.toString();
+        }
+        return Arweave.crypto.verify(pub, data, signature);
+    }
 
-export function arweaveGetSigner(): Signer {
-    return new ArweaveSigner(currencies["arweave"].account.key);
-}
+    async getCurrentHeight(): Promise<BigNumber> {
+        return this.providerInstance.network.getInfo().then(r => new BigNumber(r.height))
+    }
 
-export async function arweaveVerify(pub, data, sig): Promise<boolean> {
-    return Arweave.crypto.verify(pub, data, sig);
-}
+    async getFee(amount: number | BigNumber, to?: string): Promise<BigNumber> {
+        return new BigNumber(await this.providerInstance.transactions.getPrice(amount as number, to)).integerValue(BigNumber.ROUND_CEIL)
+    }
 
-export async function arweaveGetCurrentHeight(): Promise<BigNumber> {
-    const arweave = await createArweave();
-    return arweave.network.getInfo().then(r => new BigNumber(r.height))
-}
+    async sendTx(data: any): Promise<void> {
+        const arweave = this.providerInstance
+        await arweave.transactions.post(data);
+    }
 
-export async function arweaveGetFee(amount, to): Promise<BigNumber> {
-    const arweave = await createArweave();
-    return new BigNumber(parseInt(await arweave.transactions.getPrice(amount as number, to)))
-}
+    async createTx(amount: number | BigNumber, to: string, fee?: string): Promise<{ txId: string; tx: any; }> {
+        const arweave = this.providerInstance
+        const tx = await arweave.createTransaction({ quantity: amount.toString(), reward: fee, target: to }, this.wallet)
+        await arweave.transactions.sign(tx, this.wallet)
+        return { txId: tx.id, tx };
+    }
 
-export async function arweaveSendTx(tx): Promise<{
-    status: number;
-    statusText: string;
-    data: any;
-}> {
-    const arweave = await createArweave();
-    return await arweave.transactions.post(tx)
+    async getPublicKey(): Promise<string> {
+        return this.wallet.n
+    }
 
-}
 
-export async function arweaveCreateTx(amount, to, fee): Promise<{ txId: string, tx: any }> {
-    const arweave = await createArweave();
-    const key = currencies["arweave"].account.key;
-    const tx = await arweave.createTransaction({ quantity: amount.toString(), reward: fee, target: to }, key)
-    await arweave.transactions.sign(tx, key)
-    return { txId: tx.id, tx };
-}
-
-export function arweaveGetPublicKey(): Buffer {
-    return base64url.toBuffer(currencies["arweave"].account.key.n);
 }

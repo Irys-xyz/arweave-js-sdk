@@ -1,8 +1,8 @@
 import { createData, DataItem } from "arbundles";
 import { AxiosResponse } from "axios";
-import { Currency } from "./types";
 import Utils from "./utils"
 import Api from "./api";
+import { Currency } from "./types";
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 

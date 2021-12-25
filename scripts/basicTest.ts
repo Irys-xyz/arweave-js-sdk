@@ -18,10 +18,11 @@ async function a() {
             console.log("profiling configured");
         }
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", JWK);
+        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", JWK)
+        await bundlr.ready();
         console.log(bundlr.address);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
-        const resu = await bundlr.uploader.uploadFolder("./testFolder")
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 500)
         console.log(resu);
         const transaction = await bundlr.createTransaction("aaa");
         await transaction.sign();
@@ -36,12 +37,14 @@ async function a() {
         console.log(JSON.stringify(rec.status));
         let resw = await bundlr.withdrawBalance(new BigNumber(1000));
         console.log(`withdrawl: ${JSON.stringify(resw.data)}`);
-
-        console.log("done");
     } catch (e) {
         console.log(e);
     } finally {
-        if (!profiling) { return };
+        if (!profiling) {
+            console.log("done!");
+            return
+        };
+
         const cpuprofile = v8.stopProfiling(title)
         cpuprofile.export((_err, res) => {
             writeFileSync(`./profiles/cpu/${title}.cpuprofile`, res)
@@ -51,7 +54,6 @@ async function a() {
         heapProfile.export((_err, res) => {
             writeFileSync(`./profiles/heap/${title}.heapprofile`, res)
         })
-        console.log("done!")
     }
 }
 a();

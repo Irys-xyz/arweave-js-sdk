@@ -1,54 +1,27 @@
-import { Currency, getRedstonePrice } from "./index";
 import keccak256 from "keccak256";
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
-import base64url from "base64url";
 import { InjectedEthereumSigner, Signer } from "arbundles/src/signing";
-import Arweave from "arweave";
 import { Tx } from "../../common/types";
+import { CurrencyConfig } from "../../common/types";
+import BaseCurrency from "../../common/currency";
+
 const ethBigNumber = ethers.BigNumber //required for hexString conversions (w/ 0x padding)
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-
-
-// export interface AsyncCurrency extends Currency {
-//     getPublicKey(): Promise<Buffer | string>;
-//     ownerToAddress(): Promise<string>;
-// }
-
 const EthereumSigner = InjectedEthereumSigner
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function ethConfigFactory(config: { name: string, ticker: string, providerUrl?: string, minConfirm: number, account: Currency["account"] }) {
-    const { ticker, minConfirm, account, providerUrl } = config;
-    const w3provider = account.key as ethers.providers.Web3Provider //TODO: OOP rewrite
-    let signer;
+export default class EthereumConfig extends BaseCurrency {
+    private signer: InjectedEthereumSigner;
+    protected wallet: ethers.providers.Web3Provider;
+    private w3signer: ethers.providers.JsonRpcSigner;
 
-
-    async function ethSign(message: Uint8Array): Promise<Uint8Array> {
-
-        const signer = await ethGetSigner();
-        return signer.sign(message);
+    constructor(config: CurrencyConfig) {
+        super(config)
+        this.base = ["wei", 1e18];
     }
 
-    function ethGetSigner(): Signer {
-        if (!signer) {
-            signer = new InjectedEthereumSigner(w3provider);
-        }
-        return signer
-    }
 
-    async function ethVerify(pub, data, sig): Promise<boolean> {
-        return EthereumSigner.verify(pub, data, sig);
-    }
-
-    function ethOwnerToAddress(owner: Uint8Array): string {
-        return "0x" + keccak256(Buffer.from(owner.slice(1))).slice(-20).toString("hex");
-    }
-
-    async function ethGetTx(txId: string): Promise<Tx> {
-        const provider = new ethers.providers.JsonRpcProvider(providerUrl);
-
+    async getTx(txId: string): Promise<Tx> {
+        const provider = this.providerInstance
         const response = await provider.getTransaction(txId);
 
         if (!response) throw new Error("Tx doesn't exist");
@@ -59,21 +32,40 @@ export function ethConfigFactory(config: { name: string, ticker: string, provide
             blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : null,
             amount: new BigNumber(response.value.toHexString(), 16),
             pending: response.blockNumber ? false : true,
-            confirmed: response.confirmations >= minConfirm,
+            confirmed: response.confirmations >= this.minConfirm,
         };
     }
 
-    async function ethGetHeight(): Promise<BigNumber> {
-        const provider = new ethers.providers.JsonRpcProvider(providerUrl);
+    ownerToAddress(owner: any): string {
+        return "0x" + keccak256(Buffer.from(owner.slice(1))).slice(-20).toString("hex");
+    }
 
+    async sign(data: Uint8Array): Promise<Uint8Array> {
+        const signer = await this.getSigner();
+        return signer.sign(data);
+    }
+
+    getSigner(): Signer {
+        if (!this.signer) {
+            this.signer = new InjectedEthereumSigner(this.wallet);
+        }
+        return this.signer
+    }
+
+
+    async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
+        return EthereumSigner.verify(pub, data, signature);
+    }
+
+    async getCurrentHeight(): Promise<BigNumber> {
+        const provider = this.providerInstance
         const response = await provider.send("eth_blockNumber", []);
 
         return new BigNumber(response, 16);
     }
 
-    async function ethGetFee(amount: BigNumber, to: string): Promise<BigNumber> {
-        const provider = new ethers.providers.JsonRpcProvider(providerUrl);
-
+    async getFee(amount: number | BigNumber, to?: string): Promise<BigNumber> {
+        const provider = this.providerInstance
         await provider._ready();
 
         const tx = {
@@ -86,46 +78,37 @@ export function ethConfigFactory(config: { name: string, ticker: string, provide
         return new BigNumber(estimatedGas.mul(gasPrice).toString());
     }
 
-    async function ethCreateTx(amount: BigNumber, to: string, _fee?: BigNumber): Promise<any> {
+    async sendTx(data: ethers.providers.TransactionRequest): Promise<string> {
+        const signer = this.w3signer
+        const receipt = await signer.sendTransaction(data).catch((e) => { console.error(`Sending tx: ${e}`) })
+        return receipt ? receipt.hash : undefined
+    }
+
+    async createTx(amount: number | BigNumber, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const amountc = ethBigNumber.from(amount.toString())
-        const signer = await w3provider.getSigner();
+        const signer = this.w3signer
         const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() })
         const gasPrice = await signer.getGasPrice();
         const txr = await signer.populateTransaction({ to, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas })
         return { txId: "", tx: txr };
     }
 
-    async function ethSendTx(tx: ethers.providers.TransactionRequest): Promise<any> {
-        const signer = await w3provider.getSigner();
-        const receipt = await signer.sendTransaction(tx).catch((e) => { console.error(`Sending tx: ${e}`) })
-        return receipt ? receipt.hash : undefined
-    }
-
-    async function ethGetPublicKey(): Promise<Buffer> {
-        const signer = await ethGetSigner() as InjectedEthereumSigner
+    public async getPublicKey(): Promise<string | Buffer> {
+        const signer = await this.getSigner() as InjectedEthereumSigner
         await signer.setPublicKey();
         return signer.publicKey;
     }
 
+    pruneBalanceTransactions(_txIds: string[]): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
 
-    return {
-        base: ["wei", 1e18],
-        account,
-        provider: providerUrl,
-        getTx: ethGetTx,
-        getId: async (item): Promise<string> => {
-            return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
-        },
-        ownerToAddress: ethOwnerToAddress,
-        price: (): Promise<number> => getRedstonePrice(ticker),
-        sign: ethSign,
-        getSigner: ethGetSigner,
-        verify: ethVerify,
-        getCurrentHeight: ethGetHeight,
-        getFee: ethGetFee,
-        sendTx: ethSendTx,
-        createTx: ethCreateTx,
-        getPublicKey: ethGetPublicKey,
+    public async ready(): Promise<void> {
+        this.w3signer = await this.wallet.getSigner();
+        this._address = this.ownerToAddress(await this.getPublicKey());
+        this.providerInstance = new ethers.providers.JsonRpcProvider(this.provider);
 
     }
+
+
 }

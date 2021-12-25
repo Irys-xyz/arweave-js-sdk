@@ -166,7 +166,7 @@ async function init(opts, operation): Promise<Bundlr> {
     }
 
     try {
-        bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet);
+        bundler = await (new Bundlr(opts.host, opts.currency.toLowerCase(), wallet)).ready();
     } catch (err) {
         throw new Error(`Error initialising Bundlr client - ${err}`);
     }

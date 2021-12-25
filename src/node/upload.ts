@@ -1,6 +1,6 @@
 import { readFileSync, promises, PathLike } from "fs";
 import { AxiosResponse } from "axios";
-import { Currency } from "./currencies";
+import { Currency } from "../common/types";
 import Uploader, { sleep } from "../common/upload";
 import Api from "../common/api";
 import Utils from "../common/utils";
@@ -122,7 +122,7 @@ export default class NodeUploader extends Uploader {
         }
 
 
-        const uploaderBlockSize = (batchSize > 0) ? batchSize : 5; //TODO: evaluate exposing this as an arg with a default.
+        const uploaderBlockSize = (batchSize > 0) ? batchSize : 5;
         const manifestPath = path ? p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.json`) : undefined
         const manifest = path ? JSON.parse((await promises.readFile(manifestPath)).toString()) : undefined
         const hasManifest = (manifestPath && typeof items[0] === "string")
