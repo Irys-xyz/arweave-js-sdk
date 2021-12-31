@@ -24,6 +24,20 @@
   "rules": {
     "quotes": ["error", "double"],
     "object-curly-spacing": ["error", "always"],
-    "@typescript-eslint/explicit-function-return-type": ["error"]
+    "@typescript-eslint/explicit-function-return-type": ["error"],
+    "no-var": ["error"],
+    "padding-line-between-statements": [
+      "error",
+      {"blankLine": "always", "prev": "block-like","next": "function"}
+    ],
+    "spaced-comment":["error"],
+    "@typescript-eslint/naming-convention": [
+      "error", 
+      {"selector": "class","format":["StrictPascalCase"]},
+      {"selector": "interface","format":["StrictPascalCase"]},
+      {"selector": "classProperty","format":["camelCase"], "leadingUnderscore":"allow"},
+      {"selector": "objectLiteralProperty", "format":null},
+      {"selector": "default","format": ["strictCamelCase"], "leadingUnderscore": "allow" } //this must be the last rule
+    ]
   }
 }

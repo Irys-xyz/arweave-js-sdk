@@ -64,12 +64,24 @@ export default class Utils {
         return address;
     }
 
+    /**
+     * Calculates the price for <bytes> bytes paid for with <currency> for the loaded bundlr node.
+     * @param currency 
+     * @param bytes 
+     * @returns 
+     */
     public async getPrice(currency: string, bytes: number): Promise<BigNumber> {
         const res = await this.api.get(`/price/${currency}/${bytes}`)
         Utils.checkAndThrow(res, "Getting storage cost");
         return new BigNumber((res).data);
     }
 
+    /**
+     * Polls for transaction confirmation - used for fast currencies (i.e not arweave) 
+     * before posting the fund request to the server (so the server doesn't have to poll)
+     * @param txid 
+     * @returns 
+     */
     public async confirmationPoll(txid: string): Promise<void> {
         if (["arweave"].includes(this.currency)) { return }
         let status = false
@@ -78,5 +90,9 @@ export default class Utils {
             await sleep(1000);
         }
         return;
+    }
+
+    public unitConverter(baseUnits: BigNumber.Value): BigNumber {
+        return new BigNumber(baseUnits).dividedBy(this.currencyConfig.base[1]);
     }
 }

@@ -3,10 +3,8 @@ import BaseCurrency from "../../common/currency";
 import { ArweaveSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import crypto from "crypto";
-import { Tx } from "../../common/types";
-import { CurrencyConfig } from "../types";
+import { CurrencyConfig, Tx } from "../../common/types";
 import base64url from "base64url";
-//import base64url from "base64url";
 
 
 export default class ArweaveConfig extends BaseCurrency {
@@ -18,7 +16,7 @@ export default class ArweaveConfig extends BaseCurrency {
     }
 
     public async ready(): Promise<void> {
-        this.providerInstance = await Arweave.init({ host: this.provider ?? "arweave.net", protocol: "https", port: 443 });
+        this.providerInstance = await Arweave.init({ host: this.providerUrl ?? "arweave.net", protocol: "https", port: 443 });
         await super.ready();
     }
 
@@ -48,7 +46,6 @@ export default class ArweaveConfig extends BaseCurrency {
         return Arweave.utils.bufferTob64Url(crypto
             .createHash("sha256")
             .update((Arweave.utils.b64UrlToBuffer((Buffer.isBuffer(owner) ? base64url(owner) : owner))))
-            //.update((Arweave.utils.b64UrlToBuffer(owner)))
             .digest()
         )
     }
@@ -72,8 +69,8 @@ export default class ArweaveConfig extends BaseCurrency {
         return this.providerInstance.network.getInfo().then(r => new BigNumber(r.height))
     }
 
-    async getFee(amount: number | BigNumber, to?: string): Promise<BigNumber> {
-        return new BigNumber(await this.providerInstance.transactions.getPrice(amount as number, to)).integerValue(BigNumber.ROUND_CEIL)
+    async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
+        return new BigNumber(await this.providerInstance.transactions.getPrice((new BigNumber(amount)).toNumber(), to)).integerValue(BigNumber.ROUND_CEIL)
     }
 
     async sendTx(data: any): Promise<void> {
@@ -81,9 +78,9 @@ export default class ArweaveConfig extends BaseCurrency {
         await arweave.transactions.post(data);
     }
 
-    async createTx(amount: number | BigNumber, to: string, fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string; tx: any; }> {
         const arweave = this.providerInstance
-        const tx = await arweave.createTransaction({ quantity: amount.toString(), reward: fee, target: to }, this.wallet)
+        const tx = await arweave.createTransaction({ quantity: (new BigNumber(amount)).toString(), reward: fee, target: to }, this.wallet)
         await arweave.transactions.sign(tx, this.wallet)
         return { txId: tx.id, tx };
     }

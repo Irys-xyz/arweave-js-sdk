@@ -1,13 +1,12 @@
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
-import { Currency } from "./types";
 import Uploader from "../common/upload";
 import Utils from "../common/utils";
 import getCurrency from "./currencies";
 import WebFund from "./fund";
 
 export default class WebBundlr extends Bundlr {
-    public currencyConfig: Currency;
+
     constructor(url: string, currency: string, provider?: any, config?: { timeout?: number }) {
         super();
         const parsed = new URL(url);
@@ -21,9 +20,8 @@ export default class WebBundlr extends Bundlr {
 
     }
 
-    //async initialisation 
+    // async initialisation 
     public async ready(): Promise<void> {
-        await this.currencyConfig.ready();
-
+        await super.ready();
     }
 }

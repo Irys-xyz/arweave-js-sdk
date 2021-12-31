@@ -8,7 +8,7 @@ import NodeUploader from "./upload";
 
 
 export default class NodeBundlr extends Bundlr {
-    public uploader: NodeUploader; //re-define type
+    public uploader: NodeUploader; // re-define type
     /**
      * Constructs a new Bundlr instance, as well as supporting subclasses
      * @param url - URL to the bundler

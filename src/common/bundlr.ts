@@ -7,7 +7,7 @@ import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
-import { Currency } from "./types";
+import { Currency, FundData } from "./types";
 
 // let currencies;
 
@@ -27,7 +27,7 @@ export default abstract class Bundlr {
         this.address = this.currencyConfig.address;
     }
 
-    async withdrawBalance(amount: BigNumber): Promise<AxiosResponse<any>> {
+    async withdrawBalance(amount: BigNumber.Value): Promise<AxiosResponse<any>> {
         return await withdrawBalance(this.utils, this.api, amount);
     }
 
@@ -51,8 +51,18 @@ export default abstract class Bundlr {
      * @param amount amount to send in winston
      * @returns Arweave transaction
      */
-    async fund(amount: BigNumber, multiplier?: number): Promise<any> {
+    async fund(amount: BigNumber.Value, multiplier?: number): Promise<FundData> {
         return this.funder.fund(amount, multiplier)
+    }
+
+    /**
+     * Calculates the price for <bytes> bytes paid for with <currency> for the loaded bundlr node.
+     * @param currency 
+     * @param bytes 
+     * @returns 
+     */
+    public async getPrice(currency: string, bytes: number): Promise<BigNumber> {
+        return this.utils.getPrice(currency, bytes)
     }
 
     /**

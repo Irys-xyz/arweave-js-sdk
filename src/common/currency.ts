@@ -10,7 +10,7 @@ export default abstract class BaseCurrency implements Currency {
     public base: [string, number];
     protected wallet: any
     protected _address: string
-    protected provider?: any;
+    protected providerUrl: any;
     protected providerInstance?: any
     protected ticker: string;
     protected name: string;
@@ -27,47 +27,25 @@ export default abstract class BaseCurrency implements Currency {
     }
 
     public async ready(): Promise<void> {
-        this._address = this.ownerToAddress(await this.getPublicKey());
+        this._address = this.wallet ? this.ownerToAddress(await this.getPublicKey()) : undefined;
     }
 
     async getId(item: FileDataItem): Promise<string> {
         return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
     }
-
     async price(): Promise<number> {
         return getRedstonePrice(this.ticker);
     }
-
-    getTx(_txId: string): Promise<Tx> {
-        throw new Error("Method not implemented.");
-    }
-    ownerToAddress(_owner: any): string {
-        throw new Error("Method not implemented.");
-    }
-    sign(_data: Uint8Array): Promise<Uint8Array> {
-        throw new Error("Method not implemented.");
-    }
-    getSigner(): Signer {
-        throw new Error("Method not implemented.");
-    }
-    verify(_pub: any, _data: Uint8Array, _signature: Uint8Array): Promise<boolean> {
-        throw new Error("Method not implemented.");
-    }
-    getCurrentHeight(): Promise<BigNumber> {
-        throw new Error("Method not implemented.");
-    }
-    getFee(_amount: number | BigNumber, _to?: string): Promise<BigNumber> {
-        throw new Error("Method not implemented.");
-    }
-    sendTx(_data: any): Promise<any> {
-        throw new Error("Method not implemented.");
-    }
-    createTx(_amount: number | BigNumber, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
-        throw new Error("Method not implemented.");
-    }
-    getPublicKey(): Promise<string | Buffer> {
-        throw new Error("Method not implemented.");
-    }
+    abstract getTx(_txId: string): Promise<Tx>
+    abstract ownerToAddress(_owner: any): string
+    abstract sign(_data: Uint8Array): Promise<Uint8Array>
+    abstract getSigner(): Signer
+    abstract verify(_pub: any, _data: Uint8Array, _signature: Uint8Array): Promise<boolean>
+    abstract getCurrentHeight(): Promise<BigNumber>
+    abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber>
+    abstract sendTx(_data: any): Promise<any>
+    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }>
+    abstract getPublicKey(): Promise<string | Buffer>
 }
 
 export async function getRedstonePrice(currency: string): Promise<number> {

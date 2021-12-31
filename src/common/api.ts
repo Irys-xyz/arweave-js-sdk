@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import Axios, { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios";
 
 // taken from the arweave.js lib

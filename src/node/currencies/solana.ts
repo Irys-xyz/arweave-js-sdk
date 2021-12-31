@@ -5,10 +5,9 @@ import { signers } from "arbundles";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import BaseCurrency from "../../common/currency";
-import { Tx } from "../../common/types";
-import { CurrencyConfig } from "../types";
+import { CurrencyConfig, Tx } from "../../common/types";
 
-const { SolanaSigner } = signers;
+const solanaSigner = signers.SolanaSigner;
 
 export default class SolanaConfig extends BaseCurrency {
     protected providerInstance: web3.Connection;
@@ -20,8 +19,9 @@ export default class SolanaConfig extends BaseCurrency {
 
     public async ready(): Promise<void> {
         this.providerInstance = new web3.Connection(
-            web3.clusterApiUrl(this.provider as web3.Cluster),
-            "confirmed",
+            this.providerUrl,
+            // web3.clusterApiUrl(this.providerUrl as web3.Cluster),
+            "confirmed"
         );
         await super.ready();
     }
@@ -73,11 +73,11 @@ export default class SolanaConfig extends BaseCurrency {
         const keypb = bs58.encode(
             Buffer.concat([keyp.secretKey, keyp.publicKey.toBuffer()]),
         );
-        return new SolanaSigner(keypb);
+        return new solanaSigner(keypb);
     }
 
     verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return SolanaSigner.verify(pub, data, signature);
+        return solanaSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -85,7 +85,7 @@ export default class SolanaConfig extends BaseCurrency {
         return new BigNumber((await connection.getEpochInfo()).blockHeight);
     }
 
-    async getFee(_amount: number | BigNumber, _to?: string): Promise<BigNumber> {
+    async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
         const connection = this.providerInstance
         const block = await connection.getRecentBlockhash();
         const feeCalc = await connection.getFeeCalculatorForBlockhash(
@@ -104,13 +104,13 @@ export default class SolanaConfig extends BaseCurrency {
     }
 
     async createTx(
-        amount: number | BigNumber,
+        amount: BigNumber.Value,
         to: string,
         _fee?: string,
     ): Promise<{ txId: string; tx: any }> {
         const connection = this.providerInstance
-        // TODO: figure out how to manually set fees?
-        // TODO: figure out how to get the txId at creation time
+        // TODO: figure out how to manually set fees
+
         const keys = this.getKeyPair();
 
         const transaction = new web3.Transaction({
@@ -122,7 +122,7 @@ export default class SolanaConfig extends BaseCurrency {
             web3.SystemProgram.transfer({
                 fromPubkey: keys.publicKey,
                 toPubkey: new web3.PublicKey(to),
-                lamports: +amount,
+                lamports: +new BigNumber(amount).toNumber(),
             }),
         );
 
@@ -133,7 +133,6 @@ export default class SolanaConfig extends BaseCurrency {
     }
 
     async getPublicKey(): Promise<string | Buffer> {
-        // derive from privkey to ensure it's correct.
         const key = this.getKeyPair();
         return key.publicKey.toBuffer();
     }

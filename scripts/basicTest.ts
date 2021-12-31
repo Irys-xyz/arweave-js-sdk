@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { Bundlr } from "../src";
+import Bundlr from "../src";
 import { readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next"
 const profiling = false;

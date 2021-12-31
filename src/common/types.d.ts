@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js";
 // common types shared between web and node versions
 
-export interface CreateTxData { amount: BigNumber | number, to: string, fee?: string };
+export interface CreateTxData { amount: BigNumber.Value, to: string, fee?: string };
 export interface Tx {
     from: string;
     to: string;
@@ -10,7 +10,7 @@ export interface Tx {
     pending: boolean;
     confirmed: boolean
 }
-export interface CurrencyConfig { name: string, ticker: string, minConfirm: number, wallet, provider?: any }
+export interface CurrencyConfig { name: string, ticker: string, minConfirm: number, wallet: any, providerUrl: string }
 
 
 export interface Currency {
@@ -36,12 +36,14 @@ export interface Currency {
 
     getCurrentHeight(): Promise<BigNumber>;
 
-    getFee(amount: BigNumber | number, to?: string): Promise<BigNumber>;
+    getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber>;
 
-    sendTx(data: any): Promise<any>; //TODO: make signature(s) more specific
+    sendTx(data: any): Promise<any>; // TODO: make signature(s) more specific
 
-    createTx(amount: BigNumber | number, to: string, fee?: string): Promise<{ txId: string, tx: any }>;
+    createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string, tx: any }>;
 
     getPublicKey(): Promise<string | Buffer>;
 
 }
+
+export interface FundData { reward: string, target: string, quantity: string, id: string }

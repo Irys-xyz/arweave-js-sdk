@@ -6,8 +6,8 @@ import { Tx } from "../../common/types";
 import { CurrencyConfig } from "../../common/types";
 import BaseCurrency from "../../common/currency";
 
-const ethBigNumber = ethers.BigNumber //required for hexString conversions (w/ 0x padding)
-const EthereumSigner = InjectedEthereumSigner
+const ethBigNumber = ethers.BigNumber // required for hexString conversions (w/ 0x padding)
+const ethereumSigner = InjectedEthereumSigner
 
 export default class EthereumConfig extends BaseCurrency {
     private signer: InjectedEthereumSigner;
@@ -54,7 +54,7 @@ export default class EthereumConfig extends BaseCurrency {
 
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return EthereumSigner.verify(pub, data, signature);
+        return ethereumSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -64,13 +64,13 @@ export default class EthereumConfig extends BaseCurrency {
         return new BigNumber(response, 16);
     }
 
-    async getFee(amount: number | BigNumber, to?: string): Promise<BigNumber> {
+    async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
         const provider = this.providerInstance
         await provider._ready();
 
         const tx = {
             to,
-            value: "0x" + amount.toString(16),
+            value: "0x" + (new BigNumber(amount)).toString(16),
         };
 
         const estimatedGas = await provider.estimateGas(tx);
@@ -84,8 +84,8 @@ export default class EthereumConfig extends BaseCurrency {
         return receipt ? receipt.hash : undefined
     }
 
-    async createTx(amount: number | BigNumber, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
-        const amountc = ethBigNumber.from(amount.toString())
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+        const amountc = ethBigNumber.from((new BigNumber(amount)).toString())
         const signer = this.w3signer
         const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() })
         const gasPrice = await signer.getGasPrice();
@@ -106,7 +106,7 @@ export default class EthereumConfig extends BaseCurrency {
     public async ready(): Promise<void> {
         this.w3signer = await this.wallet.getSigner();
         this._address = this.ownerToAddress(await this.getPublicKey());
-        this.providerInstance = new ethers.providers.JsonRpcProvider(this.provider);
+        this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
 
     }
 
