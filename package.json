@@ -13,7 +13,8 @@
     "build/**/*.ts"
   ],
   "scripts": {
-    "prod:build": "rm -rf build && tsc -p tsconfig.json && chmod +x ./build/node/cli.js"
+    "prod:build": "rm -rf build && tsc -p tsconfig.json && chmod +x ./build/node/cli.js",
+    "dev:build": "rm -rf build && tsc -p tsconfig.json && chmod +x ./build/node/cli.js && cp package.json ./build"
   },
   "bin": {
     "bundlr": "./build/node/cli.js"
