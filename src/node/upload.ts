@@ -7,7 +7,7 @@ import Utils from "../common/utils";
 import * as p from "path"
 import mime from "mime-types";
 import { DataItem } from "arbundles";
-import { confirmation } from "./cli";
+import inquirer from "inquirer";
 
 export const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false) }
 
@@ -198,17 +198,25 @@ export default class NodeUploader extends Uploader {
                     await logFunction("Failures detected - not deploying manifest")
                 } else {
                     const tags = [{ name: "Type", value: "manifest" }, { name: "Content-Type", value: "application/x.arweave-manifest+json" }]
-                    manifestTx = await this.upload(Buffer.from(JSON.stringify(manifest)), tags).catch((e) => { throw new Error(`Failed to deploy manifest: ${e}`) })
+                    manifestTx = await this.upload(Buffer.from(JSON.stringify(manifest)), tags).catch((e) => { throw new Error(`Failed to deploy manifest: ${e.message}`) })
                     await promises.writeFile(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`), manifestTx.data.id)
                 }
             }
             return { processed, failed, manifestTx: manifestTx?.data.id }
 
         } catch (err) {
-            await logFunction(`Error whilst deploying: ${err} `);
+            await logFunction(`Error whilst deploying: ${err.message} `);
             await this.syncManifest(manifest, manifestPath);
             return { processed, failed }
         }
     }
 
+}
+
+async function confirmation(message: string): Promise<boolean> {
+
+    const answers = await inquirer.prompt([
+        { type: "input", name: "confirmation", message }
+    ]);
+    return answers.confirmation.toLowerCase() == "y";
 }

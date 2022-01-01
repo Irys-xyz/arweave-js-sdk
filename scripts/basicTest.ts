@@ -17,12 +17,12 @@ async function a() {
             }, 2000)
             console.log("profiling configured");
         }
-        const JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", JWK)
+        const _JWK = JSON.parse(readFileSync("wallet.json").toString());
+        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", _JWK)
         await bundlr.ready();
         console.log(bundlr.address);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 500)
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
         console.log(resu);
         const transaction = await bundlr.createTransaction("aaa");
         await transaction.sign();

@@ -131,7 +131,7 @@ program.command("price").description("Check how much of a specific currency is r
  * @param message the message specifying the action they are asked to confirm
  * @returns true if the user has confirmed
  */
-export async function confirmation(message: string): Promise<boolean> {
+async function confirmation(message: string): Promise<boolean> {
     if (!options?.confirmation) {
         return true;
     }

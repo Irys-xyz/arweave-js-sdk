@@ -14,12 +14,12 @@ export default class NodeBundlr extends Bundlr {
      * @param url - URL to the bundler
      * @param wallet - private key (in whatever form required)
      */
-    constructor(url: string, currency: string, wallet?: any, config?: { timeout?: number }) {
+    constructor(url: string, currency: string, wallet?: any, config?: { timeout?: number, providerUrl?: string }) {
         super();
         const parsed = new URL(url);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
         this.currency = currency.toLowerCase();
-        this.currencyConfig = getCurrency(this.currency, wallet)
+        this.currencyConfig = getCurrency(this.currency, wallet, config?.providerUrl)
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
         this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig)
