@@ -62,17 +62,18 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.
     // console.log(csig.equals(osig))
     // TODO: remove check once paranoia is gone
     const isValid2 = await c.verify(cpk, dh2, csig)
+    const isValid3 = c.ownerToAddress(base64url.decode(data.publicKey)) === c.address
     // console.log({ opk, osig })
     // console.log(isValid2)
     // console.log(isValid)
 
-    if (!(isValid || isValid2)) { throw new Error(`Internal withdrawal validation failed - please report this!\nDebug Info:${JSON.stringify(data)}`) }
+    if (!(isValid || isValid2 || isValid3)) { throw new Error(`Internal withdrawal validation failed - please report this!\nDebug Info:${JSON.stringify(data)}`) }
 
-    console.log(JSON.stringify({
-        ...data,
-        publicKey: base64url.toBuffer(data.publicKey),
-        signature: base64url.toBuffer(data.signature)
-    }))
-    console.log(`derived: ${c.ownerToAddress(base64url.decode(data.publicKey))}`)
+    // console.log(JSON.stringify({
+    //     ...data,
+    //     publicKey: base64url.toBuffer(data.publicKey),
+    //     signature: base64url.toBuffer(data.signature)
+    // }))
+    // console.log(`derived: ${c.ownerToAddress(base64url.decode(data.publicKey))}`)
     return api.post("/account/withdraw", data);
 }

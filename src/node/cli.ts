@@ -35,7 +35,7 @@ program.command("balance").description("Gets the specified user's balance for th
             options.address = balpad ? address.substring(1) : address;
             const bundlr = await init(options, "balance");
             const balance = await bundlr.utils.getBalance(options.address);
-            console.log(`Balance: ${balance} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(balance)} ${bundlr.currency})`);
+            console.log(`Balance: ${balance} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(balance).toFixed()} ${bundlr.currency})`);
         } catch (err) {
             console.error(`Error whilst getting balance: \n${options.debug ? err.stack : err.message} `);
             return;
@@ -95,7 +95,7 @@ program.command("fund").description("Sends the specified amount of Winston to th
         if (isNaN(+amount)) throw new Error("Amount must be an integer");
         try {
             const bundlr = await init(options, "fund");
-            confirmation(`Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(amount)} ${bundlr.currency}) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
+            confirmation(`Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(amount).toFixed()} ${bundlr.currency}) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
                 .then(async (confirmed) => {
                     if (confirmed) {
                         const tx = await bundlr.fund(new BigNumber(amount), options.multiplier);
@@ -119,7 +119,7 @@ program.command("price").description("Check how much of a specific currency is r
             const bundlr = await init(options, "price");
             await bundlr.utils.getBundlerAddress(options.currency) // will throw if the bundler doesn't support the currency
             const cost = await bundlr.utils.getPrice(options.currency, +bytes);
-            console.log(`Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(cost)} ${bundlr.currency})`);
+            console.log(`Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(cost).toFixed()} ${bundlr.currency})`);
         } catch (err) {
             console.error(`Error whilst getting price: \n${options.debug ? err.stack : err.message} `);
             return;
@@ -129,7 +129,6 @@ program.command("price").description("Check how much of a specific currency is r
 /**
  * Interactive CLI prompt allowing a user to confirm an action
  * @param message the message specifying the action they are asked to confirm
- * @returns true if the user has confirmed
  */
 async function confirmation(message: string): Promise<boolean> {
     if (!options?.confirmation) {
