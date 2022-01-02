@@ -30,13 +30,13 @@ async function a() {
         console.log(`Upload: ${JSON.stringify(res.data)}`);
         const bAddress = await bundlr.utils.getBundlerAddress("arweave");
         console.log(`bundlr address: ${bAddress}`);
-        let tx = await bundlr.fund(new BigNumber("1000"), 1);
+        let tx = await bundlr.fund(1000, 1);
         console.log(tx);
         let rec = await bundlr.uploadFile("a.txt");
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
-        let resw = await bundlr.withdrawBalance(new BigNumber(1000));
-        console.log(`withdrawl: ${JSON.stringify(resw.data)}`);
+        let resw = await bundlr.withdrawBalance(1000);
+        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
     } catch (e) {
         console.log(e);
     } finally {

@@ -15,7 +15,7 @@ import base64url from "base64url";
 // }
 
 /**
- * Create and send a withdrawl request 
+ * Create and send a withdrawal request 
  * @param utils Instance of Utils 
  * @param api Instance of API
  * @param wallet Wallet to use

@@ -29,7 +29,7 @@ export default class Utils {
     }
 
     /**
-     * Gets the nonce used for withdrawl request validation from the bundler
+     * Gets the nonce used for withdrawal request validation from the bundler
      * @returns nonce for the current user
      */
     public async getNonce(): Promise<number> {

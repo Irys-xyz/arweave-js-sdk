@@ -20,8 +20,8 @@ program
     .option("--timeout <number>", "The timeout (in ms) for API HTTP requests - increase if you get timeouts for upload")
     .option("--no-confirmation", "Disable confirmations for certain actions")
     .option("--multiplier <number>", "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.", "1.00")
-    .option("--batch-size <number>", "Adjust the Upload-dir batch size (process more items at once - Uses more resources (network, memory, cpu) accordingly!)", "5")
-    .option("--debug, -d", "Increases verbosity of errors and logs additional debug information. used for troubleshooting.", false)
+    .option("--batch-size <number>", "Adjust the upload-dir batch size (process more items at once - uses more resources (network, memory, cpu) accordingly!)", "5")
+    .option("--debug, -d", "Increases verbosity of errors and logs additional debug information. Used for troubleshooting.", false)
 
 // Define commands
 // uses NPM view to query the package's version.
@@ -41,7 +41,7 @@ program.command("balance").description("Gets the specified user's balance for th
         }
     });
 
-// Withdraw command - sends a withdrawl request for n base units to the specified bundler for the loaded wallet
+// Withdraw command - sends a withdrawal request for n base units to the specified bundler for the loaded wallet
 program.command("withdraw").description("Sends a fund withdrawal request").argument("<amount>", "amount to withdraw in currency base units")
     .action(async (amount: string) => {
         try {
@@ -58,7 +58,7 @@ program.command("withdraw").description("Sends a fund withdrawal request").argum
                 }
             })
         } catch (err) {
-            console.error(`Error whilst sending withdrawl request: \n${options.debug ? err.stack : err.message} `);
+            console.error(`Error whilst sending withdrawal request: \n${options.debug ? err.stack : err.message} `);
             return;
         }
     });
