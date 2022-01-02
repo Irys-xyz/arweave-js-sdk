@@ -17,10 +17,10 @@ program
     .option("-h, --host <string>", "Bundlr node hostname/URL (eg http://node1.bundlr.network)")
     .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "default")
     .option("-c, --currency <string>", "The currency to use")
-    .option("--timeout <number>", "The timeout (in ms) for API HTTP requests - increase if you get timeouts for upload/deploy")
+    .option("--timeout <number>", "The timeout (in ms) for API HTTP requests - increase if you get timeouts for upload")
     .option("--no-confirmation", "Disable confirmations for certain actions")
     .option("--multiplier <number>", "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.", "1.00")
-    .option("--batch-size <number>", "Adjust the Deploy batch size (process more items at once - Uses more resources (network, memory, cpu) accordingly!)", "5")
+    .option("--batch-size <number>", "Adjust the Upload-dir batch size (process more items at once - Uses more resources (network, memory, cpu) accordingly!)", "5")
     .option("--debug, -d", "Increases verbosity of errors and logs additional debug information. used for troubleshooting.", false)
 
 // Define commands
@@ -90,11 +90,11 @@ program.command("deploy").description("(DEPRECATED - use the functionally identi
 
 async function uploadDir(folder: string): Promise<void> {
     try {
-        const bundler = await init(options, "deploy");
+        const bundler = await init(options, "upload");
         const res = await bundler.uploader.uploadFolder(folder, null, +options.batchSize, options.confirmation);
-        console.log(`Deployed to ${res}`);
+        console.log(`Uploaded to ${res}`);
     } catch (err) {
-        console.error(`Error whilst deploying ${folder} - ${options.debug ? err.stack : err.message}`)
+        console.error(`Error whilst uploading ${folder} - ${options.debug ? err.stack : err.message}`)
     }
 }
 

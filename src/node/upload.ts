@@ -46,7 +46,7 @@ export default class NodeUploader extends Uploader {
      * @param path - path to the folder to be uploaded
      * @param indexFile - path to the index file (i.e index.html)
      * @param batchSize - number of items to upload concurrently
-     * @param interactivePreflight - whether to interactively prompt the user for confirmation of deployment (CLI ONLY)
+     * @param interactivePreflight - whether to interactively prompt the user for confirmation of upload (CLI ONLY)
      * @returns 
      */
     // eslint-disable-next-line @typescript-eslint/ban-types
@@ -88,7 +88,7 @@ export default class NodeUploader extends Uploader {
         }
         if (files.length == 0) {
             console.log("No items to process")
-            // return the txID of the last deploy
+            // return the txID of the upload
             const idpath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`)
             if (await checkPath(idpath)) {
                 return (await promises.readFile(idpath)).toString();
@@ -99,7 +99,7 @@ export default class NodeUploader extends Uploader {
         const price = await this.utils.getPrice(this.currency, total);
 
         if (interactivePreflight) {
-            if (!(await confirmation(`Authorize Deployment?\nTotal amount of data: ${total} bytes over ${files.length} files - cost: ${price} ${this.currencyConfig.base[0]} (${this.utils.unitConverter(price).toFixed()} ${this.currency})\n Y / N`))) { throw new Error("Confirmation failed") }
+            if (!(await confirmation(`Authorize Upload?\nTotal amount of data: ${total} bytes over ${files.length} files - cost: ${price} ${this.currencyConfig.base[0]} (${this.utils.unitConverter(price).toFixed()} ${this.currency})\n Y / N`))) { throw new Error("Confirmation failed") }
         }
 
         // invoke bulkuploader, with inline fallback to console.log if no logging function is given and interactive preflight is on.
@@ -191,21 +191,21 @@ export default class NodeUploader extends Uploader {
                 if (hasManifest) { await this.syncManifest(manifest, manifestPath) }; // checkpoint state then start a new block.
             }
 
-            await logFunction(`Finished deploying ${items.length} items (${failed.size} failures)`)
+            await logFunction(`Finished uploading ${items.length} items (${failed.size} failures)`)
             let manifestTx: AxiosResponse<any>;
             if (hasManifest) {
                 if (failed.size > 0) {
-                    await logFunction("Failures detected - not deploying manifest")
+                    await logFunction("Failures detected - not uploading manifest")
                 } else {
                     const tags = [{ name: "Type", value: "manifest" }, { name: "Content-Type", value: "application/x.arweave-manifest+json" }]
-                    manifestTx = await this.upload(Buffer.from(JSON.stringify(manifest)), tags).catch((e) => { throw new Error(`Failed to deploy manifest: ${e.message}`) })
+                    manifestTx = await this.upload(Buffer.from(JSON.stringify(manifest)), tags).catch((e) => { throw new Error(`Failed to upload manifest: ${e.message}`) })
                     await promises.writeFile(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`), manifestTx.data.id)
                 }
             }
             return { processed, failed, manifestTx: manifestTx?.data.id }
 
         } catch (err) {
-            await logFunction(`Error whilst deploying: ${err.message} `);
+            await logFunction(`Error whilst uploading: ${err.message} `);
             await this.syncManifest(manifest, manifestPath);
             return { processed, failed }
         }
