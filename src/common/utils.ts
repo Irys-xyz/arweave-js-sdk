@@ -65,7 +65,7 @@ export default class Utils {
     }
 
     /**
-     * Calculates the price for <bytes> bytes paid for with <currency> for the loaded bundlr node.
+     * Calculates the price for [bytes] bytes paid for with [currency] for the loaded bundlr node.
      * @param currency 
      * @param bytes 
      * @returns 

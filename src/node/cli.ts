@@ -111,7 +111,7 @@ program.command("fund").description("Sends the specified amount of Winston to th
         }
     })
 
-// Price command - tells the user how many base units of <currency> is needed for <bytes> bytes on the bundlr (with current conditions)
+// Price command - tells the user how many base units of [currency] is needed for [bytes] bytes on the bundlr (with current conditions)
 program.command("price").description("Check how much of a specific currency is required for an upload of <amount> bytes").argument("<bytes>", "The number of bytes to get the price for")
     .action(async (bytes: string) => {
         if (isNaN(+bytes)) throw new Error("Amount must be an integer");

@@ -118,7 +118,7 @@ export default class NodeUploader extends Uploader {
 
     /**
      * Asynchronous chunking uploader, able to upload an array of dataitems or paths
-     * Paths allow for an optional arweave manifest, provided they all have a common base path <path>
+     * Paths allow for an optional arweave manifest, provided they all have a common base path [path]
      * Syncs manifest to disk every 5 (or less) items.
      * @param items - Array of DataItems or paths
      * @param path  - Common base path for provided path items

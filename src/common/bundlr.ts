@@ -9,8 +9,6 @@ import Api from "./api";
 import BigNumber from "bignumber.js";
 import { Currency, FundData } from "./types";
 
-// let currencies;
-
 export default abstract class Bundlr {
     public api: Api;
     public utils: Utils;
@@ -26,6 +24,7 @@ export default abstract class Bundlr {
         await this.currencyConfig.ready();
         this.address = this.currencyConfig.address;
     }
+
 
     async withdrawBalance(amount: BigNumber.Value): Promise<AxiosResponse<any>> {
         return await withdrawBalance(this.utils, this.api, amount);
@@ -56,7 +55,7 @@ export default abstract class Bundlr {
     }
 
     /**
-     * Calculates the price for <bytes> bytes paid for with <currency> for the loaded bundlr node.
+     * Calculates the price for [bytes] bytes paid for with [currency] for the loaded bundlr node.
      * @param currency 
      * @param bytes 
      * @returns 
