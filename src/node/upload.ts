@@ -99,7 +99,7 @@ export default class NodeUploader extends Uploader {
         const price = await this.utils.getPrice(this.currency, total);
 
         if (interactivePreflight) {
-            if (!(await confirmation(`Authorize Deployment?\nTotal amount of data: ${total} bytes over ${files.length} files - cost: ${price} ${this.currencyConfig.base[0]}\n Y / N`))) { throw new Error("Confirmation failed") }
+            if (!(await confirmation(`Authorize Deployment?\nTotal amount of data: ${total} bytes over ${files.length} files - cost: ${price} ${this.currencyConfig.base[0]} (${this.utils.unitConverter(price).toFixed()} ${this.currency})\n Y / N`))) { throw new Error("Confirmation failed") }
         }
 
         // invoke bulkuploader, with inline fallback to console.log if no logging function is given and interactive preflight is on.

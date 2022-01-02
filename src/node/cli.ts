@@ -12,24 +12,23 @@ const program = new Command();
 
 let balpad, walpad; // padding state variables
 
-
 // Define the CLI flags for the program
 program
-    .option("-h, --host <string>", "Bundler hostname/URL (eg http://node1.bundlr.network)")
+    .option("-h, --host <string>", "Bundlr node hostname/URL (eg http://node1.bundlr.network)")
     .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "default")
     .option("-c, --currency <string>", "The currency to use")
     .option("--timeout <number>", "The timeout (in ms) for API HTTP requests - increase if you get timeouts for upload/deploy")
-    .option("--no-confirmation", "Disable confirmations for fund and withdraw actions")
+    .option("--no-confirmation", "Disable confirmations for certain actions")
     .option("--multiplier <number>", "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.", "1.00")
     .option("--batch-size <number>", "Adjust the Deploy batch size (process more items at once - Uses more resources (network, memory, cpu) accordingly!)", "5")
-    .option("--verbose, --debug, -d, -v", "Increases verbosity of errors and logs additional debug information. used for troubleshooting.", false)
+    .option("--debug, -d", "Increases verbosity of errors and logs additional debug information. used for troubleshooting.", false)
 
 // Define commands
 // uses NPM view to query the package's version.
 program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
 
 // Balance command - gets the provided address' balance on the specified bundler
-program.command("balance").description("Gets the specified user's balance for the current bundler").argument("<address>", "address")
+program.command("balance").description("Gets the specified user's balance for the current Bundlr node").argument("<address>", "address")
     .action(async (address: string) => {
         try {
             options.address = balpad ? address.substring(1) : address;
@@ -43,7 +42,7 @@ program.command("balance").description("Gets the specified user's balance for th
     });
 
 // Withdraw command - sends a withdrawl request for n base units to the specified bundler for the loaded wallet
-program.command("withdraw").description("Sends a withdraw request to the bundler").argument("<amount>", "amount to withdraw in currency base units")
+program.command("withdraw").description("Sends a fund withdrawal request").argument("<amount>", "amount to withdraw in currency base units")
     .action(async (amount: string) => {
         try {
             const bundlr = await init(options, "withdraw");
@@ -65,7 +64,7 @@ program.command("withdraw").description("Sends a withdraw request to the bundler
     });
 
 // Upload command - Uploads a specified file to the specified bundler using the loaded wallet.
-program.command("upload").description("Uploads a specified file to the specified bundler").argument("<file>", "relative path to the file you want to upload")
+program.command("upload").description("Uploads a specified file").argument("<file>", "relative path to the file you want to upload")
     .action(async (file: string) => {
         try {
             const bundlr = await init(options, "upload");
@@ -77,20 +76,30 @@ program.command("upload").description("Uploads a specified file to the specified
         }
     });
 
-// Deploy command - Deploys a specified directory (recursive uploading) and constructs a manifest as it goes.
-program.command("deploy").description("Deploys a folder (with a manifest) to the specified bundler").argument("<folder>", "relative path to the folder you want to deploy")
+program.command("upload-dir").description("Uploads a folder (with a manifest)").argument("<folder>", "relative path to the folder you want to upload")
     .action(async (folder: string) => {
-        try {
-            const bundler = await init(options, "deploy");
-            const res = await bundler.uploader.uploadFolder(folder, null, +options.batchSize, options.confirmation);
-            console.log(`Deployed to ${res}`);
-        } catch (err) {
-            console.error(`Error whilst deploying ${folder} - ${options.debug ? err.stack : err.message}`)
-        }
+        await uploadDir(folder)
     })
 
-// Fund command - Sends the specified bundler n winston from the loaded wallet
-program.command("fund").description("Sends the specified amount of Winston to the specified bundler").argument("<amount>", "Amount to add in Winston")
+// Deploy command -DEPRECATED
+program.command("deploy").description("(DEPRECATED - use the functionally identical 'upload-dir' instead.) Deploys a folder (with a manifest) to the specified bundler").argument("<folder>", "relative path to the folder you want to deploy")
+    .action(async (folder: string) => {
+        console.warn("WARN: Deploy is deprecated, use the functionally identical 'upload-dir' instead.")
+        await uploadDir(folder)
+    })
+
+async function uploadDir(folder: string): Promise<void> {
+    try {
+        const bundler = await init(options, "deploy");
+        const res = await bundler.uploader.uploadFolder(folder, null, +options.batchSize, options.confirmation);
+        console.log(`Deployed to ${res}`);
+    } catch (err) {
+        console.error(`Error whilst deploying ${folder} - ${options.debug ? err.stack : err.message}`)
+    }
+}
+
+
+program.command("fund").description("Funds your account with the specified amount of atomic units").argument("<amount>", "Amount to add in atomic units")
     .action(async (amount: string) => {
         if (isNaN(+amount)) throw new Error("Amount must be an integer");
         try {
@@ -111,7 +120,6 @@ program.command("fund").description("Sends the specified amount of Winston to th
         }
     })
 
-// Price command - tells the user how many base units of [currency] is needed for [bytes] bytes on the bundlr (with current conditions)
 program.command("price").description("Check how much of a specific currency is required for an upload of <amount> bytes").argument("<bytes>", "The number of bytes to get the price for")
     .action(async (bytes: string) => {
         if (isNaN(+bytes)) throw new Error("Amount must be an integer");
