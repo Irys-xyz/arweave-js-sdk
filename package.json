@@ -16,7 +16,8 @@
     "dev:build": "rm -rf build && tsc -p tsconfig.json && chmod +x ./build/node/cli.js",
     "prod:build": "yarn run dev:build && webpack && rm ./build/web/bundle.js.LICENSE.txt",
     "lint:check": "eslint src/**",
-    "lint:fix": "eslint src/** --fix"
+    "lint:fix": "eslint src/** --fix",
+    "dev:link": "cp package.json build/ && (cd build && yarn link)"
   },
   "bin": {
     "bundlr": "./build/node/cli.js"

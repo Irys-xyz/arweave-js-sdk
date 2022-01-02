@@ -81,7 +81,7 @@ program.command("upload-dir").description("Uploads a folder (with a manifest)").
         await uploadDir(folder)
     })
 
-// Deploy command -DEPRECATED
+// Deploy command - DEPRECATED
 program.command("deploy").description("(DEPRECATED - use the functionally identical 'upload-dir' instead.) Deploys a folder (with a manifest) to the specified bundler").argument("<folder>", "relative path to the folder you want to deploy")
     .action(async (folder: string) => {
         console.warn("WARN: Deploy is deprecated, use the functionally identical 'upload-dir' instead.")

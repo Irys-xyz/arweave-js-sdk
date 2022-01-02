@@ -106,9 +106,11 @@ export default class NodeUploader extends Uploader {
         return (await this.bulkUploader(files, path, batchSize, (logFunction ?? (interactivePreflight ? console.log : undefined)))).manifestTx ?? "none"
     }
 
-
-
-
+    /**
+     * Synchronises the manifest to disk
+     * @param manifest - manifest object
+     * @param manifestPath - path to the JSON file to write to
+     */
     private async syncManifest(manifest: { manifest: string; version: string; paths: Record<string, any>; }, manifestPath: PathLike | promises.FileHandle): Promise<void> {
         promises.writeFile(manifestPath, Buffer.from(JSON.stringify(manifest, null, 4))).catch(e => {
             console.log(`Error syncing manifest: ${e}`);
@@ -214,7 +216,6 @@ export default class NodeUploader extends Uploader {
 }
 
 async function confirmation(message: string): Promise<boolean> {
-
     const answers = await inquirer.prompt([
         { type: "input", name: "confirmation", message }
     ]);
