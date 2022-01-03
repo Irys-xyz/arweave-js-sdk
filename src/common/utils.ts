@@ -23,7 +23,7 @@ export default class Utils {
      */
     public static checkAndThrow(res: AxiosResponse, context?: string): void {
         if (res?.status && res.status != 200) {
-            throw new Error(`HTTP Error: ${context}: ${res.status} ${JSON.stringify(res.data)}`);
+            throw new Error(`HTTP Error: ${context}: ${res.status} ${res.statusText}`);
         }
         return;
     }

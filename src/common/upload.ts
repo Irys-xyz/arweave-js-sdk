@@ -49,11 +49,18 @@ export default class Uploader {
         const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
             headers: { "Content-Type": "application/octet-stream", },
             timeout,
-            maxBodyLength: Infinity,
-            validateStatus: (status) => (status > 202 && status < 300) || status !== 402
+            maxBodyLength: Infinity
         })
-        if (res.status === 402) {
-            throw new Error("Not enough funds to send data")
+        switch (res.status) {
+            case 201:
+                res.data = { id: dataItem.id }
+                return res;
+            case 402:
+                throw new Error("Not enough funds to send data")
+            default:
+                if (res.status >= 400) {
+                    throw new Error(`whilst uploading DataItem: ${res.status} ${res.statusText}`)
+                }
         }
         return res;
     }

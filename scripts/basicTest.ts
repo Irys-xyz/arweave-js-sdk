@@ -17,7 +17,7 @@ async function a() {
             console.log("profiling configured");
         }
         const _JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("https://node1.bundlr.network", "arweave", _JWK)
+        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", _JWK)
         console.log(bundlr.address);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress("arweave");
@@ -28,8 +28,6 @@ async function a() {
         console.log(transaction.id)
         const res = await transaction.upload();
         console.log(`Upload: ${JSON.stringify(res.data)}`);
-
-
 
         let rec = await bundlr.uploadFile("a.txt");
         console.log(JSON.stringify(rec.data));

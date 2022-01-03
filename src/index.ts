@@ -1,2 +1,2 @@
-export { default } from "./node/bundlr"
-export { default as WebBundlr } from "./web/bundlr"
+export { default } from "./node"
+export { default as WebBundlr } from "./web"

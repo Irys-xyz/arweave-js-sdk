@@ -36,7 +36,7 @@ program.command("balance").description("Gets the specified user's balance for th
             const balance = await bundlr.utils.getBalance(options.address);
             console.log(`Balance: ${balance} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(balance).toFixed()} ${bundlr.currency})`);
         } catch (err) {
-            console.error(`Error whilst getting balance: \n${options.debug ? err.stack : err.message} `);
+            console.error(`Error whilst getting balance: ${options.debug ? err.stack : err.message} `);
             return;
         }
     });
@@ -58,7 +58,7 @@ program.command("withdraw").description("Sends a fund withdrawal request").argum
                 }
             })
         } catch (err) {
-            console.error(`Error whilst sending withdrawal request: \n${options.debug ? err.stack : err.message} `);
+            console.error(`Error whilst sending withdrawal request: ${options.debug ? err.stack : err.message} `);
             return;
         }
     });
@@ -71,7 +71,7 @@ program.command("upload").description("Uploads a specified file").argument("<fil
             const res = await bundlr.uploadFile(file);
             console.log(`Uploaded to https://arweave.net/${res?.data?.id}`)
         } catch (err) {
-            console.error(`Error whilst uploading file: \n${err} `);
+            console.error(`Error whilst uploading file: ${options.debug ? err.stack : err.message} `);
             return;
         }
     });
@@ -115,7 +115,7 @@ program.command("fund").description("Funds your account with the specified amoun
                 })
 
         } catch (err) {
-            console.error(`Error whilst funding: \n${options.debug ? err.stack : err.message} `);
+            console.error(`Error whilst funding: ${options.debug ? err.stack : err.message} `);
             return;
         }
     })
@@ -129,7 +129,7 @@ program.command("price").description("Check how much of a specific currency is r
             const cost = await bundlr.utils.getPrice(options.currency, +bytes);
             console.log(`Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(cost).toFixed()} ${bundlr.currency})`);
         } catch (err) {
-            console.error(`Error whilst getting price: \n${options.debug ? err.stack : err.message} `);
+            console.error(`Error whilst getting price: ${options.debug ? err.stack : err.message} `);
             return;
         }
     })
@@ -182,7 +182,6 @@ async function init(opts, operation): Promise<Bundlr> {
     try {
         // create and ready the bundlr instance
         bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet);
-        await bundler.ready();
     } catch (err) {
         throw new Error(`Error initialising Bundlr client - ${options.debug ? err.stack : err.message}`);
     }
