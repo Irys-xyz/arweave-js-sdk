@@ -2,7 +2,7 @@
 import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
 import Api from "./api";
-import { Currency } from "../node/currencies";
+import { Currency } from "./types";
 
 export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -10,7 +10,7 @@ export default class Utils {
     public api: Api;
     public currency: string;
     public currencyConfig: Currency;
-    constructor(api: Api, currency: string, currencyConfig: Currency,) {
+    constructor(api: Api, currency: string, currencyConfig: Currency) {
         this.api = api;
         this.currency = currency;
         this.currencyConfig = currencyConfig;
@@ -23,17 +23,17 @@ export default class Utils {
      */
     public static checkAndThrow(res: AxiosResponse, context?: string): void {
         if (res?.status && res.status != 200) {
-            throw new Error(`HTTP Error: ${context}: ${res.status} ${JSON.stringify(res.data)}`);
+            throw new Error(`HTTP Error: ${context}: ${res.status} ${res.statusText}`);
         }
         return;
     }
 
     /**
-     * Gets the nonce used for withdrawl request validation from the bundler
+     * Gets the nonce used for withdrawal request validation from the bundler
      * @returns nonce for the current user
      */
     public async getNonce(): Promise<number> {
-        const res = await this.api.get(`/account/withdrawals/${this.currency}?address=${this.currencyConfig.account.address}`);
+        const res = await this.api.get(`/account/withdrawals/${this.currency}?address=${this.currencyConfig.address}`);
         Utils.checkAndThrow(res, "Getting withdrawal nonce");
         return (res).data;
     }
@@ -64,12 +64,24 @@ export default class Utils {
         return address;
     }
 
+    /**
+     * Calculates the price for [bytes] bytes paid for with [currency] for the loaded bundlr node.
+     * @param currency 
+     * @param bytes 
+     * @returns 
+     */
     public async getPrice(currency: string, bytes: number): Promise<BigNumber> {
         const res = await this.api.get(`/price/${currency}/${bytes}`)
         Utils.checkAndThrow(res, "Getting storage cost");
         return new BigNumber((res).data);
     }
 
+    /**
+     * Polls for transaction confirmation - used for fast currencies (i.e not arweave) 
+     * before posting the fund request to the server (so the server doesn't have to poll)
+     * @param txid 
+     * @returns 
+     */
     public async confirmationPoll(txid: string): Promise<void> {
         if (["arweave"].includes(this.currency)) { return }
         let status = false
@@ -78,5 +90,9 @@ export default class Utils {
             await sleep(1000);
         }
         return;
+    }
+
+    public unitConverter(baseUnits: BigNumber.Value): BigNumber {
+        return new BigNumber(baseUnits).dividedBy(this.currencyConfig.base[1]);
     }
 }

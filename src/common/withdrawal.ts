@@ -15,24 +15,65 @@ import base64url from "base64url";
 // }
 
 /**
- * Create and send a withdrawl request 
+ * Create and send a withdrawal request 
  * @param utils Instance of Utils 
  * @param api Instance of API
  * @param wallet Wallet to use
  * @param amount amount to withdraw in winston
  * @returns the response from the bundler
  */
-export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber): Promise<AxiosResponse> {
+export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.Value): Promise<AxiosResponse> {
     const c = utils.currencyConfig;
-    const data = { publicKey: await c.getPublicKey(), currency: utils.currency, amount: amount.toString(), nonce: await utils.getNonce(), signature: undefined }
+    const pkey = await c.getPublicKey();
+    const data = { publicKey: pkey, currency: utils.currency, amount: new BigNumber(amount).toString(), nonce: await utils.getNonce(), signature: undefined }
     const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
+    if (!Buffer.isBuffer(data.publicKey)) {
+        data.publicKey = Buffer.from(data.publicKey);
+    }
+
+    // const a = data.publicKey.toString(); //fine
+    // console.log(a)
 
     data.signature = await c.sign(deephash)
 
-    if (! await c.verify(data.publicKey, deephash, data.signature)) { throw new Error("Internal withdrawal validation failed") }
+    const isValid = await c.verify(data.publicKey, deephash, data.signature)
+
+    // const opk = Buffer.from(data.publicKey)
+    // const osig = data.signature; // (uint8array)
 
     data.publicKey = base64url.encode(data.publicKey)
-    data.signature = base64url.encode(Buffer.from(data.signature))
+    data.signature = base64url.encode(data.signature)
 
+    // const b = base64url.decode(data.publicKey)
+    // console.log(b) //fine
+
+    const cpk = base64url.toBuffer(data.publicKey)
+    const csig = base64url.toBuffer(data.signature)
+
+    // console.log(cpk.toString()) //fine
+    // console.log(`bad: ${base64url(cpk)}`)
+    // console.log(base64url.decode(data.publicKey))
+
+    // await c.ownerToAddress(await item.rawOwner());
+
+    // should match opk and csig
+    const dh2 = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())])
+    // console.log(cpk.equals(opk));
+    // console.log(csig.equals(osig))
+    // TODO: remove check once paranoia is gone
+    const isValid2 = await c.verify(cpk, dh2, csig)
+    const isValid3 = c.ownerToAddress(base64url.decode(data.publicKey)) === c.address
+    // console.log({ opk, osig })
+    // console.log(isValid2)
+    // console.log(isValid)
+
+    if (!(isValid || isValid2 || isValid3)) { throw new Error(`Internal withdrawal validation failed - please report this!\nDebug Info:${JSON.stringify(data)}`) }
+
+    // console.log(JSON.stringify({
+    //     ...data,
+    //     publicKey: base64url.toBuffer(data.publicKey),
+    //     signature: base64url.toBuffer(data.signature)
+    // }))
+    // console.log(`derived: ${c.ownerToAddress(base64url.decode(data.publicKey))}`)
     return api.post("/account/withdraw", data);
 }

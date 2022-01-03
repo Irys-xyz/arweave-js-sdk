@@ -3,52 +3,29 @@ import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
 import Utils from "../common/utils";
+import getCurrency from "./currencies";
+import { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 
-let currencies;
-export const keys: { [key: string]: { key: any, address: string } } = {};
 
 export default class NodeBundlr extends Bundlr {
-    public uploader: NodeUploader; //re-define type
+    public uploader: NodeUploader; // re-define type
+    public currencyConfig: NodeCurrency;
     /**
      * Constructs a new Bundlr instance, as well as supporting subclasses
      * @param url - URL to the bundler
-     * @param wallet - JWK in JSON
+     * @param wallet - private key (in whatever form required)
      */
-    constructor(url: string, currency: string, wallet?: any, config?: { timeout?: number }) {
+    constructor(url: string, currency: string, wallet?: any, config?: { timeout?: number, providerUrl?: string }) {
         super();
-        // hacky for the moment...
-        // specifically about ordering - some stuff here seems silly but leave it for now it works
-
-        this.currency = currency;
-        if (!wallet) {
-            wallet = "default";
-        }
-        keys[currency] = { key: wallet, address: undefined };
-        this.wallet = wallet;
         const parsed = new URL(url);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
-
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        currencies = (require("./currencies/index")).currencies; //delay so that keys object can be properly constructed
-        if (!currencies[currency]) {
-            throw new Error(`Unknown/Unsuported currency ${currency}`);
-        }
-
-        this.currencyConfig = currencies[currency];
-        this.currencyConfig.account.address = this.address;
-
-        if (!(wallet === "default")) {
-            const address = this.currencyConfig.ownerToAddress(this.currencyConfig.getPublicKey());
-            this.address = address;
-            this.currencyConfig.account.address = address;
-        }
-
-
+        this.currency = currency.toLowerCase();
+        this.currencyConfig = getCurrency(this.currency, wallet, config?.providerUrl)
+        this.address = this.currencyConfig.address;
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
-        this.uploader = new NodeUploader(this.api, this.utils, currency, this.currencyConfig)
-
+        this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig)
     }
 
     /**
