@@ -6,12 +6,12 @@ import { signers } from "arbundles";
 import { Signer } from "arbundles/src/signing";
 import { JsonRpcProvider } from "@ethersproject/providers";
 import { CurrencyConfig, Tx } from "../../common/types";
-import NodeCurrency from "../currency";
+import BaseNodeCurrency from "../currency";
 
 
 const ethereumSigner = signers.EthereumSigner;
 
-export default class EthereumConfig extends NodeCurrency {
+export default class EthereumConfig extends BaseNodeCurrency {
     protected providerInstance: JsonRpcProvider;
 
     constructor(config: CurrencyConfig) {

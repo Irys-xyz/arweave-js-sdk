@@ -7,8 +7,7 @@ import { Tx, CurrencyConfig } from "../common/types"
 import redstone from "redstone-api";
 import { WebCurrency } from "./types";
 
-
-export default abstract class BaseCurrency implements WebCurrency {
+export default abstract class BaseWebCurrency implements WebCurrency {
     public base: [string, number];
     protected wallet: any
     protected _address: string

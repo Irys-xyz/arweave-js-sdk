@@ -4,10 +4,10 @@ import BigNumber from "bignumber.js";
 import crypto from "crypto";
 import { CurrencyConfig, Tx } from "../../common/types";
 import base64url from "base64url";
-import NodeCurrency from "../currency";
+import BaseNodeCurrency from "../currency";
 
 
-export default class ArweaveConfig extends NodeCurrency {
+export default class ArweaveConfig extends BaseNodeCurrency {
     protected providerInstance: Arweave;
 
     constructor(config: CurrencyConfig) {

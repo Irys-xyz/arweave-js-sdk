@@ -7,7 +7,7 @@ import { Tx, CurrencyConfig } from "../common/types"
 import redstone from "redstone-api";
 import { NodeCurrency } from "./types";
 
-export default abstract class BaseCurrency implements NodeCurrency {
+export default abstract class BaseNodeCurrency implements NodeCurrency {
     public base: [string, number];
     protected wallet: any
     protected _address: string

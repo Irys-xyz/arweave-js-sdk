@@ -5,11 +5,11 @@ import { signers } from "arbundles";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import { CurrencyConfig, Tx } from "../../common/types";
-import NodeCurrency from "../currency";
+import BaseNodeCurrency from "../currency";
 
 const solanaSigner = signers.SolanaSigner;
 
-export default class SolanaConfig extends NodeCurrency {
+export default class SolanaConfig extends BaseNodeCurrency {
     protected providerInstance: web3.Connection;
 
     constructor(config: CurrencyConfig) {

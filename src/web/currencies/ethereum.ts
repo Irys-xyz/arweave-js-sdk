@@ -4,12 +4,12 @@ import BigNumber from "bignumber.js";
 import { InjectedEthereumSigner, Signer } from "arbundles/src/signing";
 import { Tx } from "../../common/types";
 import { CurrencyConfig } from "../../common/types";
-import BaseCurrency from "../currency";
+import BaseWebCurrency from "../currency";
 
 const ethBigNumber = ethers.BigNumber // required for hexString conversions (w/ 0x padding)
 const ethereumSigner = InjectedEthereumSigner
 
-export default class EthereumConfig extends BaseCurrency {
+export default class EthereumConfig extends BaseWebCurrency {
     private signer: InjectedEthereumSigner;
     protected wallet: ethers.providers.Web3Provider;
     private w3signer: ethers.providers.JsonRpcSigner;
