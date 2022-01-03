@@ -1,7 +1,7 @@
-import { Currency } from "../../common/types";
+import BaseCurrency from "../currency";
 import EthereumConfig from "./ethereum";
 
-export default function getCurrency(currency: string, wallet: any, providerUrl?: string): Currency {
+export default function getCurrency(currency: string, wallet: any, providerUrl?: string): BaseCurrency {
     switch (currency) {
         // case "ethereum":
         //     return new EthereumConfig({ name: "ethereum", ticker: "ETH", minConfirm: 5, wallet })

@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 import { InjectedEthereumSigner, Signer } from "arbundles/src/signing";
 import { Tx } from "../../common/types";
 import { CurrencyConfig } from "../../common/types";
-import BaseCurrency from "../../common/currency";
+import BaseCurrency from "../currency";
 
 const ethBigNumber = ethers.BigNumber // required for hexString conversions (w/ 0x padding)
 const ethereumSigner = InjectedEthereumSigner

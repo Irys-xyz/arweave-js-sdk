@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js";
 import Bundlr from "../src";
 import { readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next"
@@ -18,23 +17,30 @@ async function a() {
             console.log("profiling configured");
         }
         const _JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", _JWK)
-        await bundlr.ready();
+        let bundlr = new Bundlr("https://node1.bundlr.network", "arweave", _JWK)
         console.log(bundlr.address);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
-        console.log(resu);
-        const transaction = await bundlr.createTransaction("aaa");
-        await transaction.sign();
-        const res = await transaction.upload();
-        console.log(`Upload: ${JSON.stringify(res.data)}`);
         const bAddress = await bundlr.utils.getBundlerAddress("arweave");
         console.log(`bundlr address: ${bAddress}`);
-        let tx = await bundlr.fund(1000, 1);
-        console.log(tx);
+
+        const transaction = await bundlr.createTransaction("aaa");
+        await transaction.sign();
+        console.log(transaction.id)
+        const res = await transaction.upload();
+        console.log(`Upload: ${JSON.stringify(res.data)}`);
+
+
+
         let rec = await bundlr.uploadFile("a.txt");
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
+
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
+        console.log(resu);
+
+
+        let tx = await bundlr.fund(1000, 1);
+        console.log(tx);
         let resw = await bundlr.withdrawBalance(1000);
         console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
     } catch (e) {

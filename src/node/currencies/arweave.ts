@@ -1,13 +1,13 @@
 import Arweave from "arweave";
-import BaseCurrency from "../../common/currency";
 import { ArweaveSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import crypto from "crypto";
 import { CurrencyConfig, Tx } from "../../common/types";
 import base64url from "base64url";
+import NodeCurrency from "../currency";
 
 
-export default class ArweaveConfig extends BaseCurrency {
+export default class ArweaveConfig extends NodeCurrency {
     protected providerInstance: Arweave;
 
     constructor(config: CurrencyConfig) {
@@ -15,13 +15,16 @@ export default class ArweaveConfig extends BaseCurrency {
         this.base = ["winston", 1e12];
     }
 
-    public async ready(): Promise<void> {
-        this.providerInstance = await Arweave.init({ host: this.providerUrl ?? "arweave.net", protocol: "https", port: 443 });
-        await super.ready();
+
+    private async getProvider(): Promise<Arweave> {
+        if (!this.providerInstance) {
+            this.providerInstance = await Arweave.init({ host: this.providerUrl ?? "arweave.net", protocol: "https", port: 443 });
+        }
+        return this.providerInstance;
     }
 
     async getTx(txId: string): Promise<Tx> {
-        const arweave = this.providerInstance
+        const arweave = await this.getProvider()
         const txs = await arweave.transactions.getStatus(txId);
         let tx;
         if (txs.status == 200) {
@@ -66,26 +69,25 @@ export default class ArweaveConfig extends BaseCurrency {
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
-        return this.providerInstance.network.getInfo().then(r => new BigNumber(r.height))
+        return (await this.getProvider()).network.getInfo().then(r => new BigNumber(r.height))
     }
 
     async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
-        return new BigNumber(await this.providerInstance.transactions.getPrice((new BigNumber(amount)).toNumber(), to)).integerValue(BigNumber.ROUND_CEIL)
+        return new BigNumber(await (await this.getProvider()).transactions.getPrice((new BigNumber(amount)).toNumber(), to)).integerValue(BigNumber.ROUND_CEIL)
     }
 
     async sendTx(data: any): Promise<void> {
-        const arweave = this.providerInstance
-        await arweave.transactions.post(data);
+        await (await this.getProvider()).transactions.post(data);
     }
 
     async createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string; tx: any; }> {
-        const arweave = this.providerInstance
+        const arweave = await this.getProvider();
         const tx = await arweave.createTransaction({ quantity: (new BigNumber(amount)).toString(), reward: fee, target: to }, this.wallet)
         await arweave.transactions.sign(tx, this.wallet)
         return { txId: tx.id, tx };
     }
 
-    async getPublicKey(): Promise<string> {
+    getPublicKey(): string {
         return this.wallet.n
     }
 

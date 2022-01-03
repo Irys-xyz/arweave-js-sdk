@@ -3,10 +3,11 @@ import { Signer } from "arbundles/src/signing";
 import Arweave from "arweave";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
-import { Tx, CurrencyConfig, Currency } from "./types"
+import { Tx, CurrencyConfig } from "../common/types"
 import redstone from "redstone-api";
+import { NodeCurrency } from "./types";
 
-export default abstract class BaseCurrency implements Currency {
+export default abstract class BaseCurrency implements NodeCurrency {
     public base: [string, number];
     protected wallet: any
     protected _address: string
@@ -18,6 +19,7 @@ export default abstract class BaseCurrency implements Currency {
 
     constructor(config: CurrencyConfig) {
         Object.assign(this, config);
+        this._address = this.wallet ? this.ownerToAddress(this.getPublicKey()) : undefined;
     }
 
     // common methods
@@ -26,9 +28,6 @@ export default abstract class BaseCurrency implements Currency {
         return this._address
     }
 
-    public async ready(): Promise<void> {
-        this._address = this.wallet ? this.ownerToAddress(await this.getPublicKey()) : undefined;
-    }
 
     async getId(item: FileDataItem): Promise<string> {
         return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
@@ -45,7 +44,7 @@ export default abstract class BaseCurrency implements Currency {
     abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber>
     abstract sendTx(_data: any): Promise<any>
     abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }>
-    abstract getPublicKey(): Promise<string | Buffer>
+    abstract getPublicKey(): string | Buffer
 }
 
 export async function getRedstonePrice(currency: string): Promise<number> {

@@ -1,9 +1,9 @@
-import { Currency } from "../../common/types";
+import { NodeCurrency } from "../types";
 import ArweaveConfig from "./arweave";
 import EthereumConfig from "./ethereum";
 import SolanaConfig from "./solana";
 
-export default function getCurrency(currency: string, wallet: any, providerUrl?: string): Currency {
+export default function getCurrency(currency: string, wallet: any, providerUrl?: string): NodeCurrency {
     switch (currency) {
         case "arweave":
             return new ArweaveConfig({ name: "arweave", ticker: "AR", minConfirm: 5, providerUrl: providerUrl ?? "arweave.net", wallet })

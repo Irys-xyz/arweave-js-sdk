@@ -20,10 +20,10 @@ export default abstract class Bundlr {
 
     constructor() { return }
 
-    public async ready(): Promise<void> {
-        await this.currencyConfig.ready();
-        this.address = this.currencyConfig.address;
-    }
+    // public async ready(): Promise<void> {
+    //     await this.currencyConfig.ready();
+    //     this.address = this.currencyConfig.address;
+    // }
 
 
     async withdrawBalance(amount: BigNumber.Value): Promise<AxiosResponse<any>> {

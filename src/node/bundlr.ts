@@ -4,11 +4,13 @@ import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
 import Utils from "../common/utils";
 import getCurrency from "./currencies";
+import { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 
 
 export default class NodeBundlr extends Bundlr {
     public uploader: NodeUploader; // re-define type
+    public currencyConfig: NodeCurrency;
     /**
      * Constructs a new Bundlr instance, as well as supporting subclasses
      * @param url - URL to the bundler
@@ -20,6 +22,7 @@ export default class NodeBundlr extends Bundlr {
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
         this.currency = currency.toLowerCase();
         this.currencyConfig = getCurrency(this.currency, wallet, config?.providerUrl)
+        this.address = this.currencyConfig.address;
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
         this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig)

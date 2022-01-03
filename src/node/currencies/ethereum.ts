@@ -6,12 +6,12 @@ import { signers } from "arbundles";
 import { Signer } from "arbundles/src/signing";
 import { JsonRpcProvider } from "@ethersproject/providers";
 import { CurrencyConfig, Tx } from "../../common/types";
-import BaseCurrency from "../../common/currency";
+import NodeCurrency from "../currency";
 
 
 const ethereumSigner = signers.EthereumSigner;
 
-export default class EthereumConfig extends BaseCurrency {
+export default class EthereumConfig extends NodeCurrency {
     protected providerInstance: JsonRpcProvider;
 
     constructor(config: CurrencyConfig) {
@@ -19,16 +19,18 @@ export default class EthereumConfig extends BaseCurrency {
         this.base = ["wei", 1e18];
 
     }
-    public async ready(): Promise<void> {
-        this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
-        await this.providerInstance._ready()
-        await super.ready();
+
+    private async getProvider(): Promise<JsonRpcProvider> {
+        if (!this.providerInstance) {
+            this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
+            await this.providerInstance._ready()
+        }
+        return this.providerInstance;
     }
 
     async getTx(txId: string): Promise<Tx> {
-        const provider = this.providerInstance
 
-        const response = await provider.getTransaction(txId);
+        const response = await (await this.getProvider()).getTransaction(txId);
 
         if (!response) throw new Error("Tx doesn't exist");
 
@@ -60,13 +62,12 @@ export default class EthereumConfig extends BaseCurrency {
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
-        const provider = this.providerInstance
-        const response = await provider.send("eth_blockNumber", []);
+        const response = await (await this.getProvider()).send("eth_blockNumber", []);
         return new BigNumber(response, 16);
     }
 
     async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
-        const provider = this.providerInstance
+        const provider = await this.getProvider()
         const _amount = new BigNumber(amount)
         const tx = {
             to,
@@ -81,15 +82,14 @@ export default class EthereumConfig extends BaseCurrency {
 
     async sendTx(data: any): Promise<void> {
         try {
-            const provider = this.providerInstance
-            await provider.sendTransaction(data);
+            await (await this.getProvider()).sendTransaction(data);
         } catch (e) {
             console.error(`Error occurred while sending a MATIC tx - ${e}`);
             throw e;
         }
     }
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
-        const provider = this.providerInstance
+        const provider = await this.getProvider()
         const wallet = new Wallet(this.wallet, provider);
 
         const _amount = "0x" + new BigNumber(amount).toString(16);
@@ -109,7 +109,7 @@ export default class EthereumConfig extends BaseCurrency {
         return { txId, tx: signedTx };
     }
 
-    async getPublicKey(): Promise<string | Buffer> {
+    getPublicKey(): string | Buffer {
         return Buffer.from(publicKeyCreate(Buffer.from(this.wallet, "hex"), false));
     }
 

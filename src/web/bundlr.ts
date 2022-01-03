@@ -4,9 +4,10 @@ import Uploader from "../common/upload";
 import Utils from "../common/utils";
 import getCurrency from "./currencies";
 import WebFund from "./fund";
+import { WebCurrency } from "./types";
 
 export default class WebBundlr extends Bundlr {
-
+    public currencyConfig: WebCurrency;
     constructor(url: string, currency: string, provider?: any, config?: { timeout?: number, providerUrl?: string }) {
         super();
         const parsed = new URL(url);
@@ -22,6 +23,7 @@ export default class WebBundlr extends Bundlr {
 
     // async initialisation 
     public async ready(): Promise<void> {
-        await super.ready();
+        await this.currencyConfig.ready()
+        this.address = this.currencyConfig.address
     }
 }

@@ -18,8 +18,6 @@ export interface Currency {
 
     get address(): string;
 
-    ready(): Promise<void>
-
     getTx(txId: string): Promise<Tx>;
 
     ownerToAddress(owner: any): string;
@@ -42,7 +40,7 @@ export interface Currency {
 
     createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string, tx: any }>;
 
-    getPublicKey(): Promise<string | Buffer>;
+    getPublicKey(): Promise<string | Buffer> | (string | Buffer);
 
 }
 
