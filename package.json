@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/client",
-  "version": "0.4.9",
+  "version": "0.4.11",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
@@ -17,7 +17,7 @@
     "prod:build": "yarn run dev:build && webpack && rm ./build/web/bundle.js.LICENSE.txt",
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
-    "dev:link": "cp package.json build/ && (cd build && yarn link)"
+    "dev:link": "cp package.json build/ && (cd build && yarn link) && npm i -g"
   },
   "bin": {
     "bundlr": "./build/node/cli.js"
