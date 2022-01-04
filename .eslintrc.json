@@ -30,6 +30,7 @@
       "error",
       {"blankLine": "always", "prev": "block-like","next": "function"}
     ],
+    "space-infix-ops": ["error"],
     "spaced-comment":["error"],
     "@typescript-eslint/naming-convention": [
       "error", 

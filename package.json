@@ -8,6 +8,11 @@
   "main": "./build/index.js",
   "browser": "./build/web/index.js",
   "types": "./build/index.d.ts",
+  "exports": {
+    ".": "./build/index.js",
+    "./web": "./build/web/index.js",
+    "./node": "./build/node/index.js"
+  },
   "files": [
     "build/**/*.js",
     "build/**/*.ts"
