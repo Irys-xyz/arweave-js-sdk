@@ -8,6 +8,7 @@ import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
 import { Currency, FundData } from "./types";
+import { Signer } from "arbundles/src/signing";
 
 export default abstract class Bundlr {
     public api: Api;
@@ -71,5 +72,12 @@ export default abstract class Bundlr {
      */
     createTransaction(data: string | Uint8Array, opts?: DataItemCreateOptions): BundlrTransaction {
         return new BundlrTransaction(data, this, opts);
+    }
+
+    /**
+     * Returns the signer for the loaded currency
+     */
+    getSigner(): Signer {
+        return this.currencyConfig.getSigner()
     }
 }

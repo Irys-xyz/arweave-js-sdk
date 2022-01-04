@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.30.2",
-    "arbundles": "^0.6.9",
+    "arbundles": "^0.6.11",
     "arweave": "^1.10.17",
     "base64url": "^3.0.1",
     "bignumber.js": "^9.0.1",
