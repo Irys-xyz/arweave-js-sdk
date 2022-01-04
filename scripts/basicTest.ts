@@ -16,11 +16,12 @@ async function a() {
             }, 2000)
             console.log("profiling configured");
         }
-        const _JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", _JWK)
+        const JWK = JSON.parse(readFileSync("wallet.json").toString());
+        console.log(JWK.n.length)
+        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", JWK)
         console.log(bundlr.address);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
-        const bAddress = await bundlr.utils.getBundlerAddress("arweave");
+        const bAddress = await bundlr.utils.getBundlerAddress("boba");
         console.log(`bundlr address: ${bAddress}`);
 
         const transaction = await bundlr.createTransaction("aaa");
@@ -33,14 +34,13 @@ async function a() {
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
 
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
-        console.log(resu);
-
-
         let tx = await bundlr.fund(1000, 1);
         console.log(tx);
         let resw = await bundlr.withdrawBalance(1000);
         console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
+        console.log(resu);
     } catch (e) {
         console.log(e);
     } finally {

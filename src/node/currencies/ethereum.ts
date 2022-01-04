@@ -83,8 +83,9 @@ export default class EthereumConfig extends BaseNodeCurrency {
     async sendTx(data: any): Promise<void> {
         try {
             await (await this.getProvider()).sendTransaction(data);
+            // await (await this.getProvider()).sendRawTransaction(data);
         } catch (e) {
-            console.error(`Error occurred while sending a MATIC tx - ${e}`);
+            console.error(`Error occurred while sending a tx - ${e}`);
             throw e;
         }
     }
