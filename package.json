@@ -24,6 +24,7 @@
     "lint:fix": "eslint src/** --fix",
     "dev:link": "cp package.json build/ && (cd build && yarn link) && npm i -g"
   },
+  "precommit": "eslint src/** --fix",
   "bin": {
     "bundlr": "./build/node/cli.js"
   },
@@ -63,6 +64,7 @@
     "jsdoc-babel": "^0.5.0",
     "jsdoc-to-markdown": "^7.1.0",
     "longjohn": "^0.2.12",
+    "pre-commit": "^1.2.2",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "ts-jest": "^27.0.7",
