@@ -22,6 +22,7 @@ program
     .option("--multiplier <number>", "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.", "1.00")
     .option("--batch-size <number>", "Adjust the upload-dir batch size (process more items at once - uses more resources (network, memory, cpu) accordingly!)", "5")
     .option("--debug, -d", "Increases verbosity of errors and logs additional debug information. Used for troubleshooting.", false)
+    .option("--index-file <string>", "Name of the file to use as an index for upload-dir manifests (relative to the path provided to upload-dir).")
 
 // Define commands
 // uses NPM view to query the package's version.
@@ -91,8 +92,10 @@ program.command("deploy").description("(DEPRECATED - use the functionally identi
 async function uploadDir(folder: string): Promise<void> {
     try {
         const bundler = await init(options, "upload");
-        const res = await bundler.uploader.uploadFolder(folder, null, +options.batchSize, options.confirmation);
-        console.log(`Uploaded to ${res}`);
+        const res = await bundler.uploader.uploadFolder(folder, options.indexFile ?? null, +options.batchSize, options.confirmation, console.log);
+        if (res != "none") {
+            console.log(`Uploaded to ${res}`);
+        }
     } catch (err) {
         console.error(`Error whilst uploading ${folder} - ${options.debug ? err.stack : err.message}`)
     }
