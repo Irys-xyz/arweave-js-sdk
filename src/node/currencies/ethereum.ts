@@ -103,6 +103,9 @@ export default class EthereumConfig extends BaseNodeCurrency {
             gasPrice,
             gasLimit: estimatedGas,
         });
+        if (this.name ==='arbitrum') {
+            delete tx.gasLimit
+        }
 
         const signedTx = await wallet.signTransaction(tx);
         const txId = "0x" + keccak256(Buffer.from(signedTx.slice(2), "hex")).toString("hex");
