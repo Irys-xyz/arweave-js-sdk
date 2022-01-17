@@ -16,6 +16,8 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new EthereumConfig({ name: "bnb", ticker: "BNB", minConfirm: 5, providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet })
         case "solana":
             return new SolanaConfig({ name: "solana", ticker: "SOL", minConfirm: 5, providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com", wallet })
+        case "boba":
+            return new EthereumConfig({ name: "boba", ticker: "ETH", minConfirm: 5, providerUrl: providerUrl ?? "https://mainnet.boba.network/", wallet })
         case "chainlink":
             return new ERC20Config({ name: "chainlink", ticker: "LINK", minConfirm: 5, providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", contractAddress: contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet })
         default:

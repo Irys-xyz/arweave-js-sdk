@@ -80,9 +80,11 @@ export default class EthereumConfig extends BaseNodeCurrency {
         return new BigNumber(estimatedGas.mul(gasPrice).toString());
     }
 
+
     async sendTx(data: any): Promise<any> {
         return (await (await this.getProvider()).sendTransaction(data).catch(e => { console.error(`Error occurred while sending a tx - ${e}`); throw e }));
     }
+  
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const provider = await this.getProvider()
         const wallet = new Wallet(this.wallet, provider);
