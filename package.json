@@ -28,7 +28,7 @@
     "bundlr": "./build/node/cli.js"
   },
   "resolutions": {
-    "**/streamr-client":"^6.0.0-alpha.19"
+    "**/streamr-client": "^6.0.0-alpha.19"
   },
   "dependencies": {
     "@solana/wallet-adapter-base": "^0.9.2",
