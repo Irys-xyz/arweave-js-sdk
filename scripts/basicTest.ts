@@ -16,9 +16,11 @@ async function a() {
             }, 2000)
             console.log("profiling configured");
         }
-        const _JWK = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", _JWK)
+        const JWK = JSON.parse(readFileSync("wallet.json").toString());
+        console.log(JWK.n.length)
+        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", JWK)
         console.log(bundlr.address);
+
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress("arweave");
         console.log(`bundlr address: ${bAddress}`);
@@ -36,8 +38,7 @@ async function a() {
         const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
         console.log(resu);
 
-
-        let tx = await bundlr.fund(1000, 1);
+        let tx = await bundlr.fund(1337, 1);
         console.log(tx);
         let resw = await bundlr.withdrawBalance(1000);
         console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
