@@ -29,9 +29,11 @@ export default class EthereumConfig extends BaseNodeCurrency {
     }
 
     async getTx(txId: string): Promise<Tx> {
+        const provider = await this.getProvider()
 
-        const response = await (await this.getProvider()).getTransaction(txId);
-
+        const response = await provider.getTransaction(txId);
+        // const r2 = await provider.getTransactionReceipt(txId);
+        // console.log(r2);
         if (!response) throw new Error("Tx doesn't exist");
 
         return {
@@ -77,6 +79,8 @@ export default class EthereumConfig extends BaseNodeCurrency {
         const estimatedGas = await provider.estimateGas(tx);
         const gasPrice = await provider.getGasPrice();
 
+        // const b = await provider.send("eth_maxPriorityFeePerGas", [])
+        // console.log(b)
         return new BigNumber(estimatedGas.mul(gasPrice).toString());
     }
 
