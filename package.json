@@ -31,6 +31,11 @@
     "**/streamr-client":"^6.0.0-alpha.19"
   },
   "dependencies": {
+    "@solana/wallet-adapter-base": "^0.9.2",
+    "@solana/wallet-adapter-phantom": "^0.9.2",
+    "@solana/wallet-adapter-slope": "^0.5.2",
+    "@solana/wallet-adapter-solflare": "^0.6.2",
+    "@solana/wallet-adapter-tokenpocket": "^0.4.2",
     "@solana/web3.js": "^1.30.2",
     "arbundles": "^0.6.11",
     "arweave": "1.10.18",
