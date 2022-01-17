@@ -11,6 +11,10 @@ import BaseNodeCurrency from "../currency";
 
 const ethereumSigner = signers.EthereumSigner;
 
+// export interface EthCurrencyConfig extends CurrencyConfig {
+//     // eslint-disable-next-line @typescript-eslint/naming-convention
+//     isEIP1559?: boolean
+// }
 export default class EthereumConfig extends BaseNodeCurrency {
     protected providerInstance: JsonRpcProvider;
 
@@ -88,23 +92,25 @@ export default class EthereumConfig extends BaseNodeCurrency {
     async sendTx(data: any): Promise<any> {
         return (await (await this.getProvider()).sendTransaction(data).catch(e => { console.error(`Error occurred while sending a tx - ${e}`); throw e }));
     }
-  
+
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const provider = await this.getProvider()
         const wallet = new Wallet(this.wallet, provider);
 
         const _amount = "0x" + new BigNumber(amount).toString(16);
 
-        const estimatedGas = await provider.estimateGas({ to, value: _amount });
-        const gasPrice = await provider.getGasPrice();
+        // const gasPrice = await provider.getGasPrice();
+        // const estimatedGas = await provider.estimateGas({ to, value: _amount });
+
+        // console.log({ gasPrice, estimatedGas })
 
         const tx = await wallet.populateTransaction({
             to,
             value: _amount,
-            gasPrice,
-            gasLimit: estimatedGas,
-            nonce: await provider.getTransactionCount(this.address),
-            chainId: await (await provider.getNetwork()).chainId
+            // gasPrice,
+            // gasLimit: estimatedGas,
+            // nonce: await provider.getTransactionCount(this.address),
+            // chainId: await (await provider.getNetwork()).chainId
         });
 
         const signedTx = await wallet.signTransaction(tx);
