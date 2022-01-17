@@ -20,7 +20,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
 
     }
 
-    private async getProvider(): Promise<JsonRpcProvider> {
+    protected async getProvider(): Promise<JsonRpcProvider> {
         if (!this.providerInstance) {
             this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
             await this.providerInstance._ready()
@@ -84,14 +84,11 @@ export default class EthereumConfig extends BaseNodeCurrency {
         return new BigNumber(estimatedGas.mul(gasPrice).toString());
     }
 
-    async sendTx(data: any): Promise<void> {
-        try {
-            await (await this.getProvider()).sendTransaction(data);
-        } catch (e) {
-            console.error(`Error occurred while sending a MATIC tx - ${e}`);
-            throw e;
-        }
+
+    async sendTx(data: any): Promise<any> {
+        return (await (await this.getProvider()).sendTransaction(data).catch(e => { console.error(`Error occurred while sending a tx - ${e}`); throw e }));
     }
+  
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const provider = await this.getProvider()
         const wallet = new Wallet(this.wallet, provider);
@@ -106,6 +103,8 @@ export default class EthereumConfig extends BaseNodeCurrency {
             value: _amount,
             gasPrice,
             gasLimit: estimatedGas,
+            nonce: await provider.getTransactionCount(this.address),
+            chainId: await (await provider.getNetwork()).chainId
         });
 
         const signedTx = await wallet.signTransaction(tx);
