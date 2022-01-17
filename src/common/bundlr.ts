@@ -8,6 +8,7 @@ import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
 import { Currency, FundData } from "./types";
+import { Signer } from "arbundles/src/signing";
 
 export default abstract class Bundlr {
     public api: Api;
@@ -55,13 +56,12 @@ export default abstract class Bundlr {
     }
 
     /**
-     * Calculates the price for [bytes] bytes paid for with [currency] for the loaded bundlr node.
-     * @param currency 
+     * Calculates the price for [bytes] bytes for the loaded currency and Bundlr node.
      * @param bytes 
      * @returns 
      */
-    public async getPrice(currency: string, bytes: number): Promise<BigNumber> {
-        return this.utils.getPrice(currency, bytes)
+    public async getPrice(bytes: number): Promise<BigNumber> {
+        return this.utils.getPrice(this.currency, bytes)
     }
 
     /**
@@ -72,5 +72,12 @@ export default abstract class Bundlr {
      */
     createTransaction(data: string | Uint8Array, opts?: DataItemCreateOptions): BundlrTransaction {
         return new BundlrTransaction(data, this, opts);
+    }
+
+    /**
+     * Returns the signer for the loaded currency
+     */
+    getSigner(): Signer {
+        return this.currencyConfig.getSigner()
     }
 }

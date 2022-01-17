@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/client",
-  "version": "0.5.0",
+  "version": "0.5.2",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
@@ -8,6 +8,11 @@
   "main": "./build/index.js",
   "browser": "./build/web/index.js",
   "types": "./build/index.d.ts",
+  "exports": {
+    ".": "./build/index.js",
+    "./web": "./build/web/index.js",
+    "./node": "./build/node/index.js"
+  },
   "files": [
     "build/**/*.js",
     "build/**/*.ts"
@@ -24,8 +29,8 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.30.2",
-    "arbundles": "^0.6.9",
-    "arweave": "^1.10.17",
+    "arbundles": "^0.6.11",
+    "arweave": "1.10.18",
     "base64url": "^3.0.1",
     "bignumber.js": "^9.0.1",
     "commander": "^8.2.0",

@@ -24,17 +24,19 @@
   "rules": {
     "quotes": ["error", "double"],
     "object-curly-spacing": ["error", "always"],
-    "@typescript-eslint/explicit-function-return-type": ["error"],
-    "no-var": ["error"],
+    "@typescript-eslint/explicit-function-return-type": "error",
+    "no-var": "error",
     "padding-line-between-statements": [
       "error",
       {"blankLine": "always", "prev": "block-like","next": "function"}
     ],
-    "spaced-comment":["error"],
+    "space-infix-ops": "error",
+    "spaced-comment":"error",
+    "arrow-spacing":"error",
     "@typescript-eslint/naming-convention": [
       "error", 
-      {"selector": "class","format":["StrictPascalCase"]},
-      {"selector": "interface","format":["StrictPascalCase"]},
+      {"selector": "class","format":["PascalCase"]},
+      {"selector": "interface","format":["PascalCase"]},
       {"selector": "classProperty","format":["camelCase"], "leadingUnderscore":"allow"},
       {"selector": "objectLiteralProperty", "format":null},
       {"selector": "default","format": ["strictCamelCase"], "leadingUnderscore": "allow" } //this must be the last rule

@@ -20,6 +20,7 @@ async function a() {
         console.log(JWK.n.length)
         let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", JWK)
         console.log(bundlr.address);
+
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress("boba");
         console.log(`bundlr address: ${bAddress}`);
@@ -33,9 +34,10 @@ async function a() {
         let rec = await bundlr.uploadFile("a.txt");
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
-
-        let tx = await bundlr.fund(1000, 1);
+      
+        let tx = await bundlr.fund(1337, 1);
         console.log(tx);
+      
         let resw = await bundlr.withdrawBalance(1000);
         console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
 
