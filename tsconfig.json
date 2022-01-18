@@ -3,7 +3,7 @@
     "target": "es2019",
     "module": "commonjs",
     "moduleResolution": "node",
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "declaration": true,
@@ -22,6 +22,5 @@
     "outDir": "build"
   },
   "include": ["src/**/*"],
-  "exclude": ["src/__tests__/**"],
-  "hooks": ["copy-files"]
+  "exclude": ["src/__tests__/**"]
 }

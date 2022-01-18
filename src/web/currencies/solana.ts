@@ -84,14 +84,10 @@ export default class SolanaConfig extends BaseWebCurrency {
         return new BigNumber(feeCalc.value.lamportsPerSignature);
     }
 
-    async sendTx(data: any): Promise<void> {
-        // const connection = await this.getProvider()
-        // // if it's already been signed...
-        // if (data.signature) {
-        //     await web3.sendAndConfirmRawTransaction(connection, data.serialize());
-        // }
-        // await web3.sendAndConfirmTransaction(connection, data, [this.getKeyPair()]);
-        await this.wallet.sendTransaction(data, await this.getProvider())
+    async sendTx(data: any): Promise<string> {
+
+        return await this.wallet.sendTransaction(data, await this.getProvider())
+
     }
 
     async createTx(
