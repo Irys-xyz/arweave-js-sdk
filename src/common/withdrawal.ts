@@ -22,7 +22,7 @@ import base64url from "base64url";
  * @param amount amount to withdraw in winston
  * @returns the response from the bundler
  */
-export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.Value): Promise<AxiosResponse> {
+export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.Value): Promise<AxiosResponse<any>> {
     const c = utils.currencyConfig;
     const pkey = await c.getPublicKey();
     const data = { publicKey: pkey, currency: utils.currency, amount: new BigNumber(amount).toString(), nonce: await utils.getNonce(), signature: undefined }
@@ -75,5 +75,7 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.
     //     signature: base64url.toBuffer(data.signature)
     // }))
     // console.log(`derived: ${c.ownerToAddress(base64url.decode(data.publicKey))}`)
-    return api.post("/account/withdraw", data);
+    const res = await api.post("/account/withdraw", data)
+    Utils.checkAndThrow(res, "Withdrawing balance")
+    return res;
 }

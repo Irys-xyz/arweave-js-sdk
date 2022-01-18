@@ -79,7 +79,7 @@ export default class EthereumConfig extends BaseWebCurrency {
 
     async sendTx(data: ethers.providers.TransactionRequest): Promise<string> {
         const signer = this.w3signer
-        const receipt = await signer.sendTransaction(data).catch((e) => { console.error(`Sending tx: ${e}`) })
+        const receipt = await signer.sendTransaction(data)// .catch((e) => { console.error(`Sending tx: ${e}`) })
         return receipt ? receipt.hash : undefined
     }
 
