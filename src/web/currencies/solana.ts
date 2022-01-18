@@ -53,6 +53,9 @@ export default class SolanaConfig extends BaseWebCurrency {
     }
 
     ownerToAddress(owner: any): string {
+        if (typeof owner === "string") {
+            owner = Buffer.from(owner)
+        }
         return bs58.encode(owner);
     }
 
