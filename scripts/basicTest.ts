@@ -22,7 +22,7 @@ async function a() {
         console.log(bundlr.address);
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
-        const bAddress = await bundlr.utils.getBundlerAddress("boba");
+        const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
         const transaction = await bundlr.createTransaction("aaa");
@@ -34,15 +34,17 @@ async function a() {
         let rec = await bundlr.uploadFile("a.txt");
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
-      
-        let tx = await bundlr.fund(1337, 1);
-        console.log(tx);
-      
-        let resw = await bundlr.withdrawBalance(1000);
-        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
 
         const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
         console.log(resu);
+
+        let tx = await bundlr.fund(1337, 1);
+        console.log(tx);
+
+        let resw = await bundlr.withdrawBalance(1000);
+        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+
+
     } catch (e) {
         console.log(e);
     } finally {
