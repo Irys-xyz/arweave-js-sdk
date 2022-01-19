@@ -11,6 +11,10 @@ import BaseNodeCurrency from "../currency";
 
 const ethereumSigner = signers.EthereumSigner;
 
+// export interface EthCurrencyConfig extends CurrencyConfig {
+//     // eslint-disable-next-line @typescript-eslint/naming-convention
+//     isEIP1559?: boolean
+// }
 export default class EthereumConfig extends BaseNodeCurrency {
     protected providerInstance: JsonRpcProvider;
 
@@ -20,7 +24,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
 
     }
 
-    private async getProvider(): Promise<JsonRpcProvider> {
+    protected async getProvider(): Promise<JsonRpcProvider> {
         if (!this.providerInstance) {
             this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
             await this.providerInstance._ready()
@@ -29,9 +33,11 @@ export default class EthereumConfig extends BaseNodeCurrency {
     }
 
     async getTx(txId: string): Promise<Tx> {
+        const provider = await this.getProvider()
 
-        const response = await (await this.getProvider()).getTransaction(txId);
-
+        const response = await provider.getTransaction(txId);
+        // const r2 = await provider.getTransactionReceipt(txId);
+        // console.log(r2);
         if (!response) throw new Error("Tx doesn't exist");
 
         return {
@@ -77,31 +83,34 @@ export default class EthereumConfig extends BaseNodeCurrency {
         const estimatedGas = await provider.estimateGas(tx);
         const gasPrice = await provider.getGasPrice();
 
+        // const b = await provider.send("eth_maxPriorityFeePerGas", [])
+        // console.log(b)
         return new BigNumber(estimatedGas.mul(gasPrice).toString());
     }
 
-    async sendTx(data: any): Promise<void> {
-        try {
-            await (await this.getProvider()).sendTransaction(data);
-        } catch (e) {
-            console.error(`Error occurred while sending a MATIC tx - ${e}`);
-            throw e;
-        }
+
+    async sendTx(data: any): Promise<any> {
+        return (await (await this.getProvider()).sendTransaction(data).catch(e => { console.error(`Error occurred while sending a tx - ${e}`); throw e }));
     }
+
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const provider = await this.getProvider()
         const wallet = new Wallet(this.wallet, provider);
 
         const _amount = "0x" + new BigNumber(amount).toString(16);
 
-        const estimatedGas = await provider.estimateGas({ to, value: _amount });
-        const gasPrice = await provider.getGasPrice();
+        // const gasPrice = await provider.getGasPrice();
+        // const estimatedGas = await provider.estimateGas({ to, value: _amount });
+
+        // console.log({ gasPrice, estimatedGas })
 
         const tx = await wallet.populateTransaction({
             to,
             value: _amount,
-            gasPrice,
-            gasLimit: estimatedGas,
+            // gasPrice,
+            // gasLimit: estimatedGas,
+            // nonce: await provider.getTransactionCount(this.address),
+            // chainId: await (await provider.getNetwork()).chainId
         });
 
         const signedTx = await wallet.signTransaction(tx);

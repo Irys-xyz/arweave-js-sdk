@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/client",
-  "version": "0.5.2",
+  "version": "0.5.7",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
@@ -18,16 +18,24 @@
     "build/**/*.ts"
   ],
   "scripts": {
-    "dev:build": "rm -rf build && tsc -p tsconfig.json && chmod +x ./build/node/cli.js",
+    "dev:build": "rm -rf build && tsc -p tsconfig.json && chmod +x ./build/node/cli.js && yarn run copy-types",
     "prod:build": "yarn run dev:build && webpack && rm ./build/web/bundle.js.LICENSE.txt",
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
-    "dev:link": "cp package.json build/ && (cd build && yarn link) && npm i -g"
+    "copy-types": "cp src/common/types.d.ts build/common && cp src/node/types.d.ts build/node && cp src/web/types.d.ts build/node"
   },
   "bin": {
     "bundlr": "./build/node/cli.js"
   },
+  "resolutions": {
+    "**/streamr-client": "^6.0.0-alpha.19"
+  },
   "dependencies": {
+    "@solana/wallet-adapter-base": "^0.9.2",
+    "@solana/wallet-adapter-phantom": "^0.9.2",
+    "@solana/wallet-adapter-slope": "^0.5.2",
+    "@solana/wallet-adapter-solflare": "^0.6.2",
+    "@solana/wallet-adapter-tokenpocket": "^0.4.2",
     "@solana/web3.js": "^1.30.2",
     "arbundles": "^0.6.11",
     "arweave": "1.10.18",

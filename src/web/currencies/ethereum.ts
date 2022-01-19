@@ -2,8 +2,7 @@ import keccak256 from "keccak256";
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
 import { InjectedEthereumSigner, Signer } from "arbundles/src/signing";
-import { Tx } from "../../common/types";
-import { CurrencyConfig } from "../../common/types";
+import { Tx, CurrencyConfig } from "../../common/types";
 import BaseWebCurrency from "../currency";
 
 const ethBigNumber = ethers.BigNumber // required for hexString conversions (w/ 0x padding)
@@ -80,7 +79,7 @@ export default class EthereumConfig extends BaseWebCurrency {
 
     async sendTx(data: ethers.providers.TransactionRequest): Promise<string> {
         const signer = this.w3signer
-        const receipt = await signer.sendTransaction(data).catch((e) => { console.error(`Sending tx: ${e}`) })
+        const receipt = await signer.sendTransaction(data)// .catch((e) => { console.error(`Sending tx: ${e}`) })
         return receipt ? receipt.hash : undefined
     }
 
