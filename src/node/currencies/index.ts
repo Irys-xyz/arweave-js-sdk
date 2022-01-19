@@ -14,6 +14,8 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: providerUrl ?? "https://polygon-rpc.com", minConfirm: 5, wallet })
         case "bnb":
             return new EthereumConfig({ name: "bnb", ticker: "BNB", minConfirm: 5, providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet })
+        case "fantom":
+            return new EthereumConfig({ name: "fantom", ticker: "FTM", minConfirm: 5, providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet })
         case "solana":
             return new SolanaConfig({ name: "solana", ticker: "SOL", minConfirm: 5, providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com", wallet })
         case "avalanche":
@@ -28,5 +30,3 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
     }
 }
-
-
