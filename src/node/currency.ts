@@ -19,13 +19,15 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
 
     constructor(config: CurrencyConfig) {
         Object.assign(this, config);
-        // this._address = 
     }
 
     // common methods
+    protected assignAddress(): void{
+        this._address = this.wallet ? this.ownerToAddress(this.getPublicKey()) : undefined;
+    }
 
-    async getAddress(): Promise<string> {
-        return this.wallet ? this.ownerToAddress(await this.getPublicKey()) : undefined;
+    get address(): string {
+        return this._address;
     }
 
 
@@ -36,7 +38,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
         return getRedstonePrice(this.ticker);
     }
     abstract getTx(_txId: string): Promise<Tx>
-    abstract ownerToAddress(_owner: any): Promise<string>
+    abstract ownerToAddress(_owner: any): string
     abstract sign(_data: Uint8Array): Promise<Uint8Array>
     abstract getSigner(): Signer
     abstract verify(_pub: any, _data: Uint8Array, _signature: Uint8Array): Promise<boolean>
@@ -44,7 +46,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber>
     abstract sendTx(_data: any): Promise<any>
     abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }>
-    abstract getPublicKey(): Promise<string>
+    abstract getPublicKey(): string | Buffer
 }
 
 export async function getRedstonePrice(currency: string): Promise<number> {

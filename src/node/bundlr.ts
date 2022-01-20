@@ -37,5 +37,14 @@ export default class NodeBundlr extends Bundlr {
         return this.uploader.uploadFile(path);
     };
 
+    /**
+     * Optional ready method for currencies that require asynchronous initialisation.
+     */
+    async ready(): Promise<void>{
+        if(this.currencyConfig.ready){
+            await this.currencyConfig.ready();
+        }
+    }
+
 }
 

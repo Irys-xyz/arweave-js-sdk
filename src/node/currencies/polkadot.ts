@@ -4,6 +4,7 @@ import BigNumber from "bignumber.js";
 import { Tx, CurrencyConfig } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import * as api from "@polkadot/api";
+import { waitReady } from "@polkadot/wasm-crypto";
 
 const keyring = new api.Keyring();
 keyring.setSS58Format(0);
@@ -16,6 +17,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     constructor(config: CurrencyConfig){
         super(config);
         this.base = ["planck", 1e10];
+        this._address = "You need to .ready() this currency!"
     }
 
     protected async getProvider(): Promise<api.ApiPromise> {
@@ -64,7 +66,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         }
     }
     
-    async ownerToAddress(_owner: any): Promise<string> {
+    ownerToAddress(_owner: any): string {
         const pair = keyring.createFromUri(_owner);
         return keyring.encodeAddress(pair.publicKey, 0);
     }
@@ -104,12 +106,19 @@ export default class PolkadotConfig extends BaseNodeCurrency {
 
         throw new Error("Method not implemented.");
     }
-    async getPublicKey(): Promise<string> {
+
+    getPublicKey(): string {
         // const pair = keyring.createFromUri(_owner);
         // return Buffer.from(pair.publicKey);
-        return this.getSigner().publicKey;
+        return this.getSigner().publicKey.toString();
     }
 
-
+    public async ready(): Promise<void>{
+        const a = await waitReady() // .catch(e => {
+        //     console.log(e)
+        // }).then(b => {if (b) {return}  throw new Error("Unable to initialise WASM")})
+        console.log(a);
+        this.assignAddress();
+    }
 
 }
