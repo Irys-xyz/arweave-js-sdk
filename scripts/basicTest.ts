@@ -18,7 +18,7 @@ async function a() {
         }
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
         console.log(JWK.n.length)
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", JWK)
+        let bundlr = new Bundlr("https://dev1.bundlr.network", "polkadot", "0x2fc043b79dcd641050322a66eb9be7dbfdb4afafea752ffde1644e575707f7b6")
         console.log(bundlr.address);
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);

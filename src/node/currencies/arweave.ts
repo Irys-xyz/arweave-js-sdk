@@ -44,8 +44,7 @@ export default class ArweaveConfig extends BaseNodeCurrency {
         }
     }
 
-    ownerToAddress(owner: any): string {
-
+    async ownerToAddress(owner: any): Promise<string> {
         return Arweave.utils.bufferTob64Url(crypto
             .createHash("sha256")
             .update((Arweave.utils.b64UrlToBuffer((Buffer.isBuffer(owner) ? base64url(owner) : owner))))
@@ -87,7 +86,7 @@ export default class ArweaveConfig extends BaseNodeCurrency {
         return { txId: tx.id, tx };
     }
 
-    getPublicKey(): string {
+    async getPublicKey(): Promise<string> {
         return this.wallet.n
     }
 

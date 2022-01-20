@@ -19,11 +19,11 @@ export interface CurrencyConfig { name: string, ticker: string, minConfirm: numb
 export interface Currency {
     base: [string, number];
 
-    get address(): string;
+    getAddress(): Promise<string>;
 
     getTx(txId: string): Promise<Tx>;
 
-    ownerToAddress(owner: any): string;
+    ownerToAddress(owner: any): string | Promise<string>;
 
     getId(item: FileDataItem): Promise<string>;
 
