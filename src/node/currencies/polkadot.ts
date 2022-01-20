@@ -1,5 +1,6 @@
 import { Signer } from "arbundles/src/signing";
-import { signers } from "arbundles";
+// import { signers } from "arbundles";
+import PolkadotSigner from "arbundles/src/signing/chains/PolkadotSigner"
 import BigNumber from "bignumber.js";
 import { Tx, CurrencyConfig } from "../../common/types";
 import BaseNodeCurrency from "../currency";
@@ -8,11 +9,12 @@ import { waitReady } from "@polkadot/wasm-crypto";
 
 const keyring = new api.Keyring();
 keyring.setSS58Format(0);
-const polkadotSigner = signers.PolkadotSigner;
+
 
 export default class PolkadotConfig extends BaseNodeCurrency {
     protected providerInstance?: api.ApiPromise
     protected providerWss: api.WsProvider;
+    protected signerInstance: PolkadotSigner
 
     constructor(config: CurrencyConfig){
         super(config);
@@ -34,6 +36,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         }
         return this.providerWss;
     }
+
 
     /**
      * txId = blockHash + : + txHash
@@ -72,16 +75,16 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     }
     
     async sign(_data: Uint8Array): Promise<Uint8Array> {
-        const signer = new polkadotSigner(this.wallet);
-        return signer.sign(_data);
+       
+        return this.signerInstance.sign(_data);
     }
 
     getSigner(): Signer {
-        return new polkadotSigner(this.wallet);
+        return this.signerInstance
     }
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return polkadotSigner.verify(pub,data,signature);
+        return this.signerInstance.verify(pub,data,signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -110,14 +113,16 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     getPublicKey(): string {
         // const pair = keyring.createFromUri(_owner);
         // return Buffer.from(pair.publicKey);
-        return this.getSigner().publicKey.toString();
+        return this.signerInstance.publicKey.toString();
     }
 
     public async ready(): Promise<void>{
-        const a = await waitReady() // .catch(e => {
+        await waitReady() // .catch(e => {
+        this.signerInstance = new PolkadotSigner(this.wallet);
+        this.signerInstance.ready()
         //     console.log(e)
         // }).then(b => {if (b) {return}  throw new Error("Unable to initialise WASM")})
-        console.log(a);
+        // console.log(a);
         this.assignAddress();
     }
 
