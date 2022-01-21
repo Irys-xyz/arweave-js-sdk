@@ -18,10 +18,10 @@ async function a() {
         }
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
         console.log(JWK.n.length)
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "polkadot", "0x2fc043b79dcd641050322a66eb9be7dbfdb4afafea752ffde1644e575707f7b6")
+        let bundlr = new Bundlr("http://localhost:10001", "polkadot", "0x2fc043b79dcd641050322a66eb9be7dbfdb4afafea752ffde1644e575707f7b6")
         await bundlr.ready();
         console.log(bundlr.address);
-
+        console.log(await bundlr.currencyConfig.getTx("0x4fc6dfcc6f83670505ca040bdd4ebabf7b4de223a55ff3e28d232f3d0fe9a0d4:0xba6bf2ccf68b047f3529a9c43099b19e2335ee4bf9cf53bb420c4da64656acf6"))
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
