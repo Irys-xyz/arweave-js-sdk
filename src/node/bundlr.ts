@@ -40,9 +40,10 @@ export default class NodeBundlr extends Bundlr {
     /**
      * Optional ready method for currencies that require asynchronous initialisation.
      */
-    async ready(): Promise<void>{
-        if(this.currencyConfig.ready){
+    async ready(): Promise<void> {
+        if (this.currencyConfig.ready) {
             await this.currencyConfig.ready();
+            this.address = this.currencyConfig.address
         }
     }
 

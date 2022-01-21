@@ -5,10 +5,8 @@ import BigNumber from "bignumber.js";
 import { Tx, CurrencyConfig } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import * as api from "@polkadot/api";
-import { waitReady } from "@polkadot/wasm-crypto";
+import { encodeAddress } from "@polkadot/util-crypto"
 
-const keyring = new api.Keyring();
-keyring.setSS58Format(0);
 
 
 export default class PolkadotConfig extends BaseNodeCurrency {
@@ -16,7 +14,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     protected providerWss: api.WsProvider;
     protected signerInstance: PolkadotSigner
 
-    constructor(config: CurrencyConfig){
+    constructor(config: CurrencyConfig) {
         super(config);
         this.base = ["planck", 1e10];
         this._address = "You need to .ready() this currency!"
@@ -47,10 +45,10 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         const provider = await this.getProvider();
         const [blkHash, txHash] = txId.split(":");
         const signedBlock = await provider.rpc.chain.getBlock(blkHash)
-        const tx = signedBlock.block.extrinsics.find(el => el.hash.toString() === txHash );
-        if(tx.length < 1){
+        const tx = signedBlock.block.extrinsics.find(el => el.hash.toString() === txHash);
+        if (tx.length < 1) {
             throw new Error("Transaction Not Found");
-        }else{
+        } else {
 
             // return {
             //     from: tx.,
@@ -68,14 +66,13 @@ export default class PolkadotConfig extends BaseNodeCurrency {
             confirmed: false
         }
     }
-    
-    ownerToAddress(_owner: any): string {
-        const pair = keyring.createFromUri(_owner);
-        return keyring.encodeAddress(pair.publicKey, 0);
+
+    ownerToAddress(owner: any): string {
+        return encodeAddress(Buffer.from(owner, "base64")) // optional format?
     }
-    
+
     async sign(_data: Uint8Array): Promise<Uint8Array> {
-       
+
         return this.signerInstance.sign(_data);
     }
 
@@ -84,7 +81,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     }
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return this.signerInstance.verify(pub,data,signature);
+        return PolkadotSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -92,7 +89,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         const lastHeader = await provider.rpc.chain.getHeader();
         return new BigNumber(lastHeader.number.toString())
     }
-    
+
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
         throw new Error("Method not implemented.");
     }
@@ -105,7 +102,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     async createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         // const API = await api.ApiPromise.create();
         // const transfer = API.tx.balances.transfer(BOB, _amount);
-        
+
 
         throw new Error("Method not implemented.");
     }
@@ -113,17 +110,14 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     getPublicKey(): string {
         // const pair = keyring.createFromUri(_owner);
         // return Buffer.from(pair.publicKey);
-        return this.signerInstance.publicKey.toString();
+        return this.signerInstance.publicKey.toString("base64")
     }
 
-    public async ready(): Promise<void>{
-        await waitReady() // .catch(e => {
+    public async ready(): Promise<boolean> {
         this.signerInstance = new PolkadotSigner(this.wallet);
-        this.signerInstance.ready()
-        //     console.log(e)
-        // }).then(b => {if (b) {return}  throw new Error("Unable to initialise WASM")})
-        // console.log(a);
-        this.assignAddress();
+        await this.signerInstance.ready()
+        await this.assignAddress()
+        return true;
     }
 
 }

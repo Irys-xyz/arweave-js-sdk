@@ -22,7 +22,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     }
 
     // common methods
-    protected assignAddress(): void{
+    protected assignAddress(): void {
         this._address = this.wallet ? this.ownerToAddress(this.getPublicKey()) : undefined;
     }
 
