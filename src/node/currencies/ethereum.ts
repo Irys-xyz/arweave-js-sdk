@@ -27,7 +27,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
     protected async getProvider(): Promise<JsonRpcProvider> {
         if (!this.providerInstance) {
             this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
-            await this.providerInstance._ready()
+            await this.providerInstance.ready
         }
         return this.providerInstance;
     }
