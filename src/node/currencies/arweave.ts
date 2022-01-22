@@ -30,7 +30,7 @@ export default class ArweaveConfig extends BaseNodeCurrency {
         if (txs.status == 200) {
             tx = await arweave.transactions.get(txId)
         }
-        const confirmed = (txs.status !== 202 && txs.confirmed?.number_of_confirmations >= 10)
+        const confirmed = (txs.status !== 202 && txs.confirmed?.number_of_confirmations >= this.minConfirm)
         let owner;
         if (tx?.owner) {
             owner = this.ownerToAddress(tx.owner);

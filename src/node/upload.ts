@@ -25,8 +25,8 @@ export default class NodeUploader extends Uploader {
         if (!promises.stat(path).then(_ => true).catch(_ => false)) {
             throw new Error(`Unable to access path: ${path}`);
         }
-        const mimeType = mime.lookup(path);
-        const tags = [{ name: "Content-Type", value: (mimeType ? mimeType : "application/octet-stream") }]
+        const mimeType = mime.contentType(mime.lookup(path) || "application/octet-stream")
+        const tags = [{ name: "Content-Type", value: mimeType }]
         const data = readFileSync(path);
         return await this.upload(data, tags)
     }
@@ -85,9 +85,12 @@ export default class NodeUploader extends Uploader {
                 files.push(f)
                 total += await (await promises.stat(f)).size
             }
+            if (files.length % batchSize == 0) {
+                logFunction(`Checked ${files.length} files...`)
+            }
         }
         if (files.length == 0) {
-            console.log("No items to process")
+            logFunction("No items to process")
             // return the txID of the upload
             const idpath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`)
             if (await checkPath(idpath)) {
@@ -95,7 +98,6 @@ export default class NodeUploader extends Uploader {
             }
             return undefined;
         }
-
         const price = await this.utils.getPrice(this.currency, total);
 
         if (interactivePreflight) {

@@ -1,23 +1,39 @@
+import BigNumber from "bignumber.js";
 import { NodeCurrency } from "../types";
 import ArweaveConfig from "./arweave";
+import ERC20Config from "./erc20";
 import EthereumConfig from "./ethereum";
 import SolanaConfig from "./solana";
 
-export default function getCurrency(currency: string, wallet: any, providerUrl?: string): NodeCurrency {
+export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): NodeCurrency {
     switch (currency) {
         case "arweave":
-            return new ArweaveConfig({ name: "arweave", ticker: "AR", minConfirm: 5, providerUrl: providerUrl ?? "arweave.net", wallet })
-        // case "ethereum":
-        //     return new EthereumConfig({ name: "ethereum", ticker: "ETH", minConfirm: 5, wallet })
+            return new ArweaveConfig({ name: "arweave", ticker: "AR", minConfirm: 10, providerUrl: providerUrl ?? "arweave.net", wallet, isSlow: true })
+        case "ethereum":
+            return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", wallet })
         case "matic":
-            return new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: providerUrl ?? "https://polygon-rpc.com", minConfirm: 5, wallet })
+            return new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: providerUrl ?? "https://polygon-rpc.com", wallet })
         case "bnb":
-            return new EthereumConfig({ name: "bnb", ticker: "BNB", minConfirm: 5, providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet })
+            return new EthereumConfig({ name: "bnb", ticker: "BNB", providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet })
+        case "fantom":
+            return new EthereumConfig({ name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet })
         case "solana":
-            return new SolanaConfig({ name: "solana", ticker: "SOL", minConfirm: 5, providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com", wallet })
+            return new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com", wallet })
+        case "avalanche":
+            return new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc", wallet })
+        case "boba":
+            return new EthereumConfig({ name: "boba", ticker: "ETH", providerUrl: providerUrl ?? "https://mainnet.boba.network/", wallet })
+        case "arbitrum":
+            return new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet })
+        case "chainlink":
+            return new ERC20Config({ name: "chainlink", ticker: "LINK", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", contractAddress: contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet })
+        case "kyve": {
+            const k = new ERC20Config({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: providerUrl ?? "https://moonbeam-alpha.api.onfinality.io/public", contractAddress: contractAddress ?? "0x3cf97096ccdb7c3a1d741973e351cb97a2ede2c1", isSlow: true, wallet })
+            k.price = async (): Promise<number> => { return 100 } // TODO: replace for mainnet
+            k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
+            return k; // TODO: ensure units above are right
+        }
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
     }
 }
-
-

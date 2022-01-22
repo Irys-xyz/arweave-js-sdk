@@ -15,7 +15,8 @@ export default abstract class BaseWebCurrency implements WebCurrency {
     protected providerInstance?: any
     protected ticker: string;
     protected name: string;
-    protected minConfirm: number
+    protected minConfirm = 5;
+    public isSlow = false;
 
     constructor(config: CurrencyConfig) {
         Object.assign(this, config);

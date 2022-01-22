@@ -7,7 +7,6 @@ async function a() {
     try {
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
         let bundler = new Bundlr("https://node1.bundlr.network", "arweave", JWK);
-        await bundler.ready();
         console.log(bundler.address);
         for (let i = 0; i < 4; i++) {
             const transaction = await bundler.createTransaction(Crypto.randomBytes(32).toString("base64"));

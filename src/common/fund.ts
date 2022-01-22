@@ -23,13 +23,13 @@ export default class Fund {
         // winston's fee is actually for amount of data, not funds, so we have to 0 this.
         const baseFee = await c.getFee(c.base[0] === "winston" ? 0 : _amount, to)
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
-        const tx = await c.createTx(_amount, to, fee.toString())
+        const tx = await c.createTx(_amount, to, fee)
         const nres = await c.sendTx(tx.tx);
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
         await this.utils.confirmationPoll(tx.txId)
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId })
             .catch(_ => { throw new Error(`failed to post funding tx - ${tx.txId} - keep this id!`) })
-        Utils.checkAndThrow(bres, "Posting transaction information to the bundler");
+        Utils.checkAndThrow(bres, `Posting transaction ${tx.txId} information to the bundler`);
         return { reward: fee, target: to, quantity: _amount.toString(), id: tx.txId };
     }
 }
