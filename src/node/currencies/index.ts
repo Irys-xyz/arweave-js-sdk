@@ -8,7 +8,7 @@ import SolanaConfig from "./solana";
 export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): NodeCurrency {
     switch (currency) {
         case "arweave":
-            return new ArweaveConfig({ name: "arweave", ticker: "AR", providerUrl: providerUrl ?? "arweave.net", wallet })
+            return new ArweaveConfig({ name: "arweave", ticker: "AR", minConfirm: 10, providerUrl: providerUrl ?? "arweave.net", wallet, isSlow: true })
         case "ethereum":
             return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", wallet })
         case "matic":

@@ -77,12 +77,13 @@ export default class Utils {
     }
 
     /**
-     * Polls for transaction confirmation - used for fast currencies (i.e not arweave) 
+     * Polls for transaction confirmation (or at least pending status) - used for fast currencies (i.e not arweave) 
      * before posting the fund request to the server (so the server doesn't have to poll)
      * @param txid 
      * @returns 
      */
     public async confirmationPoll(txid: string): Promise<void> {
+        if (this.currency === "arweave") { return; }
         let status = false
         while (status == false) {
             status = await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(_ => { return false })
