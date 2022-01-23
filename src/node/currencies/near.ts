@@ -1,19 +1,22 @@
-import { Signer } from "arbundles/src/signing";
+import { NearSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types"
 import BaseNodeCurrency from "../currency"
-import { KeyPair, connect, Near } from "near-api-js"
-import { decode } from "bs58";
+import { KeyPair, utils, transactions, providers } from "near-api-js"
+import { decode, encode } from "bs58";
+import BN from "bn.js"
+import { sha256 } from "js-sha256";
+import { JsonRpcProvider } from "near-api-js/lib/providers";
 
-// export interface NearCurrencyConfig extends CurrencyConfig {
-//     networkId: string
-//     headers: [key: string]: string | number;
-// }
+
+
 
 export default class NearConfig extends BaseNodeCurrency {
-    protected keyStore: KeyPair
+    // protected keyStore: KeyPair
     protected keyPair: KeyPair
-    protected providerInstance?: Near
+
+    protected providerInstance?: JsonRpcProvider
+
 
     constructor(config: CurrencyConfig) {
         super(config);
@@ -21,30 +24,63 @@ export default class NearConfig extends BaseNodeCurrency {
         this.keyPair = KeyPair.fromString(this.wallet)
     }
 
+    // protected async getProvider(): Promise<Near> {
+    //     if (!this.providerInstance) {
+    //         const networkId = this.providerUrl == "https://rpc.mainnet.near.org" ? "mainnet" : "testnet"
+    //         const keyStore = new keyStores.InMemoryKeyStore()
+    //         await keyStore.setKey(networkId, this.ownerToAddress(this.getPublicKey()), this.keyPair)
+    //         const config = {
+    //             nodeUrl: this.providerUrl,
+    //             networkId,
+    //             keyStore,
+    //             headers: {}
+    //         }
+    //         this.providerInstance = await connect(config)
+    //     }
+    //     return this.providerInstance
+    // }
 
-
-    protected async getProvider(): Promise<Near> {
+    protected async getProvider(): Promise<JsonRpcProvider> {
         if (!this.providerInstance) {
-            this.providerInstance = await connect({ nodeUrl: this.providerUrl, networkId: this.providerUrl == "https://rpc.mainnet.near.org" ? "mainnet" : "testnet", headers: {} })
+            this.providerInstance = new providers.JsonRpcProvider({ url: this.providerUrl });
         }
-        return this.providerInstance
+        return this.providerInstance;
     }
+
+
 
     /**
      * NEAR wants both the sender ID and tx Hash, so we have to concatenate to keep with the interface.
      * @param txId assumes format senderID:txHash
      */
     async getTx(txId: string): Promise<Tx> {
+        // NOTE: their type defs are out of date with their actual API (23-01-2022)... beware the expect-error when debugging! 
         const provider = await this.getProvider()
         const [id, hash] = txId.split(":");
-        const res = await provider.connection.provider.txStatus(hash, id)
+        const status = await provider.txStatusReceipts(decode(hash), id)
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+
+        const blockHeight = (await provider.block(status.transaction_outcome.block_hash));
+        const latestBlockHeight = (await provider.block({ finality: "final" })).header.height
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        if (status.receipts_outcome[0].outcome.status.SuccessValue !== "") { throw new Error("Transaction failed!") }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        const deposit = status.receipts[0].receipt.Action.actions[0].Transfer.deposit ?? 0
+
+        // console.log(decode(status.receipts_outcome[0].block_hash))
+
+        // // const routcometx = await provider.txStatusReceipts(decode(status.receipts_outcome[0].block_hash), status.receipts_outcome[0].id)
+        // console.log({ blockHeight, status, latestBlockHeight })
         return {
-            from: "id",
-            to: res.transaction.reciever_id,
-            amount: new BigNumber(0),
-            blockHeight: new BigNumber(0),
-            pending: true,
-            confirmed: false
+            from: id,
+            to: status.transaction.receiver_id,
+            amount: new BigNumber(deposit),
+            blockHeight: new BigNumber(blockHeight.header.height),
+            pending: false,
+            confirmed: latestBlockHeight - blockHeight.header.height >= this.minConfirm
         }
     }
 
@@ -53,7 +89,7 @@ export default class NearConfig extends BaseNodeCurrency {
      * @param data 
      * @returns 
      */
-    private getAccountId(data): string {
+    public getAccountId(data): string {
         if (data.toLowerCase().endsWith(".near")) {
             return data.replace("@", "").replace("https://wallet.near.org/send-money/", "").toLowerCase();
         }
@@ -74,26 +110,29 @@ export default class NearConfig extends BaseNodeCurrency {
      * @param owner // assumed to be the "ed25519:" header + b58 encoded key 
      */
     ownerToAddress(owner: any): string {
-        return this.getAccountId(owner)
-        // return decode(owner.replace("ed25519:", "")).toString("hex");
+        if (typeof owner === "string") {
+            return this.getAccountId(owner)
+        } else {
+            return this.getAccountId(encode(owner))
+        }
     }
 
-    // TODO: Implement following via arbundles
-    sign(_data: Uint8Array): Promise<Uint8Array> {
-        throw new Error("Method not implemented.");
+
+    async sign(data: Uint8Array): Promise<Uint8Array> {
+        return this.getSigner().sign(data)
     }
 
     getSigner(): Signer {
-        throw new Error("Method not implemented.");
+        return new NearSigner(this.wallet)
     }
 
-    verify(_pub: any, _data: Uint8Array, _signature: Uint8Array): Promise<boolean> {
-        throw new Error("Method not implemented.");
+    async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
+        return NearSigner.verify(pub, data, signature)
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
         const provider = await this.getProvider();
-        const res = await provider.connection.provider.status();
+        const res = await provider.status();
         return new BigNumber(res.sync_info.latest_block_height);
     }
 
@@ -101,19 +140,48 @@ export default class NearConfig extends BaseNodeCurrency {
         const provider = await this.getProvider();
         // one unit of gas
         // const res = await provider.connection.provider.gasPrice(await (await this.getCurrentHeight()).toNumber())
-        const res = await provider.connection.provider.gasPrice(null) // null == gas price as of latest block
+        const res = await provider.gasPrice(null) // null == gas price as of latest block
         // multiply by action cost in gas units (assume only action is transfer)
         // 4.5x10^11 gas units for fund transfers
-        return new BigNumber(res.gas_price).multipliedBy(4.5e11)
-        // return new BigNumber(res.gas_price);
+        return new BigNumber(res.gas_price).multipliedBy(450_000_000_000)
     }
-    sendTx(_data: any): Promise<any> {
-        throw new Error("Method not implemented.");
+
+    async sendTx(data: any): Promise<any> {
+        data as transactions.SignedTransaction;
+        const signedSerialTx = data.encode();
+        const res = await (await this.getProvider()).sendJsonRpc(
+            "broadcast_tx_commit",
+            [Buffer.from(signedSerialTx).toString("base64")]
+        ) as any;
+        return `${this.address}:${res.transaction.hash}` // encode into compound format
     }
-    createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
-        throw new Error("Method not implemented.");
+
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+        const provider = await this.getProvider();
+        // get access key for the implicit account
+        const accessKey = await provider.query(`access_key/${this.address}/${this.keyPair.getPublicKey().toString()}`, "")
+        // const a = await provider.query({ request_type: "view_account", finality: "final", account_id: this.address })
+        // console.log({ a })
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        const nonce = ++accessKey.nonce
+        const recentBlockHash = utils.serialize.base_decode(accessKey.block_hash)
+        const actions = [transactions.transfer(new BN(new BigNumber(amount).toString()))];
+        const tx = transactions.createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash)
+        const serialTx = utils.serialize.serialize(transactions.SCHEMA, tx);
+        const serialTxHash = new Uint8Array(sha256.array(serialTx))
+        const signature = this.keyPair.sign(serialTxHash);
+        const signedTx = new transactions.SignedTransaction({
+            transaction: tx,
+            signature: new transactions.Signature({
+                keyType: tx.publicKey.keyType,
+                data: signature.signature,
+            }),
+        });
+        return { tx: signedTx, txId: undefined }
     }
     getPublicKey(): string | Buffer {
+        this.keyPair = KeyPair.fromString(this.wallet)
         return Buffer.from(this.keyPair.getPublicKey().data)
 
     }

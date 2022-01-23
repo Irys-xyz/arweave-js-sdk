@@ -25,6 +25,9 @@ export default class Fund {
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
         const tx = await c.createTx(_amount, to, fee)
         const nres = await c.sendTx(tx.tx);
+        if (!tx.txId) {
+            tx.txId = nres;
+        }
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
         await this.utils.confirmationPoll(tx.txId)
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId })
