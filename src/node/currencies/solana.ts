@@ -100,6 +100,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
         // if it's already been signed...
         if (data.signature) {
             await web3.sendAndConfirmRawTransaction(connection, data.serialize());
+            return;
         }
         await web3.sendAndConfirmTransaction(connection, data, [this.getKeyPair()]);
     }

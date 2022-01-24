@@ -18,7 +18,7 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         case "fantom":
             return new EthereumConfig({ name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet })
         case "solana":
-            return new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com", wallet })
+            return new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://ssc-dao.genesysgo.net/", wallet })
         case "avalanche":
             return new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc", wallet })
         case "boba":
