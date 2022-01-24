@@ -7,7 +7,7 @@ import BaseNodeCurrency from "../currency";
 import * as api from "@polkadot/api";
 // import SignerResult from "@polkadot/api/types";
 import { encodeAddress } from "@polkadot/util-crypto"
-
+import { AnyJson } from "@polkadot/types-codec/types";
 export default class PolkadotConfig extends BaseNodeCurrency {
     protected providerInstance?: api.ApiPromise
     protected providerWss: api.WsProvider;
@@ -40,31 +40,38 @@ export default class PolkadotConfig extends BaseNodeCurrency {
      * get signedBlock
      * filter block for txID
      */
+
+    async getSystemEvents(hash: string): Promise<AnyJson>{
+        const provider = await this.getProvider();
+        const allRecords = await provider.query.system.events.at(hash);
+        return allRecords.toHuman();
+    }
+    
     async getTx(txId: string): Promise<Tx> {
         const provider = await this.getProvider();
         const [blkHash, txHash] = txId.split(":");
-        const signedBlock = await provider.rpc.chain.getBlock(blkHash)
-        const allRecords = await provider.query.system.events.at(signedBlock.block.header.hash);
-        // signedBlock.block.extrinsics.forEach(({ method: { method, section } }, index) => {
-        //     allRecords
-        //     // filter the specific events based on the phase and then the
-        //     // index of our extrinsic in the block
-        //     .filter(({ phase }) =>
-        //         phase.isApplyExtrinsic &&
-        //         phase.asApplyExtrinsic.eq(index)
-        //     )
-        //     // test the events against the specific types we are looking for
-        //     .forEach(({ event }) => {
-        //         if (provider.events.system.ExtrinsicSuccess.is(event)) {
-        //             // extract the data for this event
-        //             // (In TS, because of the guard above, these will be typed)
-        //             const [dispatchInfo] = event.data;
+        const signedBlock = await provider.rpc.chain.getBlock(blkHash);
+        
+        const events = await this.getSystemEvents(blkHash);
 
-        //             console.log(`${section}.${method}:: ExtrinsicSuccess:: ${JSON.stringify(dispatchInfo.toHuman())}`);
-        //         }
-        //     });
-        // })
         const tx = signedBlock.block.extrinsics.find(el => el.hash.toString() === txHash);
+
+        const txStatus = signedBlock.block.extrinsics.forEach((el,index) => {
+            if(el.hash.toString() === txHash ){
+                const x = Object.entries(events);
+                x.some((ve) => {
+                    return (ve[1].phase.ApplyExtrinsic === index.toString() && ve[1].event.method === "ExtrinsicSuccess")
+
+                });
+                if(!x) throw new Error("Tx doesn't exist");
+            }
+        });
+
+        const currentBlock = await provider.rpc.chain.getBlock();
+        
+        console.log(txStatus);
+        const confirms = currentBlock.block.header.number.toNumber() - signedBlock.block.header.number.toNumber()
+        console.log(confirms);
         if (tx.length < 1) {
             throw new Error("Transaction Not Found");
         } else {
@@ -77,10 +84,9 @@ export default class PolkadotConfig extends BaseNodeCurrency {
                 to: receiver,
                 amount,
                 pending: false, // tx scoped to block,
-                confirmed: false
+                confirmed: confirms >= this.minConfirm
             }
         }
-        throw new Error("Could not get TX.");
     }
 
     ownerToAddress(owner: any): string {
