@@ -1,4 +1,5 @@
 import { Signer } from "arbundles/src/signing";
+import "@polkadot/api-augment/substrate";
 import PolkadotSigner from "arbundles/src/signing/chains/PolkadotSigner"
 import BigNumber from "bignumber.js";
 import { Tx, CurrencyConfig } from "../../common/types";
@@ -33,34 +34,34 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         return this.providerWss;
     }
 
-    async getSystemEvents(hash: string): Promise<AnyJson>{
+    async getSystemEvents(hash: string): Promise<AnyJson> {
         const provider = await this.getProvider();
         const allRecords = await provider.query.system.events.at(hash);
         return allRecords.toHuman();
     }
-    
+
     async getTx(txId: string): Promise<Tx> {
         const provider = await this.getProvider();
         const [blkHash, txHash] = txId.split(":");
         const signedBlock = await provider.rpc.chain.getBlock(blkHash);
-        
+
         const events = await this.getSystemEvents(blkHash);
 
         const tx = signedBlock.block.extrinsics.find(el => el.hash.toString() === txHash);
 
-        const txStatus = signedBlock.block.extrinsics.forEach((el,index) => {
-            if(el.hash.toString() === txHash ){
+        const txStatus = signedBlock.block.extrinsics.forEach((el, index) => {
+            if (el.hash.toString() === txHash) {
                 const x = Object.entries(events);
                 x.some((ve) => {
                     return (ve[1].phase.ApplyExtrinsic === index.toString() && ve[1].event.method === "ExtrinsicSuccess")
 
                 });
-                if(!x) throw new Error("Tx not yet successful");
+                if (!x) throw new Error("Tx not yet successful");
             }
         });
 
         const currentBlock = await provider.rpc.chain.getBlock();
-        
+
         console.log(txStatus);
         const confirms = currentBlock.block.header.number.toNumber() - signedBlock.block.header.number.toNumber()
         console.log(confirms);
@@ -104,26 +105,26 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         return new BigNumber(lastHeader.number.toString())
     }
 
-    async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
+    async getFee(amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
         /* 
             Requires that you fake-sign a tx and send and read fee from res
         */
         const provider = await this.getProvider();
         const sender = this.ownerToAddress(this.getPublicKey());
         const info = await provider.tx.balances
-        .transfer(sender, _amount)
-        .paymentInfo(sender);
+            .transfer(sender, amount.toString())
+            .paymentInfo(sender);
         return new BigNumber(info.partialFee.toString());
     }
 
     async sendTx(_data: any): Promise<any> {
         const provider = await this.getProvider();
-        return provider.rpc.author.submitExtrinsic(provider.createType("Extrinsic",_data));
+        return provider.rpc.author.submitExtrinsic(provider.createType("Extrinsic", _data));
     }
 
-    async createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const provider = await this.getProvider();
-        const transfer = provider.tx.balances.transfer(_to, _amount);
+        const transfer = provider.tx.balances.transfer(to, amount.toString());
         const signedTx = await this.sign(transfer.toU8a());
         return {
             txId: transfer.hash.toString(),
