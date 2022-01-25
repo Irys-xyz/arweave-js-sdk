@@ -23,6 +23,8 @@ export interface Currency {
 
     get address(): string;
 
+    ticker: string
+
     getTx(txId: string): Promise<Tx>;
 
     ownerToAddress(owner: any): string;

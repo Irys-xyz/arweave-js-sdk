@@ -4,16 +4,16 @@ import Arweave from "arweave";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
 import { Tx, CurrencyConfig } from "../common/types"
-import redstone from "redstone-api";
+import axios from "axios";
 import { NodeCurrency } from "./types";
-
+import utils from "../common/utils"
 export default abstract class BaseNodeCurrency implements NodeCurrency {
     public base: [string, number];
     protected wallet: any
     protected _address: string
     protected providerUrl: any;
     protected providerInstance?: any
-    protected ticker: string;
+    public ticker: string;
     protected name: string;
     protected minConfirm = 5;
     public isSlow = false;
@@ -49,5 +49,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
 }
 
 export async function getRedstonePrice(currency: string): Promise<number> {
-    return (await redstone.getPrice(currency)).value;
+    const res = await axios.get<any>(`https://api.redstone.finance/prices?symbol=${currency}&provider=redstone&limit=1`)
+    await utils.checkAndThrow(res, "Getting price data")
+    return res.data[0].value;
 }
