@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/client",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
@@ -22,7 +22,7 @@
     "prod:build": "yarn run dev:build && webpack && rm ./build/web/bundle.js.LICENSE.txt",
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
-    "copy-types": "cp src/common/types.d.ts build/common && cp src/node/types.d.ts build/node && cp src/web/types.d.ts build/node"
+    "copy-types": "cp src/common/types.d.ts build/common && cp src/node/types.d.ts build/node && cp src/web/types.d.ts build/web"
   },
   "bin": {
     "bundlr": "./build/node/cli.js"
