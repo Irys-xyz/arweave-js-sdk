@@ -5,6 +5,15 @@ import { Tx, CurrencyConfig } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import * as api from "@polkadot/api";
 
+// import {
+//     web3Accounts,
+//     web3Enable,
+//     web3FromAddress,
+//     web3ListRpcProviders,
+//     web3UseRpcProvider
+//   } from "@polkadot/extension-dapp";
+
+
 import { encodeAddress } from "@polkadot/util-crypto"
 import { AnyJson } from "@polkadot/types-codec/types";
 export default class PolkadotConfig extends BaseNodeCurrency {
@@ -131,15 +140,16 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         }
     }
 
-    getPublicKey(): string {
-        return this.signerInstance.publicKey.toString("base64")
+    async getPublicKey(): Promise<string> {
+        return this.signerInstance.publicKey.toString("base64");
     }
 
-    public async ready(): Promise<boolean> {
+    public async ready(): Promise<void> {
         this.signerInstance = new PolkadotSigner(this.wallet);
         await this.signerInstance.ready()
-        await this.assignAddress()
-        return true;
+        // await this.assignAddress()
+        // await web3Enable('my cool dapp');
+        return;
     }
 
 }
