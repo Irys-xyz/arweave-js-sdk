@@ -16,9 +16,8 @@ async function a() {
             }, 2000)
             console.log("profiling configured");
         }
-        const JWK = JSON.parse(readFileSync("wallet.json").toString());
-        console.log(JWK.n.length)
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", JWK)
+        const keys = JSON.parse(readFileSync("wallet.json").toString());
+        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweve", keys.arweave)
         console.log(bundlr.address);
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
