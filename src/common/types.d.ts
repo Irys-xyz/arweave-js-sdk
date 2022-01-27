@@ -21,6 +21,8 @@ export interface Currency {
 
     base: [string, number];
 
+    name: string
+
     get address(): string;
 
     ticker: string

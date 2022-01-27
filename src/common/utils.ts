@@ -3,6 +3,7 @@ import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
 import Api from "./api";
 import { Currency } from "./types";
+BigNumber.set({ DECIMAL_PLACES: 50 })
 
 export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -86,7 +87,7 @@ export default class Utils {
         if (this.currency === "arweave") { return; }
         let status = false
         while (status == false) {
-            status = await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(_ => { return false })
+            status = await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }) // .catch(_ => { return false })
             await sleep(1000);
         }
         return;

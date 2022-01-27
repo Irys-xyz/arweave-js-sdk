@@ -62,7 +62,7 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.
     // console.log(csig.equals(osig))
     // TODO: remove check once paranoia is gone
     const isValid2 = await c.verify(cpk, dh2, csig)
-    const isValid3 = c.ownerToAddress(base64url.toBuffer(data.publicKey)) === c.address
+    const isValid3 = c.ownerToAddress(c.name == "arweave" ? base64url.decode(data.publicKey) : base64url.toBuffer(data.publicKey)) === c.address
     // console.log({ opk, osig })
     // console.log(isValid2)
     // console.log(isValid)

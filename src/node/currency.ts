@@ -14,7 +14,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     protected providerUrl: any;
     protected providerInstance?: any
     public ticker: string;
-    protected name: string;
+    public name: string;
     protected minConfirm = 5;
     public isSlow = false;
 
