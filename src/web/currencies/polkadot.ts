@@ -1,3 +1,4 @@
+import { signers } from "arbundles";
 import { Signer } from "arbundles/src/signing";
 import "@polkadot/api-augment/substrate";
 import PolkadotSigner from "arbundles/src/signing/chains/PolkadotSigner"
@@ -6,17 +7,18 @@ import { Tx, CurrencyConfig } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import * as api from "@polkadot/api";
 
-// import {
-//     web3Accounts,
-//     web3Enable,
-//     web3FromAddress,
-//     web3ListRpcProviders,
-//     web3UseRpcProvider
-//   } from "@polkadot/extension-dapp";
+import {
+    web3Accounts,
+    web3Enable,
+    web3FromSource
+  } from "@polkadot/extension-dapp";
 
 
 import { encodeAddress } from "@polkadot/util-crypto"
 import { AnyJson } from "@polkadot/types-codec/types";
+
+const polkadotSigner = signers.PolkadotSigner;
+
 export default class PolkadotConfig extends BaseNodeCurrency {
     protected providerInstance?: api.ApiPromise
     protected providerWss: api.WsProvider;
@@ -85,7 +87,8 @@ export default class PolkadotConfig extends BaseNodeCurrency {
             return {
                 from: sender,
                 to: receiver,
-                amount,
+                blockHeight: new BigNumber(signedBlock.block.header.number.toNumber()),
+                amount: amount,
                 pending: false,
                 confirmed: confirms >= this.minConfirm
             }
@@ -97,7 +100,8 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     }
 
     async sign(_data: Uint8Array): Promise<Uint8Array> {
-        return this.signerInstance.sign(_data);
+        const signer = new polkadotSigner(this.wallet);
+        return signer.sign(_data);
     }
 
     getSigner(): Signer {
@@ -133,8 +137,19 @@ export default class PolkadotConfig extends BaseNodeCurrency {
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const provider = await this.getProvider();
+        const allAccounts = await web3Accounts();
+        const account = allAccounts[0];
+        
+        const injector = await web3FromSource(account.meta.source);
+        const signTxPayload = injector.signer.signRaw;
+
         const transfer = provider.tx.balances.transfer(to, amount.toString());
-        const signedTx = await this.sign(transfer.toU8a());
+        const signedTx = await signTxPayload({
+            address: account.address,
+            data: transfer.toHex(),
+            type: "bytes"
+        });
+
         return {
             txId: transfer.hash.toString(),
             tx: signedTx
@@ -149,7 +164,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         this.signerInstance = new PolkadotSigner(this.wallet);
         await this.signerInstance.ready()
         // await this.assignAddress()
-        // await web3Enable('my cool dapp');
+        await web3Enable('my cool dapp');
         return;
     }
 

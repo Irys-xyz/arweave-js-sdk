@@ -49,14 +49,15 @@ export default class PolkadotConfig extends BaseNodeCurrency {
 
         const tx = signedBlock.block.extrinsics.find(el => el.hash.toString() === txHash);
 
-        const txStatus = signedBlock.block.extrinsics.forEach((el, index) => {
+        let txStatus = false;
+        signedBlock.block.extrinsics.forEach((el, index) => {
             if (el.hash.toString() === txHash) {
                 const x = Object.entries(events);
-                x.some((ve) => {
-                    return (ve[1].phase.ApplyExtrinsic === index.toString() && ve[1].event.method === "ExtrinsicSuccess")
-
-                });
                 if (!x) throw new Error("Tx not yet successful");
+                txStatus = x.some((ve) => {
+                    return (ve[1].phase.ApplyExtrinsic === index.toString() && ve[1].event.method === "ExtrinsicSuccess")
+                });
+               
             }
         });
 
@@ -65,7 +66,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         console.log(txStatus);
         const confirms = currentBlock.block.header.number.toNumber() - signedBlock.block.header.number.toNumber()
         console.log(confirms);
-
+        
         if (tx.length < 1) {
             throw new Error("Transaction Not Found");
         } else {
@@ -84,7 +85,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     }
 
     ownerToAddress(owner: any): string {
-        return encodeAddress(Buffer.from(owner, "base64"));
+        return encodeAddress(owner, 0);
     }
 
     async sign(_data: Uint8Array): Promise<Uint8Array> {
@@ -132,8 +133,8 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         }
     }
 
-    getPublicKey(): string {
-        return this.signerInstance.publicKey.toString("base64")
+    getPublicKey(): Buffer {
+        return this.signerInstance.publicKey;
     }
 
     public async ready(): Promise<boolean> {
