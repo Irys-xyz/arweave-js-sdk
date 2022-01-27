@@ -63,26 +63,6 @@ export default class NearConfig extends BaseNodeCurrency {
         }
     }
 
-    // /**
-    //  * Able to derive accountID from accountID, Trust wallet address or Pubkey
-    //  * @param data 
-    //  * @returns 
-    //  */
-    // public getAccountId(data): string {
-    //     if (data.toLowerCase().endsWith(".near")) {
-    //         return data.replace("@", "").replace("https://wallet.near.org/send-money/", "").toLowerCase();
-    //     }
-    //     if (data.length == 64 && !data.startsWith("ed25519:")) {
-    //         return data;
-    //     }
-    //     let publicKey;
-    //     if (data.startsWith("NEAR")) {
-    //         publicKey = decode(data.slice(4)).slice(0, -4);
-    //     } else {
-    //         publicKey = decode(data.replace("ed25519:", ""));
-    //     }
-    //     return publicKey.toString("hex");
-    // }
 
     /**
      * address = accountID
