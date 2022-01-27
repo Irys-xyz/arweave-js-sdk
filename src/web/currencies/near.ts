@@ -1,34 +1,55 @@
 import { NearSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types"
-import BaseNodeCurrency from "../currency"
-import { KeyPair, utils, transactions, providers } from "near-api-js"
+import { KeyPair, utils, transactions, providers, WalletConnection, Near, keyStores } from "near-api-js"
 import { decode, encode } from "bs58";
 import BN from "bn.js"
 import { sha256 } from "js-sha256";
-import { JsonRpcProvider } from "near-api-js/lib/providers";
+import BaseWebCurrency from "../currency";
 
-
-
-
-export default class NearConfig extends BaseNodeCurrency {
+export default class NearConfig extends BaseWebCurrency {
     // protected keyStore: KeyPair
     protected keyPair: KeyPair
-
-    protected providerInstance?: JsonRpcProvider
+    protected wallet: WalletConnection
+    protected near: Near
+    protected providerInstance: providers.Provider
 
 
     constructor(config: CurrencyConfig) {
         super(config);
+        this.near = this.wallet._near
         this.base = ["yoctoNEAR", 1e25]
-        this.keyPair = KeyPair.fromString(this.wallet)
+        // this.keyPair = KeyPair.fromString(this.wallet)
+
     }
 
-    protected async getProvider(): Promise<JsonRpcProvider> {
-        if (!this.providerInstance) {
-            this.providerInstance = new providers.JsonRpcProvider({ url: this.providerUrl });
+    async ready(): Promise<void> {
+        if (!this.wallet.isSignedIn()) {
+            throw new Error("Wallet has not been signed in!")
         }
-        return this.providerInstance;
+        const keystore = new keyStores.BrowserLocalStorageKeyStore()
+        const account = this.wallet.account();
+        console.log(this.address)
+        console.log(await account.getAccessKeys())
+        // this._address = this.wallet.getAccountId()
+        // this.keyPair = KeyPair.fromString(this.wallet)
+        console.log(await account.getAccessKeys())
+        this.keyPair = await keystore.getKey(this.wallet._networkId, account.accountId)
+        if (!this.keyPair) {
+            this.keyPair = KeyPair.fromRandom("ed25519");
+            const publicKey = this.keyPair.getPublicKey().toString();
+            // this.wallet._networkId
+            await keystore.setKey(this.wallet._networkId, account.accountId, this.keyPair)
+            // can't do this :c
+            console.log(publicKey)
+            await account.addKey(publicKey);
+        }
+        console.log(this.keyPair.getPublicKey().toString());
+        // this._address = this.ownerToAddress(Buffer.from(this.keyPair.getPublicKey().data));
+        this._address = await this.wallet.getAccountId();
+        // this.providerInstance = new providers.JsonRpcProvider({ url: this.providerUrl });
+        this.providerInstance = this.wallet._near.connection.provider
+        console.log(this.keyPair);
     }
 
 
@@ -39,7 +60,7 @@ export default class NearConfig extends BaseNodeCurrency {
      */
     async getTx(txId: string): Promise<Tx> {
         // NOTE: their type defs are out of date with their actual API (23-01-2022)... beware the expect-error when debugging! 
-        const provider = await this.getProvider()
+        const provider = await this.providerInstance
         const [id, hash] = txId.split(":");
         const status = await provider.txStatusReceipts(decode(hash), id)
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -53,6 +74,11 @@ export default class NearConfig extends BaseNodeCurrency {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         const deposit = status.receipts[0].receipt.Action.actions[0].Transfer.deposit ?? 0
+
+        // console.log(decode(status.receipts_outcome[0].block_hash))
+
+        // // const routcometx = await provider.txStatusReceipts(decode(status.receipts_outcome[0].block_hash), status.receipts_outcome[0].id)
+        // console.log({ blockHeight, status, latestBlockHeight })
         return {
             from: id,
             to: status.transaction.receiver_id,
@@ -63,35 +89,14 @@ export default class NearConfig extends BaseNodeCurrency {
         }
     }
 
-    // /**
-    //  * Able to derive accountID from accountID, Trust wallet address or Pubkey
-    //  * @param data 
-    //  * @returns 
-    //  */
-    // public getAccountId(data): string {
-    //     if (data.toLowerCase().endsWith(".near")) {
-    //         return data.replace("@", "").replace("https://wallet.near.org/send-money/", "").toLowerCase();
-    //     }
-    //     if (data.length == 64 && !data.startsWith("ed25519:")) {
-    //         return data;
-    //     }
-    //     let publicKey;
-    //     if (data.startsWith("NEAR")) {
-    //         publicKey = decode(data.slice(4)).slice(0, -4);
-    //     } else {
-    //         publicKey = decode(data.replace("ed25519:", ""));
-    //     }
-    //     return publicKey.toString("hex");
-    // }
-
     /**
      * address = accountID
      * @param owner // assumed to be the "ed25519:" header + b58 encoded key 
      */
     ownerToAddress(owner: any): string {
-        return (typeof owner === "string")
-            ? decode(owner.replace("ed25519:", "")).toString("hex")
-            : decode(encode(owner)).toString("hex")
+        // should just return the loaded address?
+        const pubkey = typeof owner === "string" ? owner : encode(owner)
+        return decode(pubkey.replace("ed25519:", "")).toString("hex")
     }
 
 
@@ -100,7 +105,9 @@ export default class NearConfig extends BaseNodeCurrency {
     }
 
     getSigner(): Signer {
-        return new NearSigner(this.wallet)
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        return new NearSigner(this.keyPair.secretKey)
     }
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
@@ -108,21 +115,16 @@ export default class NearConfig extends BaseNodeCurrency {
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
-        const provider = await this.getProvider()
-        const res = await provider.status();
+        // const provider = await this.getProvider();
+        const res = await this.providerInstance.status();
         return new BigNumber(res.sync_info.latest_block_height);
     }
-    /**
-     * NOTE: assumes only operation is transfer
-     * @param _amount 
-     * @param _to 
-     * @returns 
-     */
+
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
-        // TODO: use https://docs.near.org/docs/concepts/gas and https://docs.near.org/docs/api/rpc/protocol#genesis-config
-        // to derive cost from genesis config to generalise support.
-        const provider = await this.getProvider()
-        const res = await provider.gasPrice(null) // null == gas price as of latest block
+        // const provider = await this.getProvider();
+        // one unit of gas
+        // const res = await provider.connection.provider.gasPrice(await (await this.getCurrentHeight()).toNumber())
+        const res = await this.providerInstance.gasPrice(null) // null == gas price as of latest block
         // multiply by action cost in gas units (assume only action is transfer)
         // 4.5x10^11 gas units for fund transfers
         return new BigNumber(res.gas_price).multipliedBy(450_000_000_000)
@@ -130,13 +132,14 @@ export default class NearConfig extends BaseNodeCurrency {
 
     async sendTx(data: any): Promise<any> {
         data as transactions.SignedTransaction;
-        const res = await (await this.getProvider()).sendTransaction(data)
+        const res = await this.providerInstance.sendTransaction(data)
         return `${this.address}:${res.transaction.hash}` // encode into compound format
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
-        const provider = await this.getProvider()
-        const accessKey = await provider.query(({ request_type: "view_access_key", finality: "final", account_id: this.address, public_key: this.keyPair.getPublicKey().toString() }))
+
+        const accessKey = await this.providerInstance.query({ request_type: "view_access_key", finality: "final", account_id: this.address, public_key: this.keyPair.getPublicKey().toString() })
+        // console.log(accessKey);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         const nonce = ++accessKey.nonce
@@ -155,8 +158,9 @@ export default class NearConfig extends BaseNodeCurrency {
         });
         return { tx: signedTx, txId: undefined }
     }
-    getPublicKey(): string | Buffer {
-        this.keyPair = KeyPair.fromString(this.wallet)
+
+
+    async getPublicKey(): Promise<string | Buffer> {
         return Buffer.from(this.keyPair.getPublicKey().data)
 
     }

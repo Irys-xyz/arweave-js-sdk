@@ -30,7 +30,8 @@ module.exports = {
             "assert": require.resolve("assert/"),
             "stream": require.resolve("stream-browserify"),
             "process": require.resolve("process/browser"),
-            "util": require.resolve("util")
+            "util": require.resolve("util"),
+            "events": require.resolve("events/")
         }
     },
     plugins: [
