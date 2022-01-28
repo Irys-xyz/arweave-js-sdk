@@ -6,12 +6,11 @@ import { Tx, CurrencyConfig } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import * as PolkaApi from "@polkadot/api";
 
-
 import { encodeAddress } from "@polkadot/util-crypto"
 import { AnyJson } from "@polkadot/types-codec/types";
-import { construct, getRegistry, methods } from "@substrate/txwrapper-polkadot";
-// import { createSigningPayload } from "@substrate/txwrapper-core/lib/core/construct";
-import { getRegistryPolkadot } from "@substrate/txwrapper-core";
+
+// import bs58 from "bs58";
+
 export default class PolkadotConfig extends BaseNodeCurrency {
     protected providerInstance?: PolkaApi.ApiPromise
     protected providerWss: PolkaApi.WsProvider;
@@ -89,7 +88,8 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     }
 
     ownerToAddress(owner: any): string {
-        return encodeAddress(owner, 0);
+        console.log(`Owner: ${owner}`);
+        return (encodeAddress(Buffer.from(owner), 0));
     }
 
     async sign(_data: any): Promise<any> {
@@ -115,7 +115,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
             Requires that you fake-sign a tx and send and read fee from res
         */
         const provider = await this.getProvider();
-        const sender = this.ownerToAddress(this.getPublicKey());
+        const sender = this.signerInstance.signature.address;
         const info = await provider.tx.balances
             .transfer(sender, amount.toString())
             .paymentInfo(sender);
@@ -123,71 +123,17 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     }
 
     async sendTx(_data: any): Promise<any> {
-        const provider = await this.getProvider();
-        const signature = await this.sign(_data.tx.extrinsicPayload);
-        const metadataRpc = (await provider.rpc.state.getMetadata()).toHex();
-        const registry = getRegistryPolkadot(29, metadataRpc);
-        const signedTx = construct.signedTx(_data.tx.unsignedTx, signature, { metadataRpc, registry });
-
-        return provider.rpc.author.submitExtrinsic(signedTx);
-    }
-
-    async generateTxPayload(value: string, to: string): Promise<any>{
-        const provider = await this.getProvider();
-        const { block } = await provider.rpc.chain.getBlock();
-        const blockHash = (await provider.rpc.chain.getBlockHash()).toString();
-        const genesisHash = (await provider.rpc.chain.getBlockHash(0)).toString();
-        const metadataRpc = (await provider.rpc.state.getMetadata()).toHex();
-        const versions = await provider.rpc.state.getRuntimeVersion();
-        const specVersion = versions.specVersion.toNumber();
-        const transactionVersion = versions.transactionVersion.toNumber();
-        // Create Polkadot's type registry.
-        const registry = getRegistryPolkadot(29, metadataRpc);
-    
-        // Now we can create our `balances.transferKeepAlive` unsigned tx. The following
-        // function takes the above data as arguments, so can be performed offline
-        // if desired.
-        const unsigned = methods.balances.transferKeepAlive(
-            {
-                value: value,
-                dest: to, // Bob
-            },
-            {
-                address: this.ownerToAddress(this.getPublicKey()),
-                blockHash,
-                blockNumber: registry
-                    .createType("BlockNumber", block.header.number)
-                    .toNumber(),
-                eraPeriod: 64,
-                genesisHash,
-                metadataRpc,
-                nonce: 0, // Assuming this is Alice's first tx on the chain
-                specVersion,
-                tip: 0,
-                transactionVersion,
-            },
-            {
-                metadataRpc,
-                registry,
-            }
-        );
-        return unsigned;
+        const sendTx = await _data.unsignedTx.signAndSend(this.signerInstance.signature);
+        return sendTx;
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const provider = await this.getProvider();
-        console.log(amount);
-        // const unsignedTx = provider.tx.balances.transfer(to, new BigNumber(amount).toNumber());
-        const unsignedTx = await this.generateTxPayload(amount.toString(), to);
-        const metadataRpc = (await provider.rpc.state.getMetadata()).toHex();
-        const registry = getRegistryPolkadot(29, metadataRpc);
-        const extrinsicPayload = construct.signingPayload(unsignedTx, { registry })
-
+        const unsignedTx = await provider.tx.balances.transfer(to, new BigNumber(amount).toNumber());
         return {
             txId: unsignedTx.hash.toString(),
             tx: {
-                unsignedTx,
-                extrinsicPayload
+                unsignedTx
             }
         }
     }
