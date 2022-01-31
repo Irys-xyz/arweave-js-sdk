@@ -73,8 +73,14 @@ export default class PolkadotConfig extends BaseNodeCurrency {
         if (tx.length < 1) {
             throw new Error("Transaction Not Found");
         } else {
-            const sender = tx.signer.value.toString();
-            const receiver = tx.method.args[0].toString()
+            let sender = tx.signer.value.toString();
+            if(sender[0] === "5"){
+                sender = encodeAddress(sender, 0);
+            }
+            let receiver = tx.method.args[0].toString()
+            if(receiver[0] === "5"){
+                receiver = encodeAddress(receiver, 0);
+            }
             const amount = new BigNumber(tx.method.args[1].toString());
             console.log(`Sender: ${sender}, Receiver: ${receiver}, Amount: ${amount}`);
             return {
@@ -88,8 +94,7 @@ export default class PolkadotConfig extends BaseNodeCurrency {
     }
 
     ownerToAddress(owner: any): string {
-        console.log(`Owner: ${owner}`);
-        return (encodeAddress(Buffer.from(owner), 0));
+        return encodeAddress(owner, 0);
     }
 
     async sign(_data: any): Promise<any> {
@@ -115,16 +120,22 @@ export default class PolkadotConfig extends BaseNodeCurrency {
             Requires that you fake-sign a tx and send and read fee from res
         */
         const provider = await this.getProvider();
-        const sender = this.signerInstance.signature.address;
+        const sender = this.signerInstance.polkaPair.address;
         const info = await provider.tx.balances
             .transfer(sender, amount.toString())
             .paymentInfo(sender);
         return new BigNumber(info.partialFee.toString());
     }
 
-    async sendTx(_data: any): Promise<any> {
-        const sendTx = await _data.unsignedTx.signAndSend(this.signerInstance.signature);
-        return sendTx;
+    async sendTx(data: any): Promise<any> {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        return new Promise((res,_rej) => {
+            data.unsignedTx.signAndSend(this.signerInstance.polkaPair, (data) => {
+                if(data.status.isFinalized){
+                    res(`${data.status.asFinalized.toString()}:${data.txHash.toString()}`);
+                }
+            });
+        });
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {

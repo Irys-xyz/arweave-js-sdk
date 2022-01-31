@@ -68,12 +68,12 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.
     // console.log(isValid)
 
     if (!(isValid || isValid2 || isValid3)) { throw new Error(`Internal withdrawal validation failed - please report this!\nDebug Info:${JSON.stringify(data)}`) }
-
-    // console.log(JSON.stringify({
-    //     ...data,
-    //     publicKey: base64url.toBuffer(data.publicKey),
-    //     signature: base64url.toBuffer(data.signature)
-    // }))
+    
+    console.log(JSON.stringify({
+        ...data,
+        publicKey: base64url.toBuffer(data.publicKey),
+        signature: base64url.toBuffer(data.signature)
+    }))
     // console.log(`derived: ${c.ownerToAddress(base64url.decode(data.publicKey))}`)
     const res = await api.post("/account/withdraw", data)
     Utils.checkAndThrow(res, "Withdrawing balance")

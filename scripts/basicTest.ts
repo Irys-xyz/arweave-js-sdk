@@ -19,20 +19,20 @@ async function a() {
         }
         const JWK = JSON.parse(readFileSync("wallet.json").toString());
         console.log(JWK.n.length)
-        let bundlr = new Bundlr("http://localhost:10001", "polkadot", "0xa5d66c25f16186df713dbbc11428123f4571732f0aabc73d6f2384484ee380a3")
+        let bundlr = new Bundlr("http://localhost:10001", "polkadot", "0xa5d66c25f16186df713dbbc11428123f4571732f0aabc73d6f2384484ee380a3", {providerUrl:"wss://westend-rpc.polkadot.io" })
         await bundlr.ready();
         console.log(bundlr.address);
-        console.log(await bundlr.currencyConfig.getTx("0x4fc6dfcc6f83670505ca040bdd4ebabf7b4de223a55ff3e28d232f3d0fe9a0d4:0xba6bf2ccf68b047f3529a9c43099b19e2335ee4bf9cf53bb420c4da64656acf6"))
-        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
+        // console.log(await bundlr.currencyConfig.getTx("0x8f5fad27db84eec838e596ed3cbe4fb8e22062ccb71ee7ffa795f5e93435a5c6:0x8d43b639a4cd49aab2a4d9b1e95d8d68d491320470eb62952a7a5d19ca88ba95"))
+        // console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
-        const transaction = await bundlr.createTransaction("aaa");
-        await transaction.sign();
-        // console.log(bundlr.currencyConfig.ownerToAddress(transaction.rawOwner));
-        // console.log(transaction.id)
-        const res = await transaction.upload();
-        console.log(`Upload: ${JSON.stringify(res.data)}`);
+        // const transaction = await bundlr.createTransaction("aaa");
+        // await transaction.sign();
+        // // console.log(bundlr.currencyConfig.ownerToAddress(transaction.rawOwner));
+        // // console.log(transaction.id)
+        // const res = await transaction.upload();
+        // console.log(`Upload: ${JSON.stringify(res.data)}`);
 
         // let rec = await bundlr.uploadFile("a.txt");
         // console.log(JSON.stringify(rec.data));
@@ -41,11 +41,11 @@ async function a() {
         // const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
         // console.log(resu);
 
-        // let tx = await bundlr.fund(10000000, 1);
-        // console.log(tx);
+        let tx = await bundlr.fund(100000000000, 1);
+        console.log(tx);
 
-        let resw = await bundlr.withdrawBalance(1000);
-        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        // let resw = await bundlr.withdrawBalance(1000);
+        // console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
 
 
     } catch (e) {

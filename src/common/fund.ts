@@ -25,10 +25,18 @@ export default class Fund {
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
         const tx = await c.createTx(_amount, to, fee.toString())
         const nres = await c.sendTx(tx.tx);
+        if(this.utils.currency === "polkadot"){
+            tx.txId = nres
+        }
+        console.log("start")
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
+        console.log("sent tx")
         await this.utils.confirmationPoll(tx.txId)
+        console.log("confirmationPoll Done")
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId })
-            .catch(_ => { throw new Error(`failed to post funding tx - ${tx.txId} - keep this id!`) })
+            .catch(_ => { 
+                console.log(_);
+                throw new Error(`failed to post funding tx - ${tx.txId} - keep this id!`) })
         Utils.checkAndThrow(bres, `Posting transaction ${tx.txId} information to the bundler`);
         return { reward: fee, target: to, quantity: _amount.toString(), id: tx.txId };
     }
