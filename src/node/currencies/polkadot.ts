@@ -81,12 +81,16 @@ export default class PolkadotConfig extends BaseNodeCurrency {
             if(receiver[0] === "5"){
                 receiver = encodeAddress(receiver, 0);
             }
+            
             const amount = new BigNumber(tx.method.args[1].toString());
+            const blockheight = new BigNumber(signedBlock.block.header.number.toNumber());
+
             console.log(`Sender: ${sender}, Receiver: ${receiver}, Amount: ${amount}`);
             return {
                 from: sender,
                 to: receiver,
                 amount,
+                blockHeight: blockheight,
                 pending: false,
                 confirmed: confirms >= this.minConfirm
             }
