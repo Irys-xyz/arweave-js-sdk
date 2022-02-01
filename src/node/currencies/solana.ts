@@ -22,8 +22,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
         if (!this.providerInstance) {
             this.providerInstance = new web3.Connection(
                 this.providerUrl,
-                // web3.clusterApiUrl(this.providerUrl as web3.Cluster),
-                "confirmed"
+                { commitment: "processed" }
             );
         }
         return this.providerInstance;

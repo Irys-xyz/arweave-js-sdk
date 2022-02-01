@@ -15,7 +15,20 @@ export async function genData(path: string, number: number, minSize: number, max
         fs.mkdirSync(path);
     }
     for (let i = 0; i < number; i++) {
-        await fs.promises.writeFile(`${path}/${i}.json`, Crypto.randomBytes(randomNumber(minSize, maxSize)).toString("base64"))
+        const strm = await fs.createWriteStream(`${path}/${i}.json`);
+        let bytes = randomNumber(minSize, maxSize);
+        const chunkSize = 25_000_000
+        while (bytes > 0) {
+            let toWrite = chunkSize
+            if (bytes >= chunkSize) {
+                bytes -= chunkSize;
+            } else {
+                toWrite = bytes
+                bytes = 0;
+            }
+            strm.write(Crypto.randomBytes(toWrite))
+        }
+        strm.close()
         if (i % 10 == 0) {
             console.log(i);
         }
@@ -25,7 +38,9 @@ export async function genData(path: string, number: number, minSize: number, max
 
 
 async function t1() {
-    await genData("./testFolder", 1_000, 10_000, 100_000)
+    await genData("./testFolder", 1, 1_500_000_000, 2_500_000_000)
 }
 
 t1();
+
+
