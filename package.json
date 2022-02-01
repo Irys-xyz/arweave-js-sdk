@@ -43,6 +43,7 @@
     "keccak256": "^1.0.3",
     "mime-types": "^2.1.34",
     "near-api-js": "^0.44.2",
+    "tus-js-client": "^2.3.0",
     "typescript": "^4.5.4"
   },
   "devDependencies": {

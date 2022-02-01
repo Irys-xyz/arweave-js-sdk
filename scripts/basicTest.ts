@@ -1,6 +1,9 @@
 import Bundlr from "../src";
 import { readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next"
+import *  as tus from "tus-js-client"
+import * as fs from "fs";
+
 const profiling = false;
 async function a() {
     const title = new Date().toUTCString()
@@ -17,31 +20,47 @@ async function a() {
             console.log("profiling configured");
         }
         const keys = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweve", keys.arweave)
+        let bundlr = new Bundlr("http://dev1.bundlr.network", "arweave", keys.arweave)
         console.log(bundlr.address);
+        const path = "./testFolder/0.json"
+        const upload = new tus.Upload(fs.createReadStream(path), {
+            endpoint: "http://dev1.bundlr.network/chunked/",
+            uploadUrl: "http://dev1.bundlr.network/chunked/",
+            chunkSize: 100_000_000,
+            uploadSize: fs.statSync(path).size,
+            onProgress: function (bytesUploaded, bytesTotal) {
+                var percentage = (bytesUploaded / bytesTotal * 100).toFixed(2)
+                console.log(bytesUploaded, bytesTotal, percentage + "%")
+            },
+            onSuccess() {
+                console.log("Upload finished")
+            }
+        })
+        const res = await upload.start();
+        console.log(res)
 
-        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
-        const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
-        console.log(`bundlr address: ${bAddress}`);
+        // console.log(`balance: ${await bundlr.getLoadedBalance()}`);
+        // const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
+        // console.log(`bundlr address: ${bAddress}`);
 
-        const transaction = await bundlr.createTransaction("aaa");
-        await transaction.sign();
-        console.log(transaction.id)
-        const res = await transaction.upload();
-        console.log(`Upload: ${JSON.stringify(res.data)}`);
+        // const transaction = await bundlr.createTransaction("aaa");
+        // await transaction.sign();
+        // console.log(transaction.id)
+        // const res = await transaction.upload();
+        // console.log(`Upload: ${JSON.stringify(res.data)}`);
 
-        let rec = await bundlr.uploadFile("a.txt");
-        console.log(JSON.stringify(rec.data));
-        console.log(JSON.stringify(rec.status));
+        // let rec = await bundlr.uploadFile("a.txt");
+        // console.log(JSON.stringify(rec.data));
+        // console.log(JSON.stringify(rec.status));
 
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
-        console.log(resu);
+        // const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
+        // console.log(resu);
 
-        let tx = await bundlr.fund(1337, 1);
-        console.log(tx);
+        // let tx = await bundlr.fund(1337, 1);
+        // console.log(tx);
 
-        let resw = await bundlr.withdrawBalance(1000);
-        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        // let resw = await bundlr.withdrawBalance(1000);
+        // console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
 
 
     } catch (e) {
