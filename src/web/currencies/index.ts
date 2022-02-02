@@ -1,7 +1,7 @@
 import BaseCurrency from "../currency";
 import EthereumConfig from "./ethereum";
 import SolanaConfig from "./solana";
-import PolkadotConfig from "./polkadot";
+// import PolkadotConfig from "./polkadot";
 
 export default function getCurrency(currency: string, wallet: any, providerUrl?: string): BaseCurrency {
     switch (currency) {
@@ -19,8 +19,8 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new EthereumConfig({ name: "boba", ticker: "ETH", minConfirm: 5, providerUrl: providerUrl ?? "https://mainnet.boba.network/", wallet })
         case "solana":
             return new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", minConfirm: 5, wallet })
-        case "polkadot":
-            return new PolkadotConfig({ name: "polkadot", ticker: "DOT", providerUrl: providerUrl ?? "wss://rpc.polkadot.io", minConfirm: 5, wallet })
+        // case "polkadot":
+        //     return new PolkadotConfig({ name: "polkadot", ticker: "DOT", providerUrl: providerUrl ?? "wss://rpc.polkadot.io", minConfirm: 5, wallet })
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
     }

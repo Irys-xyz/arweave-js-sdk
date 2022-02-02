@@ -215,8 +215,8 @@ const options = program.opts();
 
 // to debug CLI: log process argv, load into var, and run in debugger.
 
-// console.log(JSON.stringify(process.argv));
-// process.exit(1);
+console.log(JSON.stringify(process.argv));
+process.exit(1);
 
 // replace this with dumped array. (make sure to append/include --no-confirmation)
 const argv = process.argv;
