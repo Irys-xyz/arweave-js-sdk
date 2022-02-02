@@ -185,6 +185,9 @@ async function init(opts, operation): Promise<Bundlr> {
     try {
         // create and ready the bundlr instance
         bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet);
+        if (!(["balance", "price"].includes(operation))) {
+            await bundler.ready();
+        }
     } catch (err) {
         throw new Error(`Error initialising Bundlr client - ${options.debug ? err.stack : err.message}`);
     }
@@ -215,11 +218,13 @@ const options = program.opts();
 
 // to debug CLI: log process argv, load into var, and run in debugger.
 
-console.log(JSON.stringify(process.argv));
-process.exit(1);
+// console.log(JSON.stringify(process.argv));
+// process.exit(1);
 
-// replace this with dumped array. (make sure to append/include --no-confirmation)
+// // replace this with dumped array. (make sure to append/include --no-confirmation)
 const argv = process.argv;
+
+// const argv = ["/home/bob/.nvm/versions/node/v16.13.1/bin/node","/home/bob/Desktop/BUNDLR/js-client/build/node/cli.js","upload","a.txt","-h","http://localhost:10001","-c","polkadot","-w","0xa5d66c25f16186df713dbbc11428123f4571732f0aabc73d6f2384484ee380a3","--no-confirmation"];
 
 // padding hack
 // this is because B64URL strings can start with a "-" which makes commander think it's a flag
