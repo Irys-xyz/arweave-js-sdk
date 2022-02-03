@@ -88,7 +88,7 @@ export default class Utils {
         let status = false
         while (status == false) {
             await sleep(1000);
-            status = await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }) // .catch(_ => { return false })
+            status = await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(_ => { return false })
         }
         return;
     }
