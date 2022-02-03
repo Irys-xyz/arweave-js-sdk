@@ -185,8 +185,11 @@ async function init(opts, operation): Promise<Bundlr> {
     try {
         // create and ready the bundlr instance
         bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet);
-        if (!(["balance", "price"].includes(operation))) {
-            await bundler.ready();
+        // checks if Bundlr needs to be "ready()'d"
+        if (typeof bundler.ready === "function") {
+            if (!(["balance", "price"].includes(operation))) {
+                await bundler.ready();
+            }
         }
     } catch (err) {
         throw new Error(`Error initialising Bundlr client - ${options.debug ? err.stack : err.message}`);
