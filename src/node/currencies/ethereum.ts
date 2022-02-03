@@ -11,10 +11,6 @@ import BaseNodeCurrency from "../currency";
 
 const ethereumSigner = signers.EthereumSigner;
 
-// export interface EthCurrencyConfig extends CurrencyConfig {
-//     // eslint-disable-next-line @typescript-eslint/naming-convention
-//     isEIP1559?: boolean
-// }
 export default class EthereumConfig extends BaseNodeCurrency {
     protected providerInstance: JsonRpcProvider;
 
@@ -36,8 +32,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
         const provider = await this.getProvider()
 
         const response = await provider.getTransaction(txId);
-        // const r2 = await provider.getTransactionReceipt(txId);
-        // console.log(r2);
+
         if (!response) throw new Error("Tx doesn't exist");
 
         return {

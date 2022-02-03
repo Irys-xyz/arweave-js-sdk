@@ -9,10 +9,7 @@ import { sha256 } from "js-sha256";
 import { JsonRpcProvider } from "near-api-js/lib/providers";
 
 
-
-
 export default class NearConfig extends BaseNodeCurrency {
-    // protected keyStore: KeyPair
     protected keyPair: KeyPair
 
     protected providerInstance?: JsonRpcProvider
