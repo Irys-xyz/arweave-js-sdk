@@ -18,7 +18,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
     }
 
 
-    private async getProvider(): Promise<web3.Connection> {
+    async getProvider(): Promise<web3.Connection> {
         if (!this.providerInstance) {
             this.providerInstance = new web3.Connection(
                 this.providerUrl,
@@ -28,7 +28,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
         return this.providerInstance;
     }
 
-    private getKeyPair(): web3.Keypair {
+    getKeyPair(): web3.Keypair {
         let key = this.wallet
         if (typeof key !== "string") {
             key = bs58.encode(Buffer.from(key));

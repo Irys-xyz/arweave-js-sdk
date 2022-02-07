@@ -5,6 +5,7 @@ import ERC20Config from "./erc20";
 import EthereumConfig from "./ethereum";
 import NearConfig from "./near";
 import SolanaConfig from "./solana";
+import SPLCurrencyConfig from "./spl";
 
 export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): NodeCurrency {
     switch (currency) {
@@ -20,6 +21,8 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new EthereumConfig({ name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet })
         case "solana":
             return new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://ssc-dao.genesysgo.net/", wallet })
+        case "spl": 
+            return new SPLCurrencyConfig({ name: "spl", ticker: "spl", providerUrl: providerUrl ?? "https://api.devnet.solana.com", contractAddress: contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet })
         case "avalanche":
             return new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc", wallet })
         case "boba":
