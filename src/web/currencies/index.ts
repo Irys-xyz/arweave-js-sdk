@@ -5,8 +5,8 @@ import SolanaConfig from "./solana";
 
 export default function getCurrency(currency: string, wallet: any, providerUrl?: string): BaseCurrency {
     switch (currency) {
-        // case "ethereum":
-        //     return new EthereumConfig({ name: "ethereum", ticker: "ETH", minConfirm: 5, wallet })
+        case "ethereum":
+            return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", wallet })
         case "matic":
             return new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: providerUrl ?? "https://polygon-rpc.com", wallet })
         case "arbitrum":
