@@ -2,7 +2,6 @@ import { AlgorandSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types"
 import BaseNodeCurrency from "../currency"
-import { decode, encode } from "bs58";
 
 import * as algosdk from "algosdk";
 import axios from "axios";
@@ -23,12 +22,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
 
     async getTx(txId: string): Promise<Tx> {
         const endpoint = `${this.indexerURL}/v2/transactions/${txId}`;
-        let response;
-        try {
-            response = await axios.get(endpoint);
-          } catch (error) {
-            console.error(error);
-          }
+        const response = await axios.get(endpoint);
         const latestBlockHeight = new BigNumber(await this.getCurrentHeight()).toNumber();
         const txBlockHeight = new BigNumber(response["confirmed-round"]);
 
@@ -42,21 +36,18 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         }
     }
 
-    ownerToAddress(owner: any): string {
-        return (typeof owner === "string")
-            ? decode(owner.replace("ed25519:", "")).toString("hex")
-            : decode(encode(owner)).toString("hex")
+    ownerToAddress(_owner: any): string {
+        return algosdk.encodeAddress(_owner);
     }
-
 
     async sign(data: Uint8Array): Promise<Uint8Array> {
         return this.getSigner().sign(data)
     }
 
     getSigner(): Signer {
-        return new AlgorandSigner(this.wallet)
+        return new AlgorandSigner(this.keyPair.sk, this.getPublicKey())
     }
-
+    
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
         return AlgorandSigner.verify(pub, data, signature)
     }
@@ -64,60 +55,43 @@ export default class AlgorandConfig extends BaseNodeCurrency {
     async getCurrentHeight(): Promise<BigNumber> {
         //  "last-round" = blockheight
         const endpoint = `${this.apiURL}/v2/transactions/params`;
-        let response;
-        try {
-            response = await axios.get(endpoint);
-          } catch (error) {
-            console.error(error);
-          }
-        return new BigNumber(response["last-round"]);
+        const response = await axios.get(endpoint);
+        // if(await response.status == 200){
+            return new BigNumber(response.data["last-round"]);
+        // }
+        // return new BigNumber(200);
     }
 
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
         const endpoint = `${this.apiURL}/v2/transactions/params`;
-        let response;
-        try {
-            response = await axios.get(endpoint);
-          } catch (error) {
-            console.error(error);
-          }
-        return new BigNumber(response["min-fee"]);
+        const response = await axios.get(endpoint);
+        return new BigNumber(response.data["min-fee"]);
     }
 
     async sendTx(data: any): Promise<any> {
         const endpoint = `${this.apiURL}/v2/transactions`;
-        let response;
-        try {
-            response = await axios.post(endpoint, data);
-          } catch (error) {
-            console.error(error);
-          }
-
-        return response["txId"]; // return TX id
+        const response = await axios.post(endpoint, data);
+        return response.data["txId"]; // return TX id
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const endpoint = `${this.apiURL}/v2/transactions/params`;
-        let response;
-        try {
-            response = await axios.get(endpoint);
-        }catch (error) {
-            console.error(error);
-        }
+        const response = await axios.get(endpoint);
 
         const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
             from: this.keyPair.addr, 
             to: to, 
             amount: new BigNumber(amount).toNumber(), 
-            suggestedParams: response.txParams
+            suggestedParams: response.data
         });
            
         return { tx: txn, txId: undefined }      
-
     }
 
     getPublicKey(): string | Buffer {
-        this.keyPair = algosdk.mnemonicToSecretKey(this.wallet)
-        return Buffer.from(this.keyPair.addr)
+        this.keyPair = algosdk.mnemonicToSecretKey(this.wallet);
+        const pub = algosdk.decodeAddress(this.keyPair.addr).publicKey;
+        return Buffer.from(pub);
     }
+
 }
