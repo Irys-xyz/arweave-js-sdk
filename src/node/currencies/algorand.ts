@@ -27,9 +27,9 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         const txBlockHeight = new BigNumber(response["confirmed-round"]);
 
         return {
-            from: response["sender"],
-            to: response["payment-transaction"].receiver,
-            amount: new BigNumber(response["payment-transaction"].amount),
+            from: response.data["sender"],
+            to: response.data["payment-transaction"].receiver,
+            amount: new BigNumber(response.data["payment-transaction"].amount),
             blockHeight: txBlockHeight,
             pending: false,
             confirmed: latestBlockHeight - txBlockHeight.toNumber() >= this.minConfirm
@@ -56,10 +56,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         //  "last-round" = blockheight
         const endpoint = `${this.apiURL}/v2/transactions/params`;
         const response = await axios.get(endpoint);
-        // if(await response.status == 200){
-            return new BigNumber(response.data["last-round"]);
-        // }
-        // return new BigNumber(200);
+        return new BigNumber(await response.data["last-round"]);
     }
 
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
