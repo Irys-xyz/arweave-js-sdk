@@ -10,7 +10,7 @@ import axios from "axios";
 export default class AlgorandConfig extends BaseNodeCurrency {
     protected keyPair: algosdk.Account;
 
-    protected apiURL? = "https://node.algoexplorerapi.io";
+    protected apiURL? = "https://node.testnet.algoexplorerapi.io";
     protected indexerURL? = "https://algoindexer.testnet.algoexplorerapi.io";
 
 
@@ -23,17 +23,19 @@ export default class AlgorandConfig extends BaseNodeCurrency {
     async getTx(txId: string): Promise<Tx> {
         const endpoint = `${this.indexerURL}/v2/transactions/${txId}`;
         const response = await axios.get(endpoint);
-        const latestBlockHeight = new BigNumber(await this.getCurrentHeight()).toNumber();
-        const txBlockHeight = new BigNumber(response["confirmed-round"]);
 
-        return {
-            from: response.data["sender"],
-            to: response.data["payment-transaction"].receiver,
-            amount: new BigNumber(response.data["payment-transaction"].amount),
+        const latestBlockHeight = new BigNumber(await this.getCurrentHeight()).toNumber();
+        const txBlockHeight = new BigNumber(response.data.transaction["confirmed-round"]);
+
+        const tx: Tx = {
+            from: response.data.transaction["sender"],
+            to: response.data.transaction["payment-transaction"].receiver,
+            amount: new BigNumber(response.data.transaction["payment-transaction"].amount),
             blockHeight: txBlockHeight,
             pending: false,
             confirmed: latestBlockHeight - txBlockHeight.toNumber() >= this.minConfirm
         }
+        return tx;
     }
 
     ownerToAddress(_owner: any): string {
@@ -74,15 +76,25 @@ export default class AlgorandConfig extends BaseNodeCurrency {
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const endpoint = `${this.apiURL}/v2/transactions/params`;
         const response = await axios.get(endpoint);
-
-        const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+        const params = await response.data;
+        console.log(params);
+        const unsigned = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
             from: this.keyPair.addr, 
             to: to, 
             amount: new BigNumber(amount).toNumber(), 
-            suggestedParams: response.data
+            note: undefined, 
+            suggestedParams: {
+                fee: params["fee"],
+                firstRound: params["last-round"],
+                flatFee: false,
+                genesisHash: params["genesis-hash"],
+                genesisID: params["genesis-id"],
+                lastRound: (params["last-round"] + 1000)
+            }
         });
-           
-        return { tx: txn, txId: undefined }      
+        const signed = algosdk.signTransaction(unsigned, this.keyPair.sk);
+
+        return { tx: signed.blob, txId: signed.txID }      
     }
 
     getPublicKey(): string | Buffer {
