@@ -17,8 +17,9 @@ async function a() {
             console.log("profiling configured");
         }
         const keys = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", keys.arweave)
-        console.log(bundlr.address);
+        console.log(keys);
+        let bundlr = new Bundlr("http://localhost:10001", "algorand", "project minor high silly open clarify announce pact final lizard relax meadow trust reopen tree misery labor mistake swear thunder squeeze shallow ripple absent off")
+        console.log(`Client Address: ${bundlr.address}`);
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
@@ -34,14 +35,14 @@ async function a() {
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
 
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
-        console.log(resu);
+        // const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
+        // console.log(resu);
 
-        let tx = await bundlr.fund(1337, 1);
-        console.log(tx);
+        // let tx = await bundlr.fund(1337, 1);
+        // console.log(tx);
 
-        let resw = await bundlr.withdrawBalance(1000);
-        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        // let resw = await bundlr.withdrawBalance(8000);
+        // console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
 
 
     } catch (e) {
