@@ -28,7 +28,6 @@
     "bundlr": "./build/node/cli.js"
   },
   "dependencies": {
-    "@randlabs/myalgo-connect": "^1.1.2",
     "@solana/wallet-adapter-base": "^0.9.2",
     "@solana/web3.js": "^1.32.0",
     "algosdk": "^1.13.1",
