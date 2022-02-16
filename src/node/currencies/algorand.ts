@@ -77,7 +77,6 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         const endpoint = `${this.apiURL}/v2/transactions/params`;
         const response = await axios.get(endpoint);
         const params = await response.data;
-        console.log(params);
         const unsigned = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
             from: this.keyPair.addr, 
             to: to, 
