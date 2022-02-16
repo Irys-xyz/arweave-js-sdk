@@ -50,7 +50,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         return new AlgorandSigner(this.keyPair.sk, this.getPublicKey())
     }
     
-    async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
+    async verify(pub: string|Buffer, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
         return AlgorandSigner.verify(pub, data, signature)
     }
 
@@ -61,19 +61,19 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         return new BigNumber(await response.data["last-round"]);
     }
 
-    async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
+    async getFee(): Promise<BigNumber> {
         const endpoint = `${this.apiURL}/v2/transactions/params`;
         const response = await axios.get(endpoint);
         return new BigNumber(response.data["min-fee"]);
     }
 
-    async sendTx(data: any): Promise<any> {
+    async sendTx(data: any): Promise<string> {
         const endpoint = `${this.apiURL}/v2/transactions`;
         const response = await axios.post(endpoint, data);
         return response.data["txId"]; // return TX id
     }
 
-    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string): Promise<{ txId: string; tx: any; }> {
         const endpoint = `${this.apiURL}/v2/transactions/params`;
         const response = await axios.get(endpoint);
         const params = await response.data;
