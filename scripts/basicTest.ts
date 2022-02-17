@@ -27,6 +27,7 @@ async function a() {
         const transaction = await bundlr.createTransaction("aaa");
         await transaction.sign();
         console.log(transaction.id)
+        console.log(await transaction.isValid());
         const res = await transaction.upload();
         console.log(`Upload: ${JSON.stringify(res.data)}`);
 
@@ -40,7 +41,7 @@ async function a() {
         let tx = await bundlr.fund(1337, 1);
         console.log(tx);
 
-        let resw = await bundlr.withdrawBalance(1000);
+        let resw = await bundlr.withdrawBalance(100);
         console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
 
 

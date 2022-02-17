@@ -5,6 +5,7 @@ import ERC20Config from "./erc20";
 import EthereumConfig from "./ethereum";
 import NearConfig from "./near";
 import SolanaConfig from "./solana";
+import AlgorandConfig from "./algorand";
 
 export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): NodeCurrency {
     switch (currency) {
@@ -36,6 +37,9 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         }
         case "near": {
             return new NearConfig({ name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet })
+        }
+        case "algorand": {
+            return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", wallet })
         }
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
