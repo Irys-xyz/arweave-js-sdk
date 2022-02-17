@@ -10,8 +10,8 @@ import axios from "axios";
 export default class AlgorandConfig extends BaseNodeCurrency {
     protected keyPair: algosdk.Account;
 
-    protected apiURL? = "https://node.testnet.algoexplorerapi.io";
-    protected indexerURL? = "https://algoindexer.testnet.algoexplorerapi.io";
+    protected apiURL? = this.providerUrl.slice(0, 8) + "node." + this.providerUrl.slice(8);
+    protected indexerURL? = this.providerUrl.slice(0, 8) + "algoindexer." + this.providerUrl.slice(8); 
 
 
     constructor(config: CurrencyConfig) {

@@ -39,7 +39,7 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new NearConfig({ name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet })
         }
         case "algorand": {
-            return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", isSlow: true, wallet })
+            return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", isSlow: true, wallet })
         }
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
