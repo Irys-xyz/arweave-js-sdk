@@ -10,14 +10,16 @@ import axios from "axios";
 export default class AlgorandConfig extends BaseNodeCurrency {
     protected keyPair: algosdk.Account;
 
-    protected apiURL? = this.providerUrl.slice(0, 8) + "node." + this.providerUrl.slice(8);
-    protected indexerURL? = this.providerUrl.slice(0, 8) + "algoindexer." + this.providerUrl.slice(8); 
+    protected apiURL?;
+    protected indexerURL?; 
 
 
     constructor(config: CurrencyConfig) {
         super(config);
         this.base = ["microAlgos", 1e6]
         this.keyPair = algosdk.mnemonicToSecretKey(this.wallet)
+        this.apiURL = this.providerUrl.slice(0, 8) + "node." + this.providerUrl.slice(8);
+        this.indexerURL = this.providerUrl.slice(0, 8) + "algoindexer." + this.providerUrl.slice(8); 
     }
 
     async getTx(txId: string): Promise<Tx> {
