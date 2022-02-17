@@ -17,7 +17,6 @@ async function a() {
             console.log("profiling configured");
         }
         const keys = JSON.parse(readFileSync("wallet.json").toString());
-        console.log(keys);
         let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", keys.arweave)
         console.log(bundlr.address);
 
