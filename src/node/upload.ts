@@ -32,7 +32,7 @@ export default class NodeUploader extends Uploader {
         return await this.upload(data, tags)
     }
 
-    // the cleanest dir walking code I've ever seen... it's beautiful. 
+    // very clean dir walking code. very nice.
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     private async* walk(dir: string) {
         for await (const d of await promises.opendir(dir)) {
@@ -198,6 +198,7 @@ export default class NodeUploader extends Uploader {
             }
 
             await logFunction(`Finished uploading ${items.length} items (${failed.size} failures)`)
+
             let manifestTx: AxiosResponse<any>;
             if (hasManifest) {
                 if (failed.size > 0) {
@@ -206,6 +207,7 @@ export default class NodeUploader extends Uploader {
                     const tags = [{ name: "Type", value: "manifest" }, { name: "Content-Type", value: "application/x.arweave-manifest+json" }]
                     manifestTx = await this.upload(Buffer.from(JSON.stringify(manifest)), tags).catch((e) => { throw new Error(`Failed to upload manifest: ${e.message}`) })
                     await promises.writeFile(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`), manifestTx.data.id)
+                    await logFunction(`A copy of the manifest has been written to ${manifestPath} `)
                 }
             }
             return { processed, failed, manifestTx: manifestTx?.data.id }

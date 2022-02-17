@@ -94,7 +94,7 @@ async function uploadDir(folder: string): Promise<void> {
         const bundler = await init(options, "upload");
         const res = await bundler.uploader.uploadFolder(folder, options.indexFile ?? null, +options.batchSize, options.confirmation, console.log);
         if (res != "none") {
-            console.log(`Uploaded to ${res}`);
+            console.log(`Uploaded to https://arweave.net/${res}`);
         }
     } catch (err) {
         console.error(`Error whilst uploading ${folder} - ${options.debug ? err.stack : err.message}`)
