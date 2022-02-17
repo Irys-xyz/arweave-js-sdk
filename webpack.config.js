@@ -19,11 +19,11 @@ module.exports = {
         ],
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
+        extensions: ['.ts', '.js'],
         alias: {
             process: "process/browser",
             crypto: "crypto-browserify",
-            stream: "stream-browserify"
+            stream: "stream-browserify",
         },
         fallback: {
             "crypto": require.resolve("crypto-browserify"),
@@ -31,16 +31,22 @@ module.exports = {
             "stream": require.resolve("stream-browserify"),
             "process": require.resolve("process/browser"),
             "util": require.resolve("util"),
-            "events": require.resolve("events/")
+            "events": require.resolve("events/"),
+            "buffer": require.resolve('buffer/'),
+            "zlib": require.resolve("browserify-zlib"),
+            "path": require.resolve("path-browserify")
         }
     },
     plugins: [
         new webpack.ProvidePlugin({
-            process: 'process/browser'
+            process: 'process/browser',
+            Buffer: ['buffer', 'Buffer']
         }),
     ],
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'build/web'),
+        libraryTarget: 'umd',
+        library: 'Bundlr'
     },
 };

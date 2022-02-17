@@ -22,7 +22,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
         if (!this.providerInstance) {
             this.providerInstance = new web3.Connection(
                 this.providerUrl,
-                { commitment: "processed" }
+                { commitment: "finalized" }
             );
         }
         return this.providerInstance;
@@ -38,9 +38,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
 
     async getTx(txId: string): Promise<Tx> {
         const connection = await this.getProvider()
-        const stx = await connection.getTransaction(txId, {
-            commitment: "confirmed",
-        });
+        const stx = await connection.getTransaction(txId);
         if (!stx) throw new Error("Confirmed tx not found");
 
         const confirmed = !(
