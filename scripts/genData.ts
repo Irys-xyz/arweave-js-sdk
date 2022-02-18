@@ -38,7 +38,7 @@ export async function genData(path: string, number: number, minSize: number, max
 
 
 async function t1() {
-    await genData("./testFolder", 1, 1_500_000_000, 2_500_000_000)
+    await genData("./testFolder", 400, 100_000, 1_200_000)
 }
 
 t1();

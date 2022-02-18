@@ -13,7 +13,7 @@ export default class WebBundlr extends Bundlr {
         const parsed = new URL(url);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        this.currency = currency;
+        this.currency = currency.toLowerCase();
         this.currencyConfig = getCurrency(currency, provider, config?.providerUrl)
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);

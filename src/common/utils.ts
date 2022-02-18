@@ -22,8 +22,8 @@ export default class Utils {
      * @param res an axios response
      * @returns nothing if the status code is 200
      */
-    public static checkAndThrow(res: AxiosResponse<any>, context?: string): void {
-        if (res?.status && res.status != 200) {
+    public static checkAndThrow(res: AxiosResponse<any>, context?: string, exceptions?: number[]): void {
+        if (res?.status && !(exceptions ?? []).includes(res.status) && res.status != 200) {
             throw new Error(`HTTP Error: ${context}: ${res.status} ${res.statusText.length == 0 ? res.data : res.statusText}`);
         }
         return;
@@ -88,7 +88,7 @@ export default class Utils {
         let status = false
         while (status == false) {
             await sleep(1000);
-            status = await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }) // .catch(_ => { return false })
+            status = await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(_ => { return false })
         }
         return;
     }

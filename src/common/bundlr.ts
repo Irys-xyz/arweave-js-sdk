@@ -21,11 +21,6 @@ export default abstract class Bundlr {
 
     constructor() { return }
 
-    // public async ready(): Promise<void> {
-    //     await this.currencyConfig.ready();
-    //     this.address = this.currencyConfig.address;
-    // }
-
 
     async withdrawBalance(amount: BigNumber.Value): Promise<AxiosResponse<any>> {
         return await withdrawBalance(this.utils, this.api, amount);

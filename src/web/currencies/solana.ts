@@ -19,7 +19,6 @@ export default class SolanaConfig extends BaseWebCurrency {
         if (!this.providerInstance) {
             this.providerInstance = new web3.Connection(
                 this.providerUrl,
-                // web3.clusterApiUrl(this.providerUrl as web3.Cluster),
                 "confirmed"
             );
         }
@@ -114,9 +113,6 @@ export default class SolanaConfig extends BaseWebCurrency {
             }),
         );
 
-        // const transactionBuffer = transaction.serializeMessage();
-        // const signature = nacl.sign.detached(transactionBuffer, keys.secretKey);
-        // transaction.addSignature(keys.publicKey, Buffer.from(signature));
         return { tx: transaction, txId: undefined };
     }
 

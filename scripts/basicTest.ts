@@ -43,11 +43,12 @@ async function a() {
         // const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         // console.log(`bundlr address: ${bAddress}`);
 
-        // const transaction = await bundlr.createTransaction("aaa");
-        // await transaction.sign();
-        // console.log(transaction.id)
-        // const res = await transaction.upload();
-        // console.log(`Upload: ${JSON.stringify(res.data)}`);
+        const transaction = await bundlr.createTransaction("aaa");
+        await transaction.sign();
+        console.log(transaction.id)
+        console.log(await transaction.isValid());
+        const res = await transaction.upload();
+        console.log(`Upload: ${JSON.stringify(res.data)}`);
 
         // let rec = await bundlr.uploadFile("a.txt");
         // console.log(JSON.stringify(rec.data));
@@ -59,8 +60,8 @@ async function a() {
         // let tx = await bundlr.fund(1337, 1);
         // console.log(tx);
 
-        // let resw = await bundlr.withdrawBalance(1000);
-        // console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        let resw = await bundlr.withdrawBalance(100);
+        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
 
 
     } catch (e) {

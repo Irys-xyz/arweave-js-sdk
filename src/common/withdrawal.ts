@@ -6,13 +6,6 @@ import BigNumber from "bignumber.js";
 import Api from "./api";
 import base64url from "base64url";
 
-// interface data {
-//     publicKey: string | Buffer,
-//     currency: string,
-//     amount: string,
-//     nonce: number,
-//     signature: Buffer | Uint8Array
-// }
 
 /**
  * Create and send a withdrawal request 
