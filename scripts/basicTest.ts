@@ -17,7 +17,7 @@ async function a() {
             console.log("profiling configured");
         }
         const keys = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", keys.arweave)
+        let bundlr = new Bundlr("http://localhost:10001", "spl", "")
         console.log(bundlr.address);
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
@@ -35,8 +35,8 @@ async function a() {
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
 
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
-        console.log(resu);
+        // const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
+        // console.log(resu);
 
         let tx = await bundlr.fund(1337, 1);
         console.log(tx);

@@ -21,6 +21,11 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new EthereumConfig({ name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet })
         case "solana":
             return new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://ssc-dao.genesysgo.net/", wallet })
+<<<<<<< Updated upstream
+=======
+        case "spl": 
+            return new SPLCurrencyConfig({ name: "DUMMY", ticker: "DUMMY", providerUrl: providerUrl ?? "https://api.devnet.solana.com", contractAddress: contractAddress ?? "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr", wallet })
+>>>>>>> Stashed changes
         case "avalanche":
             return new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc", wallet })
         case "boba":
