@@ -28,6 +28,8 @@
     "bundlr": "./build/node/cli.js"
   },
   "dependencies": {
+    "@cosmjs/proto-signing": "^0.27.1",
+    "@cosmjs/stargate": "^0.27.1",
     "@solana/wallet-adapter-base": "^0.9.2",
     "@solana/web3.js": "^1.32.0",
     "algosdk": "^1.13.1",
