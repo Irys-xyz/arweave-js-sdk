@@ -129,7 +129,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
         const transactionBuffer = transaction.serializeMessage();
         const signature = nacl.sign.detached(transactionBuffer, keys.secretKey);
         transaction.addSignature(keys.publicKey, Buffer.from(signature));
-        return { tx: transaction, txId: bs58.encode(signature) };
+        return { tx: transaction, txId: undefined };
     }
 
     getPublicKey(): string | Buffer {

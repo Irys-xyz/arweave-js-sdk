@@ -25,7 +25,7 @@ export default class Fund {
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
         const tx = await c.createTx(_amount, to, fee);
         const nres = await c.sendTx(tx.tx);
-        tx.txId = nres ?? tx.txId;
+        // tx.txId = nres ?? tx.txId;
         if (!tx.txId) {
             tx.txId = nres;
         }
