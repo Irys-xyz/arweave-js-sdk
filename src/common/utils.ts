@@ -85,7 +85,7 @@ export default class Utils {
      */
     public async confirmationPoll(txid: string): Promise<void> {
         if (this.currency === "arweave") { return; }
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 50; i++) {
             await sleep(3000);
             if (await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(_ => { return false })) {
                 return;

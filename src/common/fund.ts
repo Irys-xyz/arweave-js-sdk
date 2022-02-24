@@ -29,6 +29,7 @@ export default class Fund {
         if (!tx.txId) {
             tx.txId = nres;
         }
+
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
         await this.utils.confirmationPoll(tx.txId)
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId })
