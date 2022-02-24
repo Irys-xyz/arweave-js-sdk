@@ -23,8 +23,9 @@ export default class Fund {
         // winston's fee is actually for amount of data, not funds, so we have to 0 this.
         const baseFee = await c.getFee(c.base[0] === "winston" ? 0 : _amount, to)
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
-        const tx = await c.createTx(_amount, to, fee)
+        const tx = await c.createTx(_amount, to, fee);
         const nres = await c.sendTx(tx.tx);
+        tx.txId = nres ?? tx.txId;
         if (!tx.txId) {
             tx.txId = nres;
         }
