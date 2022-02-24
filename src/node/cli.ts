@@ -23,7 +23,7 @@ program
     .option("--batch-size <number>", "Adjust the upload-dir batch size (process more items at once - uses more resources (network, memory, cpu) accordingly!)", "5")
     .option("--debug, -d", "Increases verbosity of errors and logs additional debug information. Used for troubleshooting.", false)
     .option("--index-file <string>", "Name of the file to use as an index for upload-dir manifests (relative to the path provided to upload-dir).")
-
+    .option("--provider-url <string>")
 // Define commands
 // uses NPM view to query the package's version.
 program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
@@ -184,7 +184,7 @@ async function init(opts, operation): Promise<Bundlr> {
     }
     try {
         // create and ready the bundlr instance
-        bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet);
+        bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl });
     } catch (err) {
         throw new Error(`Error initialising Bundlr client - ${options.debug ? err.stack : err.message}`);
     }
@@ -220,6 +220,7 @@ const options = program.opts();
 
 // replace this with dumped array. (make sure to append/include --no-confirmation)
 const argv = process.argv;
+
 
 // padding hack
 // this is because B64URL strings can start with a "-" which makes commander think it's a flag
