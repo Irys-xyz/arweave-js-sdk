@@ -22,7 +22,7 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         case "solana":
             return new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://proud-autumn-frog.solana-mainnet.quiknode.pro/e7db7fce0970bc5dad50d1a5f181f37bbea536c7/", wallet })
         case "avalanche":
-            return new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc", wallet })
+            return new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: providerUrl ?? "https://api.avax-test.network/ext/bc/C/rpc", wallet })
         case "boba":
             return new EthereumConfig({ name: "boba", ticker: "ETH", providerUrl: providerUrl ?? "https://mainnet.boba.network/", wallet })
         case "arbitrum":

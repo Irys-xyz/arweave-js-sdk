@@ -23,7 +23,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
     protected async getProvider(): Promise<JsonRpcProvider> {
         if (!this.providerInstance) {
             this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
-            await this.providerInstance.ready.catch(console.log)
+            await this.providerInstance.ready
         }
         return this.providerInstance;
     }
@@ -68,30 +68,15 @@ export default class EthereumConfig extends BaseNodeCurrency {
     }
 
     async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
-        console.log("Hetting");
-
-        let provider;
-        try {
-            provider = await this.getProvider();
-        } catch (e) {
-            console.log(e);
-        }
+        const provider = await this.getProvider()
         const _amount = new BigNumber(amount)
         const tx = {
             to,
             value: "0x" + _amount.toString(16),
         };
 
-        let estimatedGas;
-        let gasPrice;
-        try {
-            console.log("Hetting");
-            estimatedGas = await provider.estimateGas(tx);
-            gasPrice = await provider.getGasPrice();
-        } catch (e) {
-            console.log(e);
-        }
-
+        const estimatedGas = await provider.estimateGas(tx);
+        const gasPrice = await provider.getGasPrice();
 
         // const b = await provider.send("eth_maxPriorityFeePerGas", [])
         // console.log(b)

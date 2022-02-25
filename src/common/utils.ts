@@ -90,7 +90,6 @@ export default class Utils {
             if (await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(_ => { return false })) {
                 return;
             }
-            console.log(i);
         }
 
         throw new Error(`Tx ${txid} didn't finalize after 30 seconds`);

@@ -16,26 +16,15 @@ export default class Fund {
      * @returns  - funding receipt
      */
     public async fund(amount: BigNumber.Value, multiplier = 1.0): Promise<FundData> {
-        console.log(amount);
         const _amount = new BigNumber(amount)
         if (!_amount.isInteger()) { throw new Error("must use an integer for funding amount") }
         const c = this.utils.currencyConfig;
         const to = await this.utils.getBundlerAddress(this.utils.currency);
-        console.log(to);
-
         // winston's fee is actually for amount of data, not funds, so we have to 0 this.
-        console.log("get fee");
-
         const baseFee = await c.getFee(c.base[0] === "winston" ? 0 : _amount, to);
-        console.log("got fee");
-
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
-        console.log("Creating");
-
         const tx = await c.createTx(_amount, to, fee);
-        console.log("Sending");
         const nres = await c.sendTx(tx.tx);
-        console.log("Sent");
         // tx.txId = nres ?? tx.txId;
         if (!tx.txId) {
             tx.txId = nres;
