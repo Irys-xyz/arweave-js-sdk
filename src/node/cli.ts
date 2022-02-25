@@ -23,7 +23,7 @@ program
     .option("--batch-size <number>", "Adjust the upload-dir batch size (process more items at once - uses more resources (network, memory, cpu) accordingly!)", "5")
     .option("--debug, -d", "Increases verbosity of errors and logs additional debug information. Used for troubleshooting.", false)
     .option("--index-file <string>", "Name of the file to use as an index for upload-dir manifests (relative to the path provided to upload-dir).")
-    .option("--provider-url <string>")
+    .option("--provider-url <string>", "Override the provider URL")
 // Define commands
 // uses NPM view to query the package's version.
 program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
