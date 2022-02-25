@@ -6,6 +6,7 @@ import bs58 from "bs58";
 import nacl from "tweetnacl";
 import { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
+import retry from "async-retry";
 
 const solanaSigner = signers.SolanaSigner;
 
@@ -113,8 +114,21 @@ export default class SolanaConfig extends BaseNodeCurrency {
 
         const keys = this.getKeyPair();
 
+        const hash = await retry(
+          async (bail) => {
+              try {
+                  return (await (await this.getProvider()).getRecentBlockhash()).blockhash
+              } catch (e) {
+                  if (e.message?.includes("blockhash")) throw e;
+                  else bail(e);
+                  throw new Error("Unreachable");
+              }
+        },
+          { retries: 3, minTimeout: 1000 }
+        );
+
         const transaction = new web3.Transaction({
-            recentBlockhash: (await (await this.getProvider()).getRecentBlockhash()).blockhash,
+            recentBlockhash: hash,
             feePayer: keys.publicKey,
         });
 
