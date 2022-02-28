@@ -47,7 +47,7 @@ export default class Uploader {
 
         const { protocol, host, port, timeout } = this.api.getConfig();
         const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
-            headers: { "Content-Type": "application/octet-stream", "Transfer-Encoding": "chunked" },
+            headers: { "Content-Type": "application/octet-stream" },
             timeout,
             maxBodyLength: Infinity
         })
