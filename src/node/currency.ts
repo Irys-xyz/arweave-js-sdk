@@ -20,10 +20,14 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
 
     constructor(config: CurrencyConfig) {
         Object.assign(this, config);
-        this._address = this.wallet ? this.ownerToAddress(this.getPublicKey()) : undefined;
+        // this._address = this.wallet ? this.ownerToAddress(this.getPublicKey()) : undefined;
     }
 
     // common methods
+
+    protected assignAddress(): void {
+        this._address = this.wallet ? this.ownerToAddress(this.getPublicKey()) : undefined;
+    }
 
     get address(): string {
         return this._address

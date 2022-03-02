@@ -6,6 +6,7 @@ import EthereumConfig from "./ethereum";
 import NearConfig from "./near";
 import SolanaConfig from "./solana";
 import AlgorandConfig from "./algorand";
+import CosmosConfig from "./cosmos";
 
 export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): NodeCurrency {
     switch (currency) {
@@ -40,6 +41,9 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         }
         case "algorand": {
             return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", wallet })
+        }
+        case "cosmos": {
+            return new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: providerUrl ?? "http://198.50.215.1:46657/", wallet })
         }
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
