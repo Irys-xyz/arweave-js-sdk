@@ -19,7 +19,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     constructor(config: CurrencyConfig) {
         super(config);
         this.base = ["uatom", 1e6];
-        // this._address = "You need to .ready() this currency!"
+        this._address = "You need to .ready() this currency!"
     }
 
     protected async getProvider(): Promise<any> {
@@ -56,8 +56,8 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     ownerToAddress(owner: any): string {
-        // const encodePubkey = amino.encodeSecp256k1Pubkey(owner);
-        const address = amino.pubkeyToAddress(owner, "cosmos")
+        const encodePubkey = amino.encodeSecp256k1Pubkey(owner);
+        const address = amino.pubkeyToAddress(encodePubkey, "cosmos")
         return address;
     }
 
@@ -130,7 +130,8 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     getPublicKey(): string | Buffer{
-        return this.signerInstance.publicKey;
+        const pk = this.signerInstance.pk;
+        return pk;
     }
 
     async ready(): Promise<boolean> {
