@@ -62,7 +62,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async sign(data: Uint8Array): Promise<Uint8Array> {
-        return this.getSigner().sign(data)
+        return await this.getSigner().sign(data);
     }
 
     getSigner(): Signer {
@@ -70,7 +70,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async verify(pub: string | Buffer, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return CosmosSigner.verify(pub, data, signature)
+        return CosmosSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
