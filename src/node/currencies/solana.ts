@@ -112,10 +112,20 @@ export default class SolanaConfig extends BaseNodeCurrency {
                 //     message: e.message,
                 //     txId: txId[0]
                 // });
-                throw {
-                    message: e.message,
-                    txId: txId[0]
-                };
+                try {
+                    const conf = await connection.confirmTransaction(txId[0], "confirmed")
+                    if (conf) return undefined;
+                    throw {
+                        message: e.message,
+                        txId: txId[0]
+                    };
+                } catch (e) {
+                    throw {
+                        message: e.message,
+                        txId: txId[0]
+                    };
+                }
+
             }
             throw e;
         }
