@@ -24,11 +24,19 @@ export default class Fund {
         const baseFee = await c.getFee(c.base[0] === "winston" ? 0 : _amount, to);
         const fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
         const tx = await c.createTx(_amount, to, fee);
-        const nres = await c.sendTx(tx.tx);
+        let nres;
+        // eslint-disable-next-line no-useless-catch
+        try {
+            nres = await c.sendTx(tx.tx);
+        } catch (e) {
+            throw e;
+        }
         // tx.txId = nres ?? tx.txId;
         if (!tx.txId) {
             tx.txId = nres;
         }
+
+        // console.log(tx.txId);
 
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
         await this.utils.confirmationPoll(tx.txId);

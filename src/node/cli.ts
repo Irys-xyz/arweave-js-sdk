@@ -47,17 +47,16 @@ program.command("withdraw").description("Sends a fund withdrawal request").argum
     .action(async (amount: string) => {
         try {
             const bundlr = await init(options, "withdraw");
-            confirmation(`Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`).then(async (confirmed) => {
-                if (confirmed) {
-                    const res = await bundlr.withdrawBalance(new BigNumber(amount));
-                    if (res.status != 200) {
-                        throw new Error(res.data)
-                    }
-                    console.log(`Withdrawal request for ${res?.data?.requested} ${bundlr.currencyConfig.base[0]} successful\nTransaction ID: ${res?.data?.tx_id} with network fee ${res?.data?.fee} for a total cost of ${res?.data?.final} `)
-                } else {
-                    console.log("confirmation failed");
+            const confirmed = confirmation(`Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
+            if (confirmed) {
+                const res = await bundlr.withdrawBalance(new BigNumber(amount));
+                if (res.status != 200) {
+                    throw new Error(res.data)
                 }
-            })
+                console.log(`Withdrawal request for ${res?.data?.requested} ${bundlr.currencyConfig.base[0]} successful\nTransaction ID: ${res?.data?.tx_id} with network fee ${res?.data?.fee} for a total cost of ${res?.data?.final} `)
+            } else {
+                console.log("confirmation failed");
+            }
         } catch (err) {
             console.error(`Error whilst sending withdrawal request: ${options.debug ? err.stack : err.message} `);
             return;
@@ -107,16 +106,13 @@ program.command("fund").description("Funds your account with the specified amoun
         if (isNaN(+amount)) throw new Error("Amount must be an integer");
         try {
             const bundlr = await init(options, "fund");
-            confirmation(`Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(amount).toFixed()} ${bundlr.currency}) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
-                .then(async (confirmed) => {
-                    if (confirmed) {
-                        const tx = await bundlr.fund(new BigNumber(amount), options.multiplier);
-                        console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `)
-                    } else {
-                        console.log("confirmation failed")
-                    }
-                })
-
+            const confirmed = await confirmation(`Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(amount).toFixed()} ${bundlr.currency}) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
+            if (confirmed) {
+                const tx = await bundlr.fund(new BigNumber(amount), options.multiplier)
+                console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `)
+            } else {
+                console.log("confirmation failed")
+            }
         } catch (err) {
             console.error(`Error whilst funding: ${options.debug ? err.stack : err.message} `);
             return;
