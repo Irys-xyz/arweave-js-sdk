@@ -35,6 +35,8 @@ export default class EthereumConfig extends BaseNodeCurrency {
 
         if (!response) throw new Error("Tx doesn't exist");
 
+        console.log(response.confirmations);
+
         return {
             from: response.from,
             to: response.to,
@@ -104,9 +106,9 @@ export default class EthereumConfig extends BaseNodeCurrency {
         //     gasPrice = ethers.BigNumber.from(Math.ceil(+fee / estimatedGas.toNumber()))
         // }
 
-        // if (this.name === "matic") {
-        //     gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(7).decimalPlaces(0).toString())
-        // }
+        if (this.name === "matic") {
+            gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(7).decimalPlaces(0).toString())
+        }
 
         const tx = await wallet.populateTransaction({
             to,
