@@ -35,7 +35,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
 
         if (!response) throw new Error("Tx doesn't exist");
 
-        console.log(response.confirmations);
+        // console.log(response.confirmations);
 
         return {
             from: response.from,
