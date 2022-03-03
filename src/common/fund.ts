@@ -36,7 +36,7 @@ export default class Fund {
             tx.txId = nres;
         }
 
-        console.log(tx.txId);
+        // console.log(tx.txId);
 
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
         await this.utils.confirmationPoll(tx.txId);

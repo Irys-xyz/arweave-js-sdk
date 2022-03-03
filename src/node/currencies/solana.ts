@@ -107,11 +107,11 @@ export default class SolanaConfig extends BaseNodeCurrency {
         } catch (e) {
             if (e.message.includes("30.")) {
                 const txId = (e.message as string).match(/[A-Za-z0-9]{88}/g);
-                console.log(txId);
-                console.log({
-                    message: e.message,
-                    txId: txId[0]
-                });
+                // console.log(txId);
+                // console.log({
+                //     message: e.message,
+                //     txId: txId[0]
+                // });
                 throw {
                     message: e.message,
                     txId: txId[0]
@@ -131,16 +131,16 @@ export default class SolanaConfig extends BaseNodeCurrency {
         const keys = this.getKeyPair();
 
         const hash = await retry(
-          async (bail) => {
-              try {
-                  return (await (await this.getProvider()).getRecentBlockhash()).blockhash
-              } catch (e) {
-                  if (e.message?.includes("blockhash")) throw e;
-                  else bail(e);
-                  throw new Error("Unreachable");
-              }
-        },
-          { retries: 3, minTimeout: 1000 }
+            async (bail) => {
+                try {
+                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash
+                } catch (e) {
+                    if (e.message?.includes("blockhash")) throw e;
+                    else bail(e);
+                    throw new Error("Unreachable");
+                }
+            },
+            { retries: 3, minTimeout: 1000 }
         );
 
         const transaction = new web3.Transaction({
