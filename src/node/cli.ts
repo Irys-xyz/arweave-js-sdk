@@ -23,7 +23,7 @@ program
     .option("--batch-size <number>", "Adjust the upload-dir batch size (process more items at once - uses more resources (network, memory, cpu) accordingly!)", "5")
     .option("--debug, -d", "Increases verbosity of errors and logs additional debug information. Used for troubleshooting.", false)
     .option("--index-file <string>", "Name of the file to use as an index for upload-dir manifests (relative to the path provided to upload-dir).")
-
+    .option("--provider-url <string>", "Override the provider URL")
 // Define commands
 // uses NPM view to query the package's version.
 program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
@@ -47,17 +47,16 @@ program.command("withdraw").description("Sends a fund withdrawal request").argum
     .action(async (amount: string) => {
         try {
             const bundlr = await init(options, "withdraw");
-            confirmation(`Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`).then(async (confirmed) => {
-                if (confirmed) {
-                    const res = await bundlr.withdrawBalance(new BigNumber(amount));
-                    if (res.status != 200) {
-                        throw new Error(res.data)
-                    }
-                    console.log(`Withdrawal request for ${res?.data?.requested} ${bundlr.currencyConfig.base[0]} successful\nTransaction ID: ${res?.data?.tx_id} with network fee ${res?.data?.fee} for a total cost of ${res?.data?.final} `)
-                } else {
-                    console.log("confirmation failed");
+            const confirmed = confirmation(`Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
+            if (confirmed) {
+                const res = await bundlr.withdrawBalance(new BigNumber(amount));
+                if (res.status != 200) {
+                    throw new Error(res.data)
                 }
-            })
+                console.log(`Withdrawal request for ${res?.data?.requested} ${bundlr.currencyConfig.base[0]} successful\nTransaction ID: ${res?.data?.tx_id} with network fee ${res?.data?.fee} for a total cost of ${res?.data?.final} `)
+            } else {
+                console.log("confirmation failed");
+            }
         } catch (err) {
             console.error(`Error whilst sending withdrawal request: ${options.debug ? err.stack : err.message} `);
             return;
@@ -107,16 +106,13 @@ program.command("fund").description("Funds your account with the specified amoun
         if (isNaN(+amount)) throw new Error("Amount must be an integer");
         try {
             const bundlr = await init(options, "fund");
-            confirmation(`Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(amount).toFixed()} ${bundlr.currency}) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
-                .then(async (confirmed) => {
-                    if (confirmed) {
-                        const tx = await bundlr.fund(new BigNumber(amount), options.multiplier);
-                        console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `)
-                    } else {
-                        console.log("confirmation failed")
-                    }
-                })
-
+            const confirmed = await confirmation(`Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(amount).toFixed()} ${bundlr.currency}) to ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`)
+            if (confirmed) {
+                const tx = await bundlr.fund(new BigNumber(amount), options.multiplier)
+                console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `)
+            } else {
+                console.log("confirmation failed")
+            }
         } catch (err) {
             console.error(`Error whilst funding: ${options.debug ? err.stack : err.message} `);
             return;
@@ -184,7 +180,7 @@ async function init(opts, operation): Promise<Bundlr> {
     }
     try {
         // create and ready the bundlr instance
-        bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet);
+        bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl });
     } catch (err) {
         throw new Error(`Error initialising Bundlr client - ${options.debug ? err.stack : err.message}`);
     }
@@ -220,6 +216,7 @@ const options = program.opts();
 
 // replace this with dumped array. (make sure to append/include --no-confirmation)
 const argv = process.argv;
+
 
 // padding hack
 // this is because B64URL strings can start with a "-" which makes commander think it's a flag

@@ -35,6 +35,8 @@ export default class EthereumConfig extends BaseNodeCurrency {
 
         if (!response) throw new Error("Tx doesn't exist");
 
+        // console.log(response.confirmations);
+
         return {
             from: response.from,
             to: response.to,
@@ -71,6 +73,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
         const provider = await this.getProvider()
         const _amount = new BigNumber(amount)
         const tx = {
+            from: this.address,
             to,
             value: "0x" + _amount.toString(16),
         };
@@ -94,22 +97,33 @@ export default class EthereumConfig extends BaseNodeCurrency {
 
         const _amount = "0x" + new BigNumber(amount).toString(16);
 
-        // const gasPrice = await provider.getGasPrice();
-        // const estimatedGas = await provider.estimateGas({ to, value: _amount });
+        let gasPrice = await provider.getGasPrice();
+        // const estimatedGas = await provider.estimateGas({ from: this.address, to, value: _amount });
 
         // console.log({ gasPrice, estimatedGas })
+
+        // if (fee) {
+        //     gasPrice = ethers.BigNumber.from(Math.ceil(+fee / estimatedGas.toNumber()))
+        // }
+
+        if (this.name === "matic") {
+            gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(7).decimalPlaces(0).toString())
+        }
 
         const tx = await wallet.populateTransaction({
             to,
             value: _amount,
-            // gasPrice,
+            from: this.address,
+            gasPrice
             // gasLimit: estimatedGas,
-            // nonce: await provider.getTransactionCount(this.address),
+            // nonce: b // await provider.getTransactionCount(this.address),
             // chainId: await (await provider.getNetwork()).chainId
         });
-
+        // tx.gasLimit = ethers.BigNumber.from(+(tx.gasLimit.toString()) * 4)
         const signedTx = await wallet.signTransaction(tx);
         const txId = "0x" + keccak256(Buffer.from(signedTx.slice(2), "hex")).toString("hex");
+        // const c = await provider.call(tx);
+        // console.log(c)
         return { txId, tx: signedTx };
     }
 
