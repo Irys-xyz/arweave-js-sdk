@@ -104,9 +104,9 @@ export default class EthereumConfig extends BaseNodeCurrency {
         //     gasPrice = ethers.BigNumber.from(Math.ceil(+fee / estimatedGas.toNumber()))
         // }
 
-        if (this.name === "matic") {
-            gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(7).decimalPlaces(0).toString())
-        }
+        // if (this.name === "matic") {
+        //     gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(7).decimalPlaces(0).toString())
+        // }
 
         const tx = await wallet.populateTransaction({
             to,
