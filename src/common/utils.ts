@@ -24,7 +24,7 @@ export default class Utils {
      */
     public static checkAndThrow(res: AxiosResponse<any>, context?: string, exceptions?: number[]): void {
         if (res?.status && !(exceptions ?? []).includes(res.status) && res.status != 200) {
-            throw new Error(`HTTP Error: ${context}: ${res.status} ${res.statusText.length == 0 ? res.data : res.statusText}`);
+            throw new Error(`HTTP Error: ${context}: ${res.status} ${typeof res.data !== "string" ? res.statusText : res.data}`);
         }
         return;
     }

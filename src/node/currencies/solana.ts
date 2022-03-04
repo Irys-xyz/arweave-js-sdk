@@ -103,10 +103,10 @@ export default class SolanaConfig extends BaseNodeCurrency {
         //     return;
         // }
         try {
-            return await web3.sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: "confirmed", skipPreflight: true });
+            return await web3.sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: "confirmed" });
         } catch (e) {
             if (e.message.includes("30.")) {
-                const txId = (e.message as string).match(/[A-Za-z0-9]{88}/g);
+                const txId = (e.message as string).match(/[A-Za-z0-9]{87,88}/g);
                 // console.log(txId);
                 // console.log({
                 //     message: e.message,
