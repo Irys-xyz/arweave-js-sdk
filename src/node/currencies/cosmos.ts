@@ -33,12 +33,9 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async getTx(txId: string): Promise<Tx> {
-        console.log("polling getTx:", txId);
         const provider = await this.getProvider();
         const transaction = await provider.getTx(txId);
         const latestBlockHeight = new BigNumber(await this.getCurrentHeight()).toNumber();
-        console.log(latestBlockHeight);
-        console.log(transaction);
         const rawlog = JSON.parse(transaction.rawLog);
         const pending = (transaction.code !== 0);
         const tx = {
