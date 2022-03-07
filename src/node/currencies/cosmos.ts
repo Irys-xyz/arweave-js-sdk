@@ -7,8 +7,7 @@ import BaseNodeCurrency from "../currency"
 import * as stargate from "@cosmjs/stargate";
 import * as amino from "@cosmjs/amino";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
-// import { Secp256k1 } from "@cosmjs/crypto";
-// import * as signingcosmos from "@cosmjs/proto-signing";
+import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 
 export default class CosmosConfig extends BaseNodeCurrency {
 
@@ -23,35 +22,34 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     protected async getProvider(): Promise<any> {
+        const wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.wallet);
         if (!this.providerInstance) {
             this.providerInstance = await stargate.SigningStargateClient.connectWithSigner(
                 this.providerUrl,
-                this.wallet
+                wallet
               );
         }
         return this.providerInstance;
     }
 
-    // private async getKeyPair(): Promise<any> {
-    //     return this.signerInstance.keyPair;
-    // }
-
     async getTx(txId: string): Promise<Tx> {
-        const transaction = await this.providerInstance.getTx(txId);
+        console.log("polling getTx:", txId);
+        const provider = await this.getProvider();
+        const transaction = await provider.getTx(txId);
         const latestBlockHeight = new BigNumber(await this.getCurrentHeight()).toNumber();
-        let tx: Tx;
-        if(transaction){
-            const rawlog = JSON.parse(transaction.rawLog);
-
-            tx = {
-                from: rawlog[0].events[3].attributes[1].value,
-                to: rawlog[0].events[3].attributes[0].value,
-                amount: new BigNumber(rawlog[0].events[3].attributes[2].value.slice(0,-5)),
-                blockHeight: new BigNumber(transaction.height),
-                pending: false,
-                confirmed: latestBlockHeight - transaction.blockHeight.toNumber() >= this.minConfirm
-            };
-        }
+        console.log(latestBlockHeight);
+        console.log(transaction);
+        const rawlog = JSON.parse(transaction.rawLog);
+        const pending = (transaction.code !== 0);
+        const tx = {
+            from: rawlog[0].events[3].attributes[1].value,
+            to: rawlog[0].events[3].attributes[0].value,
+            amount: new BigNumber(rawlog[0].events[3].attributes[2].value.slice(0,-5)),
+            blockHeight: new BigNumber(transaction.height),
+            pending: pending,
+            confirmed: latestBlockHeight - transaction.height >= this.minConfirm
+        };
+        console.log(tx);
         return tx;
     }
 
@@ -80,26 +78,18 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async getFee(): Promise<BigNumber> {
-        // const fee = {
-        //     amount: [
-        //       {
-        //         denom: "uatom",
-        //         amount: "2000",
-        //       },
-        //     ],
-        //     gas: "1000000", // 1m
-        //   };
         return new BigNumber(2000);
     }
 
     async sendTx(data: any): Promise<string> {
-        const send = await this.providerInstance.broadcastTx(data);
-        return send;
+        const send = await (await this.getProvider()).broadcastTx(data);
+        return send.transactionHash;
     }
 
-    async createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string; tx: any; }> {
-        const provider = this.getProvider();
-        const account = await this.signerInstance.keyPair;
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+        const provider = await this.getProvider();
+        const account = this.ownerToAddress(this.getPublicKey());
+
         const sendingAmount = {
             denom: "uatom",
             amount: amount.toString(),
@@ -109,23 +99,25 @@ export default class CosmosConfig extends BaseNodeCurrency {
             amount: [
                 {
                 denom: "uatom",
-                amount: fee,
+                amount: "2000",
                 },
             ],
-            gas: "1000000",
+            gas: "100000",
         };
 
         const sendMsg: stargate.MsgSendEncodeObject = {
           typeUrl: "/cosmos.bank.v1beta1.MsgSend",
           value: {
-            fromAddress: account.address,
+            fromAddress: account,
             toAddress: to,
             amount: [sendingAmount],
           }
         };
-        const signedTx = (await provider).sign(account.address, [sendMsg], sendingFee);
+        const signedTx = await provider.sign(account, [sendMsg], sendingFee, "");
         const txBytes = TxRaw.encode(signedTx).finish();
 
+
+        
         return { tx: txBytes, txId: null };
     }
 
