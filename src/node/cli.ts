@@ -91,7 +91,7 @@ program.command("deploy").description("(DEPRECATED - use the functionally identi
 async function uploadDir(folder: string): Promise<void> {
     try {
         const bundler = await init(options, "upload");
-        const res = await bundler.uploader.uploadFolder(folder, options.indexFile ?? null, +options.batchSize, options.confirmation, console.log);
+        const res = await bundler.uploader.uploadFolder(folder, options.indexFile ?? null, +options.batchSize, options.confirmation, async (log): Promise<void> => { console.log(log) });
         if (res != "none") {
             console.log(`Uploaded to https://arweave.net/${res}`);
         }

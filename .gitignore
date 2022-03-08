@@ -14,6 +14,7 @@ a.txt
 testFolder
 testFolder-id.txt
 testFolder-manifest.json
+testFolder-manifest.csv
 profiles
 src/__tests__/data
 arweave.json
