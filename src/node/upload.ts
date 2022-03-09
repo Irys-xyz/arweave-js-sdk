@@ -101,8 +101,6 @@ export default class NodeUploader extends Uploader {
             await promises.writeFile(manifestPath, csvHeader)
         }
 
-        // alreadyProcessed.clear()
-        // TODO: add logic to remove now removed files from the resultant manifest
 
         const files = []
         let total = 0;
@@ -123,7 +121,8 @@ export default class NodeUploader extends Uploader {
         if (!keepDeleted) {
             alreadyProcessed.clear()
         }
-        // TODO: add logic to remove now deleted items, maybe even detect changes (store hashes in CSV?)
+
+        // TODO: add logic to detect changes (MD5/other hash)
         if (files.length == 0 && alreadyProcessed.size === 0) {
             logFunction("No items to process")
             // return the txID of the upload
