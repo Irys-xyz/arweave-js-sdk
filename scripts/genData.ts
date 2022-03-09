@@ -28,7 +28,10 @@ export async function genData(path: string, number: number, minSize: number, max
             }
             strm.write(Crypto.randomBytes(toWrite))
         }
-        strm.close()
+        // setImmediate(async (s) => {
+        //     await new Promise(res => s.close(res))
+        // }, strm)
+        await new Promise(res => strm.close(res))
         if (i % 10 == 0) {
             console.log(i);
         }
@@ -38,7 +41,7 @@ export async function genData(path: string, number: number, minSize: number, max
 
 
 async function t1() {
-    await genData("./testFolder", 400, 100_000, 1_200_000)
+    await genData("./testFolder", 10_000, 1_000, 9_000)
 }
 
 t1();

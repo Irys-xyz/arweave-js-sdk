@@ -54,8 +54,8 @@ async function a() {
         // console.log(JSON.stringify(rec.data));
         // console.log(JSON.stringify(rec.status));
 
-        // const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
-        // console.log(resu);
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, true, async (log): Promise<void> => { console.log(log) })
+        console.log(resu);
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
