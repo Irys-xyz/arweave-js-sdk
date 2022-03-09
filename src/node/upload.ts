@@ -104,7 +104,7 @@ export default class NodeUploader extends Uploader {
         let i = 0
         for await (const f of this.walk(path)) {
             if (!alreadyProcessed.includes(p.relative(path, f))) {
-                files.push(p.relative(path, f))
+                files.push(f)
                 total += (await promises.stat(f)).size
             }
             if (++i % batchSize == 0) {
@@ -143,7 +143,7 @@ export default class NodeUploader extends Uploader {
 
         const processor = async (data): Promise<void> => {
             if (data?.res?.data?.id) {
-                stringifier.write([data.item, data.res.data.id])
+                stringifier.write([p.relative(path, data.item), data.res.data.id])
             }
         }
         const processingResults = await this.concurrentUploader(files, batchSize, processor, logFunction)
