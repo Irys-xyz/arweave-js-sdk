@@ -88,7 +88,6 @@ export default class Uploader {
                 await retry(
                     async (bail) => {
                         try {
-                            throw new Error("testing")
                             const res = await this.processItem(item)
                             if (i % concurrency == 0) { await logFunction(`Processed ${i} Items`) }
                             if (resultProcessor) {
@@ -149,8 +148,8 @@ export default class Uploader {
             }
             manifest["index"] = { path: indexFile };
         }
-        for (const entry in items.entries) {
-            manifest.paths[entry[0]] = { id: entry[1] }
+        for (const [k, v] of items.entries()) {
+            manifest.paths[k] = { id: v }
         }
         return manifest
 

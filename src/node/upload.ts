@@ -158,6 +158,7 @@ export default class NodeUploader extends Uploader {
             await new Promise(res => ewstrm.close(res))
             throw new Error(`${processingResults.errors.length} Errors detected - check ${p.basename(path)}-errors.txt for more information.`)
         }
+        await logFunction(`Finished processing ${files.length} Items`)
 
         await new Promise(r => wstrm.close(r))
         // generate JSON
