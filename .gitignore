@@ -19,3 +19,4 @@ profiles
 src/__tests__/data
 arweave.json
 testData/
+testFolder-errors.txt

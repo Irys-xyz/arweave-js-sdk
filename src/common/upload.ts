@@ -73,14 +73,22 @@ export default class Uploader {
 
 
 
-    public async concurrentUploader(data: (DataItem | Buffer | string)[], concurrency = 5, resultProcessor?: (res: any) => Promise<any>, logFunction?: (log: string) => Promise<any>): Promise<any> {
-        return await PromisePool
+    public async concurrentUploader(data: (DataItem | Buffer | string)[], concurrency = 5, resultProcessor?: (res: any) => Promise<any>, logFunction?: (log: string) => Promise<any>): Promise<{ errors: Array<any>, results: Array<any> }> {
+        const errors = []
+        const results = await PromisePool
             .for(data)
             .withConcurrency(concurrency >= 1 ? concurrency : 5)
-            .process(async (item, i, pool) => {
+            .handleError(async (error, _) => {
+                errors.push(error)
+                if (error.message === "Not enough funds to send data") {
+                    throw error;
+                }
+            })
+            .process(async (item, i, _) => {
                 await retry(
                     async (bail) => {
                         try {
+                            throw new Error("testing")
                             const res = await this.processItem(item)
                             if (i % concurrency == 0) { await logFunction(`Processed ${i} Items`) }
                             if (resultProcessor) {
@@ -89,14 +97,17 @@ export default class Uploader {
                                 return { item, res, i }
                             }
                         } catch (e) {
-                            if (e.message === "Not enough funds to send data") { await pool.stop(); bail(e) }
-                            return i;
+                            if (e.message === "Not enough funds to send data") {
+                                bail(e)
+                            }
+                            throw e
                         }
                     },
                     { retries: 3, minTimeout: 1000, maxTimeout: 10_000 }
                 );
 
-            })
+            }) as any
+        return { errors, results: results.results }
     }
 
     protected async processItem(item: string | Buffer | DataItem): Promise<any> {

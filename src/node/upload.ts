@@ -94,7 +94,6 @@ export default class NodeUploader extends Uploader {
                 if (record.path && record.id) {
                     alreadyProcessed.push(record.path)
                 }
-                console.log(`record: ${JSON.stringify(record)}`);
             }
         } else {
             await promises.writeFile(manifestPath, csvHeader)
@@ -147,14 +146,28 @@ export default class NodeUploader extends Uploader {
                 stringifier.write([data.item, data.res.data.id])
             }
         }
-        await this.concurrentUploader(files, batchSize, processor, logFunction)
+        const processingResults = await this.concurrentUploader(files, batchSize, processor, logFunction)
+
+        if (processingResults.errors.length > 0) {
+            await logFunction(`${processingResults.errors.length} Errors detected, skipping manifest upload...`)
+            const ewstrm = createWriteStream(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-errors.txt`), { flags: "a+" })
+            ewstrm.write(`Errors from upload at ${new Date().toString()}:\n`)
+            processingResults.errors.forEach(e =>
+                ewstrm.write(`${e?.stack ?? JSON.stringify(e)}\n`)
+            )
+            await new Promise(res => ewstrm.close(res))
+            throw new Error(`${processingResults.errors.length} Errors detected - check ${p.basename(path)}-errors.txt for more information.`)
+        }
 
         await new Promise(r => wstrm.close(r))
-        console.log("stream closed")
         // generate JSON
+        await logFunction("Generating JSON manifest...")
         const jsonManifestPath = await this.generateManifestFromCsv(path, indexFile)
         // upload the manifest
-        const mres = await this.uploadFile(jsonManifestPath)
+        await logFunction("Uploading JSON manifest...")
+        const tags = [{ name: "Type", value: "manifest" }, { name: "Content-Type", value: "application/x.arweave-manifest+json" }]
+        const mres = await this.upload(Buffer.from(readFileSync(jsonManifestPath)), tags).catch((e) => { throw new Error(`Failed to upload manifest: ${e.message}`) })
+        await logFunction("Done!")
         if (mres?.data?.id) {
             await promises.writeFile(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`), mres.data.id)
         }
@@ -217,7 +230,6 @@ export default class NodeUploader extends Uploader {
         // format and write parsed data
         csvstrm.on("data", (d) => {
             // const dpath = p.relative(path, d.path)
-            console.log(`Path: ${d.path}, ID: ${d.id}`)
             const prefix = firstValue ? "" : ","
             wstrm.write(`${prefix}"${d.path}":{"id":"${d.id}"}`)
             firstValue = false;
@@ -232,14 +244,11 @@ export default class NodeUploader extends Uploader {
                     wstrm.write(`,\n"index":{"path":"${indexFile}"}`)
                 }
                 wstrm.write(`\n}`)
-                console.log("Done!")
                 res(manifestPath);
             })
         })
         /* eslint-enable quotes */
-        console.log("Writing finished")
         await new Promise(r => wstrm.close(r))
-        console.log("stream closed")
         return manifestPath
 
     }
