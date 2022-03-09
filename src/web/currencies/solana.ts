@@ -28,25 +28,22 @@ export default class SolanaConfig extends BaseWebCurrency {
 
     async getTx(txId: string): Promise<Tx> {
         const connection = await this.getProvider()
-        const stx = await connection.getTransaction(txId, {
-            commitment: "confirmed",
-        });
-        if (!stx) throw new Error(`tx ${txId} not found`);
+        const stx = await connection.getTransaction(txId, { commitment: "confirmed" });
+        if (!stx) throw new Error("Confirmed tx not found");
 
-        const confirmed = !(
-            (await connection.getTransaction(txId, { commitment: "finalized" })) ===
-            null
-        );
+        const currentSlot = await connection.getSlot("confirmed");
+
         const amount = new BigNumber(stx.meta.postBalances[1]).minus(
             new BigNumber(stx.meta.preBalances[1]),
         );
+
         const tx: Tx = {
             from: stx.transaction.message.accountKeys[0].toBase58(),
             to: stx.transaction.message.accountKeys[1].toBase58(),
             amount: amount,
             blockHeight: new BigNumber(stx.slot),
             pending: false,
-            confirmed,
+            confirmed: currentSlot - stx.slot >= 10,
         };
         return tx;
     }

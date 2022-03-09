@@ -24,7 +24,7 @@ export default class Utils {
      */
     public static checkAndThrow(res: AxiosResponse<any>, context?: string, exceptions?: number[]): void {
         if (res?.status && !(exceptions ?? []).includes(res.status) && res.status != 200) {
-            throw new Error(`HTTP Error: ${context}: ${res.status} ${res.statusText.length == 0 ? res.data : res.statusText}`);
+            throw new Error(`HTTP Error: ${context}: ${res.status} ${typeof res.data !== "string" ? res.statusText : res.data}`);
         }
         return;
     }
@@ -67,9 +67,9 @@ export default class Utils {
 
     /**
      * Calculates the price for [bytes] bytes paid for with [currency] for the loaded bundlr node.
-     * @param currency 
-     * @param bytes 
-     * @returns 
+     * @param currency
+     * @param bytes
+     * @returns
      */
     public async getPrice(currency: string, bytes: number): Promise<BigNumber> {
         const res = await this.api.get(`/price/${currency}/${bytes}`)
@@ -78,19 +78,21 @@ export default class Utils {
     }
 
     /**
-     * Polls for transaction confirmation (or at least pending status) - used for fast currencies (i.e not arweave) 
+     * Polls for transaction confirmation (or at least pending status) - used for fast currencies (i.e not arweave)
      * before posting the fund request to the server (so the server doesn't have to poll)
-     * @param txid 
-     * @returns 
+     * @param txid
+     * @returns
      */
     public async confirmationPoll(txid: string): Promise<void> {
         if (this.currency === "arweave") { return; }
-        let status = false
-        while (status == false) {
-            await sleep(1000);
-            status = await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(_ => { return false })
+        for (let i = 0; i < 15; i++) {
+            await sleep(3000);
+            if (await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(_ => { return false })) {
+                return;
+            }
         }
-        return;
+
+        throw new Error(`Tx ${txid} didn't finalize after 30 seconds`);
     }
 
     public unitConverter(baseUnits: BigNumber.Value): BigNumber {

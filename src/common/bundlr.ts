@@ -41,10 +41,11 @@ export default abstract class Bundlr {
     async getBalance(address: string): Promise<BigNumber> {
         return this.utils.getBalance(address)
     }
+
     /**
-     * Sends amount winston to the specified bundler
-     * @param amount amount to send in winston
-     * @returns Arweave transaction
+     * Sends amount atomic units to the specified bundler
+     * @param amount amount to send in atomic units
+     * @returns details about the fund transaction
      */
     async fund(amount: BigNumber.Value, multiplier?: number): Promise<FundData> {
         return this.funder.fund(amount, multiplier)
