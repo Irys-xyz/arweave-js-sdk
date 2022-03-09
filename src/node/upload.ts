@@ -49,10 +49,12 @@ export default class NodeUploader extends Uploader {
      * @param indexFile - path to the index file (i.e index.html)
      * @param batchSize - number of items to upload concurrently
      * @param interactivePreflight - whether to interactively prompt the user for confirmation of upload (CLI ONLY)
-     * @returns 
+     * @param keepDeleted - Whether to keep previously uploaded (but now deleted) files in the manifest
+     * @param logFunction - for handling logging from the uploader for UX
+    * @returns 
      */
     // eslint-disable-next-line @typescript-eslint/ban-types
-    public async uploadFolder(path: string, indexFile?: string, batchSize?: number, interactivePreflight?: boolean, logFunction?: (log: string) => Promise<unknown>,): Promise<string> {
+    public async uploadFolder(path: string, indexFile?: string, batchSize?: number, interactivePreflight?: boolean, keepDeleted = true, logFunction?: (log: string) => Promise<unknown>,): Promise<string> {
         path = p.resolve(path);
         const alreadyProcessed = new Map();
 
@@ -92,29 +94,37 @@ export default class NodeUploader extends Uploader {
             for await (const record of csvStream) {
                 record as { path: string, id: string }
                 if (record.path && record.id) {
-                    alreadyProcessed.set(record.path, true)
+                    alreadyProcessed.set(record.path, null)
                 }
             }
         } else {
             await promises.writeFile(manifestPath, csvHeader)
         }
 
+        // alreadyProcessed.clear()
+        // TODO: add logic to remove now removed files from the resultant manifest
+
         const files = []
         let total = 0;
         let i = 0
         for await (const f of this.walk(path)) {
             const relPath = p.relative(path, f)
-            if (!alreadyProcessed.get(relPath)) {
+            if (!alreadyProcessed.has(relPath)) {
                 files.push(f)
                 total += (await promises.stat(f)).size
+            } else {
                 alreadyProcessed.delete(relPath)
             }
             if (++i % batchSize == 0) {
                 logFunction(`Checked ${i} files...`)
             }
         }
+
+        if (!keepDeleted) {
+            alreadyProcessed.clear()
+        }
         // TODO: add logic to remove now deleted items, maybe even detect changes (store hashes in CSV?)
-        if (files.length == 0) {
+        if (files.length == 0 && alreadyProcessed.size === 0) {
             logFunction("No items to process")
             // return the txID of the upload
             const idpath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`)
@@ -132,6 +142,7 @@ export default class NodeUploader extends Uploader {
         if (interactivePreflight) {
             if (!(await confirmation(`Authorize upload?\nTotal amount of data: ${total} bytes over ${files.length} files - cost: ${price} ${this.currencyConfig.base[0]} (${this.utils.unitConverter(price).toFixed()} ${this.currency})\n Y / N`))) { throw new Error("Confirmation failed") }
         }
+
 
         const stringifier = csv.stringify({
             header: false,
@@ -165,7 +176,7 @@ export default class NodeUploader extends Uploader {
         await new Promise(r => wstrm.close(r))
         // generate JSON
         await logFunction("Generating JSON manifest...")
-        const jsonManifestPath = await this.generateManifestFromCsv(path, indexFile)
+        const jsonManifestPath = await this.generateManifestFromCsv(path, alreadyProcessed, indexFile)
         // upload the manifest
         await logFunction("Uploading JSON manifest...")
         const tags = [{ name: "Type", value: "manifest" }, { name: "Content-Type", value: "application/x.arweave-manifest+json" }]
@@ -218,12 +229,11 @@ export default class NodeUploader extends Uploader {
      * @param indexFile optional path to an index file
      * @returns the path to the generated manifest
      */
-    private async generateManifestFromCsv(path: string, indexFile?: string): Promise<string> {
-
+    private async generateManifestFromCsv(path: string, nowRemoved?: Map<string, true>, indexFile?: string): Promise<string> {
         const csvstrm = csv.parse({ delimiter: ",", columns: true })
         const csvPath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.csv`)
         const manifestPath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.json`)
-        const wstrm = createWriteStream(manifestPath)
+        const wstrm = createWriteStream(manifestPath, { flags: "w+" })
         createReadStream(csvPath).pipe(csvstrm) // pipe csv
         /* eslint-disable quotes */
         // "header"
@@ -232,6 +242,10 @@ export default class NodeUploader extends Uploader {
         let firstValue = true;
         // format and write parsed data
         csvstrm.on("data", (d) => {
+            if (nowRemoved.has(d.path)) {
+                nowRemoved.delete(d.path)
+                return;
+            }
             // const dpath = p.relative(path, d.path)
             const prefix = firstValue ? "" : ","
             wstrm.write(`${prefix}"${d.path}":{"id":"${d.id}"}`)

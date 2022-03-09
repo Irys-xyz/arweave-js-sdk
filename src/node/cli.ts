@@ -27,6 +27,7 @@ program
     .option("--provider-url <string>", "Override the provider URL")
     .option("--contract-address <string>", "Override the contract address")
     .option("--content-type <string>", "Override the content type for *ALL* files uploaded")
+    .option("--no-keep-deleted", "Removes previously uploaded (but now deleted) folders from the manifest")
 // Define commands
 // uses NPM view to query the package's version.
 program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
@@ -94,7 +95,7 @@ program.command("deploy").description("(DEPRECATED - use the functionally identi
 async function uploadDir(folder: string): Promise<void> {
     try {
         const bundler = await init(options, "upload");
-        const res = await bundler.uploader.uploadFolder(folder, options.indexFile ?? null, +options.batchSize, options.confirmation, async (log): Promise<void> => { console.log(log) });
+        const res = await bundler.uploader.uploadFolder(folder, options.indexFile ?? null, +options.batchSize, options.confirmation, options.keepDeleted, async (log): Promise<void> => { console.log(log) });
         if (res != "none") {
             console.log(`Uploaded to https://arweave.net/${res}`);
         }
