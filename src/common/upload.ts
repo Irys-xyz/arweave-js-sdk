@@ -89,7 +89,9 @@ export default class Uploader {
                     async (bail) => {
                         try {
                             const res = await this.processItem(item)
-                            if (i % concurrency == 0) { await logFunction(`Processed ${i} Items`) }
+                            if (i % concurrency == 0) {
+                                await logFunction(`Processed ${i} Items`)
+                            }
                             if (resultProcessor) {
                                 return await resultProcessor({ item, res, i })
                             } else {
