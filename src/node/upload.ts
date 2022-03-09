@@ -54,7 +54,7 @@ export default class NodeUploader extends Uploader {
     // eslint-disable-next-line @typescript-eslint/ban-types
     public async uploadFolder(path: string, indexFile?: string, batchSize?: number, interactivePreflight?: boolean, logFunction?: (log: string) => Promise<unknown>,): Promise<string> {
         path = p.resolve(path);
-        const alreadyProcessed = [];
+        const alreadyProcessed = new Map();
 
         if (! await checkPath(path)) {
             throw new Error(`Unable to access path: ${path}`);
@@ -92,7 +92,7 @@ export default class NodeUploader extends Uploader {
             for await (const record of csvStream) {
                 record as { path: string, id: string }
                 if (record.path && record.id) {
-                    alreadyProcessed.push(record.path)
+                    alreadyProcessed.set(record.path, true)
                 }
             }
         } else {
@@ -103,9 +103,11 @@ export default class NodeUploader extends Uploader {
         let total = 0;
         let i = 0
         for await (const f of this.walk(path)) {
-            if (!alreadyProcessed.includes(p.relative(path, f))) {
+            const relPath = p.relative(path, f)
+            if (!alreadyProcessed.get(relPath)) {
                 files.push(f)
                 total += (await promises.stat(f)).size
+                alreadyProcessed.delete(relPath)
             }
             if (++i % batchSize == 0) {
                 logFunction(`Checked ${i} files...`)
