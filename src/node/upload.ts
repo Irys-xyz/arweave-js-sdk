@@ -29,7 +29,7 @@ export default class NodeUploader extends Uploader {
             throw new Error(`Unable to access path: ${path}`);
         }
         const mimeType = mime.contentType(mime.lookup(path) || "application/octet-stream")
-        const tags = [{ name: "Content-Type", value: mimeType }]
+        const tags = [{ name: "Content-Type", value: this.contentTypeOverride ?? mimeType }]
         const data = readFileSync(path);
         return await this.upload(data, tags)
     }
