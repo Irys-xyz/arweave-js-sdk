@@ -14,7 +14,7 @@ async function main(host: string, currency: string, wallet: string, address: str
 }
 
 main(
-    (process.argv[2] ?? "http://dev1.bundlr.network"),
+    (process.argv[2] ?? "http://devnet.bundlr.network"),
     (process.argv[3] ?? "arweave"),
     (process.argv[4] ?? "aaaaa"),
     (process.argv[5] ?? "7smNXWVNbTinRPuKbrke0XR0N9N6FgTBVCh20niXEbU")
