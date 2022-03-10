@@ -12,6 +12,7 @@ export interface ApiConfig {
     logger?: Function;
 }
 
+// TODO: overhaul this
 export default class Api {
     public readonly METHOD_GET = "GET";
     public readonly METHOD_POST = "POST";

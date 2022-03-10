@@ -1,4 +1,4 @@
-import keccak256 from "keccak256";
+import keccak256 from "arbundles/src/signing/keccak256";
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
 import { InjectedEthereumSigner, Signer } from "arbundles/src/signing";

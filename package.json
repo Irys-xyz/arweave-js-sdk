@@ -5,7 +5,7 @@
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
   "license": "Apache-2.0",
-  "main": "./build/index.js",
+  "main": "./build/node/index.js",
   "browser": "./build/web/index.js",
   "types": "./build/index.d.ts",
   "files": [
@@ -41,11 +41,11 @@
     "ethers": "^5.5.1",
     "inquirer": "^8.2.0",
     "js-sha256": "^0.9.0",
-    "keccak256": "^1.0.3",
     "mime-types": "^2.1.34",
     "near-api-js": "^0.44.2",
-    "tus-js-client": "^2.3.0",
     "path-browserify": "^1.0.1",
+    "stream-chunker": "^1.2.8",
+    "tus-js-client": "^2.3.0",
     "typescript": "^4.5.4"
   },
   "devDependencies": {
@@ -57,6 +57,7 @@
     "@typescript-eslint/eslint-plugin": "^5.1.0",
     "@typescript-eslint/parser": "^5.1.0",
     "assert": "^2.0.0",
+    "buffer": "^6.0.3",
     "clean-webpack-plugin": "^4.0.0",
     "crypto-browserify": "^3.12.0",
     "eslint": "^8.0.1",
