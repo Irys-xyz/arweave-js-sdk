@@ -185,7 +185,7 @@ export default class Uploader {
                     async () => {
                         this.api.post(`/chunks/${this.currency}/${id}/${o}`, d, {
                             headers: { "Content-Type": "application/octet-stream" },
-                            maxBodyLength: Infinity, // 190_000_000 ?
+                            maxBodyLength: Infinity, // 
                             maxContentLength: Infinity
                         }).then(re => r({ o, d: re })).catch(er => e({ o, e: er }))
                     }
@@ -195,68 +195,66 @@ export default class Uploader {
 
         }
 
+        // retry the entire upload/any failing sections (will skip over valid sections)
+        return await retry(async (bail) => {
 
-        // let uploadFinished = false;
-        // while (!uploadFinished) {
-        const getres = await this.api.get(`/chunks/${this.currency}/${id}/${size}`)
-        const present = getres.data as Array<string>
+            const getres = await this.api.get(`/chunks/${this.currency}/${id}/${size}`)
+            await Utils.checkAndThrow(getres, "Getting chunk info")
+            const present = getres.data as Array<string>
 
-        const remainder = size % CHUNK_SIZE;
-        const chunks = (size - remainder) / CHUNK_SIZE;
+            const remainder = size % CHUNK_SIZE;
+            const chunks = (size - remainder) / CHUNK_SIZE;
 
-        const missing = [];
-        for (let i = 0; i < chunks + 1; i++) {
-            const s = i * CHUNK_SIZE
-            if (!present.includes(`${s}`)) {
-                missing.push(s);
+            const missing = [];
+            for (let i = 0; i < chunks + 1; i++) {
+                const s = i * CHUNK_SIZE
+                if (!present.includes(`${s}`)) {
+                    missing.push(s);
+                }
             }
-        }
-        console.log(missing);
-        const cstrm = Chunker(CHUNK_SIZE, { flush: true })
-        let offset = 0;
-        let i = 0;
-        const pArr = []
+            console.log(missing);
+            const cstrm = Chunker(CHUNK_SIZE, { flush: true })
+            let offset = 0;
+            let i = 0;
+            const processing = []
 
-        cstrm.on("data", async (data: Buffer) => {
-            console.log(`posting chunk ${i++} - ${offset}`)
+            cstrm.on("data", async (data: Buffer) => {
+                // console.log(`posting chunk ${i} - ${offset}`)
 
-            cstrm.pause(); // ensure counter sync
-            offset += data.length
-            if (i % batchSize == 0) {
-                await Promise.allSettled(pArr)
-            }
+                cstrm.pause(); // ensure counter sync
+                offset += data.length
+                cstrm.resume()
 
-            if (!missing.includes(offset) && offset != size) { return; } // hmmm
-
-            pArr.push(
-                promiseFactory(data, offset - data.length)
-            )
-
-            cstrm.resume()
-
-        })
-
-        const postRes = await new Promise(res => {
-            cstrm.on("finish", async () => {
-                console.log("finish")
-                // wait for all chunks to be uploaded
-                await Promise.allSettled(pArr)
-                // finish off the upload
-                const r2 = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
-                    headers: { "Content-Type": "application/octet-stream" },
-                    timeout: 100_000 // server side reconstruction can take a while
-                })
-                console.log(r2)
-                res(r2)
+                if (++i % batchSize == 0) {
+                    await Promise.allSettled(processing)
+                }
+                if (!missing.includes(offset) && offset != size) { return; } // skip upload if chunk is already processed
+                processing.push(promiseFactory(data, offset - data.length))
             })
-            dataStream.pipe(cstrm)
-        })
 
-        console.log(postRes)
-        return postRes
+            const postRes = await new Promise(res => {
+                cstrm.on("finish", async () => {
+                    // wait for all chunks to be uploaded
+                    await Promise.allSettled(processing)
+                    // finish off the upload
+                    const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
+                        headers: { "Content-Type": "application/octet-stream" },
+                        timeout: 100_000 // server side reconstruction can take a while
+                    })
+                    if (finishUpload.status === 402) {
+                        bail(new Error("Not enough balance for transaction"))
+                    }
+                    // this will throw if the dataItem reconstruction fails
+                    await Utils.checkAndThrow(finishUpload, "Finalising upload")
+                    res(finishUpload)
+                })
+                dataStream.pipe(cstrm)
+            })
+            return postRes // return axios response for successful upload like for non-chunked.
+        },
+            { retries: 3, minTimeout: 1000, maxTimeout: 10_000 }
+        )
 
-
-        // }
 
 
     }
