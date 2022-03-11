@@ -8,21 +8,44 @@ import * as stargate from "@cosmjs/stargate";
 import * as amino from "@cosmjs/amino";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
+import { HdPath, Slip10RawIndex } from "@cosmjs/crypto";
 
 export default class CosmosConfig extends BaseNodeCurrency {
 
     protected keyPair;
     protected providerInstance?;
     protected signerInstance: CosmosSigner;
+    public localconfig: any = {
+        "cosmos": { 
+            "derivePath": "118",
+            "fee": "2500"
+        },
+        "akash": { 
+            "derivePath": "118",
+            "fee": "3000"
+        },
+        "terra": { 
+            "derivePath": "330",
+            "fee": "15000"
+        }
+    }
 
     constructor(config: CurrencyConfig) {
         super(config);
-        this.base = ["uatom", 1e6];
+        this.base = [`u${config.ticker.toLowerCase()}`, 1e6];
         this._address = "You need to .ready() this currency!"
     }
 
     protected async getProvider(): Promise<any> {
-        const wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.wallet);
+        const path2number = new BigNumber(this.localconfig[this.name].derivePath).toNumber();
+        const path: HdPath = [
+            Slip10RawIndex.hardened(44),
+            Slip10RawIndex.hardened(path2number),
+            Slip10RawIndex.hardened(0),
+            Slip10RawIndex.normal(0),
+            Slip10RawIndex.normal(0),
+          ];
+        const wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.wallet, { "prefix": this.name, "hdPaths": [path] } ); // or another cosmos friendly chain, like akash
         if (!this.providerInstance) {
             this.providerInstance = await stargate.SigningStargateClient.connectWithSigner(
                 this.providerUrl,
@@ -35,24 +58,23 @@ export default class CosmosConfig extends BaseNodeCurrency {
     async getTx(txId: string): Promise<Tx> {
         const provider = await this.getProvider();
         const transaction = await provider.getTx(txId);
-        const latestBlockHeight = new BigNumber(await this.getCurrentHeight()).toNumber();
+        // const latestBlockHeight = new BigNumber(await this.getCurrentHeight()).toNumber();
         const rawlog = JSON.parse(transaction.rawLog);
-        const pending = (transaction.code !== 0);
+        const confirmed = (transaction.code === 0);
         const tx = {
             from: rawlog[0].events[3].attributes[1].value,
             to: rawlog[0].events[3].attributes[0].value,
-            amount: new BigNumber(rawlog[0].events[3].attributes[2].value.slice(0,-5)),
+            amount: new BigNumber(rawlog[0].events[3].attributes[2].value.slice(0,-(this.base[0].length))), // slice off end of string (uATOM = 5, uAKT = 4 )
             blockHeight: new BigNumber(transaction.height),
-            pending: pending,
-            confirmed: latestBlockHeight - transaction.height >= this.minConfirm
+            pending: false,
+            confirmed: confirmed /* && ((latestBlockHeight - transaction.height) >= this.minConfirm), */
         };
-        console.log(tx);
         return tx;
     }
-
+    
     ownerToAddress(owner: any): string {
         const encodePubkey = amino.encodeSecp256k1Pubkey(owner);
-        const address = amino.pubkeyToAddress(encodePubkey, "cosmos")
+        const address = amino.pubkeyToAddress(encodePubkey, this.name);
         return address;
     }
 
@@ -75,7 +97,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async getFee(): Promise<BigNumber> {
-        return new BigNumber(2000);
+        return new BigNumber(this.localconfig[this.name].fee);
     }
 
     async sendTx(data: any): Promise<string> {
@@ -83,20 +105,20 @@ export default class CosmosConfig extends BaseNodeCurrency {
         return send.transactionHash;
     }
 
-    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string): Promise<{ txId: string; tx: any; }> {
         const provider = await this.getProvider();
         const account = this.ownerToAddress(this.getPublicKey());
 
         const sendingAmount = {
-            denom: "uatom",
+            denom: this.base[0], // set from ticker
             amount: amount.toString(),
           };
 
         const sendingFee = {
             amount: [
                 {
-                denom: "uatom",
-                amount: "2000",
+                denom: this.base[0], // set from ticker
+                amount: this.localconfig[this.name].fee,
                 },
             ],
             gas: "100000",
@@ -113,8 +135,6 @@ export default class CosmosConfig extends BaseNodeCurrency {
         const signedTx = await provider.sign(account, [sendMsg], sendingFee, "");
         const txBytes = TxRaw.encode(signedTx).finish();
 
-
-        
         return { tx: txBytes, txId: null };
     }
 
@@ -124,7 +144,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async ready(): Promise<boolean> {
-        this.signerInstance = new CosmosSigner(this.wallet);
+        this.signerInstance = new CosmosSigner(this.wallet, this.localconfig[this.name].derivePath);
         await this.signerInstance.ready();
         this.assignAddress();
         return true;
