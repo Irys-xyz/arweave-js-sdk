@@ -20,3 +20,4 @@ src/__tests__/data
 arweave.json
 testData/
 testFolder-errors.txt
+bundlr-network-client-*.tgz
