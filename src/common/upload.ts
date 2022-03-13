@@ -5,21 +5,21 @@ import Api from "./api";
 import { Currency, Manifest } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
-import Chunker from "stream-chunker"
+// import Chunker from "stream-chunker"
 import { Readable } from "stream";
-
+import { SizeChunker } from "chunking-streams"
 // import mime from "mime-types";
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const CHUNK_SIZE = 15_000_000 // 15 megabytes
 export default class Uploader {
     protected readonly api: Api
     protected currency: string;
     protected currencyConfig: Currency;
     protected utils: Utils
     protected contentTypeOverride: string
+    protected forceUseChunking: boolean
 
     constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency) {
         this.api = api;
@@ -53,13 +53,18 @@ export default class Uploader {
      * @param dataItem
      */
     public async dataItemUploader(dataItem: DataItem): Promise<AxiosResponse<any>> {
-
-        const { protocol, host, port, timeout } = this.api.getConfig();
-        const res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
-            headers: { "Content-Type": "application/octet-stream" },
-            timeout,
-            maxBodyLength: Infinity
-        })
+        let res: AxiosResponse<any>
+        const length = dataItem.getRaw().length
+        if (this.forceUseChunking || length > 25_000_000) {
+            res = await this.chunkedDataItemUploader(Readable.from(dataItem.getRaw()), dataItem.id, length)
+        } else {
+            const { protocol, host, port, timeout } = this.api.getConfig();
+            res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
+                headers: { "Content-Type": "application/octet-stream" },
+                timeout,
+                maxBodyLength: Infinity
+            })
+        }
         switch (res.status) {
             case 201:
                 res.data = { id: dataItem.id }
@@ -172,7 +177,7 @@ export default class Uploader {
      */
     public async chunkedDataItemUploader(dataStream: Readable, id: string, size: number, chunkSize = 25_000_000, batchSize = 5,): Promise<any> {
 
-        if (chunkSize < 100_000 || chunkSize > 190_000_000) {
+        if (chunkSize < 1_000_000 || chunkSize > 190_000_000) {
             throw new Error("Invalid chunk size - must be betweem 100,000 and 190,000,000 bytes")
         }
         if (batchSize < 1) {
@@ -186,7 +191,7 @@ export default class Uploader {
                         this.api.post(`/chunks/${this.currency}/${id}/${o}`, d, {
                             headers: { "Content-Type": "application/octet-stream" },
                             maxBodyLength: Infinity, // 
-                            maxContentLength: Infinity
+                            maxContentLength: Infinity,
                         }).then(re => r({ o, d: re })).catch(er => e({ o, e: er }))
                     }
                 ),
@@ -200,63 +205,123 @@ export default class Uploader {
 
             const getres = await this.api.get(`/chunks/${this.currency}/${id}/${size}`)
             await Utils.checkAndThrow(getres, "Getting chunk info")
-            const present = getres.data as Array<string>
+            const present = getres.data.map(v => +v) as Array<number>
 
-            const remainder = size % CHUNK_SIZE;
-            const chunks = (size - remainder) / CHUNK_SIZE;
+            const remainder = size % chunkSize;
+            const chunks = (size - remainder) / chunkSize;
 
             const missing = [];
             for (let i = 0; i < chunks + 1; i++) {
-                const s = i * CHUNK_SIZE
-                if (!present.includes(`${s}`)) {
+                const s = i * chunkSize
+                if (!present.includes(s)) {
                     missing.push(s);
                 }
             }
             console.log(missing);
-            const cstrm = Chunker(CHUNK_SIZE, { flush: true })
+
             let offset = 0;
-            let i = 0;
             const processing = []
 
-            cstrm.on("data", async (data: Buffer) => {
-                // console.log(`posting chunk ${i} - ${offset}`)
+            const ckr = SizeChunker({
+                chunkSize: chunkSize,
+                flushTail: true
+            })
+            dataStream.pipe(ckr)
 
-                cstrm.pause(); // ensure counter sync
+            for await (const chunk of ckr) {
+                const data = chunk.data
                 offset += data.length
-                cstrm.resume()
-
-                if (++i % batchSize == 0) {
+                if (chunk.id % batchSize == 0) {
                     await Promise.allSettled(processing)
                 }
-                if (!missing.includes(offset) && offset != size) { return; } // skip upload if chunk is already processed
-                processing.push(promiseFactory(data, offset - data.length))
-            })
+                console.log(`posting chunk ${chunk.id} - ${offset}`)
+                if (missing.includes(offset) || offset == size) {
+                    processing.push(promiseFactory(data, offset - data.length))
+                }
+            }
 
-            const postRes = await new Promise(res => {
-                cstrm.on("finish", async () => {
-                    // wait for all chunks to be uploaded
-                    await Promise.allSettled(processing)
-                    // finish off the upload
-                    const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
-                        headers: { "Content-Type": "application/octet-stream" },
-                        timeout: 100_000 // server side reconstruction can take a while
-                    })
-                    if (finishUpload.status === 402) {
-                        bail(new Error("Not enough balance for transaction"))
-                    }
-                    // this will throw if the dataItem reconstruction fails
-                    await Utils.checkAndThrow(finishUpload, "Finalising upload")
-                    res(finishUpload)
-                })
-                dataStream.pipe(cstrm)
+
+
+            await Promise.allSettled(processing);
+            const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
+                headers: { "Content-Type": "application/octet-stream" },
+                timeout: 100_000 // server side reconstruction can take a while
             })
-            return postRes // return axios response for successful upload like for non-chunked.
+            if (finishUpload.status === 402) {
+                bail(new Error("Not enough funds to send data"))
+            }
+            // this will throw if the dataItem reconstruction fails
+            await Utils.checkAndThrow(finishUpload, "Finalising upload")
+            return finishUpload
+
+            // const postRes = await new Promise(res => {
+            //     cstrm.on("finish", async () => {
+            //         // wait for all chunks to be uploaded
+            //         await Promise.allSettled(processing)
+            //         // finish off the upload
+            //         const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
+            //             headers: { "Content-Type": "application/octet-stream" },
+            //             timeout: 100_000 // server side reconstruction can take a while
+            //         })
+            //         if (finishUpload.status === 402) {
+            //             bail(new Error("Not enough funds to send data"))
+            //         }
+            //         // this will throw if the dataItem reconstruction fails
+            //         await Utils.checkAndThrow(finishUpload, "Finalising upload")
+            //         res(finishUpload)
+            //     })
+            //     dataStream.pipe(cstrm)
+            // })
+            // return postRes // return axios response for successful upload like for non-chunked.
+
+            // cstrm.on("data", async (data: Buffer) => {
+            //     cstrm.pause(); // ensure counter sync (and prevent congestion timeouts)
+            //     offset += data.length
+            //     if (++i % batchSize == 0) {
+            //         await Promise.allSettled(processing)
+            //     }
+            //     console.log(`posting chunk ${++i} - ${offset}`)
+            //     if (!missing.includes(offset) && offset != size) { return; } // skip upload if chunk is already processed
+            //     processing.push(promiseFactory(data, offset - data.length))
+            //     cstrm.resume()
+            // })
+
+            // dataStream.pipe(cstrm)
+            // for await (const data of cstrm) {
+            //     offset += data.length
+            //     if (++i % batchSize == 0) {
+            //         await Promise.allSettled(processing)
+            //     }
+            //     if (!missing.includes(offset) && offset != size) { continue; } // skip upload if chunk is already processed
+            //     processing.push(promiseFactory(data, offset - data.length))
+
+            // }
+            // wait for all chunks to be uploaded
+            // await Promise.allSettled(processing)
+            // // finish off the upload
+            // const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
+            //     headers: { "Content-Type": "application/octet-stream" },
+            //     timeout: 100_000 // server side reconstruction can take a while
+            // })
+            // if (finishUpload.status === 402) {
+            //     bail(new Error("Not enough funds to send data"))
+            // }
+            // // this will throw if the dataItem reconstruction fails
+            // await Utils.checkAndThrow(finishUpload, "Finalising upload")
+            // return finishUpload
+
         },
             { retries: 3, minTimeout: 1000, maxTimeout: 10_000 }
         )
 
 
 
+    }
+
+    set useChunking(state: boolean) {
+        if (typeof state === "boolean") {
+            this.forceUseChunking = state
+        }
     }
 }
 

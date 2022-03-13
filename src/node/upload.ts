@@ -30,6 +30,11 @@ export default class NodeUploader extends Uploader {
         }
         const mimeType = mime.contentType(mime.lookup(path) || "application/octet-stream")
         const tags = [{ name: "Content-Type", value: this.contentTypeOverride ?? mimeType }]
+        // TODO: re-enable once arbundles' file API is ready
+        // if (this.forceUseChunking || (await promises.stat(path)).size >= 25_000_000) {
+        //     // make a tmp stream data item
+        //     return await 
+        // }
         const data = readFileSync(path);
         return await this.upload(data, tags)
     }
