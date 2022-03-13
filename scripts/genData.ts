@@ -28,9 +28,6 @@ export async function genData(path: string, number: number, minSize: number, max
             }
             strm.write(Crypto.randomBytes(toWrite))
         }
-        // setImmediate(async (s) => {
-        //     await new Promise(res => s.close(res))
-        // }, strm)
         await new Promise(res => strm.close(res))
         if (i % 10 == 0) {
             console.log(i);

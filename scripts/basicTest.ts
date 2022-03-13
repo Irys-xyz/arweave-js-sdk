@@ -25,7 +25,22 @@ async function main() {
         const keys = JSON.parse(readFileSync("wallet.json").toString());
         let bundlr = new Bundlr("http://dev1.bundlr.network", "arweave", keys.arweave, { timeout: 100_000 })
         console.log(bundlr.address)
-        console.log((await bundlr.getLoadedBalance()).toString())
+
+        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
+        const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
+        console.log(`bundlr address: ${bAddress}`);
+
+        const transaction = await bundlr.createTransaction("aaa");
+        await transaction.sign();
+        console.log(transaction.id)
+        console.log(await transaction.isValid());
+        const res = await transaction.upload();
+        console.log(`Upload: ${JSON.stringify(res.data)}`);
+
+        let rec = await bundlr.uploadFile("a.txt");
+        console.log(JSON.stringify(rec.data));
+        console.log(JSON.stringify(rec.status));
+
 
         const ctx = bundlr.createTransaction(Crypto.randomBytes(15_000_000).toString("base64"))
         await ctx.sign()
@@ -33,21 +48,22 @@ async function main() {
         const cres = await ctx.upload()
         console.log(cres)
         bundlr.uploader.useChunking = false
-        await promises.rm("testFolder-manifest.json")
-        await promises.rm("testFolder-manifest.csv")
-        await promises.rm("testFolder-id.txt")
+        await promises.rm("testFolder-manifest.json", { force: true })
+        await promises.rm("testFolder-manifest.csv", { force: true })
+        await promises.rm("testFolder-id.txt", { force: true })
+
         const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 10, false, true, async (log): Promise<void> => { console.log(log) })
         console.log(resu);
 
-        // console.log(`balance: ${await bundlr.getLoadedBalance()}`);
+        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
-        // let tx = await bundlr.fund(100, 1);
-        // console.log(tx);
-        // console.log(`balance: ${await bundlr.getLoadedBalance()}`);
+        let tx = await bundlr.fund(1, 1);
+        console.log(tx);
+        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
-        // let resw = await bundlr.withdrawBalance(100);
-        // console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
-        // console.log(`balance: ${await bundlr.getLoadedBalance()}`);
+        let resw = await bundlr.withdrawBalance(1);
+        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
 
     } catch (e) {
