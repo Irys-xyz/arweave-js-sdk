@@ -43,22 +43,22 @@ export default class Uploader {
             { tags }
         );
         await dataItem.sign(signer);
-        return await this.dataItemUploader(dataItem);
+        return await this.transactionUploader(dataItem);
     }
 
 
     /**
-     * Uploads a given dataItem to the bundler
-     * @param dataItem
+     * Uploads a given transaction to the bundler
+     * @param transaction
      */
-    public async dataItemUploader(dataItem: DataItem): Promise<AxiosResponse<any>> {
+    public async transactionUploader(transaction: DataItem): Promise<AxiosResponse<any>> {
         let res: AxiosResponse<any>
-        const length = dataItem.getRaw().byteLength
+        const length = transaction.getRaw().byteLength
         if (this.forceUseChunking || length > 190_000_000) {
-            res = await this.chunkedDataItemUploader(Readable.from(dataItem.getRaw()), dataItem.id, length)
+            res = await this.chunkedTransactionUploader(Readable.from(transaction.getRaw()), transaction.id, length)
         } else {
             const { protocol, host, port, timeout } = this.api.getConfig();
-            res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, dataItem.getRaw(), {
+            res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, transaction.getRaw(), {
                 headers: { "Content-Type": "application/octet-stream" },
                 timeout,
                 maxBodyLength: Infinity
@@ -66,7 +66,7 @@ export default class Uploader {
         }
         switch (res.status) {
             case 201:
-                res.data = { id: dataItem.id }
+                res.data = { id: transaction.id }
                 return res;
             case 402:
                 throw new Error("Not enough funds to send data")
@@ -128,7 +128,7 @@ export default class Uploader {
             item = createData(item, signer)
             await item.sign(signer)
         }
-        return await this.dataItemUploader(item);
+        return await this.transactionUploader(item);
     }
 
     /**
@@ -168,7 +168,7 @@ export default class Uploader {
      * @param chunkSize - optional size to chunk the file - min 100_000, max 190_000_000 (in bytes)
      * @param batchSize - number of chunks to concurrently upload
      */
-    public async chunkedDataItemUploader(dataStream: Readable, id: string, size: number, chunkSize = 25_000_000, batchSize = 5,): Promise<any> {
+    public async chunkedTransactionUploader(dataStream: Readable, id: string, size: number, chunkSize = 25_000_000, batchSize = 5,): Promise<any> {
 
         if (chunkSize < 1_000_000 || chunkSize > 190_000_000) {
             throw new Error("Invalid chunk size - must be betweem 100,000 and 190,000,000 bytes")

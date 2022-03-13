@@ -24,6 +24,6 @@ export default class BundlrTransaction extends DataItem {
     }
 
     async upload(): Promise<any> {
-        return this.bundlr.uploader.dataItemUploader(this);
+        return this.bundlr.uploader.transactionUploader(this);
     }
 }

@@ -223,7 +223,7 @@ export default class NodeUploader extends Uploader {
         // if(returnVal){
         //     return {path: returnVal, }
         // }
-        return await this.dataItemUploader(item);
+        return await this.transactionUploader(item);
     }
 
 
