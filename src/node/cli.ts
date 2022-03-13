@@ -28,6 +28,7 @@ program
     .option("--contract-address <string>", "Override the contract address")
     .option("--content-type <string>", "Override the content type for *ALL* files uploaded")
     .option("--no-keep-deleted", "Removes previously uploaded (but now deleted) folders from the manifest")
+    .option("--force-chunking", "Forces usage of chunking for all files regardless of size")
 // Define commands
 // uses NPM view to query the package's version.
 program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
@@ -195,9 +196,8 @@ async function init(opts, operation): Promise<Bundlr> {
         console.log(`Loaded address: ${bundler.address}`);
     }
 
-    if (opts.contentType) {
-        bundler.uploader.contentType = opts.contentType
-    }
+    if (opts.contentType) { bundler.uploader.contentType = opts.contentType }
+    if (opts.forceChunking) { bundler.uploader.useChunking = true }
 
     return bundler;
 }
