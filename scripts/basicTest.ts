@@ -1,6 +1,6 @@
 // eslint-disable-file @typescript-eslint/no-unused-vars
 import Bundlr from "../src";
-import { readFileSync, writeFileSync } from 'fs';
+import { promises, readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next"
 import Crypto from "crypto"
 
@@ -33,7 +33,9 @@ async function main() {
         const cres = await ctx.upload()
         console.log(cres)
         bundlr.uploader.useChunking = false
-
+        await promises.rm("testFolder-manifest.json")
+        await promises.rm("testFolder-manifest.csv")
+        await promises.rm("testFolder-id.txt")
         const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 10, false, true, async (log): Promise<void> => { console.log(log) })
         console.log(resu);
 
