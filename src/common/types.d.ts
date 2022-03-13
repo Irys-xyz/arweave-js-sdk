@@ -15,7 +15,6 @@ export interface Tx {
 }
 export interface CurrencyConfig { name: string, ticker: string, minConfirm?: number, wallet: any, providerUrl: string, isSlow?: boolean }
 
-
 export interface Currency {
     isSlow: boolean
 
@@ -53,3 +52,19 @@ export interface Currency {
 }
 
 export interface FundData { reward: string, target: string, quantity: string, id: string }
+
+export interface Manifest {
+    manifest: string,
+    version: string,
+    paths: Record<string, Record<string, Record<"id", string>>>,
+    index?: Record<"path", string>
+}
+
+// // TS doesn't like string template literals it seems
+// export enum manifestType {
+//     paths = "arweave/paths"
+// }
+
+// export enum manifestVersion {
+//     "0.1.0" = "0.1.0"
+// }

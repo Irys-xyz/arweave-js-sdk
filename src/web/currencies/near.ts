@@ -29,11 +29,11 @@ export default class NearConfig extends BaseWebCurrency {
         }
         const keystore = new keyStores.BrowserLocalStorageKeyStore()
         const account = this.wallet.account();
-        console.log(this.address)
-        console.log(await account.getAccessKeys())
+        // console.log(this.address)
+        // console.log(await account.getAccessKeys())
         // this._address = this.wallet.getAccountId()
         // this.keyPair = KeyPair.fromString(this.wallet)
-        console.log(await account.getAccessKeys())
+        // console.log(await account.getAccessKeys())
         this.keyPair = await keystore.getKey(this.wallet._networkId, account.accountId)
         if (!this.keyPair) {
             this.keyPair = KeyPair.fromRandom("ed25519");
@@ -41,15 +41,15 @@ export default class NearConfig extends BaseWebCurrency {
             // this.wallet._networkId
             await keystore.setKey(this.wallet._networkId, account.accountId, this.keyPair)
             // can't do this :c
-            console.log(publicKey)
+            // console.log(publicKey)
             await account.addKey(publicKey);
         }
-        console.log(this.keyPair.getPublicKey().toString());
+        // console.log(this.keyPair.getPublicKey().toString());
         // this._address = this.ownerToAddress(Buffer.from(this.keyPair.getPublicKey().data));
         this._address = await this.wallet.getAccountId();
         // this.providerInstance = new providers.JsonRpcProvider({ url: this.providerUrl });
         this.providerInstance = this.wallet._near.connection.provider
-        console.log(this.keyPair);
+        // console.log(this.keyPair);
     }
 
 

@@ -7,6 +7,7 @@ import inquirer from "inquirer";
 import { execSync } from "child_process"
 import BigNumber from "bignumber.js";
 import { checkPath } from "./upload";
+import NodeBundlr from "./bundlr";
 
 const program = new Command();
 
@@ -24,6 +25,10 @@ program
     .option("--debug, -d", "Increases verbosity of errors and logs additional debug information. Used for troubleshooting.", false)
     .option("--index-file <string>", "Name of the file to use as an index for upload-dir manifests (relative to the path provided to upload-dir).")
     .option("--provider-url <string>", "Override the provider URL")
+    .option("--contract-address <string>", "Override the contract address")
+    .option("--content-type <string>", "Override the content type for *ALL* files uploaded")
+    .option("--remove-deleted", "Removes previously uploaded (but now deleted) items from the manifest")
+    .option("--force-chunking", "Forces usage of chunking for all files regardless of size")
 // Define commands
 // uses NPM view to query the package's version.
 program.version(execSync("npm view @bundlr-network/client version").toString().replace("\n", ""), "-v, --version", "Gets the current package version of the bundlr client");
@@ -91,7 +96,7 @@ program.command("deploy").description("(DEPRECATED - use the functionally identi
 async function uploadDir(folder: string): Promise<void> {
     try {
         const bundler = await init(options, "upload");
-        const res = await bundler.uploader.uploadFolder(folder, options.indexFile ?? null, +options.batchSize, options.confirmation, console.log);
+        const res = await bundler.uploader.uploadFolder(folder, options.indexFile ?? null, +options.batchSize, options.confirmation, !options.removeDeleted, async (log): Promise<void> => { console.log(log) });
         if (res != "none") {
             console.log(`Uploaded to https://arweave.net/${res}`);
         }
@@ -155,7 +160,7 @@ async function confirmation(message: string): Promise<boolean> {
  */
 async function init(opts, operation): Promise<Bundlr> {
     let wallet;
-    let bundler;
+    let bundler: NodeBundlr
     // every option needs a host and currency so ensure they're present
     if (!opts.host) {
         throw new Error("Host parameter (-h) is required!");
@@ -180,7 +185,9 @@ async function init(opts, operation): Promise<Bundlr> {
     }
     try {
         // create and ready the bundlr instance
-        bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl });
+        bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl, contractAddress: opts.contractAddress });
+        // await bundler.ready()
+
     } catch (err) {
         throw new Error(`Error initialising Bundlr client - ${options.debug ? err.stack : err.message}`);
     }
@@ -188,6 +195,10 @@ async function init(opts, operation): Promise<Bundlr> {
     if (bundler.address) {
         console.log(`Loaded address: ${bundler.address}`);
     }
+
+    if (opts.contentType) { bundler.uploader.contentType = opts.contentType }
+    if (opts.forceChunking) { bundler.uploader.useChunking = true }
+
     return bundler;
 }
 

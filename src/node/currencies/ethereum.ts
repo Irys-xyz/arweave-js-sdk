@@ -1,4 +1,4 @@
-import keccak256 from "keccak256";
+import keccak256 from "arbundles/src/signing/keccak256";
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet } from "ethers";
 import BigNumber from "bignumber.js";
