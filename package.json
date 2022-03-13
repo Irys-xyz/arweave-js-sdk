@@ -5,7 +5,7 @@
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
   "license": "Apache-2.0",
-  "main": "./build/node/index.js",
+  "main": "./build/index.js",
   "browser": "./build/web/index.js",
   "types": "./build/index.d.ts",
   "files": [
