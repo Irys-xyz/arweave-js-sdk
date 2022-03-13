@@ -158,13 +158,7 @@ export default class Uploader {
 
     }
 
-    set contentType(type: string) {
-        // const fullType = mime.contentType(type)
-        // if(!fullType){
-        //     throw new Error("Invali")
-        // }
-        this.contentTypeOverride = type;
-    }
+
 
     /**
      * Chunking data uploader
@@ -256,6 +250,14 @@ export default class Uploader {
         if (typeof state === "boolean") {
             this.forceUseChunking = state
         }
+    }
+
+    set contentType(type: string) {
+        // const fullType = mime.contentType(type)
+        // if(!fullType){
+        //     throw new Error("Invali")
+        // }
+        this.contentTypeOverride = type;
     }
 }
 
