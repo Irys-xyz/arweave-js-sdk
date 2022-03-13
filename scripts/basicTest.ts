@@ -23,22 +23,19 @@ async function main() {
 
 
         const keys = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("http://dev1.bundlr.network", "ethereum", keys.ethereum, { providerUrl: "https://rinkeby-light.eth.linkpool.io/", timeout: 100_000 })
+        let bundlr = new Bundlr("http://dev1.bundlr.network", "arweave", keys.arweave, { timeout: 100_000 })
         console.log(bundlr.address)
         console.log((await bundlr.getLoadedBalance()).toString())
 
-        const tx = bundlr.createTransaction(Crypto.randomBytes(150_000_000).toString("base64"))
-        await tx.sign()
+        const ctx = bundlr.createTransaction(Crypto.randomBytes(15_000_000).toString("base64"))
+        await ctx.sign()
         bundlr.uploader.useChunking = true
-        const res = await tx.upload()
-        console.log(res)
-
-        const res2 = await tx.upload();
-        console.log(res2)
+        const cres = await ctx.upload()
+        console.log(cres)
         bundlr.uploader.useChunking = false
 
-        // const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, true, async (log): Promise<void> => { console.log(log) })
-        // console.log(resu);
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 10, false, true, async (log): Promise<void> => { console.log(log) })
+        console.log(resu);
 
         // console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
