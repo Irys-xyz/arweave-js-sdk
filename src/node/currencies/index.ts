@@ -43,13 +43,7 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", wallet })
         }
         case "cosmos": {
-            return new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: providerUrl ?? "http://143.244.151.9:26657", wallet })
-        }
-        case "akash": {
-            return new CosmosConfig({ name: "akash", ticker: "AKT", providerUrl: providerUrl ?? "http://rpc.edgenet-1.ewr1.aksh.pw:26657", wallet })
-        }
-        case "terra": {
-            return new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: providerUrl ?? "https://bombay.stakesystems.io:2053/", wallet })
+            return new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: providerUrl ?? "https://rpc.cosmos.network", wallet })
         }
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);

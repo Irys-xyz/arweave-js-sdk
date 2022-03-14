@@ -20,14 +20,6 @@ export default class CosmosConfig extends BaseNodeCurrency {
             "derivePath": "118",
             "fee": "2500"
         },
-        "akash": { 
-            "derivePath": "118",
-            "fee": "3000"
-        },
-        "terra": { 
-            "derivePath": "330",
-            "fee": "15000"
-        }
     }
 
     constructor(config: CurrencyConfig) {
@@ -45,7 +37,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
             Slip10RawIndex.normal(0),
             Slip10RawIndex.normal(0),
           ];
-        const wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.wallet, { "prefix": this.name, "hdPaths": [path] } ); // or another cosmos friendly chain, like akash
+        const wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.wallet, { "prefix": this.name, "hdPaths": [path] } );
         if (!this.providerInstance) {
             this.providerInstance = await stargate.SigningStargateClient.connectWithSigner(
                 this.providerUrl,
@@ -58,16 +50,15 @@ export default class CosmosConfig extends BaseNodeCurrency {
     async getTx(txId: string): Promise<Tx> {
         const provider = await this.getProvider();
         const transaction = await provider.getTx(txId);
-        // const latestBlockHeight = new BigNumber(await this.getCurrentHeight()).toNumber();
         const rawlog = JSON.parse(transaction.rawLog);
         const confirmed = (transaction.code === 0);
         const tx = {
             from: rawlog[0].events[3].attributes[1].value,
             to: rawlog[0].events[3].attributes[0].value,
-            amount: new BigNumber(rawlog[0].events[3].attributes[2].value.slice(0,-(this.base[0].length))), // slice off end of string (uATOM = 5, uAKT = 4 )
+            amount: new BigNumber(rawlog[0].events[3].attributes[2].value.slice(0,-(this.base[0].length))),
             blockHeight: new BigNumber(transaction.height),
             pending: false,
-            confirmed: confirmed /* && ((latestBlockHeight - transaction.height) >= this.minConfirm), */
+            confirmed: confirmed
         };
         return tx;
     }
@@ -110,14 +101,14 @@ export default class CosmosConfig extends BaseNodeCurrency {
         const account = this.ownerToAddress(this.getPublicKey());
 
         const sendingAmount = {
-            denom: this.base[0], // set from ticker
+            denom: this.base[0],
             amount: amount.toString(),
           };
 
         const sendingFee = {
             amount: [
                 {
-                denom: this.base[0], // set from ticker
+                denom: this.base[0],
                 amount: this.localconfig[this.name].fee,
                 },
             ],
