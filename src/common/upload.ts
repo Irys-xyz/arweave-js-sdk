@@ -6,7 +6,7 @@ import { Currency, Manifest } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
 import { Readable } from "stream";
-import { SizeChunker } from "chunking-streams"
+import { SizeChunker } from "chunking-streams/lib/size-chunker"
 // import mime from "mime-types";
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
