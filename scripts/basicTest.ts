@@ -18,9 +18,9 @@ async function a() {
         }
         const keys = JSON.parse(readFileSync("wallet.json").toString());
         console.log(keys);
-        let bundlr = new Bundlr("http://localhost:10001", "cosmos", "jungle coconut sister trial height jeans office manual such ceiling movie glory");
-        await bundlr.ready();
+        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", keys.arweave)
         console.log(bundlr.address);
+
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
@@ -28,23 +28,22 @@ async function a() {
         const transaction = await bundlr.createTransaction("aaa");
         await transaction.sign();
         console.log(transaction.id)
-
         console.log(await transaction.isValid());
         const res = await transaction.upload();
         console.log(`Upload: ${JSON.stringify(res.data)}`);
 
-        // let rec = await bundlr.uploadFile("a.txt");
-        // console.log(JSON.stringify(rec.data));
-        // console.log(JSON.stringify(rec.status));
+        let rec = await bundlr.uploadFile("a.txt");
+        console.log(JSON.stringify(rec.data));
+        console.log(JSON.stringify(rec.status));
 
-        // const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
-        // console.log(resu);
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
+        console.log(resu);
 
-        // let tx = await bundlr.fund(1337, 1);
-        // console.log(tx);
+        let tx = await bundlr.fund(1337, 1);
+        console.log(tx);
 
-        // let resw = await bundlr.withdrawBalance(100);
-        // console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        let resw = await bundlr.withdrawBalance(100);
+        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
 
 
     } catch (e) {
