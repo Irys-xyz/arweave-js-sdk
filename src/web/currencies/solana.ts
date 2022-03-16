@@ -1,4 +1,4 @@
-import { InjectedSolanaSigner, Signer } from "arbundles/src/signing";
+import { InjectedSolanaSigner, PhantomSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import BaseWebCurrency from "../currency";
@@ -61,12 +61,19 @@ export default class SolanaConfig extends BaseWebCurrency {
 
     getSigner(): Signer {
         if (!this.signer) {
-            this.signer = new InjectedSolanaSigner(this.wallet)
+            if (this.wallet.name === "Phantom") {
+                this.signer = new PhantomSigner(this.wallet)
+            } else {
+                this.signer = new InjectedSolanaSigner(this.wallet)
+            }
         }
         return this.signer;
     }
 
     verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
+        if (this.wallet.name === "Phantom") {
+            return PhantomSigner.verify(pub, data, signature)
+        }
         return InjectedSolanaSigner.verify(pub, data, signature);
     }
 
