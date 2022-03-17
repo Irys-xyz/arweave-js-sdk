@@ -3,6 +3,7 @@ import { CosmosSigner } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types"
 import BaseNodeCurrency from "../currency"
+import { getRedstonePrice } from "../currency";
 
 import * as stargate from "@cosmjs/stargate";
 import * as amino from "@cosmjs/amino";
@@ -18,13 +19,16 @@ export default class CosmosConfig extends BaseNodeCurrency {
     public localconfig: any = {
         "cosmos": { 
             "derivePath": "118",
-            "fee": "2500"
+            "fee": "2500",
+            "denomination": "uatom",
+            "decimals": 1e6
         },
     }
+    sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
     constructor(config: CurrencyConfig) {
         super(config);
-        this.base = [`u${config.ticker.toLowerCase()}`, 1e6];
+        this.base = [this.localconfig[this.name].denomination, this.localconfig[this.name].decimals];
         this._address = "You need to .ready() this currency!"
     }
 
@@ -52,14 +56,26 @@ export default class CosmosConfig extends BaseNodeCurrency {
         const transaction = await provider.getTx(txId);
         const rawlog = JSON.parse(transaction.rawLog);
         const confirmed = (transaction.code === 0);
-        const tx = {
-            from: rawlog[0].events[3].attributes[1].value,
-            to: rawlog[0].events[3].attributes[0].value,
-            amount: new BigNumber(rawlog[0].events[3].attributes[2].value.slice(0,-(this.base[0].length))),
-            blockHeight: new BigNumber(transaction.height),
-            pending: false,
-            confirmed: confirmed
-        };
+        let tx;
+         if(this.name === "akash"){
+            tx = {
+                from: rawlog[0].events[1].attributes[1].value,
+                to: rawlog[0].events[1].attributes[0].value,
+                amount: new BigNumber(rawlog[0].events[1].attributes[2].value.slice(0,-(this.base[0].length))),
+                blockHeight: new BigNumber(transaction.height),
+                pending: false,
+                confirmed: confirmed
+            };
+        }else{
+            tx = {
+                from: rawlog[0].events[3].attributes[1].value,
+                to: rawlog[0].events[3].attributes[0].value,
+                amount: new BigNumber(rawlog[0].events[3].attributes[2].value.slice(0,-(this.base[0].length))),
+                blockHeight: new BigNumber(transaction.height),
+                pending: false,
+                confirmed: confirmed
+            };
+        }
         return tx;
     }
     
@@ -92,7 +108,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async sendTx(data: any): Promise<string> {
-        const send = await (await this.getProvider()).broadcastTx(data);
+        const send = await (await this.getProvider()).broadcastTx(data, 60000, 3000);
         return send.transactionHash;
     }
 
@@ -139,6 +155,10 @@ export default class CosmosConfig extends BaseNodeCurrency {
         await this.signerInstance.ready();
         this.assignAddress();
         return true;
+    }
+
+    public async getGas(): Promise<[BigNumber, number]> {
+        return [new BigNumber(await getRedstonePrice("ATOM")), 1e6]
     }
 
 }

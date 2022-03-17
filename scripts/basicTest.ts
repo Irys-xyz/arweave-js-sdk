@@ -1,8 +1,12 @@
+// eslint-disable-file @typescript-eslint/no-unused-vars
 import Bundlr from "../src";
-import { readFileSync, writeFileSync } from 'fs';
+import { promises, readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next"
+import Crypto from "crypto"
+
+
 const profiling = false;
-async function a() {
+async function main() {
     const title = new Date().toUTCString()
     try {
         if (profiling) {
@@ -16,10 +20,12 @@ async function a() {
             }, 2000)
             console.log("profiling configured");
         }
+
+
         const keys = JSON.parse(readFileSync("wallet.json").toString());
-        console.log(keys);
-        let bundlr = new Bundlr("https://dev1.bundlr.network", "arweave", keys.arweave)
-        console.log(bundlr.address);
+        let bundlr = new Bundlr("http://devnet.bundlr.network", "arweave", keys.arweave, { timeout: 100_000 })
+        await bundlr.ready();
+        console.log(bundlr.address)
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
@@ -36,14 +42,29 @@ async function a() {
         console.log(JSON.stringify(rec.data));
         console.log(JSON.stringify(rec.status));
 
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 50, false, console.log)
+
+        const ctx = bundlr.createTransaction(Crypto.randomBytes(15_000_000).toString("base64"))
+        await ctx.sign()
+        bundlr.uploader.useChunking = true
+        const cres = await ctx.upload()
+        console.log(cres)
+        bundlr.uploader.useChunking = false
+        await promises.rm("testFolder-manifest.json", { force: true })
+        await promises.rm("testFolder-manifest.csv", { force: true })
+        await promises.rm("testFolder-id.txt", { force: true })
+
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 10, false, true, async (log): Promise<void> => { console.log(log) })
         console.log(resu);
 
-        let tx = await bundlr.fund(1337, 1);
-        console.log(tx);
+        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
-        let resw = await bundlr.withdrawBalance(100);
+        let tx = await bundlr.fund(1, 1);
+        console.log(tx);
+        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
+
+        let resw = await bundlr.withdrawBalance(1);
         console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
 
     } catch (e) {
@@ -65,4 +86,4 @@ async function a() {
         })
     }
 }
-a();
+main();

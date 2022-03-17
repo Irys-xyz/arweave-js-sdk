@@ -45,6 +45,18 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         case "cosmos": {
             return new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: providerUrl ?? "https://rpc.cosmos.network", wallet })
         }
+        case "akash": {
+            return new CosmosConfig({ name: "akash", ticker: "AKT", providerUrl: providerUrl ?? "https://rpc.akash.forbole.com", wallet })
+        }
+        case "terra": {
+            return new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: providerUrl ?? "https://terra-rpc.easy2stake.com", wallet })
+        }
+        case "kyve": {
+            const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: providerUrl ?? "https://rpc.node.kyve.network", wallet })
+            k.price = async (): Promise<number> => { return 1 } // TODO: replace for mainnet
+            k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
+            return k; // TODO: ensure units above are right
+        }
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
     }
