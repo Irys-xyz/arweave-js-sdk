@@ -30,12 +30,12 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet })
         case "chainlink":
             return new ERC20Config({ name: "chainlink", ticker: "LINK", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", contractAddress: contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet })
-        case "kyve": {
-            const k = new ERC20Config({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: providerUrl ?? "https://moonbeam-alpha.api.onfinality.io/public", contractAddress: contractAddress ?? "0x3cf97096ccdb7c3a1d741973e351cb97a2ede2c1", isSlow: true, wallet })
-            k.price = async (): Promise<number> => { return 100 } // TODO: replace for mainnet
-            k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
-            return k; // TODO: ensure units above are right
-        }
+        // case "kyve": {
+        //     const k = new ERC20Config({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: providerUrl ?? "https://moonbeam-alpha.api.onfinality.io/public", contractAddress: contractAddress ?? "0x3cf97096ccdb7c3a1d741973e351cb97a2ede2c1", isSlow: true, wallet })
+        //     k.price = async (): Promise<number> => { return 100 } // TODO: replace for mainnet
+        //     k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
+        //     return k; // TODO: ensure units above are right
+        // }
         case "near": {
             return new NearConfig({ name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet })
         }
@@ -50,6 +50,12 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         }
         case "terra": {
             return new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: providerUrl ?? "https://terra-rpc.easy2stake.com", wallet })
+        }
+        case "kyve": {
+            const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: providerUrl ?? "https://rpc.node.kyve.network", wallet })
+            k.price = async (): Promise<number> => { return 1 } // TODO: replace for mainnet
+            k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
+            return k; // TODO: ensure units above are right
         }
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);

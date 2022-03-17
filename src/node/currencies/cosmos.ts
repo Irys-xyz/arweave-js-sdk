@@ -35,6 +35,12 @@ export default class CosmosConfig extends BaseNodeCurrency {
             "denomination": "uluna",
             "decimals": 1e6
         },
+        "kyve": { 
+            "derivePath": "118",
+            "fee": "1",
+            "denomination": "kyve",
+            "decimals": 1e9
+        },
     }
     sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
