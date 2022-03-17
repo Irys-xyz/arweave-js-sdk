@@ -48,6 +48,9 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         case "akash": {
             return new CosmosConfig({ name: "akash", ticker: "AKT", providerUrl: providerUrl ?? "https://rpc.akash.forbole.com", wallet })
         }
+        case "terra": {
+            return new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: providerUrl ?? "https://terra-rpc.easy2stake.com", wallet })
+        }
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
     }
