@@ -23,6 +23,12 @@ export default class CosmosConfig extends BaseNodeCurrency {
             "denomination": "uatom",
             "decimals": 1e6
         },
+        "akash": { 
+            "derivePath": "118",
+            "fee": "100",
+            "denomination": "uakt",
+            "decimals": 1e6
+        },
     }
     sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
