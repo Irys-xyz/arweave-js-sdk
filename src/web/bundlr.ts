@@ -1,9 +1,10 @@
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
+import Fund from "../common/fund";
 import Uploader from "../common/upload";
 import Utils from "../common/utils";
 import getCurrency from "./currencies";
-import WebFund from "./fund";
+// import WebFund from "./fund";
 import { WebCurrency } from "./types";
 
 export default class WebBundlr extends Bundlr {
@@ -17,8 +18,8 @@ export default class WebBundlr extends Bundlr {
         this.currencyConfig = getCurrency(currency, provider, config?.providerUrl)
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);
-        this.funder = new WebFund(this.utils);
-
+        // this.funder = new WebFund(this.utils);
+        this.funder = new Fund(this.utils)
     }
 
     // async initialisation 

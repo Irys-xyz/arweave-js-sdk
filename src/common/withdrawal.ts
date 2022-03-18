@@ -18,7 +18,7 @@ import base64url from "base64url";
 export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.Value): Promise<AxiosResponse<any>> {
     const c = utils.currencyConfig;
     const pkey = await c.getPublicKey();
-    const data = { publicKey: pkey, currency: utils.currency, amount: new BigNumber(amount).toString(), nonce: await utils.getNonce(), signature: undefined }
+    const data = { publicKey: pkey, currency: utils.currency, amount: new BigNumber(amount).toString(), nonce: await utils.getNonce(), signature: undefined, sigType: c.getSigner().signatureType }
     const deephash = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
     if (!Buffer.isBuffer(data.publicKey)) {
         data.publicKey = Buffer.from(data.publicKey);
