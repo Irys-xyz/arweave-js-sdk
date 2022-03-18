@@ -5,7 +5,6 @@ import Utils from "./utils";
 import BigNumber from "bignumber.js";
 import Api from "./api";
 import base64url from "base64url";
-import { indexToType } from "arbundles/src/signing";
 
 
 /**
@@ -60,8 +59,7 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.
     // console.log({ opk, osig })
     // console.log(isValid2)
     // console.log(isValid)
-    const tSigner = indexToType[data.sigType]
-    console.log(tSigner)
+
     if (!(isValid || isValid2 || isValid3)) { throw new Error(`Internal withdrawal validation failed - please report this!\nDebug Info:${JSON.stringify(data)}`) }
 
     // console.log(JSON.stringify({

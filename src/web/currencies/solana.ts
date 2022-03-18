@@ -5,6 +5,7 @@ import BaseWebCurrency from "../currency";
 import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
 import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
+import retry from "async-retry";
 
 export default class SolanaConfig extends BaseWebCurrency {
     private signer: InjectedSolanaSigner
@@ -82,12 +83,13 @@ export default class SolanaConfig extends BaseWebCurrency {
     }
 
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
-        const connection = await this.getProvider()
-        const block = await connection.getRecentBlockhash();
-        const feeCalc = await connection.getFeeCalculatorForBlockhash(
-            block.blockhash,
-        );
-        return new BigNumber(feeCalc.value.lamportsPerSignature);
+        // const connection = await this.getProvider()
+        // const block = await connection.getRecentBlockhash();
+        // const feeCalc = await connection.getFeeCalculatorForBlockhash(
+        //     block.blockhash,
+        // );
+        // return new BigNumber(feeCalc.value.lamportsPerSignature);
+        return new BigNumber(5000) // hardcode it for now
     }
 
     async sendTx(data: any): Promise<string> {
@@ -103,9 +105,21 @@ export default class SolanaConfig extends BaseWebCurrency {
     ): Promise<{ txId: string; tx: any }> {
         // TODO: figure out how to manually set fees
         const pubkey = new web3.PublicKey(await this.getPublicKey())
+        const hash = await retry(
+            async (bail) => {
+                try {
+                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash
+                } catch (e) {
+                    if (e.message?.includes("blockhash")) throw e;
+                    else bail(e);
+                    throw new Error("Unreachable");
+                }
+            },
+            { retries: 3, minTimeout: 1000 }
+        );
 
         const transaction = new web3.Transaction({
-            recentBlockhash: (await (await this.getProvider()).getRecentBlockhash()).blockhash,
+            recentBlockhash: hash,
             feePayer: pubkey
         });
 

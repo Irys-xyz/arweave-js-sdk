@@ -84,34 +84,22 @@ export default class SolanaConfig extends BaseNodeCurrency {
     }
 
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
-        const connection = await this.getProvider()
-        const block = await connection.getRecentBlockhash();
-        const feeCalc = await connection.getFeeCalculatorForBlockhash(
-            block.blockhash,
-        );
-        return new BigNumber(feeCalc.value.lamportsPerSignature);
+        // const connection = await this.getProvider()
+        // const block = await connection.getRecentBlockhash();
+        // const feeCalc = await connection.getFeeCalculatorForBlockhash(
+        //     block.blockhash,
+        // );
+        // return new BigNumber(feeCalc.value.lamportsPerSignature);
+        return new BigNumber(5000) // hardcode it for now
     }
 
     async sendTx(data: any): Promise<string | undefined> {
         const connection = await this.getProvider()
-        // if it's already been signed...
-        // if (data.signature) {
-        //     console.log("Sending");
-        //     console.log(data);
-        //     await web3.sendAndConfirmRawTransaction(connection, data.serialize(), { commitment: "confirmed" });
-        //     console.log("Sent");
-        //     return;
-        // }
         try {
             return await web3.sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: "confirmed" });
         } catch (e) {
             if (e.message.includes("30.")) {
                 const txId = (e.message as string).match(/[A-Za-z0-9]{87,88}/g);
-                // console.log(txId);
-                // console.log({
-                //     message: e.message,
-                //     txId: txId[0]
-                // });
                 try {
                     const conf = await connection.confirmTransaction(txId[0], "confirmed")
                     if (conf) return undefined;

@@ -23,7 +23,7 @@ async function main() {
 
 
         const keys = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("http://devnet.bundlr.network", "arweave", keys.arweave, { timeout: 100_000 })
+        let bundlr = new Bundlr("http://devnet.bundlr.network", "arweave", keys.arweave)
         console.log(bundlr.address)
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);

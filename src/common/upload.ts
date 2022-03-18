@@ -6,7 +6,7 @@ import { Currency, Manifest } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
 import { Readable } from "stream";
-import { SizeChunker } from "chunking-streams/lib/size-chunker"
+import SizeChunker from "./chunker";
 // import mime from "mime-types";
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
@@ -213,7 +213,7 @@ export default class Uploader {
         let offset = 0;
         const processing = []
 
-        const ckr = SizeChunker({
+        const ckr = new SizeChunker({
             chunkSize: chunkSize,
             flushTail: true
         })
