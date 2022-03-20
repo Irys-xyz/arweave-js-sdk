@@ -1,4 +1,4 @@
-import { InjectedSolanaSigner, PhantomSigner, Signer } from "arbundles/src/signing";
+import { HexInjectedSolanaSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import BaseWebCurrency from "../currency";
@@ -8,7 +8,7 @@ import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
 
 export default class SolanaConfig extends BaseWebCurrency {
-    private signer: InjectedSolanaSigner
+    private signer: HexInjectedSolanaSigner
     protected wallet: MessageSignerWalletAdapter
 
     constructor(config: CurrencyConfig) {
@@ -62,20 +62,22 @@ export default class SolanaConfig extends BaseWebCurrency {
 
     getSigner(): Signer {
         if (!this.signer) {
-            if (this.wallet.name === "Phantom") {
-                this.signer = new PhantomSigner(this.wallet)
-            } else {
-                this.signer = new InjectedSolanaSigner(this.wallet)
-            }
+            // if (this.wallet?.name === "Phantom") {
+            //     this.signer = new PhantomSigner(this.wallet)
+            // } else {
+            //     this.signer = new InjectedSolanaSigner(this.wallet)
+            // }
+            this.signer = new HexInjectedSolanaSigner(this.wallet)
         }
         return this.signer;
     }
 
     verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        if (this.wallet.name === "Phantom") {
-            return PhantomSigner.verify(pub, data, signature)
-        }
-        return InjectedSolanaSigner.verify(pub, data, signature);
+        // if (this.wallet?.name === "Phantom") {
+        //     return PhantomSigner.verify(pub, data, signature)
+        // }
+        // return InjectedSolanaSigner.verify(pub, data, signature);
+        return HexInjectedSolanaSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -94,7 +96,7 @@ export default class SolanaConfig extends BaseWebCurrency {
 
     async sendTx(data: any): Promise<string> {
 
-        return await this.wallet.sendTransaction(data, await this.getProvider())
+        return await this.wallet.sendTransaction(data, await this.getProvider(), { skipPreflight: true })
 
     }
 
