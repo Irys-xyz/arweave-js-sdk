@@ -20,7 +20,10 @@ export default class SolanaConfig extends BaseWebCurrency {
         if (!this.providerInstance) {
             this.providerInstance = new web3.Connection(
                 this.providerUrl,
-                "confirmed"
+                {
+                    confirmTransactionInitialTimeout: 60_000,
+                    commitment: "confirmed"
+                }
             );
         }
         return this.providerInstance;
