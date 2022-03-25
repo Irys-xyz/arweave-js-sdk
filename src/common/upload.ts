@@ -17,8 +17,8 @@ export default class Uploader {
     protected currency: string;
     protected currencyConfig: Currency;
     protected utils: Utils
-    protected contentTypeOverride: string
-    protected forceUseChunking: boolean
+    protected contentTypeOverride!: string
+    protected forceUseChunking!: boolean
 
     constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency) {
         this.api = api;
@@ -81,8 +81,8 @@ export default class Uploader {
 
 
 
-    public async concurrentUploader(data: (DataItem | Buffer | string)[], concurrency = 5, resultProcessor?: (res: any) => Promise<any>, logFunction?: (log: string) => Promise<any>): Promise<{ errors: Array<any>, results: Array<any> }> {
-        const errors = []
+    public async concurrentUploader(data: (DataItem | Buffer | string)[], concurrency = 5, resultProcessor?: (res: any) => Promise<any>, logFunction = async (_: any): Promise<any> => { return }): Promise<{ errors: Array<any>, results: Array<any> }> {
+        const errors: any[] = []
         const results = await PromisePool
             .for(data)
             .withConcurrency(concurrency >= 1 ? concurrency : 5)
@@ -105,7 +105,7 @@ export default class Uploader {
                             } else {
                                 return { item, res, i }
                             }
-                        } catch (e) {
+                        } catch (e: any) {
                             if (e.message === "Not enough funds to send data") {
                                 bail(e)
                             }
@@ -149,11 +149,13 @@ export default class Uploader {
             if (!items.has(indexFile)) {
                 throw new Error(`Unable to access item: ${indexFile}`)
             }
-            manifest["index"] = { path: indexFile };
+            // manifest["index"] = { path: indexFile };
+            Object.assign(manifest, { "index": { path: indexFile } })
         }
-        for (const [k, v] of items.entries()) {
-            manifest.paths[k] = { id: v }
-        }
+        items.forEach((v, _k) => {
+            // manifest.paths[k] = { id: v }
+            Object.assign(manifest.paths, { _k: { id: v } })
+        })
         return manifest
 
     }
@@ -196,7 +198,7 @@ export default class Uploader {
 
         const getres = await this.api.get(`/chunks/${this.currency}/${id}/${size}`)
         await Utils.checkAndThrow(getres, "Getting chunk info")
-        const present = getres.data.map(v => +v) as Array<number>
+        const present = getres.data.map((v: string) => +v) as Array<number>
 
         const remainder = size % chunkSize;
         const chunks = (size - remainder) / chunkSize;
@@ -234,9 +236,9 @@ export default class Uploader {
         }
 
         await Promise.allSettled(processing);
-        const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
+        const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, "", {
             headers: { "Content-Type": "application/octet-stream" },
-            timeout: this.api.config.timeout * 10 // server side reconstruction can take a while
+            timeout: (this.api.config.timeout ?? 100_000) * 10 // server side reconstruction can take a while
         })
         if (finishUpload.status === 402) {
             throw new Error("Not enough funds to send data")

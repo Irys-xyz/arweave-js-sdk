@@ -3,8 +3,6 @@ import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
 import Uploader from "../common/upload";
 import Utils from "../common/utils";
-import getCurrency from "./currencies";
-// import WebFund from "./fund";
 import { WebCurrency } from "./types";
 
 export default class WebBundlr extends Bundlr {
@@ -15,7 +13,7 @@ export default class WebBundlr extends Bundlr {
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         this.currency = currency.toLowerCase();
-        this.currencyConfig = getCurrency(currency, provider, config?.providerUrl)
+        this.currencyConfig = provider
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);
         // this.funder = new WebFund(this.utils);

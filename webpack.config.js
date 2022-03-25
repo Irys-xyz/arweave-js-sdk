@@ -45,8 +45,10 @@ module.exports = {
     ],
     output: {
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'build/web'),
-        libraryTarget: 'umd',
-        library: 'Bundlr'
+        path: path.resolve(__dirname, 'build'),
+        library: {
+            type: "umd",
+            name: "Bundlr"
+        }
     },
 };

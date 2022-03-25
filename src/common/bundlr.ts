@@ -11,13 +11,13 @@ import { Currency, FundData } from "./types";
 import { Signer } from "arbundles/src/signing";
 
 export default abstract class Bundlr {
-    public api: Api;
-    public utils: Utils;
-    public uploader: Uploader;
-    public funder: Fund;
-    public address;
-    public currency;
-    public currencyConfig: Currency;
+    public api!: Api;
+    public utils!: Utils;
+    public uploader!: Uploader;
+    public funder!: Fund;
+    public address!: string;
+    public currency!: string;
+    public currencyConfig!: Currency;
 
     constructor() { return }
 

@@ -3,7 +3,6 @@ import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
 import Utils from "../common/utils";
-import getCurrency from "./currencies";
 import { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 
@@ -16,12 +15,12 @@ export default class NodeBundlr extends Bundlr {
      * @param url - URL to the bundler
      * @param wallet - private key (in whatever form required)
      */
-    constructor(url: string, currency: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+    constructor(url: string, currency: string, currencyConfig: NodeCurrency, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
         super();
         const parsed = new URL(url);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
         this.currency = currency.toLowerCase();
-        this.currencyConfig = getCurrency(this.currency, wallet, config?.providerUrl, config?.contractAddress)
+        this.currencyConfig = currencyConfig // getCurrency(this.currency, wallet, config?.providerUrl, config?.contractAddress) 
         this.address = this.currencyConfig.address;
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
@@ -38,4 +37,5 @@ export default class NodeBundlr extends Bundlr {
     };
 
 }
+
 

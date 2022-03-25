@@ -12,7 +12,7 @@ import BaseNodeCurrency from "../currency";
 const ethereumSigner = signers.EthereumSigner;
 
 export default class EthereumConfig extends BaseNodeCurrency {
-    protected providerInstance: JsonRpcProvider;
+    declare protected providerInstance: JsonRpcProvider;
 
     constructor(config: CurrencyConfig) {
         super(config);
@@ -40,7 +40,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
         return {
             from: response.from,
             to: response.to,
-            blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : null,
+            blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : undefined,
             amount: new BigNumber(response.value.toHexString(), 16),
             pending: response.blockNumber ? false : true,
             confirmed: response.confirmations >= this.minConfirm,

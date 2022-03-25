@@ -6,8 +6,8 @@ import { FileDataItem } from "arbundles/file";
 export interface CreateTxData { amount: BigNumber.Value, to: string, fee?: string }
 
 export interface Tx {
-    from: string;
-    to: string;
+    from: string | undefined;
+    to: string | undefined;
     amount: BigNumber;
     blockHeight?: BigNumber;
     pending: boolean;
@@ -46,10 +46,12 @@ export interface Currency {
 
     sendTx(data: any): Promise<any>; // TODO: make signature(s) more specific
 
-    createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string, tx: any }>;
+    createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<CreatedTx>;
 
     getPublicKey(): Promise<string | Buffer> | (string | Buffer);
 }
+
+export interface CreatedTx { txId: string | undefined, tx: any }
 
 export interface FundData { reward: string, target: string, quantity: string, id: string }
 
@@ -60,6 +62,14 @@ export interface Manifest {
     index?: Record<"path", string>
 }
 
+export interface Withdrawal {
+    publicKey: string | Buffer,
+    currency: string,
+    amount: string,
+    nonce: number,
+    signature: Buffer | string,
+    sigType: number
+}
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
 //     paths = "arweave/paths"

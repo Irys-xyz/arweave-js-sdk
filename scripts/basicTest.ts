@@ -1,5 +1,5 @@
 // eslint-disable-file @typescript-eslint/no-unused-vars
-import Bundlr from "../src";
+import Bundlr from "../";
 import { promises, readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next"
 import Crypto from "crypto"

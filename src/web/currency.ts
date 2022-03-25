@@ -3,19 +3,19 @@ import { Signer } from "arbundles/src/signing";
 import Arweave from "arweave";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
-import { Tx, CurrencyConfig } from "../common/types"
+import { Tx, CurrencyConfig, CreatedTx } from "../common/types"
 import axios from "axios";
 import { WebCurrency } from "./types";
 import utils from "../common/utils";
 
 export default abstract class BaseWebCurrency implements WebCurrency {
-    public base: [string, number];
-    protected wallet: any
-    protected _address: string
+    public base!: [string, number];
+    protected wallet!: any
+    protected _address!: string
     protected providerUrl: any;
     protected providerInstance?: any
-    public ticker: string;
-    public name: string;
+    public ticker!: string;
+    public name!: string;
 
     protected minConfirm = 5;
     public isSlow = false;
@@ -31,7 +31,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
     }
 
     public async ready(): Promise<void> {
-        this._address = this.wallet ? this.ownerToAddress(await this.getPublicKey()) : undefined;
+        this._address = this.wallet ? this.ownerToAddress(await this.getPublicKey()) : "";
     }
 
     async getId(item: FileDataItem): Promise<string> {
@@ -48,7 +48,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
     abstract getCurrentHeight(): Promise<BigNumber>
     abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber>
     abstract sendTx(_data: any): Promise<any>
-    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }>
+    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<CreatedTx>
     abstract getPublicKey(): Promise<string | Buffer>
 }
 

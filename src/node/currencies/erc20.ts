@@ -8,7 +8,7 @@ import EthereumConfig from "./ethereum";
 export interface ERC20CurrencyConfig extends CurrencyConfig { contractAddress: string }
 
 export default class ERC20Config extends EthereumConfig {
-    private contractInstance: ethers.Contract;
+    declare private contractInstance: ethers.Contract;
     private contractAddress: string;
 
     constructor(config: ERC20CurrencyConfig) {
@@ -39,7 +39,7 @@ export default class ERC20Config extends EthereumConfig {
         return {
             from: response.from,
             to,
-            blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : null,
+            blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : undefined,
             amount,
             pending: response.blockNumber ? false : true,
             confirmed: response.confirmations >= this.minConfirm,

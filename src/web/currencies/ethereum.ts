@@ -9,9 +9,9 @@ const ethBigNumber = ethers.BigNumber // required for hexString conversions (w/ 
 const ethereumSigner = InjectedEthereumSigner
 
 export default class EthereumConfig extends BaseWebCurrency {
-    private signer: InjectedEthereumSigner;
-    protected wallet: ethers.providers.Web3Provider;
-    private w3signer: ethers.providers.JsonRpcSigner;
+    private signer!: InjectedEthereumSigner;
+    declare protected wallet: ethers.providers.Web3Provider;
+    private w3signer!: ethers.providers.JsonRpcSigner;
 
     constructor(config: CurrencyConfig) {
         super(config)
@@ -28,7 +28,7 @@ export default class EthereumConfig extends BaseWebCurrency {
         return {
             from: response.from,
             to: response.to,
-            blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : null,
+            blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : undefined,
             amount: new BigNumber(response.value.toHexString(), 16),
             pending: response.blockNumber ? false : true,
             confirmed: response.confirmations >= this.minConfirm,
@@ -77,7 +77,7 @@ export default class EthereumConfig extends BaseWebCurrency {
         return new BigNumber(estimatedGas.mul(gasPrice).toString());
     }
 
-    async sendTx(data: ethers.providers.TransactionRequest): Promise<string> {
+    async sendTx(data: ethers.providers.TransactionRequest): Promise<any> {
         const signer = this.w3signer
         const receipt = await signer.sendTransaction(data)// .catch((e) => { console.error(`Sending tx: ${e}`) })
         return receipt ? receipt.hash : undefined

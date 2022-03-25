@@ -8,7 +8,7 @@ import BaseNodeCurrency from "../currency";
 
 
 export default class ArweaveConfig extends BaseNodeCurrency {
-    protected providerInstance: Arweave;
+    declare protected providerInstance: Arweave;
 
     constructor(config: CurrencyConfig) {
         super(config)
@@ -30,7 +30,7 @@ export default class ArweaveConfig extends BaseNodeCurrency {
         if (txs.status == 200) {
             tx = await arweave.transactions.get(txId)
         }
-        const confirmed = (txs.status !== 202 && txs.confirmed?.number_of_confirmations >= this.minConfirm)
+        const confirmed = (txs.status !== 202 && txs.confirmed && txs?.confirmed?.number_of_confirmations >= this.minConfirm) ? true : false
         let owner;
         if (tx?.owner) {
             owner = this.ownerToAddress(tx.owner);

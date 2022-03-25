@@ -1,6 +1,6 @@
 import { NearSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
-import { CurrencyConfig, Tx } from "../../common/types"
+import { CreatedTx, CurrencyConfig, Tx } from "../../common/types"
 import { KeyPair, utils, transactions, providers, WalletConnection, Near, keyStores } from "near-api-js"
 import { decode, encode } from "bs58";
 import BN from "bn.js"
@@ -9,10 +9,10 @@ import BaseWebCurrency from "../currency";
 
 export default class NearConfig extends BaseWebCurrency {
     // protected keyStore: KeyPair
-    protected keyPair: KeyPair
-    protected wallet: WalletConnection
+    protected keyPair!: KeyPair
+    declare protected wallet: WalletConnection
     protected near: Near
-    protected providerInstance: providers.Provider
+    declare protected providerInstance: providers.Provider
 
 
     constructor(config: CurrencyConfig) {
@@ -124,6 +124,8 @@ export default class NearConfig extends BaseWebCurrency {
         // const provider = await this.getProvider();
         // one unit of gas
         // const res = await provider.connection.provider.gasPrice(await (await this.getCurrentHeight()).toNumber())
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error 
         const res = await this.providerInstance.gasPrice(null) // null == gas price as of latest block
         // multiply by action cost in gas units (assume only action is transfer)
         // 4.5x10^11 gas units for fund transfers
@@ -136,7 +138,7 @@ export default class NearConfig extends BaseWebCurrency {
         return `${this.address}:${res.transaction.hash}` // encode into compound format
     }
 
-    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<CreatedTx> {
 
         const accessKey = await this.providerInstance.query({ request_type: "view_access_key", finality: "final", account_id: this.address, public_key: this.keyPair.getPublicKey().toString() })
         // console.log(accessKey);

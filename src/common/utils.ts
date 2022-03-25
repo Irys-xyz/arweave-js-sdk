@@ -5,7 +5,7 @@ import Api from "./api";
 import { Currency } from "./types";
 BigNumber.set({ DECIMAL_PLACES: 50 })
 
-export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 export default class Utils {
     public api: Api;
