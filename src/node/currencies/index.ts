@@ -3,12 +3,13 @@ import { NodeCurrency } from "../types";
 import ArweaveConfig from "./arweave";
 import ERC20Config from "./erc20";
 import EthereumConfig from "./ethereum";
+import ZKsyncConfig from "./zksync";
 import NearConfig from "./near";
 import SolanaConfig from "./solana";
 import AlgorandConfig from "./algorand";
 import CosmosConfig from "./cosmos";
 
-export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): NodeCurrency {
+export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string, ethProvider?: string): NodeCurrency {
     switch (currency) {
         case "arweave":
             return new ArweaveConfig({ name: "arweave", ticker: "AR", minConfirm: 10, providerUrl: providerUrl ?? "arweave.net", wallet, isSlow: true })
@@ -28,6 +29,8 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new EthereumConfig({ name: "boba", ticker: "ETH", providerUrl: providerUrl ?? "https://mainnet.boba.network/", wallet })
         case "arbitrum":
             return new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet })
+        case "zksync":
+            return new ZKsyncConfig({ name: "zksync", ticker: "ETH", providerUrl: providerUrl ?? "https://rinkeby-api.zksync.io", ethProvider: ethProvider ?? "https://rinkeby.infura.io/v3/46a62a54fd6f4073925b31c4df52095f", wallet })
         case "chainlink":
             return new ERC20Config({ name: "chainlink", ticker: "LINK", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", contractAddress: contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet })
         // case "kyve": {
