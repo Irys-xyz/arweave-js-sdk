@@ -5,7 +5,7 @@ import EthereumConfig from "./ethereum";
 import NearConfig from "./near";
 import SolanaConfig from "./solana";
 
-export default function getCurrency(currency: string, wallet: any, providerUrl?: string): BaseCurrency {
+export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): BaseCurrency {
     switch (currency) {
         case "ethereum":
             return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", wallet })
