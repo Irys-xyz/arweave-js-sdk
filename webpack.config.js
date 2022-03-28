@@ -20,28 +20,36 @@ module.exports = {
     },
     resolve: {
         extensions: ['.ts', '.js'],
-        alias: {
-            process: "process/browser",
-            crypto: "crypto-browserify",
-            stream: "stream-browserify",
-        },
-        fallback: {
-            "crypto": require.resolve("crypto-browserify"),
-            "assert": require.resolve("assert/"),
-            "stream": require.resolve("stream-browserify"),
-            "process": require.resolve("process/browser"),
-            "util": require.resolve("util"),
-            "events": require.resolve("events/"),
-            "buffer": require.resolve('buffer/'),
-            "zlib": require.resolve("browserify-zlib"),
-            "path": require.resolve("path-browserify")
-        }
+        // alias: {
+        //     process: "process/browser",
+        //     crypto: "crypto-browserify",
+        //     stream: "stream-browserify",
+        // },
+        // fallback: {
+        //     "crypto": require.resolve("crypto-browserify"),
+        //     "assert": require.resolve("assert/"),
+        //     "stream": require.resolve("stream-browserify"),
+        //     "process": require.resolve("process/browser"),
+
+        //     "events": require.resolve("events/"),
+        //     "buffer": require.resolve('buffer/'),
+        //     "zlib": require.resolve("browserify-zlib"),
+        //     "path": require.resolve("path-browserify")
+        // }
+        // fallback: {
+        //     crypto: false,
+        //     stream: false,
+        //     buffer: false,
+        //     path: false,
+        //     zlib: false,
+        //     "util": require.resolve("util"),
+        // },
     },
     plugins: [
-        new webpack.ProvidePlugin({
-            process: 'process/browser',
-            Buffer: ['buffer', 'Buffer']
-        }),
+        // new webpack.ProvidePlugin({
+        //     process: 'process/browser',
+        //     Buffer: ['buffer', 'Buffer']
+        // }),
     ],
     output: {
         filename: 'bundle.js',

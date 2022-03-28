@@ -70,6 +70,8 @@ export interface Withdrawal {
     signature: Buffer | string,
     sigType: number
 }
+
+export interface BundlrConfig { timeout?: number, providerUrl?: string, contractAddress?: string }
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
 //     paths = "arweave/paths"
