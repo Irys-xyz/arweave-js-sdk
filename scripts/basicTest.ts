@@ -57,7 +57,7 @@ async function main() {
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
-        
+
         let tx = await bundlr.fund(1, 1);
         console.log(tx);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
