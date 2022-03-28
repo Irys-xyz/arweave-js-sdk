@@ -4,4 +4,5 @@ import *  as util from "util"
 globalThis.util ??= util;
 export { default } from "./bundlr"
 export { default as WebBundlr } from "./bundlr"
-export * from "./currencies/index"
+
+// export * from "./currencies/index"
