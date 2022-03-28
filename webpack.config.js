@@ -1,15 +1,20 @@
 const path = require('path');
-const webpack = require("webpack");
+// const webpack = require("webpack");
 
 module.exports = {
-    entry: './src/web/bundlr.ts',
+    entry: './src/web/index.ts',
     devtool: 'source-map',
     mode: "production",
     module: {
         rules: [
             {
                 test: /\.ts$/,
-                use: 'ts-loader',
+                use: [{
+                    loader: 'ts-loader',
+                    options: {
+                        configFile: path.resolve("./esm.tsconfig.json")
+                    }
+                }],
                 exclude: [
                     /node_modules/,
                     path.resolve(__dirname, "src/node/"),
@@ -36,14 +41,14 @@ module.exports = {
         //     "zlib": require.resolve("browserify-zlib"),
         //     "path": require.resolve("path-browserify")
         // }
-        // fallback: {
-        //     crypto: false,
-        //     stream: false,
-        //     buffer: false,
-        //     path: false,
-        //     zlib: false,
-        //     "util": require.resolve("util"),
-        // },
+        fallback: {
+            crypto: false,
+            stream: false,
+            buffer: false,
+            path: false,
+            zlib: false,
+            // "util": require.resolve("util"),
+        },
     },
     plugins: [
         // new webpack.ProvidePlugin({
@@ -58,5 +63,5 @@ module.exports = {
             type: "umd",
             name: "Bundlr"
         }
-    },
+    }
 };
