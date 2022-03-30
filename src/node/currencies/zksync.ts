@@ -111,7 +111,7 @@ export default class ZKsyncConfig extends BaseNodeCurrency {
             to: to,
             token: "ETH",
             amount: zksync.utils.closestPackableTransactionAmount(ethers.utils.parseUnits(amount.toString(),"wei")),
-            fee: zksync.utils.closestPackableTransactionFee(ethers.utils.parseUnits((await this.getFee(null, to)).toString(),10)),
+            fee: zksync.utils.closestPackableTransactionFee((await this.getFee(null, to)).toString()).toString().slice(0,-4),
             nonce: nonce
         };
 

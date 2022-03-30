@@ -30,7 +30,7 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         case "arbitrum":
             return new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet })
         case "zksync":
-            return new ZKsyncConfig({ name: "zksync", ticker: "ETH", providerUrl: providerUrl ?? "https://rinkeby-api.zksync.io", ethProvider: ethProvider ?? "https://rinkeby.infura.io/v3/46a62a54fd6f4073925b31c4df52095f", wallet })
+            return new ZKsyncConfig({ name: "zksync", ticker: "ETH", providerUrl: providerUrl ?? "https://api.zksync.io", ethProvider: ethProvider ?? "https://main-light.eth.linkpool.io/", wallet })
         case "chainlink":
             return new ERC20Config({ name: "chainlink", ticker: "LINK", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", contractAddress: contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet })
         // case "kyve": {
