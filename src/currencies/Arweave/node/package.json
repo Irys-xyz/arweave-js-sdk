@@ -1,0 +1,21 @@
+{
+  "name": "@bundlr-network/Arweave-node",
+  "version": "0.0.1",
+  "description": "Arweave Currency for Bundlr",
+  "main": "index.js",
+  "author": "JesseTheRobot",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p ./cjs.json && tsc -p ./esm.json"
+  },
+  "exports": {
+    ".": {
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
+    }
+  },
+  "files": [
+    "cjs/**/*.js",
+    "esm/**/*.d.ts"
+  ]
+}

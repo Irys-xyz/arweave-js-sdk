@@ -21,6 +21,10 @@
       "types": ["node", "jest"]
   },
   "compileOnSave": true,
-  "exclude": ["node_modules", "dist", "scripts"],
+  "exclude": ["node_modules", "dist", "scripts", "src/common/signing/"],
   "include": ["src"]
+  // "references": [
+  //   {"path": "src/currencies/Arweave/node"},
+  //   {"path": "src/currencies/Arweave/web"}
+  // ]
 }

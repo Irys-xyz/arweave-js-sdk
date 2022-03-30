@@ -21,3 +21,5 @@ arweave.json
 testData/
 testFolder-errors.txt
 bundlr-network-client-*.tgz
+esm/
+cjs/
