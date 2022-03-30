@@ -17,5 +17,8 @@
   "files": [
     "cjs/**/*.js",
     "esm/**/*.d.ts"
-  ]
+  ],
+  "dependencies": {
+    "@bundlr-network/client": "^0.6.1"
+  }
 }
