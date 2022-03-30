@@ -30,41 +30,42 @@ async function main() {
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
-        // const transaction = await bundlr.createTransaction("aaa");
-        // await transaction.sign();
-        // console.log(transaction.id)
-        // console.log(await transaction.isValid());
-        // const res = await transaction.upload();
-        // console.log(`Upload: ${JSON.stringify(res.data)}`);
+        const transaction = await bundlr.createTransaction("aaa");
+        await transaction.sign();
+        console.log(transaction.id)
+        console.log(await transaction.isValid());
+        const res = await transaction.upload();
+        console.log(`Upload: ${JSON.stringify(res.data)}`);
 
-        // let rec = await bundlr.uploadFile("a.txt");
-        // console.log(JSON.stringify(rec.data));
-        // console.log(JSON.stringify(rec.status));
+        let rec = await bundlr.uploadFile("a.txt");
+        console.log(JSON.stringify(rec.data));
+        console.log(JSON.stringify(rec.status));
 
 
-        // const ctx = bundlr.createTransaction(Crypto.randomBytes(15_000_000).toString("base64"))
-        // await ctx.sign()
-        // bundlr.uploader.useChunking = true
-        // const cres = await ctx.upload()
-        // console.log(cres)
-        // bundlr.uploader.useChunking = false
-        // await promises.rm("testFolder-manifest.json", { force: true })
-        // await promises.rm("testFolder-manifest.csv", { force: true })
-        // await promises.rm("testFolder-id.txt", { force: true })
+        const ctx = bundlr.createTransaction(Crypto.randomBytes(15_000_000).toString("base64"))
+        await ctx.sign()
+        bundlr.uploader.useChunking = true
+        const cres = await ctx.upload()
+        console.log(cres)
+        bundlr.uploader.useChunking = false
+        await promises.rm("testFolder-manifest.json", { force: true })
+        await promises.rm("testFolder-manifest.csv", { force: true })
+        await promises.rm("testFolder-id.txt", { force: true })
 
-        // const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 10, false, true, async (log): Promise<void> => { console.log(log) })
-        // console.log(resu);
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 10, false, true, async (log): Promise<void> => { console.log(log) })
+        console.log(resu);
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
-
 
         let tx = await bundlr.fund(1, 1);
         console.log(tx);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
-        // let resw = await bundlr.withdrawBalance(1);
-        // console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
-        // console.log(`balance: ${await bundlr.getLoadedBalance()}`);
+
+        let resw = await bundlr.withdrawBalance(1);
+        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
+
 
     } catch (e) {
         console.log(e);
