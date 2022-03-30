@@ -1,12 +1,12 @@
 {
-  "name": "@bundlr-network/Arweave-node",
+  "name": "@bundlr-network/arweave-node",
   "version": "0.0.1",
   "description": "Arweave Currency for Bundlr",
   "main": "index.js",
   "author": "JesseTheRobot",
   "license": "MIT",
   "scripts": {
-    "build": "tsc -p ./cjs.json && tsc -p ./esm.json"
+    "build": "rm -rf ./cjs && rm -rf ./esm && tsc -p ./cjs.json && tsc -p ./esm.json"
   },
   "exports": {
     ".": {
@@ -15,10 +15,13 @@
     }
   },
   "files": [
-    "cjs/**/*.js",
-    "esm/**/*.d.ts"
+    "cjs/**/*",
+    "esm/**/*"
   ],
-  "dependencies": {
-    "@bundlr-network/client": "^0.6.1"
+  "peerDependencies": {
+    "@bundlr-network/client": "^0.6.2"
+  },
+  "devDependencies": {
+    "@bundlr-network/client": "^0.6.2"
   }
 }

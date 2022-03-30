@@ -5,8 +5,9 @@
         "declaration": true,
         "esModuleInterop": true,
         "inlineSourceMap": false,
-        "lib": ["esnext"],
-        "target": "ESNext",
+        "lib": [
+            "esnext"
+        ],
         "listEmittedFiles": false,
         "listFiles": false,
         "moduleResolution": "node",
@@ -16,10 +17,16 @@
         "skipLibCheck": true,
         "strict": true,
         "traceResolution": false,
-        "types": ["node", "jest"],
-        "outDir": "."
+        "types": [
+            "node"
+        ],
+        "outDir": "./esm",
+        "module": "esnext",
+        "target": "esnext",
+        "rootDir": "../"
     },
-    "compileOnSave": true,
-    "exclude": ["node_modules", "dist", "scripts", "cjs", "esm"],
-    "include": ["**/*.ts"]
-  }
+    "exclude": [
+        "cjs",
+        "web/"
+    ]
+}

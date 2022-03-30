@@ -1,8 +1,0 @@
-{
-  "name": "@bundlr-network/Arweave-node",
-  "version": "0.0.1",
-  "description": "Arweave Currency for Bundlr",
-  "main": "index.js",
-  "author": "JesseTheRobot",
-  "license": "MIT"
-}
