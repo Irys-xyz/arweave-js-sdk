@@ -11,47 +11,37 @@ import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { HdPath, Slip10RawIndex } from "@cosmjs/crypto";
 
+export interface CosmosCurrencyConfig extends CurrencyConfig { 
+    localconfig: {
+        derivePath: string,
+        fee: string,
+        denomination: string,
+        decimals: number
+    };
+}
 export default class CosmosConfig extends BaseNodeCurrency {
 
     protected keyPair;
     protected providerInstance?;
     protected signerInstance: CosmosSigner;
-    public localconfig: any = {
-        "cosmos": { 
-            "derivePath": "118",
-            "fee": "2500",
-            "denomination": "uatom",
-            "decimals": 1e6
-        },
-        "akash": { 
-            "derivePath": "118",
-            "fee": "100",
-            "denomination": "uakt",
-            "decimals": 1e6
-        },
-        "terra": { 
-            "derivePath": "330",
-            "fee": "1200",
-            "denomination": "uluna",
-            "decimals": 1e6
-        },
-        "kyve": { 
-            "derivePath": "118",
-            "fee": "1",
-            "denomination": "kyve",
-            "decimals": 1e9
-        },
-    }
+    private localconfig: {
+        derivePath: string,
+        fee: string,
+        denomination: string,
+        decimals: number
+    };
+
     sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
-    constructor(config: CurrencyConfig) {
+    constructor(config: CosmosCurrencyConfig) {
         super(config);
-        this.base = [this.localconfig[this.name].denomination, this.localconfig[this.name].decimals];
+        this.localconfig = config.localconfig;
+        this.base = [this.localconfig.denomination, this.localconfig.decimals];
         this._address = "You need to .ready() this currency!"
     }
 
     protected async getProvider(): Promise<any> {
-        const path2number = new BigNumber(this.localconfig[this.name].derivePath).toNumber();
+        const path2number = new BigNumber(this.localconfig.derivePath).toNumber();
         const path: HdPath = [
             Slip10RawIndex.hardened(44),
             Slip10RawIndex.hardened(path2number),
@@ -122,7 +112,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async getFee(): Promise<BigNumber> {
-        return new BigNumber(this.localconfig[this.name].fee);
+        return new BigNumber(this.localconfig.fee);
     }
 
     async sendTx(data: any): Promise<string> {
@@ -143,7 +133,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
             amount: [
                 {
                 denom: this.base[0],
-                amount: this.localconfig[this.name].fee,
+                amount: this.localconfig.fee,
                 },
             ],
             gas: "100000",
@@ -169,7 +159,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async ready(): Promise<boolean> {
-        this.signerInstance = new CosmosSigner(this.wallet, this.localconfig[this.name].derivePath);
+        this.signerInstance = new CosmosSigner(this.wallet, this.localconfig.derivePath);
         await this.signerInstance.ready();
         this.assignAddress();
         return true;

@@ -43,16 +43,16 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", wallet })
         }
         case "cosmos": {
-            return new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: providerUrl ?? "https://rpc.cosmos.network", wallet })
+            return new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: providerUrl ?? "https://rpc.cosmos.network", wallet, localconfig: { "derivePath": "118", "fee": "2500", "denomination": "uatom", "decimals": 1e6 } })
         }
         case "akash": {
-            return new CosmosConfig({ name: "akash", ticker: "AKT", providerUrl: providerUrl ?? "https://rpc.akash.forbole.com", wallet })
+            return new CosmosConfig({ name: "akash", ticker: "AKT", providerUrl: providerUrl ?? "https://rpc.akash.forbole.com", wallet, localconfig: { "derivePath": "118", "fee": "100", "denomination": "uakt", "decimals": 1e6 } })
         }
         case "terra": {
-            return new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: providerUrl ?? "https://terra-rpc.easy2stake.com", wallet })
+            return new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localconfig: { "derivePath": "330", "fee": "1200", "denomination": "uluna", "decimals": 1e6 } })
         }
         case "kyve": {
-            const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: providerUrl ?? "https://rpc.node.kyve.network", wallet })
+            const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: providerUrl ?? "https://rpc.node.kyve.network", wallet, localconfig: { "derivePath": "118", "fee": "1", "denomination": "kyve", "decimals": 1e9 } })
             k.price = async (): Promise<number> => { return 1 } // TODO: replace for mainnet
             k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
             return k; // TODO: ensure units above are right
