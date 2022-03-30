@@ -1,8 +1,8 @@
 // eslint-disable-file @typescript-eslint/no-unused-vars
 import Bundlr from "../src";
-import { /* promises, */ readFileSync, writeFileSync } from 'fs';
+import { promises, readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next"
-// import Crypto from "crypto"
+import Crypto from "crypto"
 
 
 const profiling = false;
@@ -60,7 +60,6 @@ async function main() {
         let tx = await bundlr.fund(1, 1);
         console.log(tx);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
-
 
         let resw = await bundlr.withdrawBalance(1);
         console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
