@@ -1,7 +1,7 @@
 {
-    "name": "@bundlr-network/arweave-web",
+    "name": "@bundlr-network/ethereum-web",
     "version": "0.0.1",
-    "description": "Arweave Currency for Bundlr",
+    "description": "Ethereum Currency for Bundlr",
     "main": "index.js",
     "author": "JesseTheRobot",
     "license": "MIT",

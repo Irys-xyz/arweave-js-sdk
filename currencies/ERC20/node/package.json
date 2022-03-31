@@ -1,7 +1,7 @@
 {
-  "name": "@bundlr-network/arweave-node",
+  "name": "@bundlr-network/erc20-node",
   "version": "0.0.1",
-  "description": "Arweave Currency for Bundlr",
+  "description": "ERC20 Currency for Bundlr",
   "main": "index.js",
   "author": "JesseTheRobot",
   "license": "MIT",
