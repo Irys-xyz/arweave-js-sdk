@@ -2,8 +2,7 @@ import keccak256 from "../keccak256";
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet, providers } from "ethers";
 import BigNumber from "bignumber.js";
-import { signers } from "arbundles";
-import { Signer } from "arbundles/src/signing";
+import Signer from "@bundlr-network/client/build/cjs/common/signing/Signer"
 // import { JsonRpcProvider } from "ethers";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";

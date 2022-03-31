@@ -1,0 +1,29 @@
+{
+  "name": "@bundlr-network/arweave-node",
+  "version": "0.0.1",
+  "description": "Arweave Currency for Bundlr",
+  "main": "index.js",
+  "author": "JesseTheRobot",
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf ./cjs && rm -rf ./esm && tsc -p ./cjs.json && tsc -p ./esm.json"
+  },
+  "exports": {
+    ".": {
+      "import": "./esm/index.js",
+      "require": "./cjs/index.js"
+    }
+  },
+  "files": [
+    "cjs/**/*",
+    "esm/**/*"
+  ],
+  "peerDependencies": {
+    "@bundlr-network/client": "^0.6.2"
+  },
+  "devDependencies": {
+    "@bundlr-network/client": "^0.6.2",
+    "bs58": "^5.0.0",
+    "near-api-js": "^0.44.2"
+  }
+}
