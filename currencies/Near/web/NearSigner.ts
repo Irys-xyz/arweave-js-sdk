@@ -1,7 +1,7 @@
 import Curve25519 from "./curve25519";
 import bs58 from "bs58";
 
-export default class SolanaSigner extends Curve25519 {
+export default class NearSigner extends Curve25519 {
   get publicKey(): Buffer {
     return Buffer.from(bs58.decode(this.pk));
   }
@@ -11,7 +11,7 @@ export default class SolanaSigner extends Curve25519 {
   }
 
   constructor(_key: string) {
-    const b = bs58.decode(_key);
+    const b = bs58.decode(_key.replace("ed25519:", ""));
     super(bs58.encode(b.subarray(0, 32)), bs58.encode(b.subarray(32, 64)));
   }
 }

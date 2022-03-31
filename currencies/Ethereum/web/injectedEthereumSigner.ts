@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import Signer from "@bundlr-network/client/build/esm/common/Signer";
+import { Signer } from "@bundlr-network/client/build/esm/common/signing";
 import { SignatureConfig, SIG_CONFIG } from "@bundlr-network/client/build/esm/common/signing";
 
 export default class InjectedEthereumSigner implements Signer {

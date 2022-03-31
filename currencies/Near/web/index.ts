@@ -6,7 +6,7 @@ import { decode, encode } from "bs58";
 import BN from "bn.js"
 import { sha256 } from "js-sha256";
 import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency";
-import NearSigner from "../NearSigner";
+import NearSigner from "./NearSigner";
 
 export default class NearConfig extends BaseWebCurrency {
     // protected keyStore: KeyPair
@@ -96,7 +96,7 @@ export default class NearConfig extends BaseWebCurrency {
     ownerToAddress(owner: any): string {
         // should just return the loaded address?
         const pubkey = typeof owner === "string" ? owner : encode(owner)
-        return decode(pubkey.replace("ed25519:", "")).toString("hex")
+        return Buffer.from(decode(pubkey.replace("ed25519:", ""))).toString("hex")
     }
 
 

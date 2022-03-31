@@ -1,8 +1,8 @@
-import keccak256 from "../keccak256";
+import keccak256 from "./keccak256";
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
 import InjectedEthereumSigner from "./injectedEthereumSigner"
-import Signer from "@bundlr-network/client/build/esm/common/Signer";
+import { Signer } from "@bundlr-network/client/build/esm/common/signing";
 import { Tx, CurrencyConfig } from "@bundlr-network/client/build/esm/common/types";
 import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency";
 

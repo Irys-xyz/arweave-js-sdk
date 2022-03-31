@@ -7,7 +7,7 @@ import { decode, encode } from "bs58";
 import BN from "bn.js"
 import { sha256 } from "js-sha256";
 import { JsonRpcProvider } from "near-api-js/lib/providers";
-import NearSigner from "../NearSigner";
+import NearSigner from "./NearSigner";
 
 
 export default class NearConfig extends BaseNodeCurrency {
@@ -68,8 +68,8 @@ export default class NearConfig extends BaseNodeCurrency {
      */
     ownerToAddress(owner: any): string {
         return (typeof owner === "string")
-            ? decode(owner.replace("ed25519:", "")).toString("hex")
-            : decode(encode(owner)).toString("hex")
+            ? Buffer.from(decode(owner.replace("ed25519:", ""))).toString("hex")
+            : Buffer.from(decode(encode(owner))).toString("hex")
     }
 
 

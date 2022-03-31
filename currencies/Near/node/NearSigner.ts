@@ -3,7 +3,7 @@ import bs58 from "bs58";
 
 export default class NearSigner extends Curve25519 {
   get publicKey(): Buffer {
-    return bs58.decode(this.pk);
+    return Buffer.from(bs58.decode(this.pk));
   }
 
   get key(): Uint8Array {

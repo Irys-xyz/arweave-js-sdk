@@ -93,6 +93,6 @@ function intToHex(i: number) {
     return `0x${hex}`;
 }
 
-if (typeof window !== "undefined") {
-    (window as any).keccak256 = keccak256;
-}
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+globalThis.keccak256 = keccak256
