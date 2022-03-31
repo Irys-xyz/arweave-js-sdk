@@ -36,8 +36,7 @@
     "prod:build": "yarn run dev:build && webpack",
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
-    "build": "yarn run dev:build && webpack",
-    "lerna:build": "lerna run build --concurrency 1"
+    "lerna:build": "yarn run prod:build && lerna run build --concurrency 8"
   },
   "bin": {
     "bundlr": "./build/cjs/node/cli.js"

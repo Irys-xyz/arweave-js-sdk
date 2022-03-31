@@ -1,8 +1,9 @@
 import Rsa4096Pss from "./Rsa4096Pss";
-import { JWKInterface } from "@bundlr-network/client/signing";
+import { JWKInterface, indexToType } from "@bundlr-network/client/build/cjs/common/signing";
 import { jwkTopem } from "arweave/node/lib/crypto/pem";
 import base64url from "base64url";
 import Arweave from "arweave";
+
 
 export default class ArweaveSigner extends Rsa4096Pss {
     protected jwk: JWKInterface;
@@ -13,7 +14,7 @@ export default class ArweaveSigner extends Rsa4096Pss {
     }
 
     get publicKey(): Buffer {
-        return base64url.toBuffer(this.pk);
+        return base64url.toBuffer(this.pk as string);
     }
 
     sign(message: Uint8Array): Uint8Array {
@@ -29,4 +30,6 @@ export default class ArweaveSigner extends Rsa4096Pss {
     }
 }
 
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+indexToType[1] = ArweaveSigner

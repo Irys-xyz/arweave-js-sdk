@@ -4,5 +4,8 @@
         "module": "esnext",
         "outDir": "build/esm",
         "target": "esnext"
-    }
+    },
+    "include": [
+        "src"
+    ]
 }

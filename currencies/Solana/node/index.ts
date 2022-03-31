@@ -1,97 +1,185 @@
-import Arweave from "arweave";
-import { ArweaveSigner, Signer } from "arbundles/src/signing";
+import { Signer } from "@bundlr-network/client/build/cjs/common/signing";
 import BigNumber from "bignumber.js";
-import crypto from "crypto";
+import * as web3 from "@solana/web3.js";
+import bs58 from "bs58";
+import nacl from "tweetnacl";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
-import base64url from "base64url";
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
+import retry from "async-retry";
+import SolanaSigner from "./SolanaSigner";
 
-// import { MESSAGE } from "../common"
-// console.log(MESSAGE)
-
-export default class ArweaveConfig extends BaseNodeCurrency {
-    declare protected providerInstance: Arweave;
+export default class SolanaConfig extends BaseNodeCurrency {
+    declare protected providerInstance: web3.Connection;
 
     constructor(config: CurrencyConfig) {
-        super(config)
-        this.base = ["winston", 1e12];
+        super(config);
+        this.base = ["lamports", 1e9];
     }
 
 
-    private async getProvider(): Promise<Arweave> {
+    private async getProvider(): Promise<web3.Connection> {
         if (!this.providerInstance) {
-            this.providerInstance = await Arweave.init({ host: this.providerUrl ?? "arweave.net", protocol: "https", port: 443 });
+            this.providerInstance = new web3.Connection(
+                this.providerUrl,
+                {
+                    confirmTransactionInitialTimeout: 60_000,
+                    commitment: "confirmed"
+                }
+            );
         }
         return this.providerInstance;
     }
 
+    private getKeyPair(): web3.Keypair {
+        let key = this.wallet
+        if (typeof key !== "string") {
+            key = bs58.encode(Buffer.from(key));
+        }
+        return web3.Keypair.fromSecretKey(bs58.decode(key));
+    }
+
     async getTx(txId: string): Promise<Tx> {
-        const arweave = await this.getProvider()
-        const txs = await arweave.transactions.getStatus(txId);
-        let tx;
-        if (txs.status == 200) {
-            tx = await arweave.transactions.get(txId)
-        }
-        const confirmed = (txs.status !== 202 && txs.confirmed && txs?.confirmed?.number_of_confirmations >= this.minConfirm) ? true : false
-        let owner;
-        if (tx?.owner) {
-            owner = this.ownerToAddress(tx.owner);
-        }
-        return {
-            from: owner ?? undefined,
-            to: tx?.target ?? undefined,
-            amount: new BigNumber(tx?.quantity ?? 0),
-            pending: (txs.status == 202),
-            confirmed
-        }
+        const connection = await this.getProvider()
+        const stx = await connection.getTransaction(txId, { commitment: "confirmed" });
+        if (!stx) throw new Error("Confirmed tx not found");
+
+        const currentSlot = await connection.getSlot("confirmed");
+
+        const amount = new BigNumber(stx?.meta?.postBalances[1] ?? 0).minus(
+            new BigNumber(stx?.meta?.preBalances[1] ?? 0),
+        );
+
+        const tx: Tx = {
+            from: stx.transaction.message.accountKeys[0].toBase58(),
+            to: stx.transaction.message.accountKeys[1].toBase58(),
+            amount: amount,
+            blockHeight: new BigNumber(stx.slot),
+            pending: false,
+            confirmed: currentSlot - stx.slot >= 10,
+        };
+        return tx;
     }
 
     ownerToAddress(owner: any): string {
-
-        return Arweave.utils.bufferTob64Url(crypto
-            .createHash("sha256")
-            .update((Arweave.utils.b64UrlToBuffer((Buffer.isBuffer(owner) ? base64url(owner) : owner))))
-            .digest()
-        )
+        return bs58.encode(owner);
     }
 
     async sign(data: Uint8Array): Promise<Uint8Array> {
-        return Arweave.crypto.sign(this.wallet, data);
+        return await (await this.getSigner()).sign(data);
     }
 
     getSigner(): Signer {
-        return new ArweaveSigner(this.wallet);
+        const keyp = this.getKeyPair();
+        const keypb = bs58.encode(
+            Buffer.concat([keyp.secretKey, keyp.publicKey.toBuffer()]),
+        );
+        return new SolanaSigner(keypb);
     }
 
-    async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        if (Buffer.isBuffer(pub)) {
-            pub = pub.toString();
-        }
-        return Arweave.crypto.verify(pub, data, signature);
+    verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
+        return SolanaSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
-        return (await this.getProvider()).network.getInfo().then(r => new BigNumber(r.height))
+        const bh = await retry(
+            async (bail) => {
+                try {
+                    return (await (await this.getProvider()).getEpochInfo()).blockHeight
+                } catch (e: any) {
+                    if (e.message?.includes("blockheight")) throw e;
+                    else bail(e);
+                    throw new Error("Unreachable");
+                }
+            },
+            { retries: 3, minTimeout: 1000 }
+        );
+        if (bh) {
+            return new BigNumber(bh)
+        }
+        throw new Error("Solana BlockHash is null")
     }
 
-    async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
-        return new BigNumber(await (await this.getProvider()).transactions.getPrice((new BigNumber(amount)).toNumber(), to)).integerValue(BigNumber.ROUND_CEIL)
+    async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
+        // const connection = await this.getProvider()
+        // const block = await connection.getRecentBlockhash();
+        // const feeCalc = await connection.getFeeCalculatorForBlockhash(
+        //     block.blockhash,
+        // );
+        // return new BigNumber(feeCalc.value.lamportsPerSignature);
+        return new BigNumber(5000) // hardcode it for now
     }
 
-    async sendTx(data: any): Promise<void> {
-        await (await this.getProvider()).transactions.post(data);
+    async sendTx(data: any): Promise<string | undefined> {
+        const connection = await this.getProvider()
+        try {
+            return await web3.sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: "confirmed" });
+        } catch (e: any) {
+            if (e?.message?.includes("30.")) {
+                const txId = (e.message as string).match(/[A-Za-z0-9]{87,88}/g);
+                if (!txId) { throw e }
+                try {
+                    const conf = await connection.confirmTransaction(txId[0], "confirmed")
+                    if (conf) return undefined;
+                    throw {
+                        message: e.message,
+                        txId: txId[0]
+                    };
+                } catch (e: any) {
+                    throw {
+                        message: e.message,
+                        txId: txId[0]
+                    };
+                }
+
+            }
+            throw e;
+        }
     }
 
-    async createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string; tx: any; }> {
-        const arweave = await this.getProvider();
-        const tx = await arweave.createTransaction({ quantity: (new BigNumber(amount)).toString(), reward: fee, target: to }, this.wallet)
-        await arweave.transactions.sign(tx, this.wallet)
-        return { txId: tx.id, tx };
+    async createTx(
+        amount: BigNumber.Value,
+        to: string,
+        _fee?: string,
+    ): Promise<{ txId: string | undefined; tx: any }> {
+        // TODO: figure out how to manually set fees
+
+        const keys = this.getKeyPair();
+
+        const hash = await retry(
+            async (bail) => {
+                try {
+                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash
+                } catch (e: any) {
+                    if (e.message?.includes("blockhash")) throw e;
+                    else bail(e);
+                    throw new Error("Unreachable");
+                }
+            },
+            { retries: 3, minTimeout: 1000 }
+        );
+
+        const transaction = new web3.Transaction({
+            recentBlockhash: hash,
+            feePayer: keys.publicKey,
+        });
+
+        transaction.add(
+            web3.SystemProgram.transfer({
+                fromPubkey: keys.publicKey,
+                toPubkey: new web3.PublicKey(to),
+                lamports: +new BigNumber(amount).toNumber(),
+            }),
+        );
+
+        const transactionBuffer = transaction.serializeMessage();
+        const signature = nacl.sign.detached(transactionBuffer, keys.secretKey);
+        transaction.addSignature(keys.publicKey, Buffer.from(signature));
+        return { tx: transaction, txId: undefined };
     }
 
-    getPublicKey(): string {
-        return this.wallet.n
+    getPublicKey(): string | Buffer {
+        const key = this.getKeyPair();
+        return key.publicKey.toBuffer();
     }
-
 
 }

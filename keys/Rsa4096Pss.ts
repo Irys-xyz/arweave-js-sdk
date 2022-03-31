@@ -1,6 +1,6 @@
-import { Signer } from "../Signer";
+import { Signer } from "../src/common/signing/Signer";
 import { constants, createPublicKey, createSign } from "crypto";
-import Arweave from "arweave";
+import { verify } from "arweave/web/lib/crypto/webcrypto-driver"
 import base64url from "base64url";
 import { SIG_CONFIG } from "../../constants";
 
@@ -40,7 +40,7 @@ export default class Rsa4096Pss implements Signer {
     message: Uint8Array,
     signature: Uint8Array,
   ): Promise<boolean> {
-    return await Arweave.crypto.verify(
+    return await verify(
       Buffer.isBuffer(pk) ? base64url.encode(pk) : pk,
       message,
       signature,

@@ -1,7 +1,7 @@
 {
-  "name": "@bundlr-network/solana-node",
+  "name": "@bundlr-network/arweave-node",
   "version": "0.0.1",
-  "description": "Solana Currency for Bundlr",
+  "description": "Arweave Currency for Bundlr",
   "main": "index.js",
   "author": "JesseTheRobot",
   "license": "MIT",
@@ -22,20 +22,9 @@
     "@bundlr-network/client": "^0.6.2"
   },
   "dependencies": {
-    "@noble/ed25519": "^1.6.0",
-    "@solana/web3.js": "^1.37.0",
-    "async-retry": "^1.3.3",
-    "bignumber.js": "^9.0.2",
-    "bs58": "^5.0.0",
-    "tweetnacl": "^1.0.3"
+    "@bundlr-network/ethereum-node": "^0.0.1"
   },
   "devDependencies": {
-    "@bundlr-network/client": "^0.6.2",
-    "@noble/ed25519": "^1.6.0",
-    "@solana/web3.js": "^1.37.0",
-    "async-retry": "^1.3.3",
-    "bignumber.js": "^9.0.2",
-    "bs58": "^5.0.0",
-    "tweetnacl": "^1.0.3"
+    "@bundlr-network/client": "^0.6.2"
   }
 }

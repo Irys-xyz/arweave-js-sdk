@@ -1,4 +1,4 @@
-import { Signer } from "../Signer";
+import { Signer } from "../src/common/signing/Signer";
 import base64url from "base64url";
 import secp256k1 from "secp256k1";
 import { SignatureConfig, SIG_CONFIG } from "../../constants";
@@ -38,7 +38,7 @@ export default class Secp256k1 implements Signer {
         p as Buffer,
       );
       // eslint-disable-next-line no-empty
-    } catch (e) {}
+    } catch (e) { }
     return verified;
   }
 

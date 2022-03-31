@@ -4,5 +4,8 @@
     "module": "commonjs",
     "outDir": "build/cjs",
     "target": "es2015"
-  }
+  },
+  "include": [
+    "src"
+  ]
 }

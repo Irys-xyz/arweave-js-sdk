@@ -2,12 +2,11 @@ import Arweave from "arweave";
 import ArweaveSigner from "./Rsa4096Pss";
 import BigNumber from "bignumber.js";
 import crypto from "crypto";
-import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import base64url from "base64url";
+import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
+import { Signer } from "@bundlr-network/client/build/cjs/common/signing"
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
 
-// import { MESSAGE } from "../common"
-// console.log(MESSAGE)
 
 export default class ArweaveConfig extends BaseNodeCurrency {
     declare protected providerInstance: Arweave;
