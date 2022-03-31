@@ -81,7 +81,7 @@ export default class ZKsyncConfig extends BaseNodeCurrency {
         return new BigNumber(response.data.finalized, 16);
     }
 
-    async getFee(_amount: BigNumber.Value, to: string): Promise<BigNumber> {
+    async getFee(_amount: string, to: string): Promise<BigNumber> {
         const tx = {
             "txType": "Transfer",
             "address": to,
@@ -91,7 +91,7 @@ export default class ZKsyncConfig extends BaseNodeCurrency {
         const endpoint = `${this.providerUrl}/api/v0.2/fee`;
         const response = await axios.post(endpoint, tx);
 
-        return new BigNumber(await response.data.result.totalFee);
+        return new BigNumber((await response.data.result.totalFee).toString().slice(0,-3));
     }
 
 
@@ -111,7 +111,7 @@ export default class ZKsyncConfig extends BaseNodeCurrency {
             to: to,
             token: "ETH",
             amount: zksync.utils.closestPackableTransactionAmount(ethers.utils.parseUnits(amount.toString(),"wei")),
-            fee: zksync.utils.closestPackableTransactionFee((await this.getFee(null, to)).toString()).toString().slice(0,-4),
+            fee: (await this.getFee(null, to)).toString(),
             nonce: nonce
         };
 
