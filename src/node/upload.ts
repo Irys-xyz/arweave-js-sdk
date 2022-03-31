@@ -11,6 +11,7 @@ import inquirer from "inquirer";
 import { Readable } from "stream";
 import * as csv from "csv"
 import { readFile } from "fs/promises";
+import Crypto from "crypto"
 
 export const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false) }
 
@@ -36,6 +37,8 @@ export default class NodeUploader extends Uploader {
         //     return await 
         // }
         const data = readFileSync(path);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         return await this.upload(data, tags)
     }
 
@@ -217,7 +220,7 @@ export default class NodeUploader extends Uploader {
         }
         if (Buffer.isBuffer(item)) {
             const signer = await this.currencyConfig.getSigner();
-            item = createData(item, signer, { tags })
+            item = createData(item, signer, { tags, anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) })
             await item.sign(signer)
         }
         // if(returnVal){
