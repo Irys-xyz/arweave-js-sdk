@@ -21,7 +21,13 @@
   "peerDependencies": {
     "@bundlr-network/client": "^0.6.2"
   },
+  "dependencies": {
+    "arweave": "^1.10.23",
+    "base64url": "^3.0.1"
+  },
   "devDependencies": {
-    "@bundlr-network/client": "^0.6.2"
+    "@bundlr-network/client": "^0.6.2",
+    "arweave": "^1.10.23",
+    "base64url": "^3.0.1"
   }
 }

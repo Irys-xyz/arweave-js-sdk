@@ -22,9 +22,14 @@
     "@bundlr-network/client": "^0.6.2"
   },
   "dependencies": {
-    "@bundlr-network/ethereum-node": "^0.0.1"
+    "@bundlr-network/ethereum-node": "^0.0.1",
+    "bignumber.js": "^9.0.2",
+    "ethers": "^5.6.2"
   },
   "devDependencies": {
-    "@bundlr-network/client": "^0.6.2"
+    "@bundlr-network/client": "^0.6.2",
+    "@bundlr-network/ethereum-node": "^0.0.1",
+    "bignumber.js": "^9.0.2",
+    "ethers": "^5.6.2"
   }
 }
