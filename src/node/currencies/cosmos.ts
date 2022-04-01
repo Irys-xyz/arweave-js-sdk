@@ -12,7 +12,8 @@ import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { HdPath, Slip10RawIndex } from "@cosmjs/crypto";
 
 export interface CosmosCurrencyConfig extends CurrencyConfig { 
-    localconfig: {
+    localConfig: {
+        prefix: string,
         derivePath: string,
         fee: string,
         denomination: string,
@@ -24,7 +25,8 @@ export default class CosmosConfig extends BaseNodeCurrency {
     protected keyPair;
     protected providerInstance?;
     protected signerInstance: CosmosSigner;
-    private localconfig: {
+    private localConfig: {
+        prefix: string,
         derivePath: string,
         fee: string,
         denomination: string,
@@ -35,21 +37,20 @@ export default class CosmosConfig extends BaseNodeCurrency {
 
     constructor(config: CosmosCurrencyConfig) {
         super(config);
-        this.localconfig = config.localconfig;
-        this.base = [this.localconfig.denomination, this.localconfig.decimals];
+        this.localConfig = config.localConfig;
+        this.base = [this.localConfig.denomination, this.localConfig.decimals];
         this._address = "You need to .ready() this currency!"
     }
 
     protected async getProvider(): Promise<any> {
-        const path2number = new BigNumber(this.localconfig.derivePath).toNumber();
         const path: HdPath = [
             Slip10RawIndex.hardened(44),
-            Slip10RawIndex.hardened(path2number),
+            Slip10RawIndex.hardened(new BigNumber(this.localConfig.derivePath).toNumber()),
             Slip10RawIndex.hardened(0),
             Slip10RawIndex.normal(0),
             Slip10RawIndex.normal(0),
           ];
-        const wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.wallet, { "prefix": this.name, "hdPaths": [path] } );
+        const wallet = await DirectSecp256k1HdWallet.fromMnemonic(this.wallet, { "prefix": this.localConfig.prefix, "hdPaths": [path] } );
         if (!this.providerInstance) {
             this.providerInstance = await stargate.SigningStargateClient.connectWithSigner(
                 this.providerUrl,
@@ -89,7 +90,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     
     ownerToAddress(owner: any): string {
         const encodePubkey = amino.encodeSecp256k1Pubkey(owner);
-        const address = amino.pubkeyToAddress(encodePubkey, this.name);
+        const address = amino.pubkeyToAddress(encodePubkey, this.localConfig.prefix);
         return address;
     }
 
@@ -107,12 +108,11 @@ export default class CosmosConfig extends BaseNodeCurrency {
 
     async getCurrentHeight(): Promise<BigNumber> {
         const provider = await this.getProvider();
-        const height = await provider.getHeight();
-        return height;
+        return await provider.getHeight();
     }
 
     async getFee(): Promise<BigNumber> {
-        return new BigNumber(this.localconfig.fee);
+        return new BigNumber(this.localConfig.fee);
     }
 
     async sendTx(data: any): Promise<string> {
@@ -133,7 +133,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
             amount: [
                 {
                 denom: this.base[0],
-                amount: this.localconfig.fee,
+                amount: this.localConfig.fee,
                 },
             ],
             gas: "100000",
@@ -159,7 +159,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async ready(): Promise<boolean> {
-        this.signerInstance = new CosmosSigner(this.wallet, this.localconfig.derivePath);
+        this.signerInstance = new CosmosSigner(this.wallet, this.localConfig.derivePath);
         await this.signerInstance.ready();
         this.assignAddress();
         return true;
