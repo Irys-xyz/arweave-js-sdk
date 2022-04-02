@@ -6,6 +6,8 @@ import EthereumConfig from "./ethereum";
 import NearConfig from "./near";
 import SolanaConfig from "./solana";
 import AlgorandConfig from "./algorand";
+import axios from "axios";
+import utils from "../../common/utils";
 
 export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): NodeCurrency {
     switch (currency) {
@@ -23,8 +25,21 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet })
         case "avalanche":
             return new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: providerUrl ?? "https://api.avax-test.network/ext/bc/C/rpc/", wallet })
-        case "boba":
+        case "boba-eth":
             return new EthereumConfig({ name: "boba", ticker: "ETH", providerUrl: providerUrl ?? "https://mainnet.boba.network/", minConfirm: 3, wallet })
+        case "boba": {
+            const k = new ERC20Config({ name: "boba", ticker: "BOBA", providerUrl: providerUrl ?? "https://mainnet.boba.network/", contractAddress: contractAddress ?? "0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7", minConfirm: 1, wallet })
+            // for L1 mainnet: "https://main-light.eth.linkpool.io/" and "0x42bbfa2e77757c645eeaad1655e0911a7553efbc"
+            k.price = async (): Promise<number> => {
+                const res = await axios.post("https://api.livecoinwatch.com/coins/single", JSON.stringify({ "currency": "USD", "code": `${k.ticker}` }), { headers: { "x-api-key": "d1f696c4-84fe-40d9-af2d-250d027ef85a", "content-type": "application/json" } })
+                await utils.checkAndThrow(res, "Getting price data")
+                if (!res?.data?.rate) {
+                    throw new Error(`unable to get price for ${k.name}`)
+                }
+                return +res.data.rate
+            }
+            return k;
+        }
         case "arbitrum":
             return new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc/", wallet })
         case "chainlink":
