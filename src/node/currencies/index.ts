@@ -26,7 +26,7 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         case "avalanche":
             return new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: providerUrl ?? "https://api.avax-test.network/ext/bc/C/rpc/", wallet })
         case "boba-eth":
-            return new EthereumConfig({ name: "boba-eth", ticker: "ETH", providerUrl: providerUrl ?? "https://mainnet.boba.network/", minConfirm: 3, wallet })
+            return new EthereumConfig({ name: "boba-eth", ticker: "ETH", providerUrl: providerUrl ?? "https://mainnet.boba.network/", minConfirm: 1, wallet })
         case "boba": {
             const k = new ERC20Config({ name: "boba", ticker: "BOBA", providerUrl: providerUrl ?? "https://mainnet.boba.network/", contractAddress: contractAddress ?? "0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7", minConfirm: 1, wallet })
             // for L1 mainnet: "https://main-light.eth.linkpool.io/" and "0x42bbfa2e77757c645eeaad1655e0911a7553efbc"
