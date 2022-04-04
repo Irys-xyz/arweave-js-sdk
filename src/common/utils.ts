@@ -126,6 +126,6 @@ export async function importAndGetBundlrFlavour(currency: string): Promise<{ new
         }
         return pkg[`${currency.charAt(0).toUpperCase() + currency.substring(1).toLowerCase()}Bundlr`]
     } catch (e) {
-        throw new Error(`Unable to load bundlr flavour ${currency} from ${pkgName[0]}`)
+        throw new Error(`Unable to load bundlr flavour ${currency} from ${pkgName[0]} - ${e}`)
     }
 }

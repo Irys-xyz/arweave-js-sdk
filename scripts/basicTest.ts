@@ -3,7 +3,7 @@ import Bundlr from "../";
 import { promises, readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next"
 import Crypto from "crypto"
-
+import { ArweaveBundlr } from "@bundlr-network/arweave-node"
 
 const profiling = false;
 async function main() {
@@ -23,14 +23,16 @@ async function main() {
 
 
         const keys = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("http://devnet.bundlr.network", "arweave", keys.arweave)
+
+        //let bundlr = await Bundlr.newBundlr("https://devnet.bundlr.network", "arweave", keys.arweave)
+        let bundlr = new ArweaveBundlr("https://devnet.bundlr.network", keys.arweave)
         console.log(bundlr.address)
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
-        const transaction = await bundlr.createTransaction("aaa");
+        const transaction = bundlr.createTransaction("aaa");
         await transaction.sign();
         console.log(transaction.id)
         console.log(await transaction.isValid());
@@ -52,7 +54,7 @@ async function main() {
         await promises.rm("testFolder-manifest.csv", { force: true })
         await promises.rm("testFolder-id.txt", { force: true })
 
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 10, false, true, async (log): Promise<void> => { console.log(log) })
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", undefined, 10, false, true, async (log): Promise<void> => { console.log(log) })
         console.log(resu);
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
@@ -69,19 +71,19 @@ async function main() {
     } catch (e) {
         console.log(e);
     } finally {
+        console.log("done!");
         if (!profiling) {
-            console.log("done!");
             return
         };
 
         const cpuprofile = v8.stopProfiling(title)
         cpuprofile.export((_err, res) => {
-            writeFileSync(`./profiles/cpu/${title}.cpuprofile`, res)
+            writeFileSync(`./profiles/cpu/${title}.cpuprofile`, res ?? Buffer.alloc(0))
         })
         cpuprofile.delete();
         const heapProfile = v8.stopSamplingHeapProfiling();
         heapProfile.export((_err, res) => {
-            writeFileSync(`./profiles/heap/${title}.heapprofile`, res)
+            writeFileSync(`./profiles/heap/${title}.heapprofile`, res ?? Buffer.alloc(0))
         })
     }
 }
