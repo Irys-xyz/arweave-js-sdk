@@ -1,5 +1,5 @@
 {
-  "name": "@bundlr-network/solana-node",
+  "name": "@bundlr-network/solana",
   "version": "0.0.1",
   "description": "Solana Currency for Bundlr",
   "main": "index.js",

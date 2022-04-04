@@ -2,12 +2,11 @@
 // Note: DO NOT REMOVE/ALTER THE ABOVE LINE - it is called a 'shebang' and is vital for CLI execution.
 import { Command, OptionValues } from "commander";
 import { readFileSync } from "fs";
-import Bundlr from "./bundlr";
+import NodeBundlr from "./index";
 import inquirer from "inquirer";
 import { execSync } from "child_process"
 import BigNumber from "bignumber.js";
 import { checkPath } from "./upload";
-import NodeBundlr from "./bundlr";
 
 const program = new Command();
 
@@ -96,7 +95,7 @@ program.command("deploy").description("(DEPRECATED - use the functionally identi
 async function uploadDir(folder: string): Promise<void> {
     try {
         const bundler = await init(options, "upload");
-        const res = await bundler.uploader.uploadFolder(folder, options.indexFile ?? null, +options.batchSize, options.confirmation, !options.removeDeleted, async (log): Promise<void> => { console.log(log) });
+        const res = await bundler.uploader.uploadFolder(folder, options.indexFile ?? null, +options.batchSize, options.confirmation, !options.removeDeleted, async (log: any): Promise<void> => { console.log(log) });
         if (res != "none") {
             console.log(`Uploaded to https://arweave.net/${res}`);
         }
@@ -158,7 +157,7 @@ async function confirmation(message: string): Promise<boolean> {
  * @param opts the parsed options from the cli
  * @returns a new Bundlr instance
  */
-async function init(opts: OptionValues, operation: string): Promise<Bundlr> {
+async function init(opts: OptionValues, operation: string): Promise<NodeBundlr> {
     let wallet;
     let bundler: NodeBundlr
     // every option needs a host and currency so ensure they're present
@@ -185,7 +184,7 @@ async function init(opts: OptionValues, operation: string): Promise<Bundlr> {
     }
     try {
         // create and ready the bundlr instance
-        bundler = await Bundlr.newBundlr(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl, contractAddress: opts.contractAddress }) as NodeBundlr
+        bundler = await NodeBundlr.newBundlr(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl, contractAddress: opts.contractAddress }) as NodeBundlr
         // bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl, contractAddress: opts.contractAddress });
         // await bundler.ready()
 

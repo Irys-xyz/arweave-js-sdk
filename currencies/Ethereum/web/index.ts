@@ -166,4 +166,3 @@ export class ArbitrumBundlr extends WebBundlr {
         super(url, currencyConfig, config)
     }
 }
-

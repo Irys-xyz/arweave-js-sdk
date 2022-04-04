@@ -1,5 +1,5 @@
 {
-  "name": "@bundlr-network/erc20-node",
+  "name": "@bundlr-network/erc20",
   "version": "0.0.1",
   "description": "ERC20 Currency for Bundlr",
   "main": "index.js",

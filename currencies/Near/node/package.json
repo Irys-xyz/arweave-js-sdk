@@ -1,5 +1,5 @@
 {
-  "name": "@bundlr-network/near-node",
+  "name": "@bundlr-network/near",
   "version": "0.0.1",
   "description": "Near Currency for Bundlr",
   "main": "index.js",

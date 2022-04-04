@@ -1,5 +1,5 @@
 {
-  "name": "@bundlr-network/algorand-node",
+  "name": "@bundlr-network/algorand",
   "version": "0.0.1",
   "description": "Algorand Currency for Bundlr",
   "main": "index.js",

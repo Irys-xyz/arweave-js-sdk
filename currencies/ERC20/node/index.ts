@@ -125,15 +125,15 @@ export class ChainlinkBundlr extends NodeBundlr {
     }
 }
 
-export class KyveBundlr extends NodeBundlr {
-    public static readonly currency = "kyve"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new ERC20Config({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: config?.providerUrl ?? "https://moonbeam-alpha.api.onfinality.io/public", contractAddress: config?.contractAddress ?? "0x3cf97096ccdb7c3a1d741973e351cb97a2ede2c1", isSlow: true, wallet })
-        currencyConfig.price = async (): Promise<number> => { return 100 } // TODO: replace for mainnet
-        currencyConfig.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
-        super(url, currencyConfig, config)
-    }
-}
+// export class KyveBundlr extends NodeBundlr {
+//     public static readonly currency = "kyve"
+//     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+//         const currencyConfig = new ERC20Config({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: config?.providerUrl ?? "https://moonbeam-alpha.api.onfinality.io/public", contractAddress: config?.contractAddress ?? "0x3cf97096ccdb7c3a1d741973e351cb97a2ede2c1", isSlow: true, wallet })
+//         currencyConfig.price = async (): Promise<number> => { return 100 } // TODO: replace for mainnet
+//         currencyConfig.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
+//         super(url, currencyConfig, config)
+//     }
+// }
 
 
 export const erc20abi = [

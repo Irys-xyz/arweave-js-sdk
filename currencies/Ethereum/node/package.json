@@ -1,5 +1,5 @@
 {
-  "name": "@bundlr-network/ethereum-node",
+  "name": "@bundlr-network/ethereum",
   "version": "0.0.1",
   "description": "Ethereum Currency for Bundlr",
   "main": "index.js",
