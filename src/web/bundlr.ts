@@ -1,9 +1,10 @@
 // import { BundlrConfig } from "common/types";
+import { BundlrConfig } from "common/types";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
 import Uploader from "../common/upload";
-import Utils from "../common/utils";
+import Utils, { importAndGetBundlrFlavour } from "../common/utils";
 // import EthereumConfig from "./currencies/ethereum";
 // import NearConfig from "./currencies/near";
 // import SolanaConfig from "./currencies/solana";
@@ -32,11 +33,12 @@ export default class WebBundlr extends Bundlr {
         }
         this.address = this.currencyConfig.address
     }
-
-    // static newBundlr(url: string, currency: string, wallet: any, config?: BundlrConfig): WebBundlr {
-    //     const cConfig = getCurrency(currency, wallet, config?.providerUrl, config?.contractAddress)
-    //     return new WebBundlr(url, cConfig, config)
-    // }
+    static async newBundlr(url: string, currency: string, wallet: any, config?: BundlrConfig): Promise<WebBundlr> {
+        const bundlr = await importAndGetBundlrFlavour(currency)
+        const newBundlr = new bundlr(url, wallet, config) as WebBundlr
+        await newBundlr.ready()
+        return newBundlr
+    }
 }
 
 // export function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): WebCurrency {

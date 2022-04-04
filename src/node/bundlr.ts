@@ -47,9 +47,9 @@ export default class NodeBundlr extends Bundlr {
 
 
 
-    static async newBundlr(url: string, currency: string, wallet: any, config?: BundlrConfig): Promise<NodeBundlr | WebBundlr> {
+    static async newBundlr(url: string, currency: string, wallet: any, config?: BundlrConfig): Promise<NodeBundlr> {
         const bundlr = await importAndGetBundlrFlavour(currency)
-        return new bundlr(url, wallet, config)
+        return new bundlr(url, wallet, config) as NodeBundlr
     }
 
 }
