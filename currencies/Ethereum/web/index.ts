@@ -5,9 +5,9 @@ import InjectedEthereumSigner from "./injectedEthereumSigner"
 import { Signer } from "@bundlr-network/client/build/esm/common/signing";
 import { Tx, CurrencyConfig } from "@bundlr-network/client/build/esm/common/types";
 import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency";
+import WebBundlr from "@bundlr-network/client/build/esm/web/";
 
 const ethBigNumber = ethers.BigNumber // required for hexString conversions (w/ 0x padding)
-const ethereumSigner = InjectedEthereumSigner
 
 export default class EthereumConfig extends BaseWebCurrency {
     private signer!: InjectedEthereumSigner;
@@ -54,7 +54,7 @@ export default class EthereumConfig extends BaseWebCurrency {
 
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return ethereumSigner.verify(pub, data, signature);
+        return InjectedEthereumSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -112,3 +112,58 @@ export default class EthereumConfig extends BaseWebCurrency {
 
 
 }
+
+
+export class EthereumBundlr extends WebBundlr {
+    public static readonly currency = "ethereum"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://main-light.eth.linkpool.io/", wallet })
+        super(url, currencyConfig, config)
+    }
+}
+export class MaticBundlr extends WebBundlr {
+    public static readonly currency = "matic"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: config?.providerUrl ?? "https://polygon-rpc.com", wallet })
+        super(url, currencyConfig, config)
+    }
+}
+
+export class BnbBundlr extends WebBundlr {
+    public static readonly currency = "bnb"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new EthereumConfig({ name: "bnb", ticker: "BNB", providerUrl: config?.providerUrl ?? "https://bsc-dataseed.binance.org", wallet })
+        super(url, currencyConfig, config)
+    }
+}
+
+export class FantomBundlr extends WebBundlr {
+    public static readonly currency = "fantom"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new EthereumConfig({ name: "fantom", ticker: "FTM", providerUrl: config?.providerUrl ?? "https://rpc.ftm.tools/", wallet })
+        super(url, currencyConfig, config)
+    }
+}
+export class AvalancheBundlr extends WebBundlr {
+    public static readonly currency = "avalanche"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: config?.providerUrl ?? "https://api.avax.network/ext/bc/C/rpc", wallet })
+        super(url, currencyConfig, config)
+    }
+}
+export class BobaEthBundlr extends WebBundlr {
+    public static readonly currency = "boba-eth"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new EthereumConfig({ name: "boba-eth", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://mainnet.boba.network/", wallet })
+        super(url, currencyConfig, config)
+    }
+}
+
+export class ArbitrumBundlr extends WebBundlr {
+    public static readonly currency = "arbitrum"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet })
+        super(url, currencyConfig, config)
+    }
+}
+

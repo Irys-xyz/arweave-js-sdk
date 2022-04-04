@@ -3,6 +3,7 @@ import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
 import { Signer } from "@bundlr-network/client/build/cjs/common/signing"
+import NodeBundlr from "@bundlr-network/client/build/cjs/node/";
 import * as algosdk from "algosdk";
 import axios from "axios";
 import AlgorandSigner from "./AlgorandSigner";
@@ -105,4 +106,12 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         return Buffer.from(pub);
     }
 
+}
+
+export class AlgorandBundlr extends NodeBundlr {
+    public static readonly currency = "algorand"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: config?.providerUrl ?? "https://algoexplorerapi.io", wallet })
+        super(url, currencyConfig, config)
+    }
 }

@@ -8,7 +8,7 @@ import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
 import { Currency, FundData } from "./types";
-import { Signer } from "arbundles/src/signing";
+import { Signer } from "./signing";
 
 export default abstract class Bundlr {
     public api!: Api;

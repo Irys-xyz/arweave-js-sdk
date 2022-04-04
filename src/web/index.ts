@@ -21,4 +21,11 @@ globalThis.util ??= util;
 export { default } from "./bundlr"
 export { default as WebBundlr } from "./bundlr"
 
-// export * from "./currencies/index"
+// on demand injection.
+const currencies: Array<[string, Array<string>]> = [
+    ["@bundlr-network/ethereum-web", ["ethereum", "matic", "bnb", "fantom", "avalanche", "boba-eth", "arbitrum"]],
+    ["@bundlr-network/near-web", ["near"]],
+    ["@bundlr-network/solana-web", ["solana"]]
+]
+// @ts-ignore
+globalThis.Bundlr?.currencyArrayMap ? (globalThis.Bundlr.currencyArrayMap.concat(currencies)) : (globalThis.Bundlr = { currencyArrayMap: currencies })

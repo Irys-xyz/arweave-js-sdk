@@ -1,6 +1,8 @@
 // import Api from "arweave/node/lib/api";
 import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
+import NodeBundlr from "node";
+import WebBundlr from "web";
 import Api from "./api";
 import { Currency } from "./types";
 BigNumber.set({ DECIMAL_PLACES: 50 })
@@ -97,5 +99,33 @@ export default class Utils {
 
     public unitConverter(baseUnits: BigNumber.Value): BigNumber {
         return new BigNumber(baseUnits).dividedBy(this.currencyConfig.base[1]);
+    }
+}
+
+/**
+ * Dynamically (!) imports and returns the requested bundlr flavour
+ * @param currency - string name of the currency, i.e "matic" or "solana"
+ * @returns the constructor for the requested currencys' bundlr flavour
+ */
+export async function importAndGetBundlrFlavour(currency: string): Promise<{ new(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }): NodeBundlr | WebBundlr }> {
+    // @ts-ignore
+    if (!globalThis?.Bundlr?.currencyArrayMap) {
+        throw new Error("required global 'Bundlr.currencyArrayMap' is not initialised")
+    }
+    // @ts-ignore
+    const pkgName = globalThis.Bundlr.currencyArrayMap.find(e => e[1].some(v => { return v === currency.toLowerCase() }))
+    if (!pkgName) {
+        throw new Error(`No package found for currency ${currency}`)
+    }
+    try {
+        // @ts-ignore
+        const pkg = await import(pkgName[0])
+        while (currency.includes("-")) {
+            const index = currency.indexOf("-");
+            currency = currency.substring(0, index) + currency.charAt(index + 1).toUpperCase() + currency.substring(index + 2)
+        }
+        return pkg[`${currency.charAt(0).toUpperCase() + currency.substring(1).toLowerCase()}Bundlr`]
+    } catch (e) {
+        throw new Error(`Unable to load bundlr flavour ${currency} from ${pkgName[0]}`)
     }
 }

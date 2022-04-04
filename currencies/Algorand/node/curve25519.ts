@@ -36,3 +36,7 @@ export default class Curve25519 implements Signer {
     );
   }
 }
+
+// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// // @ts-ignore
+// globalThis.Bundlr.Signers ? (globalThis.Bundlr.Signers[2] = Curve25519) : (globalThis.Bundlr.Signers = { 2: Curve25519 }) 

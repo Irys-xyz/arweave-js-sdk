@@ -18,6 +18,10 @@
       "import": "./build/esm/index.js",
       "require": "./build/cjs/index.js"
     },
+    "./*": {
+      "import": "./*.js",
+      "require": "./*.js"
+    },
     "./web": {
       "import": "./build/esm/web/index.js",
       "require": "./build/cjs/web/index.js"
@@ -25,18 +29,15 @@
     "./node": {
       "import": "./build/esm/node/index.js",
       "require": "./build/cjs/node/index.js"
-    },
-    "./signing": {
-      "import": "./build/esm/common/signing",
-      "require": "./build/cjs/common/signing"
     }
   },
   "scripts": {
     "dev:build": "rm -rf build && tsc -p cjs.tsconfig.json && tsc -p esm.tsconfig.json && chmod +x ./build/cjs/node/cli.js && chmod +x ./build/esm/node/cli.js && ./scripts/fixup.sh",
-    "prod:build": "yarn run dev:build && webpack",
+    "prod:build": "yarn run dev:build && webpack && yarn run lerna:build",
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
-    "lerna:build": "yarn run prod:build && lerna run build --concurrency 8"
+    "lerna:build": "lerna run build --concurrency 8",
+    "lerna:bootstrap": "lerna bootstrap --force-local"
   },
   "bin": {
     "bundlr": "./build/cjs/node/cli.js"
@@ -96,30 +97,5 @@
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1",
     "webpack-node-externals": "^3.0.0"
-  },
-  "peerDependencies": {
-    "@solana/wallet-adapter-base": "^0.9.2",
-    "@solana/web3.js": "^1.36.0",
-    "algosdk": "^1.13.1",
-    "axios": "^0.25.0",
-    "ethers": "^5.5.1",
-    "near-api-js": "^0.44.2"
-  },
-  "peerDependenciesMeta": {
-    "@solana/wallet-adapter-base": {
-      "optional": true
-    },
-    "@solana/web3.js": {
-      "optional": true
-    },
-    "near-api-js": {
-      "optional": true
-    },
-    "algosdk": {
-      "optional": true
-    },
-    "ethers": {
-      "optional": true
-    }
   }
 }

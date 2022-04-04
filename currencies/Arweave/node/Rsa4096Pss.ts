@@ -47,3 +47,7 @@ export default class Rsa4096Pss implements Signer {
         );
     }
 }
+
+// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// // @ts-ignore
+// globalThis.Bundlr.Signers ? (globalThis.Bundlr.Signers[1] = Rsa4096Pss) : (globalThis.Bundlr.Signers = { 1: Rsa4096Pss }) 

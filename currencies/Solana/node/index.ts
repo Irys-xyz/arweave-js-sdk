@@ -5,10 +5,11 @@ import bs58 from "bs58";
 import nacl from "tweetnacl";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
+import NodeBundlr from "@bundlr-network/client/build/cjs/node/";
 import retry from "async-retry";
 import SolanaSigner from "./SolanaSigner";
 
-export default class SolanaConfig extends BaseNodeCurrency {
+export class SolanaConfig extends BaseNodeCurrency {
     declare protected providerInstance: web3.Connection;
 
     constructor(config: CurrencyConfig) {
@@ -183,3 +184,15 @@ export default class SolanaConfig extends BaseNodeCurrency {
     }
 
 }
+export class SolanaBundlr extends NodeBundlr {
+    public static readonly currency = "solana"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: config?.providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet })
+        super(url, currencyConfig, config)
+    }
+}
+
+
+// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// // @ts-ignore
+// globalThis.NodeBundlr ? (globalThis.NodeBundlr["Solana"] = SolanaBundlr) : (globalThis.NodeBundlr = { "Solana": SolanaBundlr }) 

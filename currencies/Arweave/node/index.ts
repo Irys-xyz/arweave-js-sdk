@@ -6,6 +6,7 @@ import base64url from "base64url";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import { Signer } from "@bundlr-network/client/build/cjs/common/signing"
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
+import NodeBundlr from "@bundlr-network/client/build/cjs/node/";
 
 
 export default class ArweaveConfig extends BaseNodeCurrency {
@@ -93,4 +94,12 @@ export default class ArweaveConfig extends BaseNodeCurrency {
     }
 
 
+}
+
+export class ArweaveBundlr extends NodeBundlr {
+    public static readonly currency = "arweave"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new ArweaveConfig({ name: "arweave", ticker: "AR", minConfirm: 10, providerUrl: config?.providerUrl ?? "arweave.net", wallet, isSlow: true })
+        super(url, currencyConfig, config)
+    }
 }

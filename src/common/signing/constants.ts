@@ -2,7 +2,7 @@
 // import Curve25519 from "./keys/curve25519";
 // import EthereumSigner from "./chains/ethereumSigner";
 // import { ArweaveSigner, HexInjectedSolanaSigner } from "./chains";
-import { IndexToType } from "./types"
+// import { IndexToType } from "./types"
 
 
 // export const indexToType: IndexToType = {
@@ -21,11 +21,25 @@ import { IndexToType } from "./types"
 // };
 
 // this is dynamically mutated by loaded signers on initialisation time
-export const indexToType: IndexToType = {
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+// export const indexToType: IndexToType = globalThis.Bundlr.signers
 
 
-}
+// // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// // @ts-ignore
+// globalThis.Bundlr ??= {}
 
+// export const signerMap = [
+//   [1, ["@bundlr-network/arweave-node/ArweaveSigner"]],
+//   [2, ["@bundlr-network/solana-node/Curve25519", "@bundlr-network/algorand-node/Curve25519", "@bundlr-network/near-node/Curve25519"]],
+//   [3, ["@bundlr-network/ethereum-node/ethereumSigner", "@bundlr-network/ethereum-web/ethereumSigner"]],
+//   [4, ["@bundlr-network/solana-node/HexSolanaSigner", "@bundlr-network/solana-web/HexInjectedSolanaSigner"]]
+// ]
+
+// export async function importSigner(sigType: number) {
+
+// }
 
 // export async function dynamicIndexToType(index: number): Promise<IndexToType> {
 //   if (!this.index) {
@@ -43,21 +57,6 @@ export const indexToType: IndexToType = {
 
 // export const indexToPackage: IndexToPackage = {
 //   1: "@bundlr-network/arweave-node"
-// }
-
-// export async function getOptionalDep(name: string): Promise<any> {
-//   let dep;
-//   try {
-//     // cjs
-//     dep = require(name)
-//     // eslint-disable-next-line no-empty
-//   } catch (e) { }
-//   // esm
-//   dep = (await import(name).catch(_ => { return { default: undefined } })).default
-//   if (!dep) {
-//     throw new Error(`Optional Dependency ${name} not found!`)
-//   }
-//   return dep;
 // }
 
 // export class Index {

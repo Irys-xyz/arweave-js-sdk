@@ -1,12 +1,13 @@
-import { Signer } from "arbundles/src/signing";
+import { Signer } from "@bundlr-network/client/build/esm/common/signing";
 import BigNumber from "bignumber.js";
 import HexInjectedSolanaSigner from "./HexInjectedSolanaSigner"
-import { CreatedTx, CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
+import { CreatedTx, CurrencyConfig, Tx } from "@bundlr-network/client/build/esm/common/types";
 import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency"
 import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
 import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
+import WebBundlr from "@bundlr-network/client/build/esm/web/";
 
 export default class SolanaConfig extends BaseWebCurrency {
     private signer!: HexInjectedSolanaSigner
@@ -154,4 +155,12 @@ export default class SolanaConfig extends BaseWebCurrency {
         return pkey
     }
 
+}
+
+export class SolanaBundlr extends WebBundlr {
+    public static readonly currency = "solana"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: config?.providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet })
+        super(url, currencyConfig, config)
+    }
 }

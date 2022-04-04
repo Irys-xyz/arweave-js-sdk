@@ -8,6 +8,7 @@ import BN from "bn.js"
 import { sha256 } from "js-sha256";
 import { JsonRpcProvider } from "near-api-js/lib/providers";
 import NearSigner from "./NearSigner";
+import { NodeBundlr } from "@bundlr-network/client/build/cjs/node";
 
 
 export default class NearConfig extends BaseNodeCurrency {
@@ -137,5 +138,13 @@ export default class NearConfig extends BaseNodeCurrency {
         this.keyPair = KeyPair.fromString(this.wallet)
         return Buffer.from(this.keyPair.getPublicKey().data)
 
+    }
+}
+
+export class NearBundlr extends NodeBundlr {
+    public static readonly currency = "near"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new NearConfig({ name: "near", ticker: "NEAR", providerUrl: config?.providerUrl ?? "https://rpc.mainnet.near.org", wallet })
+        super(url, currencyConfig, config)
     }
 }

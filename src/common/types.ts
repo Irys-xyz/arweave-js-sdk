@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { Signer } from "arbundles/src/signing";
+import { Signer } from "./signing";
 import { FileDataItem } from "arbundles/file";
 // common types shared between web and node versions
 
@@ -72,11 +72,3 @@ export interface Withdrawal {
 }
 
 export interface BundlrConfig { timeout?: number, providerUrl?: string, contractAddress?: string }
-// // TS doesn't like string template literals it seems
-// export enum manifestType {
-//     paths = "arweave/paths"
-// }
-
-// export enum manifestVersion {
-//     "0.1.0" = "0.1.0"
-// }

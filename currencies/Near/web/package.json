@@ -12,6 +12,10 @@
         ".": {
             "import": "./esm/web/index.js",
             "require": "./cjs/web/index.js"
+        },
+        "./*": {
+            "import": "./*.js",
+            "require": "./*.js"
         }
     },
     "files": [

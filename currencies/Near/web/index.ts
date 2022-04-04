@@ -6,7 +6,9 @@ import { decode, encode } from "bs58";
 import BN from "bn.js"
 import { sha256 } from "js-sha256";
 import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency";
+import WebBundlr from "@bundlr-network/client/build/esm/web/";
 import NearSigner from "./NearSigner";
+
 
 export default class NearConfig extends BaseWebCurrency {
     // protected keyStore: KeyPair
@@ -165,5 +167,13 @@ export default class NearConfig extends BaseWebCurrency {
     async getPublicKey(): Promise<string | Buffer> {
         return Buffer.from(this.keyPair.getPublicKey().data)
 
+    }
+}
+
+export class NearBundlr extends WebBundlr {
+    public static readonly currency = "near"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new NearConfig({ name: "near", ticker: "NEAR", providerUrl: config?.providerUrl ?? "https://rpc.mainnet.near.org", wallet })
+        super(url, currencyConfig, config)
     }
 }

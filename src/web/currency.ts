@@ -58,3 +58,6 @@ export async function getRedstonePrice(currency: string): Promise<number> {
     await utils.checkAndThrow(res, "Getting price data")
     return res.data[0].value;
 }
+// export const registeredCurrencies: Record<string, WebCurrency> = {}
+// eslint-disable-next-line @typescript-eslint/naming-convention
+

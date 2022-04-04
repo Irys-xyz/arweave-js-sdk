@@ -4,6 +4,9 @@ import keccak256 from "@bundlr-network/ethereum-node/keccak256";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import { getRedstonePrice } from "@bundlr-network/client/build/cjs/node/currency";
 import EthereumConfig from "@bundlr-network/ethereum-node";
+import NodeBundlr from "@bundlr-network/client/build/cjs/node/";
+import utils from "@bundlr-network/client/build/cjs/common/utils";
+import axios, { AxiosResponse } from "axios";
 
 export interface ERC20CurrencyConfig extends CurrencyConfig { contractAddress: string }
 
@@ -97,6 +100,41 @@ export default class ERC20Config extends EthereumConfig {
 
 
 }
+
+export class BobaBundlr extends NodeBundlr {
+    public static readonly currency = "boba"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new ERC20Config({ name: "boba", ticker: "BOBA", providerUrl: config?.providerUrl ?? "https://mainnet.boba.network/", contractAddress: config?.contractAddress ?? "0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7", minConfirm: 1, wallet })
+        // for L1 mainnet: "https://main-light.eth.linkpool.io/" and "0x42bbfa2e77757c645eeaad1655e0911a7553efbc"
+        currencyConfig.price = async (): Promise<number> => {
+            const res = await axios.post("https://api.livecoinwatch.com/coins/single", JSON.stringify({ "currency": "USD", "code": `${currencyConfig.ticker}` }), { headers: { "x-api-key": "d1f696c4-84fe-40d9-af2d-250d027ef85a", "content-type": "application/json" } }) as AxiosResponse<any>
+            utils.checkAndThrow(res as any, "Getting price data")
+            if (!res?.data?.rate) {
+                throw new Error(`unable to get price for ${currencyConfig.name}`)
+            }
+            return +res.data.rate
+        }
+        super(url, currencyConfig, config)
+    }
+}
+export class ChainlinkBundlr extends NodeBundlr {
+    public static readonly currency = "chainlink"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new ERC20Config({ name: "chainlink", ticker: "LINK", providerUrl: config?.providerUrl ?? "https://main-light.eth.linkpool.io/", contractAddress: config?.contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet })
+        super(url, currencyConfig, config)
+    }
+}
+
+export class KyveBundlr extends NodeBundlr {
+    public static readonly currency = "kyve"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new ERC20Config({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: config?.providerUrl ?? "https://moonbeam-alpha.api.onfinality.io/public", contractAddress: config?.contractAddress ?? "0x3cf97096ccdb7c3a1d741973e351cb97a2ede2c1", isSlow: true, wallet })
+        currencyConfig.price = async (): Promise<number> => { return 100 } // TODO: replace for mainnet
+        currencyConfig.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
+        super(url, currencyConfig, config)
+    }
+}
+
 
 export const erc20abi = [
     {

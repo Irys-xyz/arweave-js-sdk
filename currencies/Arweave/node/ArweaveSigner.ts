@@ -1,5 +1,5 @@
 import Rsa4096Pss from "./Rsa4096Pss";
-import { JWKInterface, indexToType } from "@bundlr-network/client/build/cjs/common/signing";
+import { JWKInterface } from "@bundlr-network/client/build/cjs/common/signing";
 import { jwkTopem } from "arweave/node/lib/crypto/pem";
 import base64url from "base64url";
 import Arweave from "arweave";
@@ -29,7 +29,3 @@ export default class ArweaveSigner extends Rsa4096Pss {
         return await Arweave.crypto.verify(pk, message, signature);
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-indexToType[1] = ArweaveSigner
