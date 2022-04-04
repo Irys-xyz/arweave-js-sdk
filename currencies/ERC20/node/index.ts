@@ -4,7 +4,7 @@ import keccak256 from "@bundlr-network/ethereum-node/keccak256";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import { getRedstonePrice } from "@bundlr-network/client/build/cjs/node/currency";
 import EthereumConfig from "@bundlr-network/ethereum-node";
-import NodeBundlr from "@bundlr-network/client/build/cjs/node/";
+import NodeBundlr from "@bundlr-network/client/build/cjs/node/index";
 import utils from "@bundlr-network/client/build/cjs/common/utils";
 import axios, { AxiosResponse } from "axios";
 

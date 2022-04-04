@@ -1,4 +1,4 @@
-import { Signer } from "@bundlr-network/client/build/esm/common/signing";
+import { Signer } from "@bundlr-network/client/build/esm/common/signing/index";
 import BigNumber from "bignumber.js";
 import HexInjectedSolanaSigner from "./HexInjectedSolanaSigner"
 import { CreatedTx, CurrencyConfig, Tx } from "@bundlr-network/client/build/esm/common/types";
@@ -7,7 +7,7 @@ import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
 import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
-import WebBundlr from "@bundlr-network/client/build/esm/web/";
+import WebBundlr from "@bundlr-network/client/build/esm/web/index";
 
 export default class SolanaConfig extends BaseWebCurrency {
     private signer!: HexInjectedSolanaSigner

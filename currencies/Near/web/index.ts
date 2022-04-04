@@ -1,4 +1,4 @@
-import { Signer } from "@bundlr-network/client/build/esm/common/signing"
+import { Signer } from "@bundlr-network/client/build/esm/common/signing/index"
 import BigNumber from "bignumber.js";
 import { CreatedTx, CurrencyConfig, Tx } from "@bundlr-network/client/build/esm/common/types"
 import { KeyPair, utils, transactions, providers, WalletConnection, Near, keyStores } from "near-api-js"
@@ -6,7 +6,7 @@ import { decode, encode } from "bs58";
 import BN from "bn.js"
 import { sha256 } from "js-sha256";
 import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency";
-import WebBundlr from "@bundlr-network/client/build/esm/web/";
+import WebBundlr from "@bundlr-network/client/build/esm/web/index";
 import NearSigner from "./NearSigner";
 
 

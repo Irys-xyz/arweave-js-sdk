@@ -1,11 +1,11 @@
-import { Signer } from "@bundlr-network/client/build/cjs/common/signing";
+import { Signer } from "@bundlr-network/client/build/cjs/common/signing/index";
 import BigNumber from "bignumber.js";
 import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
-import NodeBundlr from "@bundlr-network/client/build/cjs/node/";
+import NodeBundlr from "@bundlr-network/client/build/cjs/node/index";
 import retry from "async-retry";
 import SolanaSigner from "./SolanaSigner";
 

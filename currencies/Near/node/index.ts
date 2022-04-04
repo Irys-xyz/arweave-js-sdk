@@ -1,4 +1,4 @@
-import { Signer } from "@bundlr-network/client/build/cjs/common/signing"
+import { Signer } from "@bundlr-network/client/build/cjs/common/signing/index"
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types"
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
@@ -8,7 +8,7 @@ import BN from "bn.js"
 import { sha256 } from "js-sha256";
 import { JsonRpcProvider } from "near-api-js/lib/providers";
 import NearSigner from "./NearSigner";
-import { NodeBundlr } from "@bundlr-network/client/build/cjs/node";
+import { NodeBundlr } from "@bundlr-network/client/build/cjs/node/index";
 
 
 export default class NearConfig extends BaseNodeCurrency {
