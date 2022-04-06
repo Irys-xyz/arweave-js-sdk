@@ -244,37 +244,30 @@ export default class NodeUploader extends Uploader {
         createReadStream(csvPath).pipe(csvstrm) // pipe csv
         /* eslint-disable quotes */
         // "header"
-        wstrm.write(`{\n"manifest": "arweave/paths",\n "version": "0.1.0",\n"paths": {\n`)
-
+        wstrm.write(`{\n"manifest": "arweave/paths",\n"version": "0.1.0",\n"paths": {\n`)
+        const csvs = Readable.from(csvstrm)
         let firstValue = true;
-        // format and write parsed data
-        csvstrm.on("data", (d) => {
-            if (nowRemoved.has(d.path)) {
+
+        for await (const d of csvs) {
+            if (nowRemoved?.has(d.path)) {
                 nowRemoved.delete(d.path)
-                return;
+                continue;
             }
-            // const dpath = p.relative(path, d.path)
-            const prefix = firstValue ? "" : ","
+            const prefix = firstValue ? "" : ",\n"
             wstrm.write(`${prefix}"${d.path}":{"id":"${d.id}"}`)
             firstValue = false;
-        })
+        }
+        console.log("done with writing items")
+        // "trailer"
+        wstrm.write(`\n}`)
+        // add index
+        if (indexFile) {
+            wstrm.write(`,\n"index":{"path":"${indexFile}"}`)
+        }
 
-        await new Promise(res => {
-            csvstrm.on("finish", (_) => {
-                // "trailer"
-                wstrm.write(`\n}`)
-                // add index
-                if (indexFile) {
-                    wstrm.write(`,\n"index":{"path":"${indexFile}"}`)
-                }
-                wstrm.write(`\n}`)
-                res(manifestPath);
-            })
-        })
-        /* eslint-enable quotes */
+        wstrm.write(`\n}`)
         await new Promise(r => wstrm.close(r))
         return manifestPath
-
     }
 
 }
