@@ -6,7 +6,7 @@
     "author": "JesseTheRobot",
     "license": "MIT",
     "scripts": {
-        "build": "rm -rf ./cjs && rm -rf ./esm && tsc -p ./cjs.json && tsc -p ./esm.json"
+        "build": "rm -rf ./cjs && rm -rf ./esm && tsc -p ./cjs.json && tsc -p ./esm.json && webpack"
     },
     "exports": {
         ".": {
@@ -37,6 +37,9 @@
         "bignumber.js": "^9.0.2",
         "bn.js": "^5.2.0",
         "ethers": "^5.6.2",
-        "keccak": "^3.0.2"
+        "inspectpack": "^4.7.1",
+        "keccak": "^3.0.2",
+        "webpack": "^5.72.0",
+        "webpack-cli": "^4.9.2"
     }
 }

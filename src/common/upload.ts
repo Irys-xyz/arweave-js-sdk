@@ -3,7 +3,7 @@ import { AxiosResponse } from "axios";
 import Utils from "./utils"
 import Api from "./api";
 import { Currency, Manifest } from "./types";
-import PromisePool from "@supercharge/promise-pool/dist";
+import PromisePool from "@supercharge/promise-pool";
 import retry from "async-retry";
 import { Readable } from "stream";
 import SizeChunker from "./chunker";

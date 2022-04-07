@@ -1,7 +1,6 @@
-import { Signer } from "@bundlr-network/client/build/esm/common/signing";
+import { Signer, SIG_CONFIG } from "@bundlr-network/client/build/esm/common/signing/index";
 import * as ed25519 from "@noble/ed25519";
 import base64url from "base64url";
-import { SIG_CONFIG } from "@bundlr-network/client/build/esm/common/signing/";
 import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 
 export default class InjectedSolanaSigner implements Signer {

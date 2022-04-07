@@ -92,7 +92,5 @@ function intToHex(i: number) {
     const hex = i.toString(16);
     return `0x${hex}`;
 }
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
+// @ts-ignore
 globalThis.keccak256 = keccak256

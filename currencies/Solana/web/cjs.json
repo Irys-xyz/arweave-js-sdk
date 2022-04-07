@@ -25,6 +25,9 @@
         "target": "es2015",
         "rootDir": "../"
     },
+    "include": [
+        "*.ts"
+    ],
     "exclude": [
         "esm",
         "web/"

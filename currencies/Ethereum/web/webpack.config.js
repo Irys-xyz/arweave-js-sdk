@@ -3,8 +3,7 @@ const webpack = require("webpack");
 const { DuplicatesPlugin } = require("inspectpack/plugin");
 
 module.exports = {
-    entry: './src/web/index.ts',
-    devtool: 'source-map',
+    entry: './index.ts',
     mode: "production",
     module: {
         rules: [
@@ -13,16 +12,20 @@ module.exports = {
                 use: [{
                     loader: 'ts-loader',
                     options: {
-                        configFile: path.resolve("./esm.tsconfig.json")
+                        configFile: path.resolve("./esm.json")
                     }
                 }],
                 exclude: [
                     /node_modules/,
-                    path.resolve(__dirname, "src/node/"),
-                    path.resolve(__dirname, "build/")
+                    path.resolve(__dirname, "esm/"),
+                    path.resolve(__dirname, "cjs/")
                 ],
             },
         ],
+    },
+    externals: {
+        "@bundlr-network/client": "@bundlr-network/client",
+        "arbundles": "arbundles"
     },
     resolve: {
         extensions: ['.ts', '.js'],
@@ -32,22 +35,19 @@ module.exports = {
             stream: "stream-browserify",
         },
         fallback: {
-            "crypto": require.resolve("crypto-browserify"),
-            "assert": require.resolve("assert/"),
-            "stream": require.resolve("stream-browserify"),
-            "process": require.resolve("process/browser"),
-            "util": require.resolve("util"),
-            "events": require.resolve("events/"),
-            "buffer": require.resolve('buffer/'),
-            "zlib": require.resolve("browserify-zlib"),
-            "path": require.resolve("path-browserify")
+            "crypto": false,
+            "assert": false,
+            "stream": false,
+            "process": false,
+            "util": false,
+            "events": false,
+            "buffer": false,
+            "zlib": false,
+            "path": false,
         }
     },
     plugins: [
-        new webpack.ProvidePlugin({
-            process: 'process/browser',
-            Buffer: ['buffer', 'Buffer']
-        }),
+
         new DuplicatesPlugin({
             emitErrors: false,
             verbose: false
@@ -55,12 +55,11 @@ module.exports = {
     ],
     output: {
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'build/esm/'),
+        path: path.resolve(__dirname, 'esm/web'),
         libraryTarget: 'module',
         umdNamedDefine: true
     },
     experiments: {
         outputModule: true,
     }
-};
-
+}; 
