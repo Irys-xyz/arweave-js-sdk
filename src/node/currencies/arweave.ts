@@ -13,6 +13,7 @@ export default class ArweaveConfig extends BaseNodeCurrency {
     constructor(config: CurrencyConfig) {
         super(config)
         this.base = ["winston", 1e12];
+        this.needsFee = true;
     }
 
 
