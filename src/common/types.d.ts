@@ -17,6 +17,7 @@ export interface CurrencyConfig { name: string, ticker: string, minConfirm?: num
 
 export interface Currency {
     isSlow: boolean
+    needsFee: boolean
 
     base: [string, number];
 

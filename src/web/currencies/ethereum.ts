@@ -9,9 +9,9 @@ const ethBigNumber = ethers.BigNumber // required for hexString conversions (w/ 
 const ethereumSigner = InjectedEthereumSigner
 
 export default class EthereumConfig extends BaseWebCurrency {
-    private signer: InjectedEthereumSigner;
+    protected signer: InjectedEthereumSigner;
     protected wallet: ethers.providers.Web3Provider;
-    private w3signer: ethers.providers.JsonRpcSigner;
+    protected w3signer: ethers.providers.JsonRpcSigner;
 
     constructor(config: CurrencyConfig) {
         super(config)
@@ -89,7 +89,7 @@ export default class EthereumConfig extends BaseWebCurrency {
         const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() })
         const gasPrice = await signer.getGasPrice();
         const txr = await signer.populateTransaction({ to, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas })
-        return { txId: "", tx: txr };
+        return { txId: undefined, tx: txr };
     }
 
     public async getPublicKey(): Promise<string | Buffer> {
