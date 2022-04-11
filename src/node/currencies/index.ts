@@ -7,6 +7,7 @@ import NearConfig from "./near";
 import SolanaConfig from "./solana";
 import AlgorandConfig from "./algorand";
 import CosmosConfig from "./cosmos";
+import HarmonyConfig from "./harmony";
 
 export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): NodeCurrency {
     switch (currency) {
@@ -53,6 +54,9 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         }
         case "ust": {
             return new CosmosConfig({ name: "ust", ticker: "UST", providerUrl: providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "50000", "denomination": "uusd", "decimals": 1e6 } })
+        }
+        case "harmony": {
+            return new HarmonyConfig({ name: "harmony", ticker: "ONE", providerUrl: providerUrl ?? "https://api.s0.b.hmny.io", wallet })
         }
         case "kyve": {
             const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: providerUrl ?? "https://rpc.node.kyve.network", wallet, localConfig: { prefix: "kyve", "derivePath": "118", "fee": "1", "denomination": "kyve", "decimals": 1e9 } })
