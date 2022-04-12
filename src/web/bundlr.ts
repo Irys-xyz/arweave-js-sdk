@@ -24,7 +24,6 @@ export default class WebBundlr extends Bundlr {
         this.currency = this.currencyConfig.name
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);
-        // this.funder = new WebFund(this.utils);
         this.funder = new Fund(this.utils)
     }
 

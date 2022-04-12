@@ -7,6 +7,7 @@ import PromisePool from "@supercharge/promise-pool";
 import retry from "async-retry";
 import { Readable } from "stream";
 import SizeChunker from "./chunker";
+import Crypto from "crypto"
 // import mime from "mime-types";
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
@@ -125,7 +126,7 @@ export default class Uploader {
         }
         if (Buffer.isBuffer(item)) {
             const signer = await this.currencyConfig.getSigner();
-            item = createData(item, signer)
+            item = createData(item, signer, { anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) })
             await item.sign(signer)
         }
         return await this.transactionUploader(item);

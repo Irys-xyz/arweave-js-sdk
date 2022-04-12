@@ -10,9 +10,9 @@ import WebBundlr from "@bundlr-network/client/build/esm/web/index";
 const ethBigNumber = ethers.BigNumber // required for hexString conversions (w/ 0x padding)
 
 export default class EthereumConfig extends BaseWebCurrency {
-    private signer!: InjectedEthereumSigner;
+    protected signer!: InjectedEthereumSigner;
     declare protected wallet: ethers.providers.Web3Provider;
-    private w3signer!: ethers.providers.JsonRpcSigner;
+    protected w3signer!: ethers.providers.JsonRpcSigner;
 
     constructor(config: CurrencyConfig) {
         super(config)
