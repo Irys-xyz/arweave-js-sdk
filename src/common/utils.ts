@@ -131,7 +131,10 @@ export async function importAndGetBundlrFlavour(currency: string): Promise<{ new
         let pkg = globalThis[pkgNames[0][1]]
         if (!pkg) {
             // @ts-ignore
-            pkg = await import(pkgNames[0][0])
+            pkg = await import(pkgNames[0][0]).catch(_ => { return })
+        }
+        if (!pkg) {
+            pkg = require(pkgNames[0][0])
         }
         // @ts-ignore
         const flavour = pkg[`${currency}Bundlr`]
