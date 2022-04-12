@@ -22,6 +22,8 @@ export interface Currency {
 
     name: string
 
+    minConfirm: number
+
     get address(): string;
 
     ticker: string
@@ -71,4 +73,4 @@ export interface Withdrawal {
     sigType: number
 }
 
-export interface BundlrConfig { timeout?: number, providerUrl?: string, contractAddress?: string }
+export interface BundlrConfig { timeout?: number, providerUrl?: string, contractAddress?: string, minConfirm?: number }

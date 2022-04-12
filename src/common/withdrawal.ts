@@ -69,7 +69,7 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.
     //     signature: base64url.toBuffer(data.signature)
     // }))
     // console.log(`derived: ${c.ownerToAddress(base64url.decode(data.publicKey))}`)
-    const res = await api.post("/account/withdraw", data)
+    const res = await api.post("/account/withdraw", data, { timeout: api.getConfig().timeout ?? 10_000 * 10 })
     Utils.checkAndThrow(res, "Withdrawing balance")
     return res;
 }

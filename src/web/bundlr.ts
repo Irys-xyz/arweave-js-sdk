@@ -1,5 +1,5 @@
 // import { BundlrConfig } from "common/types";
-import { BundlrConfig } from "common/types";
+import { BundlrConfig } from "../common/types";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
@@ -12,13 +12,15 @@ import { WebCurrency } from "./types";
 
 export default class WebBundlr extends Bundlr {
     public currencyConfig: WebCurrency;
-    constructor(url: string, currency: WebCurrency, config?: { timeout?: number, providerUrl?: string }) {
+    constructor(url: string, currencyConfig: WebCurrency, config?: BundlrConfig) {
         super();
         const parsed = new URL(url);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-
-        this.currencyConfig = currency
+        if (config?.minConfirm) {
+            currencyConfig.minConfirm = config?.minConfirm
+        }
+        this.currencyConfig = currencyConfig
         this.currency = this.currencyConfig.name
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);

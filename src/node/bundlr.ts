@@ -1,7 +1,6 @@
 import { AxiosResponse } from "axios";
 // import BigNumber from "bignumber.js";
-import { BundlrConfig } from "common/types";
-import WebBundlr from "web";
+import { BundlrConfig } from "../common/types";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
@@ -23,6 +22,9 @@ export default class NodeBundlr extends Bundlr {
         super();
         const parsed = new URL(url);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
+        if (config?.minConfirm) {
+            currencyConfig.minConfirm = config?.minConfirm
+        }
         this.currencyConfig = currencyConfig // getCurrency(this.currency, wallet, config?.providerUrl, config?.contractAddress) 
         this.currency = this.currencyConfig.name
         this.address = this.currencyConfig.address;

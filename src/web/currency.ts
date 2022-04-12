@@ -17,7 +17,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
     public ticker!: string;
     public name!: string;
 
-    protected minConfirm = 5;
+    public minConfirm = 5;
     public isSlow = false;
 
     constructor(config: CurrencyConfig) {

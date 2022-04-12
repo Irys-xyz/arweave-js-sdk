@@ -16,7 +16,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     protected providerInstance?: any
     public ticker!: string;
     public name!: string;
-    protected minConfirm = 5;
+    public minConfirm = 5;
     public isSlow = false;
 
     constructor(config: CurrencyConfig) {
