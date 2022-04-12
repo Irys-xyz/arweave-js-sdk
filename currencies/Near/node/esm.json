@@ -26,7 +26,8 @@
         "rootDir": "../"
     },
     "exclude": [
-        "cjs",
+        "cjs/",
+        "esm/",
         "web/"
     ]
 }

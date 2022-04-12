@@ -29,7 +29,8 @@
         "*.ts"
     ],
     "exclude": [
-        "esm",
-        "web/"
+        "cjs/",
+        "esm/",
+        "node/"
     ]
 }
