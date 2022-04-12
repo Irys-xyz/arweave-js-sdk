@@ -1,9 +1,9 @@
 import BigNumber from "bignumber.js";
 import { ethers, Wallet } from "ethers";
-import keccak256 from "@bundlr-network/ethereum-node/keccak256";
+import keccak256 from "@bundlr-network/ethereum/keccak256";
+import EthereumConfig from "@bundlr-network/ethereum";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import { getRedstonePrice } from "@bundlr-network/client/build/cjs/node/currency";
-import EthereumConfig from "@bundlr-network/ethereum-node";
 import NodeBundlr from "@bundlr-network/client/build/cjs/node/index";
 import utils from "@bundlr-network/client/build/cjs/common/utils";
 import axios, { AxiosResponse } from "axios";

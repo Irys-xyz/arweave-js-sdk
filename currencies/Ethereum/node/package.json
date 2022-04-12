@@ -13,6 +13,10 @@
       "import": "./esm/node/index.js",
       "require": "./cjs/node/index.js"
     },
+    "./keccak256": {
+      "import": "./esm/node/keccak256.js",
+      "require": "./cjs/node/keccak256.js"
+    },
     "./*": {
       "import": "./*.js",
       "require": "./*.js"
