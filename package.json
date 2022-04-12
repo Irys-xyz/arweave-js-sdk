@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/client",
-  "version": "0.6.2-rc1",
+  "version": "0.7.0-rc1",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
@@ -43,8 +43,8 @@
     "prod:build": "yarn run dev:build && webpack && yarn run lerna:build",
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
-    "lerna:build": "lerna run build",
-    "lerna:dev:build": "lerna run dev:build",
+    "lerna:build": "lerna run build --ignore @bundlr-network/client",
+    "lerna:dev:build": "yarn run dev:build && lerna run dev:build --ignore @bundlr-network/client",
     "lerna:bootstrap": "lerna bootstrap --force-local"
   },
   "bin": {
