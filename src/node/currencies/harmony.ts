@@ -7,7 +7,7 @@ import { getRedstonePrice } from "../currency";
 import { Account } from "@harmony-js/account";
 import { Messenger, HttpProvider/* , WSProvider */ } from "@harmony-js/network";
 import { Harmony } from "@harmony-js/core";
-import { getAddressFromPublicKey, getPubkeyFromPrivateKey, getAddress } from "@harmony-js/crypto";
+import { getAddress } from "@harmony-js/crypto";
 import { TransactionFactory } from "@harmony-js/transaction";
 import {
     ChainID,
@@ -22,6 +22,8 @@ import {
 // import { HarmonySigner } from "arbundles/src/signing";
 import { signers } from "arbundles";
 const ethereumSigner = signers.EthereumSigner;
+import { publicKeyCreate } from "secp256k1";
+import keccak256 from "keccak256";
 
 export default class HarmonyConfig extends BaseNodeCurrency {
 
@@ -55,7 +57,7 @@ export default class HarmonyConfig extends BaseNodeCurrency {
         const status = await provider.blockchain.getTransactionReceipt({ txnHash: txId });
         const transaction = await provider.blockchain.getTransactionByHash({ txnHash: txId });
         const tx = {
-            from: transaction.result.from,
+            from: getAddress(transaction.result.from).basicHex,
             to: transaction.result.to,
             amount: new BigNumber(transaction.result.value),
             blockHeight: new BigNumber(transaction.result.blockNumber),
@@ -66,7 +68,7 @@ export default class HarmonyConfig extends BaseNodeCurrency {
     }
     
     ownerToAddress(owner: any): string {
-        return getAddress(getAddressFromPublicKey(owner.toString())).bech32;
+        return "0x" + keccak256(owner.slice(1)).slice(-20).toString("hex");
     }
 
     async sign(data: Uint8Array): Promise<Uint8Array> {
@@ -110,7 +112,7 @@ export default class HarmonyConfig extends BaseNodeCurrency {
 
         const gas = await (await this.getProvider()).blockchain.gasPrice();
         const txn = factory.newTx({
-            to: to,
+            to: getAddress(to).bech32,
             value: new Unit(amount.toString()).toWei(),
             // gas limit, you can use string
             gasLimit: "21000",
@@ -128,8 +130,7 @@ export default class HarmonyConfig extends BaseNodeCurrency {
     }
 
     getPublicKey(): string | Buffer{
-        const pk = getPubkeyFromPrivateKey(this.wallet);
-        return pk;
+        return Buffer.from(publicKeyCreate(Buffer.from(this.wallet, "hex"), false));
     }
 
     public async getGas(): Promise<[BigNumber, number]> {
