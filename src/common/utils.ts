@@ -138,6 +138,6 @@ export async function importAndGetBundlrFlavour(currency: string): Promise<{ new
         if (!flavour) throw new Error(`Invalid flavour ${currency} - keys: ${Object.keys(pkg)}`)
         return flavour
     } catch (e) {
-        throw new Error(`Unable to load Bundlr flavour ${currency} from ${pkgNames[0][0]} or from global ${pkgNames[0][1]} - please install it:\n 'npm i ${pkgNames[0][0]} -\n ${e}`)
+        throw new Error(`Unable to load Bundlr flavour ${currency} from ${pkgNames[0][0]} or from global ${pkgNames[0][1]} - please install it:\n 'npm i ${pkgNames[0][0]}'\n ${e}`)
     }
 }

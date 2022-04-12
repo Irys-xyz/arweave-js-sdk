@@ -33,7 +33,8 @@ export default class WebBundlr extends Bundlr {
         }
         this.address = this.currencyConfig.address
     }
-    static async newBundlr(url: string, currency: string, wallet: any, config?: BundlrConfig): Promise<WebBundlr> {
+
+    static async init(url: string, currency: string, wallet: any, config?: BundlrConfig): Promise<WebBundlr> {
         const bundlr = await importAndGetBundlrFlavour(currency)
         const newBundlr = new bundlr(url, wallet, config) as WebBundlr
         await newBundlr.ready()

@@ -184,9 +184,7 @@ async function init(opts: OptionValues, operation: string): Promise<NodeBundlr> 
     }
     try {
         // create and ready the bundlr instance
-        bundler = await NodeBundlr.newBundlr(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl, contractAddress: opts.contractAddress }) as NodeBundlr
-        // bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl, contractAddress: opts.contractAddress });
-        // await bundler.ready()
+        bundler = await NodeBundlr.init(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl, contractAddress: opts.contractAddress }) as NodeBundlr
 
     } catch (err: any) {
         throw new Error(`Error initialising Bundlr client - ${options.debug ? err.stack : err.message}`);
