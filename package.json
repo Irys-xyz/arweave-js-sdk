@@ -30,6 +30,9 @@
     "./bundle": {
       "default": "./build/esm/bundle.js"
     },
+    "./umd.bundle": {
+      "default": "./build/esm/umd.bundle.js"
+    },
     "./*": {
       "import": "./*.js",
       "require": "./*.js"
@@ -37,11 +40,11 @@
   },
   "scripts": {
     "dev:build": "rm -rf build && tsc -p cjs.tsconfig.json && ttsc -p esm.tsconfig.json && chmod +x ./build/cjs/node/cli.js && chmod +x ./build/esm/node/cli.js && ./scripts/fixup.sh",
-    "prod:build": "yarn run dev:build && yarn run lerna:build",
-    "build": "webpack",
+    "prod:build": "yarn run dev:build && webpack && yarn run lerna:build",
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
     "lerna:build": "lerna run build",
+    "lerna:dev:build": "lerna run dev:build",
     "lerna:bootstrap": "lerna bootstrap --force-local"
   },
   "bin": {
@@ -49,7 +52,7 @@
   },
   "dependencies": {
     "@supercharge/promise-pool": "^2.1.0",
-    "arbundles": "^0.6.17-rc1",
+    "arbundles": "^0.7.0-rc1",
     "arweave": "1.10.18",
     "async-retry": "^1.3.3",
     "base64url": "^3.0.1",

@@ -6,7 +6,8 @@
     "author": "JesseTheRobot",
     "license": "MIT",
     "scripts": {
-        "build": "rm -rf ./cjs && rm -rf ./esm && tsc -p ./cjs.json && tsc -p ./esm.json && webpack"
+        "dev:build": "rm -rf ./cjs && rm -rf ./esm && tsc -p ./cjs.json && ttsc -p ./esm.json",
+        "build": "yarn run dev:build && webpack"
     },
     "exports": {
         ".": {
