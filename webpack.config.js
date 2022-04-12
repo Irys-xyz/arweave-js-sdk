@@ -91,7 +91,7 @@ const umd = {
     externalsType: 'global',
     externals: { ...base.externals, "arbundles": "arbundles", },
     output: {
-        filename: `umd.bundle.js`,
+        filename: "umd.bundle.js",
         path: path.resolve(__dirname, 'build/esm/'),
         library: "BundlrClient",
         libraryTarget: "umd",

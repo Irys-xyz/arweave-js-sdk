@@ -104,9 +104,9 @@ export default class EthereumConfig extends BaseWebCurrency {
     }
 
     public async ready(): Promise<void> {
-        this.w3signer = await this.wallet.getSigner();
-        this._address = this.ownerToAddress(await this.getPublicKey());
-        this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
+        this.w3signer ??= await this.wallet.getSigner();
+        this._address ??= this.ownerToAddress(await this.getPublicKey());
+        this.providerInstance ??= new ethers.providers.JsonRpcProvider(this.providerUrl);
 
     }
 

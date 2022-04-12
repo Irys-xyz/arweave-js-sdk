@@ -12,7 +12,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
     public base!: [string, number];
     protected wallet!: any
     protected _address!: string
-    protected providerUrl: any;
+    protected providerUrl!: string;
     protected providerInstance?: any
     public ticker!: string;
     public name!: string;

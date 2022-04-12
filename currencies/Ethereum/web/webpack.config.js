@@ -1,16 +1,16 @@
-const path = require('path');
+const path = require("path");
 const webpack = require("webpack");
 const { DuplicatesPlugin } = require("inspectpack/plugin");
 
 const base = {
-    entry: './index.ts',
+    entry: "./index.ts",
     mode: "production",
     module: {
         rules: [
             {
                 test: /\.ts$/,
                 use: [{
-                    loader: 'ts-loader',
+                    loader: "ts-loader",
                     options: {
                         configFile: path.resolve("./esm.json")
                     }
@@ -30,9 +30,9 @@ const base = {
         "crypto": "Crypto",
         "stream": "stream",
     },
-    externalsType: 'global',
+    externalsType: "global",
     resolve: {
-        extensions: ['.ts', '.js'],
+        extensions: [".ts", ".js"],
         alias: {
             // process: "process/browser",
             // crypto: "crypto-browserify",
@@ -83,9 +83,9 @@ const mod = {
     // },
 
     output: {
-        filename: 'bundle.js',
-        path: path.resolve(__dirname, 'esm/web'),
-        libraryTarget: 'module',
+        filename: "bundle.js",
+        path: path.resolve(__dirname, "esm/web"),
+        libraryTarget: "module",
         umdNamedDefine: true
     },
     experiments: {
@@ -95,8 +95,8 @@ const mod = {
 const umd = {
     ...base,
     output: {
-        filename: `umd.bundle.js`,
-        path: path.resolve(__dirname, 'esm/web'),
+        filename: "umd.bundle.js",
+        path: path.resolve(__dirname, "esm/web"),
         library: "BundlrEthereumWeb",
         libraryTarget: "umd",
         globalObject: "globalThis",

@@ -39,7 +39,8 @@
       {"selector": "interface","format":["PascalCase"]},
       {"selector": "classProperty","format":["camelCase"], "leadingUnderscore":"allow"},
       {"selector": "objectLiteralProperty", "format":null},
-      {"selector": "enumMember", "format":"UPPER_CASE"},
+      {"selector": "enumMember", "format":["UPPER_CASE"]},
+      {"selector": "enum", "format":["PascalCase"]},
       {"selector": "default","format": ["camelCase"], "leadingUnderscore": "allow" } //this must be the last rule
     ]
   }

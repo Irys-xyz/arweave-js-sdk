@@ -3,7 +3,7 @@ import internal, { Transform } from "stream";
 export default class SizeChunker extends Transform {
     protected bytesPassed = 0
     protected currentChunk = -1
-    protected lastEmittedChunk: any = undefined
+    protected lastEmittedChunk: number | undefined = undefined
     protected chunkSize;
     protected flushTail;
 

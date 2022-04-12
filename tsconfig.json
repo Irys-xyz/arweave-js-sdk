@@ -22,7 +22,7 @@
   },
   "compileOnSave": true,
   "exclude": ["node_modules", "dist", "scripts", "chains", "keys"],
-  "include": ["src", "currencies"]
+  "include": ["src"]
   // "references": [
   //   {"path": "src/currencies/Arweave/node"},
   //   {"path": "src/currencies/Arweave/web"}

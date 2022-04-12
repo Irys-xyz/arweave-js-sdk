@@ -1,4 +1,4 @@
-import { Signer, SignatureConfig, SIG_CONFIG } from "@bundlr-network/client/build/cjs/common/signing";
+import { Signer, SignatureConfig, SIG_CONFIG } from "@bundlr-network/client/build/cjs/common/signing/index";
 import base64url from "base64url";
 import secp256k1 from "secp256k1";
 import keccak256 from "./keccak256";

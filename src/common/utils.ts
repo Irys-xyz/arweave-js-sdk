@@ -120,11 +120,11 @@ export async function importAndGetBundlrFlavour(currency: string): Promise<{ new
     if (!pkgNames) {
         throw new Error(`No package found for currency ${currency}`)
     }
+    currency = currency.charAt(0).toUpperCase() + currency.substring(1).toLowerCase()
     while (currency.includes("-")) {
         const index = currency.indexOf("-");
         currency = currency.substring(0, index) + currency.charAt(index + 1).toUpperCase() + currency.substring(index + 2)
     }
-    currency = currency.charAt(0).toUpperCase() + currency.substring(1).toLowerCase()
     try {
         // check global
         // @ts-ignore
@@ -134,13 +134,10 @@ export async function importAndGetBundlrFlavour(currency: string): Promise<{ new
             pkg = await import(pkgNames[0][0])
         }
         // @ts-ignore
-        let flavour = pkg[`${currency}Bundlr`]
+        const flavour = pkg[`${currency}Bundlr`]
         if (!flavour) throw new Error(`Invalid flavour ${currency} - keys: ${Object.keys(pkg)}`)
         return flavour
     } catch (e) {
         throw new Error(`Unable to load Bundlr flavour ${currency} from ${pkgNames[0][0]} or from global ${pkgNames[0][1]} - please install it:\n 'npm i ${pkgNames[0][0]} -\n ${e}`)
     }
 }
-
-
-/*webpackIgnore: true*/
