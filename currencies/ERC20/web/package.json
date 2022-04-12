@@ -1,0 +1,41 @@
+{
+  "name": "@bundlr-network/erc20-web",
+  "version": "0.0.1",
+  "description": "ERC20 Currency for Bundlr",
+  "main": "index.js",
+  "author": "JesseTheRobot",
+  "license": "MIT",
+  "scripts": {
+    "dev:build": "rm -rf ./cjs && rm -rf ./esm && tsc -p ./cjs.json && ttsc -p ./esm.json",
+    "build": "yarn run dev:build"
+  },
+  "exports": {
+    ".": {
+      "import": "./esm/node/index.js",
+      "require": "./cjs/node/index.js"
+    },
+    "./*": {
+      "import": "./*.js",
+      "require": "./*.js"
+    }
+  },
+  "files": [
+    "cjs/**/*",
+    "esm/**/*"
+  ],
+  "peerDependencies": {
+    "@bundlr-network/client": "^0.6.2"
+  },
+  "dependencies": {
+    "@bundlr-network/ethereum-web": "^0.0.1",
+    "bignumber.js": "^9.0.2",
+    "ethers": "^5.6.2",
+    "axios": "^0.25.0"
+  },
+  "devDependencies": {
+    "@bundlr-network/client": "^0.6.2",
+    "@bundlr-network/ethereum-web": "^0.0.1",
+    "bignumber.js": "^9.0.2",
+    "ethers": "^5.6.2"
+  }
+}
