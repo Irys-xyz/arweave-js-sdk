@@ -1,9 +1,13 @@
 // eslint-disable-file @typescript-eslint/no-unused-vars
-import Bundlr from "../";
+
+// import Bundlr from "../"; //testing built code
+import Bundlr from "../src/index" //testing direct from TS source
+
 import { promises, readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next"
 import Crypto from "crypto"
-import { ArweaveBundlr } from "@bundlr-network/arweave-node"
+import { checkManifest } from "./checkManifest";
+import { genData } from "./genData";
 
 const profiling = false;
 async function main() {
@@ -24,16 +28,17 @@ async function main() {
 
         const keys = JSON.parse(readFileSync("wallet.json").toString());
 
-        //let bundlr = await Bundlr.newBundlr("https://devnet.bundlr.network", "arweave", keys.arweave)
-        let bundlr = new ArweaveBundlr("https://devnet.bundlr.network", keys.arweave)
+        let bundlr = await Bundlr.init("https://devnet.bundlr.network", "arweave", keys.arweave)
+
         console.log(bundlr.address)
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
-
-        const transaction = bundlr.createTransaction("aaa");
+        const tags = [{ name: "Content-Type", value: "text/plain" }]
+        const transaction = bundlr.createTransaction("Hello, Bundlr!", { tags });
         await transaction.sign();
+
         console.log(transaction.id)
         console.log(await transaction.isValid());
         const res = await transaction.upload();
@@ -46,16 +51,24 @@ async function main() {
 
         const ctx = bundlr.createTransaction(Crypto.randomBytes(15_000_000).toString("base64"))
         await ctx.sign()
+
         bundlr.uploader.useChunking = true
         const cres = await ctx.upload()
         console.log(cres)
         bundlr.uploader.useChunking = false
+
         await promises.rm("testFolder-manifest.json", { force: true })
         await promises.rm("testFolder-manifest.csv", { force: true })
         await promises.rm("testFolder-id.txt", { force: true })
+        await promises.rm("./testFolder", { recursive: true, force: true })
 
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", undefined, 10, false, true, async (log): Promise<void> => { console.log(log) })
+        const concurrency = 10
+        await genData("./testFolder", 10, 1_000, 10_000)
+
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", "0.json", concurrency, false, true, async (log): Promise<void> => { console.log(log) })
         console.log(resu);
+
+        await checkManifest("./testFolder", concurrency)
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
