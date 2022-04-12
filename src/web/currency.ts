@@ -1,5 +1,5 @@
-import { FileDataItem } from "arbundles/file";
-import { Signer } from "arbundles/src/signing";
+import { DataItem } from "arbundles";
+import { Signer } from "../common/signing/index";
 import Arweave from "arweave";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
@@ -34,8 +34,8 @@ export default abstract class BaseWebCurrency implements WebCurrency {
         this._address = this.wallet ? this.ownerToAddress(await this.getPublicKey()) : "";
     }
 
-    async getId(item: FileDataItem): Promise<string> {
-        return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
+    async getId(item: DataItem): Promise<string> {
+        return base64url.encode(Buffer.from(await Arweave.crypto.hash(item.rawSignature)));
     }
     async price(): Promise<number> {
         return getRedstonePrice(this.ticker);

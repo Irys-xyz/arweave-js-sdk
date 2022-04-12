@@ -1,6 +1,6 @@
 import BigNumber from "bignumber.js";
 import { Signer } from "./signing";
-import { FileDataItem } from "arbundles/file";
+import { DataItem } from "arbundles";
 // common types shared between web and node versions
 
 export interface CreateTxData { amount: BigNumber.Value, to: string, fee?: string }
@@ -30,7 +30,7 @@ export interface Currency {
 
     ownerToAddress(owner: any): string;
 
-    getId(item: FileDataItem): Promise<string>;
+    getId(item: DataItem): Promise<string>;
 
     price(): Promise<number>;
 

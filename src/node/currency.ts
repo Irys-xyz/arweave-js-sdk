@@ -1,4 +1,4 @@
-import { FileDataItem } from "arbundles/file";
+import { DataItem } from "arbundles";
 import { Signer } from "../common/signing";
 import Arweave from "arweave";
 import base64url from "base64url";
@@ -31,8 +31,8 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     }
 
 
-    async getId(item: FileDataItem): Promise<string> {
-        return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
+    async getId(item: DataItem): Promise<string> {
+        return base64url.encode(Buffer.from(await Arweave.crypto.hash(item.rawSignature)));
     }
     async price(): Promise<number> {
         return getRedstonePrice(this.ticker);

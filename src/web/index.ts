@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import *  as util from "util"
+// import *  as util from "util"
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
-globalThis.util ??= util;
+
+// globalThis.util ??= util;
 
 // // shim for loading in NodeJS deps
 // import * as buffer from "buffer/";
@@ -18,14 +18,17 @@ globalThis.util ??= util;
 // globalThis.path ??= path;
 // /** @ts-ignore */
 
-export { default } from "./bundlr"
-export { default as WebBundlr } from "./bundlr"
+import { default as WebBundlr } from "./bundlr"
+export { WebBundlr, WebBundlr as default }
+// export { default } from "./bundlr"
 
 // on demand injection.
-const currencies: Array<[string, Array<string>]> = [
-    ["@bundlr-network/ethereum-web", ["ethereum", "matic", "bnb", "fantom", "avalanche", "boba-eth", "arbitrum"]],
-    ["@bundlr-network/near-web", ["near"]],
-    ["@bundlr-network/solana-web", ["solana"]]
+const currencies: Array<[Array<string>, Array<string>]> = [
+    [["@bundlr-network/ethereum-web", "BundlrEthereumWeb"], ["ethereum", "matic", "bnb", "fantom", "avalanche", "boba-eth", "arbitrum"]],
+    [["@bundlr-network/near-web", "BundlrNearWeb"], ["near"]],
+    [["@bundlr-network/solana-web", "BundlrSolanaWeb"], ["solana"]]
 ]
 // @ts-ignore
 globalThis.Bundlr?.currencyArrayMap ? (globalThis.Bundlr.currencyArrayMap.concat(currencies)) : (globalThis.Bundlr = { currencyArrayMap: currencies })
+// @ts-ignore
+globalThis.BundlrClient ??= WebBundlr

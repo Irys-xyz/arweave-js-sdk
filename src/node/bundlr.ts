@@ -6,12 +6,7 @@ import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
 import Utils, { importAndGetBundlrFlavour } from "../common/utils";
-// import AlgorandConfig from "./currencies/algorand";
-// import ArweaveConfig from "./currencies/arweave";
-// import ERC20Config from "./currencies/erc20";
-// import EthereumConfig from "./currencies/ethereum";
-// import NearConfig from "./currencies/near";
-// import SolanaConfig from "./currencies/solana";
+
 import { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 
