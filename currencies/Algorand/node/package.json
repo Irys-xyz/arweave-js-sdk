@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/algorand",
-  "version": "0.0.1",
+  "version": "0.0.1-rc1",
   "description": "Algorand Currency for Bundlr",
   "main": "index.js",
   "author": "JesseTheRobot",
