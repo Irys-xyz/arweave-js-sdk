@@ -25,12 +25,12 @@
         "target": "es2015",
         "rootDir": "../"
     },
-    "include": [
-        "*.ts"
-    ],
     "exclude": [
         "cjs/",
         "esm/",
         "node/"
+    ],
+    "include": [
+        "**/*.ts"
     ]
 }

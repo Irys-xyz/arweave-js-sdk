@@ -24,7 +24,7 @@
         "esm/**/*"
     ],
     "peerDependencies": {
-        "@bundlr-network/client": "^0.6.2"
+        "@bundlr-network/client": "^0.8.0-rc1"
     },
     "dependencies": {
         "@noble/ed25519": "^1.6.0",
@@ -35,7 +35,7 @@
         "near-api-js": "^0.44.2"
     },
     "devDependencies": {
-        "@bundlr-network/client": "^0.6.2",
+        "@bundlr-network/client": "^0.8.0-rc1",
         "@noble/ed25519": "^1.6.0",
         "bignumber.js": "^9.0.2",
         "bn.js": "^5.2.0",

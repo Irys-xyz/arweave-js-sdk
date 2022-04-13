@@ -24,7 +24,7 @@
     "esm/**/*"
   ],
   "peerDependencies": {
-    "@bundlr-network/client": "^0.6.2"
+    "@bundlr-network/client": "^0.8.0-rc1"
   },
   "dependencies": {
     "@bundlr-network/ethereum": "^0.0.1",
@@ -32,7 +32,7 @@
     "ethers": "^5.6.2"
   },
   "devDependencies": {
-    "@bundlr-network/client": "^0.6.2",
+    "@bundlr-network/client": "^0.8.0-rc1",
     "@bundlr-network/ethereum": "^0.0.1",
     "bignumber.js": "^9.0.2",
     "ethers": "^5.6.2"

@@ -27,7 +27,7 @@
         "esm/**/*"
     ],
     "peerDependencies": {
-        "@bundlr-network/client": "^0.6.2"
+        "@bundlr-network/client": "^0.8.0-rc1"
     },
     "dependencies": {
         "@noble/ed25519": "^1.6.0",
@@ -39,7 +39,7 @@
         "bs58": "^5.0.0"
     },
     "devDependencies": {
-        "@bundlr-network/client": "^0.6.2",
+        "@bundlr-network/client": "^0.8.0-rc1",
         "@noble/ed25519": "^1.6.0",
         "@solana/wallet-adapter-base": "^0.9.5",
         "@solana/web3.js": "^1.37.0",

@@ -28,7 +28,7 @@
     "esm/**/*"
   ],
   "peerDependencies": {
-    "@bundlr-network/client": "^0.6.2"
+    "@bundlr-network/client": "^0.8.0-rc1"
   },
   "dependencies": {
     "base64url": "^3.0.1",
@@ -39,7 +39,7 @@
     "secp256k1": "^4.0.3"
   },
   "devDependencies": {
-    "@bundlr-network/client": "^0.6.2",
+    "@bundlr-network/client": "^0.8.0-rc1",
     "@types/keccak": "^3.0.1",
     "base64url": "^3.0.1",
     "bignumber.js": "^9.0.2",

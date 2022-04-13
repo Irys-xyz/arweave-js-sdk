@@ -24,7 +24,7 @@
     "esm/**/*"
   ],
   "peerDependencies": {
-    "@bundlr-network/client": "^0.6.2"
+    "@bundlr-network/client": "^0.8.0-rc1"
   },
   "dependencies": {
     "@bundlr-network/ethereum-web": "^0.0.1",
@@ -33,9 +33,12 @@
     "axios": "^0.25.0"
   },
   "devDependencies": {
-    "@bundlr-network/client": "^0.6.2",
+    "@bundlr-network/client": "^0.8.0-rc1",
     "@bundlr-network/ethereum-web": "^0.0.1",
     "bignumber.js": "^9.0.2",
-    "ethers": "^5.6.2"
+    "ethers": "^5.6.2",
+    "inspectpack": "^4.7.1",
+    "webpack": "^5.72.0",
+    "webpack-cli": "^4.9.2"
   }
 }

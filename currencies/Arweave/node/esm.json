@@ -28,6 +28,9 @@
     "exclude": [
         "cjs/",
         "esm/",
-        "web/"
+        "node/"
+    ],
+    "include": [
+        "**/*.ts"
     ]
 }

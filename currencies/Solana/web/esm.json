@@ -23,20 +23,14 @@
         "outDir": "./esm",
         "module": "esnext",
         "target": "esnext",
-        "rootDir": "../",
-        "plugins": [
-            {
-                "transform": "../../../scripts/transformer.js",
-                "after": true
-            }
-        ]
+        "rootDir": "../"
     },
-    "include": [
-        "*.ts"
-    ],
     "exclude": [
         "cjs/",
         "esm/",
         "node/"
+    ],
+    "include": [
+        "**/*.ts"
     ]
 }

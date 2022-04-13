@@ -29,5 +29,8 @@
         "cjs/",
         "esm/",
         "node/"
+    ],
+    "include": [
+        "**/*.ts"
     ]
 }
