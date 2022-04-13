@@ -20,6 +20,12 @@
         "types": [
             "node"
         ],
+        "plugins": [
+            {
+                "transform": "../../../scripts/transformer.js",
+                "after": true
+            }
+        ],
         "outDir": "./esm",
         "module": "esnext",
         "target": "esnext",
