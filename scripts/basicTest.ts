@@ -9,6 +9,8 @@ import Crypto from "crypto"
 import { checkManifest } from "./checkManifest";
 import { genData } from "./genData";
 
+// import { ArweaveBundlr } from "@bundlr-network/arweave";
+
 const profiling = false;
 async function main() {
     const title = new Date().toUTCString()
@@ -29,7 +31,7 @@ async function main() {
         const keys = JSON.parse(readFileSync("wallet.json").toString());
 
         let bundlr = await Bundlr.init("https://devnet.bundlr.network", "arweave", keys.arweave)
-
+        //let bundlr = new ArweaveBundlr("https://devnet.bundlr.network", keys.arweave)
         console.log(bundlr.address)
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
