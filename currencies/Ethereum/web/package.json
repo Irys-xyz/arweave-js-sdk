@@ -1,6 +1,6 @@
 {
     "name": "@bundlr-network/ethereum-web",
-    "version": "0.0.1",
+    "version": "0.0.1-rc1",
     "description": "Ethereum Currency for Bundlr",
     "main": "index.js",
     "author": "JesseTheRobot",
