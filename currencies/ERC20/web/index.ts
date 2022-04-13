@@ -119,6 +119,15 @@ export class BobaBundlr extends WebBundlr {
     }
 }
 
+
+export class ChainlinkBundlr extends WebBundlr {
+    public static readonly currency = "chainlink"
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+        const currencyConfig = new ERC20Config({ name: "chainlink", ticker: "LINK", providerUrl: config?.providerUrl ?? "https://main-light.eth.linkpool.io/", contractAddress: config?.contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet })
+        super(url, currencyConfig, config)
+    }
+}
+
 export const erc20abi = [
     {
         "constant": true,

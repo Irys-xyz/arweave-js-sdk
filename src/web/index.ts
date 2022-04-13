@@ -26,7 +26,8 @@ export { WebBundlr, WebBundlr as default }
 const currencies: Array<[Array<string>, Array<string>]> = [
     [["@bundlr-network/ethereum-web", "BundlrEthereumWeb"], ["ethereum", "matic", "bnb", "fantom", "avalanche", "boba-eth", "arbitrum"]],
     [["@bundlr-network/near-web", "BundlrNearWeb"], ["near"]],
-    [["@bundlr-network/solana-web", "BundlrSolanaWeb"], ["solana"]]
+    [["@bundlr-network/solana-web", "BundlrSolanaWeb"], ["solana"]],
+    [["@bundlr-network/erc20-web", "BundlrErc20Web"], ["boba", "chainlink"]]
 ]
 // @ts-ignore
 globalThis.Bundlr?.currencyArrayMap ? (globalThis.Bundlr.currencyArrayMap.concat(currencies)) : (globalThis.Bundlr = { currencyArrayMap: currencies })

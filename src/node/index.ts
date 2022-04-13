@@ -5,7 +5,7 @@ export { default as NodeBundlr } from "./bundlr"
 export const currencies: Array<[Array<string>, Array<string>]> = [
     [["@bundlr-network/ethereum", "BundlrEthereum"], ["ethereum", "matic", "bnb", "fantom", "avalanche", "boba-eth", "arbitrum"]],
     [["@bundlr-network/arweave", "BundlrArweave"], ["arweave"]],
-    [["@bundlr-network/erc20", "BundlrErc20"], ["boba", "chainlink", "kyve"]],
+    [["@bundlr-network/erc20", "BundlrErc20"], ["boba", "chainlink"]],
     [["@bundlr-network/algorand", "BundlrAlgorand"], ["algorand"]],
     [["@bundlr-network/near", "BundlrNear"], ["near"]],
     [["@bundlr-network/solana", "BundlrSolana"], ["solana"]]

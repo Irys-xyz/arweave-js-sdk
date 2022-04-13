@@ -59,7 +59,7 @@ const base = {
     },
     plugins: [
         new DtsBundleWebpack({
-            name: "client",
+            name: "@bundlr-network/client",
             main: "./build/esm/index.d.ts"
         }),
         // new webpack.ProvidePlugin({
