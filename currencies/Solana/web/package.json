@@ -1,6 +1,6 @@
 {
     "name": "@bundlr-network/solana-web",
-    "version": "0.0.1-rc1",
+    "version": "0.0.1-rc2",
     "description": "Solana Currency for Bundlr",
     "main": "index.js",
     "author": "JesseTheRobot",
@@ -17,6 +17,7 @@
         "./bundle": {
             "default": "./esm/web/bundle.js"
         },
+        "./aio.bundle": "./esm/web/aio.bundle.js",
         "./*": {
             "import": "./*.js",
             "require": "./*.js"
