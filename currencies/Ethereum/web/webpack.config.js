@@ -25,7 +25,7 @@ const base = {
     },
     externals: {
         // "@bundlr-network/client": "BundlrClient",
-        "arbundles": "arbundles",
+
         "Buffer": "Buffer",
         "crypto": "Crypto",
         "stream": "stream",
@@ -77,11 +77,10 @@ const base = {
 
 const mod = {
     ...base,
-    // externals: {
-    //     "@bundlr-network/client": "BundlrClient",
-    //     "arbundles": "arbundles"
-    // },
-
+    externals: {
+        ...base.externals,
+        "arbundles": "arbundles",
+    },
     output: {
         filename: "bundle.js",
         path: path.resolve(__dirname, "esm/web"),
@@ -94,6 +93,10 @@ const mod = {
 }
 const umd = {
     ...base,
+    externals: {
+        ...base.externals,
+        "arbundles": "arbundles",
+    },
     output: {
         filename: "umd.bundle.js",
         path: path.resolve(__dirname, "esm/web"),
@@ -103,5 +106,24 @@ const umd = {
         umdNamedDefine: true,
     }
 }
+const aio = {
+    ...base,
+    output: {
+        filename: "aio.bundle.js",
+        path: path.resolve(__dirname, "esm/web"),
+        libraryTarget: "module",
+        umdNamedDefine: true
+    },
+    resolve: {
+        ...base.resolve,
+        fallback: {
+            "zlib": false,
+            "path": false
+        }
+    },
+    experiments: {
+        outputModule: true,
+    }
+}
 
-module.exports = [mod, umd]
+module.exports = [mod, umd, aio]
