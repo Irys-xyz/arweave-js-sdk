@@ -1,6 +1,6 @@
 {
     "name": "@bundlr-network/ethereum-web",
-    "version": "0.0.1-rc1",
+    "version": "0.0.1-rc2",
     "description": "Ethereum Currency for Bundlr",
     "main": "index.js",
     "author": "JesseTheRobot",
@@ -17,7 +17,8 @@
         "./*": {
             "import": "./*.js",
             "require": "./*.js"
-        }
+        },
+        "./aio.bundle": "./esm/web/aio.bundle.js"
     },
     "files": [
         "cjs/**/*",
