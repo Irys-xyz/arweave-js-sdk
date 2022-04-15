@@ -17,7 +17,8 @@
         "./*": {
             "import": "./*.js",
             "require": "./*.js"
-        }
+        },
+        "./bundle": "./esm/web/bundle.js"
     },
     "files": [
         "cjs/**/*",

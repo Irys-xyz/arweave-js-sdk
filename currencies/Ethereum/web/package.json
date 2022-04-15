@@ -18,7 +18,7 @@
             "import": "./*.js",
             "require": "./*.js"
         },
-        "./aio.bundle": "./esm/web/aio.bundle.js"
+        "./bundle": "./esm/web/bundle.js"
     },
     "files": [
         "cjs/**/*",

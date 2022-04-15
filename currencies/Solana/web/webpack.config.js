@@ -24,8 +24,6 @@ const base = {
         ],
     },
     externals: {
-        // "@bundlr-network/client": "BundlrClient",
-
         "Buffer": "Buffer",
         "crypto": "Crypto",
         "stream": "stream",
@@ -33,37 +31,8 @@ const base = {
     externalsType: "global",
     resolve: {
         extensions: [".ts", ".js"],
-        alias: {
-            // process: "process/browser",
-            // crypto: "crypto-browserify",
-            // stream: "stream-browserify",
-        },
-        fallback: {
-            // "crypto": require.resolve("crypto-browserify"),
-            // "assert": require.resolve("assert/"),
-            // "stream": require.resolve("stream-browserify"),
-            // "process": require.resolve("process/browser"),
-            // "util": require.resolve("util"),
-            // "events": require.resolve("events/"),
-            // "buffer": require.resolve('buffer/'),
-            // "zlib": require.resolve("browserify-zlib"),
-            // "path": require.resolve("path-browserify")
-            // "crypto": false,
-            // "assert": false,
-            // "stream": false,
-            // "process": false,
-            // "util": false,
-            // "events": false,
-            // "buffer": false,
-            // "zlib": false,
-            // "path": false,
-        }
     },
     plugins: [
-        // new webpack.ProvidePlugin({
-        //     process: 'process/browser',
-        //     Buffer: ['buffer', 'Buffer']
-        // }),
         new DuplicatesPlugin({
             emitErrors: false,
             verbose: false
@@ -73,8 +42,6 @@ const base = {
 };
 
 
-
-
 const mod = {
     ...base,
     externals: {
@@ -82,7 +49,7 @@ const mod = {
         "arbundles": "arbundles",
     },
     output: {
-        filename: "bundle.js",
+        filename: "esm.bundle.js",
         path: path.resolve(__dirname, "esm/web"),
         libraryTarget: "module",
         umdNamedDefine: true
@@ -109,7 +76,7 @@ const umd = {
 const aio = {
     ...base,
     output: {
-        filename: "aio.bundle.js",
+        filename: "bundle.js",
         path: path.resolve(__dirname, "esm/web"),
         libraryTarget: "module",
         umdNamedDefine: true

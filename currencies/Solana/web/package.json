@@ -14,14 +14,11 @@
             "import": "./esm/web/index.js",
             "require": "./cjs/web/index.js"
         },
-        "./bundle": {
-            "default": "./esm/web/bundle.js"
-        },
-        "./aio.bundle": "./esm/web/aio.bundle.js",
         "./*": {
             "import": "./*.js",
             "require": "./*.js"
-        }
+        },
+        "./bundle": "./esm/web/bundle.js"
     },
     "files": [
         "cjs/**/*",
