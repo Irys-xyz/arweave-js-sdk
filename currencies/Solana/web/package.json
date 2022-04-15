@@ -1,6 +1,6 @@
 {
     "name": "@bundlr-network/solana-web",
-    "version": "0.0.1-rc3",
+    "version": "0.0.1-rc4",
     "description": "Solana Currency for Bundlr",
     "main": "index.js",
     "author": "JesseTheRobot",
