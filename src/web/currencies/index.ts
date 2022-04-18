@@ -1,6 +1,7 @@
 import BaseCurrency from "../currency";
 // import AlgorandConfig from "./algorand";
 import EthereumConfig from "./ethereum";
+import HarmonyConfig from "./harmony";
 import NearConfig from "./near";
 import SolanaConfig from "./solana";
 
@@ -24,6 +25,8 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         //     return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet })
         case "near":
             return new NearConfig({ name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet })
+        case "harmony":
+            return new HarmonyConfig({ name: "harmony", ticker: "ONE", providerUrl: providerUrl ?? "https://api.harmony.one", wallet })
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
     }

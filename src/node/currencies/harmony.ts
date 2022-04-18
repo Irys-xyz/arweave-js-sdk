@@ -31,8 +31,6 @@ export default class HarmonyConfig extends BaseNodeCurrency {
     protected providerInstance?;
     protected signerInstance;
 
-    sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
-
     constructor(config: CurrencyConfig) {
         super(config);
         this.base = ["One", 1e6]
