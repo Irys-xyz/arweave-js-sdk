@@ -1,9 +1,15 @@
 // eslint-disable-file @typescript-eslint/no-unused-vars
-import Bundlr from "../src";
+
+// import Bundlr from "../"; //testing built code
+import Bundlr from "../src/index" //testing direct from TS source
+
 import { promises, readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next"
 import Crypto from "crypto"
+import { checkManifest } from "./checkManifest";
+import { genData } from "./genData";
 
+// import { ArweaveBundlr } from "@bundlr-network/arweave";
 
 const profiling = false;
 async function main() {
@@ -29,9 +35,10 @@ async function main() {
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
-
-        const transaction = await bundlr.createTransaction("aaa");
+        const tags = [{ name: "Content-Type", value: "text/plain" }]
+        const transaction = bundlr.createTransaction("Hello, Bundlr!", { tags });
         await transaction.sign();
+
         console.log(transaction.id)
         console.log(await transaction.isValid());
         const res = await transaction.upload();
@@ -48,12 +55,19 @@ async function main() {
         const cres = await ctx.upload()
         console.log(cres)
         bundlr.uploader.useChunking = false
+
         await promises.rm("testFolder-manifest.json", { force: true })
         await promises.rm("testFolder-manifest.csv", { force: true })
         await promises.rm("testFolder-id.txt", { force: true })
+        await promises.rm("./testFolder", { recursive: true, force: true })
 
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", null, 10, false, true, async (log): Promise<void> => { console.log(log) })
+        const concurrency = 10
+        await genData("./testFolder", 10, 1_000, 10_000)
+
+        const resu = await bundlr.uploader.uploadFolder("./testFolder", "0.json", concurrency, false, true, async (log): Promise<void> => { console.log(log) })
         console.log(resu);
+
+        await checkManifest("./testFolder", concurrency)
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
@@ -69,19 +83,19 @@ async function main() {
     } catch (e) {
         console.log(e);
     } finally {
+        console.log("done!");
         if (!profiling) {
-            console.log("done!");
             return
         };
 
         const cpuprofile = v8.stopProfiling(title)
         cpuprofile.export((_err, res) => {
-            writeFileSync(`./profiles/cpu/${title}.cpuprofile`, res)
+            writeFileSync(`./profiles/cpu/${title}.cpuprofile`, res ?? Buffer.alloc(0))
         })
         cpuprofile.delete();
         const heapProfile = v8.stopSamplingHeapProfiling();
         heapProfile.export((_err, res) => {
-            writeFileSync(`./profiles/heap/${title}.heapprofile`, res)
+            writeFileSync(`./profiles/heap/${title}.heapprofile`, res ?? Buffer.alloc(0))
         })
     }
 }
