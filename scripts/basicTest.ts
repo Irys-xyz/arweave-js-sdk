@@ -29,7 +29,9 @@ async function main() {
 
 
         const keys = JSON.parse(readFileSync("wallet.json").toString());
-        let bundlr = new Bundlr("http://devnet.bundlr.network", "arweave", keys.arweave)
+
+        let bundlr = await Bundlr.init("https://devnet.bundlr.network", "arweave", keys.arweave)
+        //let bundlr = new ArweaveBundlr("https://devnet.bundlr.network", keys.arweave)
         console.log(bundlr.address)
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
@@ -51,6 +53,7 @@ async function main() {
 
         const ctx = bundlr.createTransaction(Crypto.randomBytes(15_000_000).toString("base64"))
         await ctx.sign()
+
         bundlr.uploader.useChunking = true
         const cres = await ctx.upload()
         console.log(cres)
