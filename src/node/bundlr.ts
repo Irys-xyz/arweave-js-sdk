@@ -8,7 +8,7 @@ import Utils, { importAndGetBundlrFlavour } from "../common/utils";
 
 import { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
-
+import { URL } from "url";
 
 export default class NodeBundlr extends Bundlr {
     public uploader: NodeUploader; // re-define type

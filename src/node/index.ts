@@ -8,7 +8,10 @@ export const currencies: Array<[Array<string>, Array<string>]> = [
     [["@bundlr-network/erc20", "BundlrErc20"], ["boba", "chainlink"]],
     [["@bundlr-network/algorand", "BundlrAlgorand"], ["algorand"]],
     [["@bundlr-network/near", "BundlrNear"], ["near"]],
-    [["@bundlr-network/solana", "BundlrSolana"], ["solana"]]
+    [["@bundlr-network/solana", "BundlrSolana"], ["solana"]],
+    [["@bundlr-network/cosmos", "BundlrCosmos"], ["cosmos","akash","terra","ust","kyve"]],
+    [["@bundlr-network/harmony", "BundlrHarmony"], ["harmony"]]
+
 ]
 // @ts-ignore
 globalThis.Bundlr?.currencyArrayMap ? (globalThis.Bundlr.currencyArrayMap.concat(currencies)) : (globalThis.Bundlr = { currencyArrayMap: currencies })

@@ -1,0 +1,44 @@
+{
+  "name": "@bundlr-network/harmony",
+  "version": "0.0.1",
+  "description": "Harmony Currency for Bundlr",
+  "main": "index.js",
+  "author": "rabm2k7",
+  "license": "MIT",
+  "scripts": {
+    "dev:build": "rm -rf ./cjs && rm -rf ./esm && tsc -p ./cjs.json && ttsc -p ./esm.json",
+    "build": "yarn run dev:build"
+  },
+  "exports": {
+    ".": {
+      "import": "./esm/node/index.js",
+      "require": "./cjs/node/index.js"
+    },
+    "./*": {
+      "import": "./*.js",
+      "require": "./*.js"
+    }
+  },
+  "files": [
+    "cjs/**/*",
+    "esm/**/*"
+  ],
+  "peerDependencies": {
+    "@bundlr-network/client": "^0.8.0-rc1"
+  },
+  "dependencies": {
+    "@harmony-js/account": "^0.1.57",
+    "@harmony-js/core": "^0.1.57",
+    "@harmony-js/crypto": "^0.1.56",
+    "@harmony-js/network": "^0.1.56",
+    "@harmony-js/transaction": "^0.1.56",
+    "@harmony-js/utils": "^0.1.56",
+    "bignumber.js": "^9.0.2",
+    "bn.js": "^5.2.0",
+    "secp256k1": "^4.0.3"
+  },
+  "devDependencies": {
+    "@bundlr-network/client": "^0.8.0-rc1",
+    "@types/keccak": "^3.0.1"
+  }
+}
