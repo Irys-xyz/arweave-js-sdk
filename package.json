@@ -52,6 +52,7 @@
     "bundlr": "./build/cjs/node/cli.js"
   },
   "dependencies": {
+    "@bundlr-network/ethereum": "^0.0.1-rc1",
     "@supercharge/promise-pool": "^2.1.0",
     "arbundles": "^0.7.0-rc2",
     "arweave": "1.10.18",
