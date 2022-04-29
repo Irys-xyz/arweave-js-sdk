@@ -1,7 +1,5 @@
 import BigNumber from "bignumber.js";
-import { Signer } from "@bundlr-network/client/build/cjs/common/signing/index"
-// import { CosmosSigner } from "./CosmosSigner";
-import EthereumSigner from "./EthereumSigner";
+import * as CosmosSigner from "./CosmosSigner";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
 import NodeBundlr from "@bundlr-network/client/build/cjs/node/index";
@@ -26,7 +24,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
 
     declare protected keyPair: Secp256k1Keypair;
     declare protected providerInstance: stargate.SigningStargateClient;
-    declare signerInstance: EthereumSigner;
+    declare signerInstance: CosmosSigner.default;
     private localConfig: {
         prefix: string,
         derivePath: string,
@@ -40,7 +38,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
         super(config);
         this.localConfig = config.localConfig;
         this.base = [this.localConfig.denomination, this.localConfig.decimals];
-        (async () => {await this.ready()});
+        setTimeout(async () => {await this.ready()}, 1);
     }
 
     protected async getProvider(): Promise<any> {
@@ -83,7 +81,8 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
     
     ownerToAddress(owner: any): string {
-        const encodePubkey = amino.encodeSecp256k1Pubkey(owner);
+        const compressed = Secp256k1.compressPubkey(owner);
+        const encodePubkey = amino.encodeSecp256k1Pubkey(compressed);
         const address = amino.pubkeyToAddress(encodePubkey, this.localConfig.prefix);
         return address;
     }
@@ -92,7 +91,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
         return await this.getSigner().sign(data);
     }
 
-    getSigner(): EthereumSigner {
+    getSigner(): CosmosSigner.default {
         if(!this.signerInstance){
             this.ready();
         }
@@ -100,7 +99,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async verify(pub: string | Buffer, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return EthereumSigner.verify(pub, data, signature);
+        return CosmosSigner.default.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -152,11 +151,12 @@ export default class CosmosConfig extends BaseNodeCurrency {
 
     getPublicKey(): string | Buffer{
         const signer = this.getSigner();
-        const pk = signer.publicKey;
-        return pk;
+        const pk = Secp256k1.compressPubkey(signer.publicKey);
+        // const pk = signer.publicKey;
+        return Buffer.from(pk);
     }
 
-    public async ready(): Promise<boolean> {
+    public async ready(): Promise<void> {
         const path2number = new BigNumber(this.localConfig.derivePath).toNumber();
         this.path = [
             Slip10RawIndex.hardened(44),
@@ -168,8 +168,9 @@ export default class CosmosConfig extends BaseNodeCurrency {
         const walletSeed = await Bip39.mnemonicToSeed(new EnglishMnemonic(this.wallet));
         const slip = Slip10.derivePath(Slip10Curve.Secp256k1, walletSeed, this.path);
         this.keyPair = await Secp256k1.makeKeypair(slip.privkey);
-        this.signerInstance = new EthereumSigner(Buffer.from(this.keyPair.privkey).toString("hex"));
-        return true;
+        this.signerInstance = new CosmosSigner.default(this.keyPair.privkey);
+        this._address = this.ownerToAddress(this.keyPair.pubkey);
+        return;
     }
 
     public async getGas(): Promise<[BigNumber, number]> {
@@ -181,7 +182,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
 export class CosmosBundlr extends NodeBundlr {
     public static readonly currency = "cosmos"
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: config?.providerUrl ?? "https://rpc.cosmos.network", wallet, localConfig: { prefix: "atom", "derivePath": "118", "fee": "2500", "denomination": "uatom", "decimals": 1e6 } })
+        const currencyConfig = new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: config?.providerUrl ?? "https://rpc.cosmos.network", wallet, localConfig: { prefix: "cosmos", "derivePath": "118", "fee": "2500", "denomination": "uatom", "decimals": 1e6 } })
         super(url, currencyConfig, config)
     }
 }
