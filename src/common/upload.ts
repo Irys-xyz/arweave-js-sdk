@@ -41,7 +41,7 @@ export default class Uploader {
         const dataItem = createData(
             data,
             signer,
-            { tags }
+            { tags, anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) }
         );
         await dataItem.sign(signer);
         return await this.transactionUploader(dataItem);
