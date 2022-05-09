@@ -31,6 +31,7 @@ const base = {
     externalsType: "global",
     resolve: {
         extensions: [".ts", ".js"],
+        fallback: { "path": require.resolve("path-browserify") }
     },
     plugins: [
         new DuplicatesPlugin({

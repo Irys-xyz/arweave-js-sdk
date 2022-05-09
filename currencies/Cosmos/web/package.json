@@ -36,7 +36,8 @@
     "bignumber.js": "^9.0.2",
     "bn.js": "^5.2.0",
     "cosmjs-types": "^0.4.1",
-    "keccak": "^3.0.2"
+    "keccak": "^3.0.2",
+    "path-browserify": "^1.0.1"
   },
   "devDependencies": {
     "@bundlr-network/client": "^0.8.0-rc1",
