@@ -94,4 +94,5 @@ const aio = {
     }
 }
 
-module.exports = [mod, umd, aio]
+// module.exports = [mod, umd, aio]
+module.exports = umd
