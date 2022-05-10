@@ -55,7 +55,7 @@ export default class Uploader {
     public async transactionUploader(transaction: DataItem): Promise<AxiosResponse<any>> {
         let res: AxiosResponse<any>
         const length = transaction.getRaw().byteLength
-        if (this.forceUseChunking || length > 190_000_000) {
+        if (this.forceUseChunking || length > 50_000_000) {
             res = await this.chunkedTransactionUploader(Readable.from(transaction.getRaw()), transaction.id, length)
         } else {
             const { protocol, host, port, timeout } = this.api.getConfig();
