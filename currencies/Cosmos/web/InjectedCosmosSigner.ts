@@ -48,10 +48,10 @@ export default class InjectedEthereumSigner implements Signer {
     const offlineSigner = this.signer.getOfflineSigner(this.chainId)
     const accounts = await offlineSigner.getAccounts();
     let signed = await this.signer.signArbitrary(this.chainId, accounts[0].address, message);
-    // console.log(signed);
+    console.log(signed.signature);
     //returns
     const sign = amino.decodeSignature(signed);
-    // console.log(`Sig: ${Buffer.from(sign.signature)}`);
+    console.log(`Sig: ${Buffer.from(sign.signature)}`);
     // const sig = base64url.toBuffer(signed.signature);
     console.log(`Signing PK unc:`);
     console.log(Secp256k1.uncompressPubkey(sign.pubkey));
@@ -89,12 +89,12 @@ export default class InjectedEthereumSigner implements Signer {
     message: Uint8Array,
     signature: Uint8Array,
   ): boolean {
-    console.log(`Sig: ${signature}`);
-    console.log(`Sig Length: ${signature.length}`);
-    console.log(`Message: ${keccak256(Buffer.from(message))}`);
-    console.log(`PubKey:`);
+    console.log(`Verify Sig: ${signature}`);
+    console.log(`Verify Sig Length: ${signature.length}`);
+    console.log(`Verify Message: ${keccak256(Buffer.from(message))}`);
+    console.log(`Verify PubKey:`);
     console.log(Buffer.from(pk));
-    console.log(`PubKey Length: ${pk.length}`);
+    console.log(`Verify PubKey Length: ${pk.length}`);
     let p = pk;
     if (typeof pk === "string") p = base64url.toBuffer(pk);
     let verified = false;
@@ -107,7 +107,7 @@ export default class InjectedEthereumSigner implements Signer {
       //eslint-disable-next-line no-empty
     } catch (e) {
       console.log(e);
-     }
+    }
     console.log(`Is Verified: ${verified}`);
     return verified;
   }
