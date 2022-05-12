@@ -6,6 +6,8 @@ import { Keplr } from "@keplr-wallet/types";
 // import * as stargate from "@cosmjs/stargate";
 import * as amino from "@cosmjs/amino";
 import { Secp256k1, Secp256k1Signature } from "@cosmjs/crypto";
+import { PubKeySecp256k1 } from "@keplr-wallet/crypto";
+
 
 export default class InjectedEthereumSigner implements Signer {
   // private providerInstance: stargate.SigningStargateClient;
@@ -23,7 +25,7 @@ export default class InjectedEthereumSigner implements Signer {
     this.signer = wallet;
     this.chainId = chainId;
   }
-  
+
   async setPublicKey(): Promise<void> {
     const address = "sign this message to connect to Bundlr.Network";
     const offlineSigner = this.signer.getOfflineSigner(this.chainId);
@@ -45,12 +47,16 @@ export default class InjectedEthereumSigner implements Signer {
     //sign
     const offlineSigner = this.signer.getOfflineSigner(this.chainId)
     const accounts = await offlineSigner.getAccounts();
-    let signed = await this.signer.signArbitrary(this.chainId, accounts[0].address, message)
-    //return
+    let signed = await this.signer.signArbitrary(this.chainId, accounts[0].address, message);
+    // console.log(signed);
+    //returns
     const sign = amino.decodeSignature(signed);
-    console.log(`Sig Length: ${Buffer.from(sign.signature).length}`);
-    console.log(`Sig: ${Buffer.from(sign.signature)}`);
-    return sign.signature
+    // console.log(`Sig: ${Buffer.from(sign.signature)}`);
+    // const sig = base64url.toBuffer(signed.signature);
+    console.log(`Signing PK unc:`);
+    console.log(Secp256k1.uncompressPubkey(sign.pubkey));
+    console.log(`Sig Length: ${sign.signature.length}`);
+    return Buffer.from(sign.signature);
   }
 
   // static async verify(
@@ -58,9 +64,11 @@ export default class InjectedEthereumSigner implements Signer {
   //   message: Uint8Array,
   //   signature: Uint8Array,
   // ): Promise<boolean> {
-  //   console.log(`Sig: ${signature}`);
+  //   console.log(`Sig: ${Buffer.from(signature)}`);
+  //   console.log(`Sig Length: ${Buffer.from(signature).length}`);
   //   console.log(`Message: ${message}`);
   //   console.log(`PubKey: ${pk}`);
+  //   console.log(`PubKey Length: ${pk.length}`);
   //   let p = pk;
   //   if (typeof pk === "string") p = base64url.toBuffer(pk);
   //   let verified = false;
@@ -76,28 +84,31 @@ export default class InjectedEthereumSigner implements Signer {
   //   return verified;
   // }
   
-  static async verify(
+  static verify(
     pk: string | Buffer,
     message: Uint8Array,
     signature: Uint8Array,
-  ): Promise<boolean> {
-    console.log(`Sig: ${Buffer.from(signature)}`);
-    console.log(`Sig Length: ${Buffer.from(signature).length}`);
-    console.log(`Message: ${message}`);
-    console.log(`PubKey: ${pk}`);
+  ): boolean {
+    console.log(`Sig: ${signature}`);
+    console.log(`Sig Length: ${signature.length}`);
+    console.log(`Message: ${keccak256(Buffer.from(message))}`);
+    console.log(`PubKey:`);
+    console.log(Buffer.from(pk));
     console.log(`PubKey Length: ${pk.length}`);
     let p = pk;
     if (typeof pk === "string") p = base64url.toBuffer(pk);
     let verified = false;
     try {
-      verified = await Secp256k1.verifySignature(
-        Secp256k1Signature.fromDer(signature),
+      verified = secp256k1.ecdsaVerify(
+        signature,
         keccak256(Buffer.from(message)),
         p as Buffer,
       );
-      // eslint-disable-next-line no-empty
-    } catch (e) { }
+      //eslint-disable-next-line no-empty
+    } catch (e) {
+      console.log(e);
+     }
     console.log(`Is Verified: ${verified}`);
-    return true;
+    return verified;
   }
 }
