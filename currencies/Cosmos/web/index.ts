@@ -183,6 +183,7 @@ export default class CosmosConfig extends BaseWebCurrency {
             authInfoBytes: signed.authInfoBytes,
             signatures: [fromBase64(signature.signature)],
             });
+
             const enc = TxRaw.encode(txBytes).finish();
 
         return { tx: enc, txId: "" };
@@ -190,10 +191,13 @@ export default class CosmosConfig extends BaseWebCurrency {
 
     async getPublicKey(): Promise<string | Buffer>{
         // const signer = await this.getSigner();
-        // const pk = Secp256k1.compressPubkey(signer.publicKey);
+        // const pk = Secp256k1.compressPubkey(signer.pubKey);
         // // const pk = signer.publicKey;
+        
         const key = await this.wallet.getKey("cosmoshub-4");
-        return Buffer.from(key.pubKey);
+        const pk = Secp256k1.uncompressPubkey(key.pubKey);
+
+        return Buffer.from(pk);
     }
 
     public async ready(): Promise<void> {
