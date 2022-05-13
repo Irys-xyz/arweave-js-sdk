@@ -5,7 +5,7 @@ import keccak256 from "./keccak256";
 import { Keplr } from "@keplr-wallet/types";
 // import * as stargate from "@cosmjs/stargate";
 import * as amino from "@cosmjs/amino";
-import { Secp256k1, Secp256k1Signature } from "@cosmjs/crypto";
+import { Secp256k1, Secp256k1Signature, sha256 } from "@cosmjs/crypto";
 import { PubKeySecp256k1 } from "@keplr-wallet/crypto";
 
 
@@ -90,18 +90,27 @@ export default class InjectedEthereumSigner implements Signer {
     signature: Uint8Array,
   ): boolean {
     console.log(`Verify Sig: ${signature}`);
+    console.log(Buffer.from(signature));
     console.log(`Verify Sig Length: ${signature.length}`);
     console.log(`Verify Message: ${keccak256(Buffer.from(message))}`);
     console.log(`Verify PubKey:`);
     console.log(Buffer.from(pk));
     console.log(`Verify PubKey Length: ${pk.length}`);
     let p = pk;
+    console.log("PK: ",pk);
     if (typeof pk === "string") p = base64url.toBuffer(pk);
     let verified = false;
     try {
+      console.log("PK try:", p);
+      console.log("Signature try:", signature);
+      console.log("Message try:", message);
+      console.log("Message (256) try:", keccak256(Buffer.from(message)));
+      
+      this.signer.()
+
       verified = secp256k1.ecdsaVerify(
         signature,
-        keccak256(Buffer.from(message)),
+        sha256(Buffer.from(message)),
         p as Buffer,
       );
       //eslint-disable-next-line no-empty
