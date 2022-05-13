@@ -2,7 +2,7 @@ import {  SignatureConfig, SIG_CONFIG } from "@bundlr-network/client/build/cjs/c
 import Secp256k1 from "./secp256k1";
 import secp256k1 from "secp256k1";
 import base64url from "base64url";
-import keccak256 from "./keccak256";
+import Crypto from "crypto";
 
 export default class CosmosSigner extends Secp256k1 {
   declare sk: Uint8Array;
@@ -35,7 +35,7 @@ export default class CosmosSigner extends Secp256k1 {
     try {
       verified = secp256k1.ecdsaVerify(
         signature,
-        keccak256(Buffer.from(message)),
+        Crypto.createHash("sha256").update(Buffer.from(message)).digest(),
         p as Buffer,
       );
       // eslint-disable-next-line no-empty
@@ -45,7 +45,7 @@ export default class CosmosSigner extends Secp256k1 {
 
   sign(message: Uint8Array): Uint8Array {
     return secp256k1.ecdsaSign(
-      keccak256(Buffer.from(message)),
+      Crypto.createHash("sha256").update(Buffer.from(message)).digest(),
       Buffer.from(this.sk),
     ).signature;
   }
