@@ -3,7 +3,7 @@ import { CurrencyConfig, Tx } from "@bundlr-network/client/build/esm/common/type
 import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency";
 import WebBundlr from "@bundlr-network/client/build/esm/web/index";
 import { getRedstonePrice } from "@bundlr-network/client/build/cjs/node/currency";
-import * as InjectedCosmosSigner from "./InjectedCosmosSigner";
+import InjectedCosmosSigner from "./InjectedCosmosSigner";
 
 import * as stargate from "@cosmjs/stargate";
 import * as amino from "@cosmjs/amino";
@@ -24,7 +24,8 @@ export interface CosmosCurrencyConfig extends CurrencyConfig {
         derivePath: string,
         fee: string,
         denomination: string,
-        decimals: number
+        decimals: number,
+        chainId: string
     };
 }
 export default class CosmosConfig extends BaseWebCurrency {
@@ -32,13 +33,14 @@ export default class CosmosConfig extends BaseWebCurrency {
     // declare protected keyPair: Secp256k1Keypair;
     declare protected providerInstance: stargate.SigningStargateClient;
     declare protected wallet: Keplr;
-    declare signerInstance: InjectedCosmosSigner.default;
+    declare signerInstance: InjectedCosmosSigner;
     private localConfig: {
         prefix: string,
         derivePath: string,
         fee: string,
         denomination: string,
-        decimals: number
+        decimals: number,
+        chainId: string
     };
     declare public path: HdPath;
 
@@ -95,7 +97,7 @@ export default class CosmosConfig extends BaseWebCurrency {
         return await this.getSigner().sign(data);
     }
 
-    getSigner(): InjectedCosmosSigner.default {
+    getSigner(): InjectedCosmosSigner {
         if(!this.signerInstance){
             this.ready();
         }
@@ -103,7 +105,7 @@ export default class CosmosConfig extends BaseWebCurrency {
     }
 
     async verify(pub: Buffer, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return InjectedCosmosSigner.default.verify(pub, data, signature);
+        return InjectedCosmosSigner.verify(pub, data, signature, this.localConfig.prefix);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -117,12 +119,13 @@ export default class CosmosConfig extends BaseWebCurrency {
 
     async sendTx(data: any): Promise<string> {
         // const send = await (await this.getProvider()).broadcastTx(data, 60000, 3000);
-        const send = await this.wallet.sendTx("cosmoshub-4", data, BroadcastMode.Block)
-        return send.toString();
+        const send = await this.wallet.sendTx(this.localConfig.chainId, data, BroadcastMode.Block)
+        return Buffer.from(send).toString("hex");
     }
 
     async createTx(amount: BigNumber.Value, to: string): Promise<{ txId: string; tx: any; }> {
             const provider = await this.getProvider();
+
             const account = this._address;
 
             const sendingAmount = {
@@ -149,8 +152,6 @@ export default class CosmosConfig extends BaseWebCurrency {
                 }
             };
 
-            const chainId = "cosmoshub-4";
-
             const { sequence, accountNumber }: stargate.SequenceResponse = await this.providerInstance.getSequence(this._address);
             console.log({sequence, accountNumber});
 
@@ -166,17 +167,17 @@ export default class CosmosConfig extends BaseWebCurrency {
 
             const gasLimit = Int53.fromString(sendingFee.gas).toNumber();
 
-            const pubKey = await this.wallet.getKey(chainId);
+            const pubKey = await this.wallet.getKey(this.localConfig.chainId);
             
             const pubkey = proto.encodePubkey(amino.encodeSecp256k1Pubkey(pubKey.pubKey));
 
             const authInfoBytes = proto.makeAuthInfoBytes([{ pubkey, "sequence": sequence }, ], sendingFee.amount, gasLimit);
             console.log(`authInfoBytes:${authInfoBytes}`)
 
-            const signDoc = proto.makeSignDoc(txBodyBytes, authInfoBytes, chainId, accountNumber);
+            const signDoc = proto.makeSignDoc(txBodyBytes, authInfoBytes, this.localConfig.chainId, accountNumber);
             console.log(`Signdoc:${signDoc}`)
             
-            const { signature, signed } = await this.wallet.signDirect(chainId, this._address, signDoc);
+            const { signature, signed } = await this.wallet.signDirect(this.localConfig.chainId, this._address, signDoc);
 
             const txBytes = TxRaw.fromPartial({
             bodyBytes: signed.bodyBytes,
@@ -194,7 +195,7 @@ export default class CosmosConfig extends BaseWebCurrency {
         // const pk = Secp256k1.compressPubkey(signer.pubKey);
         // // const pk = signer.publicKey;
         
-        const key = await this.wallet.getKey("cosmoshub-4");
+        const key = await this.wallet.getKey(this.localConfig.chainId);
         const pk = Secp256k1.uncompressPubkey(key.pubKey);
 
         return Buffer.from(pk);
@@ -210,24 +211,23 @@ export default class CosmosConfig extends BaseWebCurrency {
             Slip10RawIndex.normal(0),
           ];
         
-        const chainId = "cosmoshub-4";
         const k = await getKeplrFromWindow();
         console.log(k);
         if(k !== undefined){
-            await k.enable(chainId);        
+            await k.enable(this.localConfig.chainId);        
             this.wallet ??= k;
 
-            const offlineSigner = k.getOfflineSigner(chainId);
+            const offlineSigner = k.getOfflineSigner(this.localConfig.chainId);
         
             this.providerInstance = await stargate.SigningStargateClient.connectWithSigner(
                     this.providerUrl,
                     offlineSigner
             );
-            const key = await (await this.wallet.getKey(chainId));
+            const key = await (await this.wallet.getKey(this.localConfig.chainId));
             console.log(key);
             this._address = key.bech32Address;
 
-            this.signerInstance ??= new InjectedCosmosSigner.default(/* this.providerInstance, */ this.wallet, chainId);
+            this.signerInstance ??= new InjectedCosmosSigner(/* this.providerInstance, */ this.wallet, this.localConfig.chainId);
         }
         return;
     }
@@ -241,35 +241,35 @@ export default class CosmosConfig extends BaseWebCurrency {
 export class CosmosBundlr extends WebBundlr {
     public static readonly currency = "cosmos"
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: config?.providerUrl ?? "http://localhost:8080/https://rpc.cosmos.network/", wallet, localConfig: { prefix: "cosmos", "derivePath": "118", "fee": "2500", "denomination": "uatom", "decimals": 1e6 } })
+        const currencyConfig = new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: config?.providerUrl ?? "http://localhost:8080/https://cosmoshub.validator.network/", wallet, localConfig: { prefix: "cosmos", "derivePath": "118", "fee": "2500", "denomination": "uatom", "decimals": 1e6, "chainId": "cosmoshub-4" } })
         super(url, currencyConfig, config)
     }
 }
 export class AkashBundlr extends WebBundlr {
     public static readonly currency = "akash"
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new CosmosConfig({ name: "akash", ticker: "AKT", providerUrl: config?.providerUrl ?? "https://rpc.akash.forbole.com", wallet, localConfig: { prefix: "akash", "derivePath": "118", "fee": "100", "denomination": "uakt", "decimals": 1e6 } })
+        const currencyConfig = new CosmosConfig({ name: "akash", ticker: "AKT", providerUrl: config?.providerUrl ?? "https://rpc.akash.forbole.com", wallet, localConfig: { prefix: "akash", "derivePath": "118", "fee": "100", "denomination": "uakt", "decimals": 1e6, "chainId": "akashnet-2" } })
         super(url, currencyConfig, config)
     }
 }
-export class TerraBundlr extends WebBundlr {
-    public static readonly currency = "terra"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: config?.providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "1200", "denomination": "uluna", "decimals": 1e6 } })
-        super(url, currencyConfig, config)
-    }
-}
-export class UstBundlr extends WebBundlr {
-    public static readonly currency = "ust"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new CosmosConfig({ name: "ust", ticker: "UST", providerUrl: config?.providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "50000", "denomination": "uusd", "decimals": 1e6 } })
-        super(url, currencyConfig, config)
-    }
-}
+// export class TerraBundlr extends WebBundlr {
+//     public static readonly currency = "terra"
+//     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+//         const currencyConfig = new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: config?.providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "1200", "denomination": "uluna", "decimals": 1e6 } })
+//         super(url, currencyConfig, config)
+//     }
+// }
+// export class UstBundlr extends WebBundlr {
+//     public static readonly currency = "ust"
+//     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+//         const currencyConfig = new CosmosConfig({ name: "ust", ticker: "UST", providerUrl: config?.providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "50000", "denomination": "uusd", "decimals": 1e6 } })
+//         super(url, currencyConfig, config)
+//     }
+// }
 export class KyveBundlr extends WebBundlr {
     public static readonly currency = "kyve"
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: config?.providerUrl ?? "https://rpc.node.kyve.network", wallet, localConfig: { prefix: "kyve", "derivePath": "118", "fee": "1", "denomination": "kyve", "decimals": 1e9 } })
+        const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: config?.providerUrl ?? "https://rpc.korellia.kyve.network/", wallet, localConfig: { prefix: "kyve", "derivePath": "118", "fee": "1", "denomination": "kyve", "decimals": 1e9, "chainId": "korellia" } })
         k.price = async (): Promise<number> => { return 1 } // TODO: replace for mainnet
         k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
         const currencyConfig = k;

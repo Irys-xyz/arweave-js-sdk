@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import * as CosmosSigner from "./CosmosSigner";
+import CosmosSigner from "./CosmosSigner";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
 import NodeBundlr from "@bundlr-network/client/build/cjs/node/index";
@@ -24,7 +24,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
 
     declare protected keyPair: Secp256k1Keypair;
     declare protected providerInstance: stargate.SigningStargateClient;
-    declare signerInstance: CosmosSigner.default;
+    declare signerInstance: CosmosSigner;
     private localConfig: {
         prefix: string,
         derivePath: string,
@@ -91,7 +91,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
         return await this.getSigner().sign(data);
     }
 
-    getSigner(): CosmosSigner.default {
+    getSigner(): CosmosSigner {
         if(!this.signerInstance){
             this.ready();
         }
@@ -99,7 +99,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async verify(pub: string | Buffer, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return CosmosSigner.default.verify(pub, data, signature);
+        return CosmosSigner.verify(pub, data, signature, this.localConfig.prefix);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -151,8 +151,8 @@ export default class CosmosConfig extends BaseNodeCurrency {
 
     getPublicKey(): string | Buffer{
         const signer = this.getSigner();
-        const pk = Secp256k1.compressPubkey(signer.publicKey);
-        // const pk = signer.publicKey;
+        // const pk = Secp256k1.compressPubkey(signer.publicKey);
+        const pk = signer.publicKey;
         return Buffer.from(pk);
     }
 
@@ -168,7 +168,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
         const walletSeed = await Bip39.mnemonicToSeed(new EnglishMnemonic(this.wallet));
         const slip = Slip10.derivePath(Slip10Curve.Secp256k1, walletSeed, this.path);
         this.keyPair = await Secp256k1.makeKeypair(slip.privkey);
-        this.signerInstance = new CosmosSigner.default(this.keyPair.privkey);
+        this.signerInstance = new CosmosSigner(this.keyPair.privkey);
         this._address = this.ownerToAddress(this.keyPair.pubkey);
         return;
     }
