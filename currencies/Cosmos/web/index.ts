@@ -105,7 +105,7 @@ export default class CosmosConfig extends BaseWebCurrency {
     }
 
     async verify(pub: Buffer, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return InjectedCosmosSigner.verify(pub, data, signature, this.localConfig.prefix);
+        return InjectedCosmosSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -194,9 +194,9 @@ export default class CosmosConfig extends BaseWebCurrency {
         // const signer = await this.getSigner();
         // const pk = Secp256k1.compressPubkey(signer.pubKey);
         // // const pk = signer.publicKey;
-        
-        const key = await this.wallet.getKey(this.localConfig.chainId);
-        const pk = Secp256k1.uncompressPubkey(key.pubKey);
+        const signer = await this.getSigner();
+        const pub = await signer.getPublicKey();
+        const pk = Secp256k1.uncompressPubkey(pub);
 
         return Buffer.from(pk);
     }
@@ -225,9 +225,11 @@ export default class CosmosConfig extends BaseWebCurrency {
             );
             const key = await (await this.wallet.getKey(this.localConfig.chainId));
             console.log(key);
-            this._address = key.bech32Address;
 
-            this.signerInstance ??= new InjectedCosmosSigner(/* this.providerInstance, */ this.wallet, this.localConfig.chainId);
+            // this._address = key.bech32Address;
+            this.signerInstance ??= new InjectedCosmosSigner(this.wallet, this.localConfig.chainId, this.localConfig.prefix);
+            this._address = this.ownerToAddress(await this.getPublicKey());
+
         }
         return;
     }

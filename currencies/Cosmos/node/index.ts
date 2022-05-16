@@ -17,7 +17,7 @@ export interface CosmosCurrencyConfig extends CurrencyConfig {
         derivePath: string,
         fee: string,
         denomination: string,
-        decimals: number
+        decimals: number,
     };
 }
 export default class CosmosConfig extends BaseNodeCurrency {
@@ -99,7 +99,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     }
 
     async verify(pub: string | Buffer, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return CosmosSigner.verify(pub, data, signature, this.localConfig.prefix);
+        return CosmosSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -168,7 +168,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
         const walletSeed = await Bip39.mnemonicToSeed(new EnglishMnemonic(this.wallet));
         const slip = Slip10.derivePath(Slip10Curve.Secp256k1, walletSeed, this.path);
         this.keyPair = await Secp256k1.makeKeypair(slip.privkey);
-        this.signerInstance = new CosmosSigner(this.keyPair.privkey);
+        this.signerInstance = new CosmosSigner(this.keyPair.privkey, Buffer.from(this.keyPair.pubkey), this.localConfig.prefix);
         this._address = this.ownerToAddress(this.keyPair.pubkey);
         return;
     }
@@ -193,24 +193,24 @@ export class AkashBundlr extends NodeBundlr {
         super(url, currencyConfig, config)
     }
 }
-export class TerraBundlr extends NodeBundlr {
-    public static readonly currency = "terra"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: config?.providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "1200", "denomination": "uluna", "decimals": 1e6 } })
-        super(url, currencyConfig, config)
-    }
-}
-export class UstBundlr extends NodeBundlr {
-    public static readonly currency = "ust"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new CosmosConfig({ name: "ust", ticker: "UST", providerUrl: config?.providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "50000", "denomination": "uusd", "decimals": 1e6 } })
-        super(url, currencyConfig, config)
-    }
-}
+// export class TerraBundlr extends NodeBundlr {
+//     public static readonly currency = "terra"
+//     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+//         const currencyConfig = new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: config?.providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "1200", "denomination": "uluna", "decimals": 1e6 } })
+//         super(url, currencyConfig, config)
+//     }
+// }
+// export class UstBundlr extends NodeBundlr {
+//     public static readonly currency = "ust"
+//     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
+//         const currencyConfig = new CosmosConfig({ name: "ust", ticker: "UST", providerUrl: config?.providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "50000", "denomination": "uusd", "decimals": 1e6 } })
+//         super(url, currencyConfig, config)
+//     }
+// }
 export class KyveBundlr extends NodeBundlr {
     public static readonly currency = "kyve"
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: config?.providerUrl ?? "https://rpc.node.kyve.network", wallet, localConfig: { prefix: "kyve", "derivePath": "118", "fee": "1", "denomination": "kyve", "decimals": 1e9 } })
+        const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: config?.providerUrl ?? "https://rpc.korellia.kyve.network/", wallet, localConfig: { prefix: "kyve", "derivePath": "118", "fee": "1", "denomination": "kyve", "decimals": 1e9 } })
         k.price = async (): Promise<number> => { return 1 } // TODO: replace for mainnet
         k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
         const currencyConfig = k;

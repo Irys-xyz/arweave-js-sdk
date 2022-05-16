@@ -3,24 +3,31 @@ import base64url from "base64url";
 import { Keplr } from "@keplr-wallet/types";
 import * as amino from "@cosmjs/amino";
 import { Secp256k1, Secp256k1Signature, sha256 } from "@cosmjs/crypto";
-import { fromBase64, toAscii, toBase64 } from '@cosmjs/encoding';
+import { fromBase64, toAscii, toBase64 } from "@cosmjs/encoding";
 
 
-export default class InjectedCosmosSigner implements Signer {
+export default class InjectedCosmosSigner {
   private signer: Keplr;
   private chainId: string;
-  public prefix!: string;
   public publicKey!: Buffer;
+  declare static prefix: string;
 
   readonly ownerLength: number = SIG_CONFIG[SignatureConfig.COSMOS].pubLength;
   readonly signatureLength: number =
     SIG_CONFIG[SignatureConfig.COSMOS].sigLength;
   readonly signatureType: SignatureConfig = SignatureConfig.COSMOS;
 
-  constructor(/* provider: stargate.SigningStargateClient, */ wallet: Keplr, chainId: string) {
+  constructor(wallet: Keplr, chainId: string, prefix: string ) {
     this.signer = wallet;
     this.chainId = chainId;
-    this.prefix = "cosmos";
+    InjectedCosmosSigner.prefix = prefix;
+  }
+
+  async getPublicKey(): Promise<Buffer> {
+    if (!this.publicKey) {
+      await this.setPublicKey();
+    }
+    return this.publicKey;
   }
 
   async setPublicKey(): Promise<void> {
@@ -41,28 +48,21 @@ export default class InjectedCosmosSigner implements Signer {
     const offlineSigner = this.signer.getOfflineSigner(this.chainId)
     const accounts = await offlineSigner.getAccounts();
     let signed = await this.signer.signArbitrary(this.chainId, accounts[0].address, toBase64(message));
-    // console.log(signed.signature);
     //returns
     const sign = amino.decodeSignature(signed);
-
-    const compressedPubKey = Secp256k1.compressPubkey(accounts[0].pubkey);
-
-    console.log("Signer Verification: ", await InjectedCosmosSigner.verifyADR036Signature(toBase64(message), toBase64(compressedPubKey), signed.signature, this.prefix));
-    console.log(sign.signature);
     return Buffer.from(sign.signature);
   }
 
   static async verify(
     pk: string | Buffer,
     message: Uint8Array,
-    signature: Uint8Array,
-    prefix: string,
+    signature: Uint8Array
   ): Promise<boolean> {
     let p = pk;
     if (typeof pk === "string") p = base64url.toBuffer(pk);
     let verified = false;
     try {      
-      verified = await InjectedCosmosSigner.verifyADR036Signature(toBase64(message), toBase64(Secp256k1.compressPubkey(Buffer.from(p))), toBase64(Buffer.from(signature)), prefix)
+      verified = await InjectedCosmosSigner.verifyADR036Signature(toBase64(message), toBase64(Secp256k1.compressPubkey(Buffer.from(p))), toBase64(Buffer.from(signature)), InjectedCosmosSigner.prefix)
       //eslint-disable-next-line no-empty
     } catch (e) {
       console.log(e);
@@ -74,7 +74,7 @@ export default class InjectedCosmosSigner implements Signer {
   static makeADR036AminoSignDoc(message: string, pubKey: string, prefix: string): amino.StdSignDoc {
     const signer = amino.pubkeyToAddress(
       {
-        type: 'tendermint/PubKeySecp256k1',
+        type: "tendermint/PubKeySecp256k1",
         value: pubKey,
       },
       prefix,
@@ -83,7 +83,7 @@ export default class InjectedCosmosSigner implements Signer {
     return amino.makeSignDoc(
       [
         {
-          type: 'sign/MsgSignData',
+          type: "sign/MsgSignData",
           value: {
             signer,
             data: toBase64(toAscii(message)),
@@ -91,11 +91,11 @@ export default class InjectedCosmosSigner implements Signer {
         },
       ],
       {
-        gas: '0',
+        gas: "0",
         amount: [],
       },
-      '',
-      '',
+      "",
+      "",
       0,
       0,
     );
