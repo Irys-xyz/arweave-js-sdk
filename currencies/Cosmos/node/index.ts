@@ -168,7 +168,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
         const walletSeed = await Bip39.mnemonicToSeed(new EnglishMnemonic(this.wallet));
         const slip = Slip10.derivePath(Slip10Curve.Secp256k1, walletSeed, this.path);
         this.keyPair = await Secp256k1.makeKeypair(slip.privkey);
-        this.signerInstance = new CosmosSigner(this.keyPair.privkey, Buffer.from(this.keyPair.pubkey), this.localConfig.prefix);
+        this.signerInstance = new CosmosSigner(this.keyPair.privkey, this.localConfig.prefix);
         this._address = this.ownerToAddress(this.keyPair.pubkey);
         return;
     }

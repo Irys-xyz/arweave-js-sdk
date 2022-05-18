@@ -1,5 +1,5 @@
 import {  SignatureConfig, SIG_CONFIG } from "@bundlr-network/client/build/cjs/common/signing/index";
-// import secp256k1 from "secp256k1";
+import secp256k1 from "secp256k1";
 import base64url from "base64url";
 // import Crypto from "crypto";
 import * as amino from "@cosmjs/amino";
@@ -16,16 +16,16 @@ export default class CosmosSigner extends Secp256k1 {
     SIG_CONFIG[SignatureConfig.COSMOS].sigLength;
   readonly signatureType: SignatureConfig = SignatureConfig.COSMOS;
 
-  constructor(privkey: Uint8Array, pubKey: Buffer, prefix: string) {
+  constructor(privkey: Uint8Array, prefix: string) {
     super();
     this.sk = privkey;
-    this.pk = pubKey;
+    this.pk = Buffer.from(secp256k1.publicKeyCreate(privkey, false));
     CosmosSigner.prefix = prefix;
   }
 
 
   get publicKey(): Buffer {
-    return Buffer.from(this.pk);
+    return this.pk;
   }
 
   public get key(): Uint8Array {
@@ -35,9 +35,16 @@ export default class CosmosSigner extends Secp256k1 {
   async sign(message: Uint8Array): Promise<Uint8Array> {
     const signBytes = amino.serializeSignDoc(CosmosSigner.makeADR036AminoSignDoc(Buffer.from(message).toString("base64"), toBase64(Secp256k1.compressPubkey(this.pk)), CosmosSigner.prefix));
     const messageHash = sha256(signBytes);
-    console.log("JS-Client - Sign - PK ", this.pk);
-    // console.log(Secp256k1Signature.fromDer((await Secp256k1.createSignature(messageHash, this.sk)).toDer()).toFixedLength());
-    return (Secp256k1Signature.fromDer((await Secp256k1.createSignature(messageHash, this.sk)).toDer()).toFixedLength());
+
+    const signed = (Secp256k1Signature.fromDer((await Secp256k1.createSignature(messageHash, this.sk)).toDer()).toFixedLength());
+
+    const prefix = Buffer.from(CosmosSigner.prefix);
+    const newSignature = new Uint8Array(96);
+
+    newSignature.set(prefix, 0);
+    newSignature.set(signed, 32);
+
+    return Buffer.from(newSignature);
   }
 
   static async verify(
@@ -47,10 +54,19 @@ export default class CosmosSigner extends Secp256k1 {
   ): Promise<boolean> {
     let p = pk;
     if (typeof pk === "string") p = base64url.toBuffer(pk);
+
     let verified = false;
+
+    const prefixBuffer = Buffer.from(signature.slice(0, 32));
+    const prefixHex = prefixBuffer.toString("hex");
+    const regex = /00/ig;
+    const bufferRemove00s = prefixHex.replace(regex, "");
+    const newPrefixBuffer = Buffer.from(bufferRemove00s, "hex").toString("utf-8");
+    
+    const newSignature = signature.slice(-64);
+    
     try {      
-      console.log("JS-Client - Verify - PK ", pk);
-      verified = await CosmosSigner.verifyADR036Signature(toBase64(message), toBase64(Secp256k1.compressPubkey(Buffer.from(p))), toBase64(Buffer.from(signature)), CosmosSigner.prefix)
+      verified = await CosmosSigner.verifyADR036Signature(toBase64(message), toBase64(Secp256k1.compressPubkey(Buffer.from(p))), toBase64(Buffer.from(newSignature)), newPrefixBuffer)
       //eslint-disable-next-line no-empty
     } catch (e) {
       console.log(e);

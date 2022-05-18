@@ -50,7 +50,14 @@ export default class InjectedCosmosSigner {
     let signed = await this.signer.signArbitrary(this.chainId, accounts[0].address, toBase64(message));
     //returns
     const sign = amino.decodeSignature(signed);
-    return Buffer.from(sign.signature);
+
+    const prefix = Buffer.from(InjectedCosmosSigner.prefix);
+    const newSignature = new Uint8Array(96);
+
+    newSignature.set(prefix, 0);
+    newSignature.set(sign.signature, 32);
+
+    return Buffer.from(newSignature);
   }
 
   static async verify(
@@ -60,9 +67,19 @@ export default class InjectedCosmosSigner {
   ): Promise<boolean> {
     let p = pk;
     if (typeof pk === "string") p = base64url.toBuffer(pk);
+
     let verified = false;
+
+    const prefixBuffer = Buffer.from(signature.slice(0, 32));
+    const prefixHex = prefixBuffer.toString("hex");
+    const regex = /00/ig;
+    const bufferRemove00s = prefixHex.replace(regex, "");
+    const newPrefixBuffer = Buffer.from(bufferRemove00s, "hex").toString("utf-8");
+    
+    const newSignature = signature.slice(-64);
+    
     try {      
-      verified = await InjectedCosmosSigner.verifyADR036Signature(toBase64(message), toBase64(Secp256k1.compressPubkey(Buffer.from(p))), toBase64(Buffer.from(signature)), InjectedCosmosSigner.prefix)
+      verified = await InjectedCosmosSigner.verifyADR036Signature(toBase64(message), toBase64(Secp256k1.compressPubkey(Buffer.from(p))), toBase64(Buffer.from(newSignature)), newPrefixBuffer)
       //eslint-disable-next-line no-empty
     } catch (e) {
       console.log(e);

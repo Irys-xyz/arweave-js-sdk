@@ -243,7 +243,7 @@ export default class CosmosConfig extends BaseWebCurrency {
 export class CosmosBundlr extends WebBundlr {
     public static readonly currency = "cosmos"
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: config?.providerUrl ?? "http://localhost:8080/https://cosmoshub.validator.network/", wallet, localConfig: { prefix: "cosmos", "derivePath": "118", "fee": "2500", "denomination": "uatom", "decimals": 1e6, "chainId": "cosmoshub-4" } })
+        const currencyConfig = new CosmosConfig({ name: "cosmos", ticker: "ATOM", providerUrl: config?.providerUrl ?? "https://cosmoshub.validator.network/", wallet, localConfig: { prefix: "cosmos", "derivePath": "118", "fee": "2500", "denomination": "uatom", "decimals": 1e6, "chainId": "cosmoshub-4" } })
         super(url, currencyConfig, config)
     }
 }
