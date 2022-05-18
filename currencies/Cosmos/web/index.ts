@@ -254,20 +254,6 @@ export class AkashBundlr extends WebBundlr {
         super(url, currencyConfig, config)
     }
 }
-// export class TerraBundlr extends WebBundlr {
-//     public static readonly currency = "terra"
-//     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-//         const currencyConfig = new CosmosConfig({ name: "terra", ticker: "LUNA", providerUrl: config?.providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "1200", "denomination": "uluna", "decimals": 1e6 } })
-//         super(url, currencyConfig, config)
-//     }
-// }
-// export class UstBundlr extends WebBundlr {
-//     public static readonly currency = "ust"
-//     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-//         const currencyConfig = new CosmosConfig({ name: "ust", ticker: "UST", providerUrl: config?.providerUrl ?? "https://terra-rpc.easy2stake.com", wallet, localConfig: { prefix: "terra", "derivePath": "330", "fee": "50000", "denomination": "uusd", "decimals": 1e6 } })
-//         super(url, currencyConfig, config)
-//     }
-// }
 export class KyveBundlr extends WebBundlr {
     public static readonly currency = "kyve"
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
