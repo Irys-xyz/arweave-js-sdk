@@ -254,13 +254,3 @@ export class AkashBundlr extends WebBundlr {
         super(url, currencyConfig, config)
     }
 }
-export class KyveBundlr extends WebBundlr {
-    public static readonly currency = "kyve"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: config?.providerUrl ?? "https://rpc.korellia.kyve.network/", wallet, localConfig: { prefix: "kyve", "derivePath": "118", "fee": "1", "denomination": "kyve", "decimals": 1e9, "chainId": "korellia" } })
-        k.price = async (): Promise<number> => { return 1 } // TODO: replace for mainnet
-        k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
-        const currencyConfig = k;
-        super(url, currencyConfig, config)
-    }
-}
