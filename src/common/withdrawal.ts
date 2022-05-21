@@ -16,7 +16,7 @@ import { Withdrawal } from "./types";
  * @param amount amount to withdraw in winston
  * @returns the response from the bundler
  */
-export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.Value): Promise<AxiosResponse<any>> {
+export default async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.Value): Promise<AxiosResponse<any>> {
     const c = utils.currencyConfig;
     const pkey = await c.getPublicKey();
     const data: Withdrawal = { publicKey: pkey, currency: utils.currency, amount: new BigNumber(amount).toString(), nonce: await utils.getNonce(), signature: Buffer.from([]), sigType: c.getSigner().signatureType }
@@ -61,7 +61,7 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.
     // console.log(isValid2)
     // console.log(isValid)
 
-    if (!(isValid || isValid2 || isValid3)) { throw new Error(`Internal withdrawal validation failed - please report this!\nDebug Info:${JSON.stringify(data)}`) }
+    if (!(isValid && isValid2 && isValid3)) { throw new Error(`Internal withdrawal validation failed - please report this!\nDebug Info:${JSON.stringify(data)}`) }
 
     // console.log(JSON.stringify({
     //     ...data,

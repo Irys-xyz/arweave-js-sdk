@@ -52,6 +52,8 @@ export interface Currency {
     createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<CreatedTx>;
 
     getPublicKey(): Promise<string | Buffer> | (string | Buffer);
+
+    ready?(): Promise<void>
 }
 
 export interface CreatedTx { txId: string | undefined, tx: any }

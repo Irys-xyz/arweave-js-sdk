@@ -1,5 +1,5 @@
 import Utils from "./utils";
-import { withdrawBalance } from "./withdrawal";
+import withdrawBalance from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
 import { AxiosResponse } from "axios";
@@ -7,7 +7,7 @@ import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
-import { Currency, FundData } from "./types";
+import { BundlrConfig, Currency, FundData } from "./types";
 import { Signer } from "./signing";
 
 export default abstract class Bundlr {
@@ -19,7 +19,16 @@ export default abstract class Bundlr {
     public currency!: string;
     public currencyConfig!: Currency;
 
-    constructor() { return }
+    constructor(url: string, currencyConfig: Currency, config?: BundlrConfig) {
+        const parsed = new URL(url);
+        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        if (config?.minConfirm) {
+            currencyConfig.minConfirm = config?.minConfirm
+        }
+        this.currencyConfig = currencyConfig
+        this.currency = this.currencyConfig.name
+    }
 
 
     async withdrawBalance(amount: BigNumber.Value): Promise<AxiosResponse<any>> {
@@ -76,4 +85,5 @@ export default abstract class Bundlr {
     getSigner(): Signer {
         return this.currencyConfig.getSigner()
     }
+
 }
