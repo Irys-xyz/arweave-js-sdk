@@ -1,25 +1,38 @@
 import { Signer } from "@bundlr-network/client/build/cjs/common/signing/index"
-import BigNumber from "bignumber.js";
+import { NodeBundlr } from "@bundlr-network/client/build/cjs/node/index";
+import { Api, Utils } from "@bundlr-network/client/build/cjs/common/index"
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types"
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
+
+import BigNumber from "bignumber.js";
 import { KeyPair, utils, transactions, providers } from "near-api-js"
 import { decode, encode } from "bs58";
 import BN from "bn.js"
 import { sha256 } from "js-sha256";
 import { JsonRpcProvider } from "near-api-js/lib/providers";
 import NearSigner from "./NearSigner";
-import { NodeBundlr } from "@bundlr-network/client/build/cjs/node/index";
+import base64url from "base64url";
+// @ts-ignore
+import { parseSeedPhrase, KEY_DERIVATION_PATH } from "near-seed-phrase"
+import axios, { AxiosResponse } from "axios";
 
 
 export default class NearConfig extends BaseNodeCurrency {
     protected keyPair: KeyPair
 
     declare protected providerInstance?: JsonRpcProvider
+    declare protected bundlrUrl: string
+    api!: Api;
 
 
     constructor(config: CurrencyConfig) {
+        let wallet = config.wallet
+        if (typeof wallet === "string" && config.wallet.length != 96 || wallet.split(":")[0] === "ed25519") {
+            wallet = parseSeedPhrase(wallet, KEY_DERIVATION_PATH).secretKey
+        }
+        config.wallet = wallet;
         super(config);
-        this.base = ["yoctoNEAR", 1e25]
+        this.base = ["yoctoNEAR", 1e24]
         this.keyPair = KeyPair.fromString(this.wallet)
     }
 
@@ -29,8 +42,6 @@ export default class NearConfig extends BaseNodeCurrency {
         }
         return this.providerInstance;
     }
-
-
 
     /**
      * NEAR wants both the sender ID and tx Hash, so we have to concatenate to keep with the interface.
@@ -91,6 +102,7 @@ export default class NearConfig extends BaseNodeCurrency {
         const res = await provider.status();
         return new BigNumber(res.sync_info.latest_block_height);
     }
+
     /**
      * NOTE: assumes only operation is transfer
      * @param _amount 
@@ -120,7 +132,7 @@ export default class NearConfig extends BaseNodeCurrency {
         // @ts-expect-error
         const nonce = ++accessKey.nonce
         const recentBlockHash = utils.serialize.base_decode(accessKey.block_hash)
-        const actions = [transactions.transfer(new BN(new BigNumber(amount).toString()))];
+        const actions = [transactions.transfer(new BN(new BigNumber(amount).toFixed().toString()))];
         const tx = transactions.createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash)
         const serialTx = utils.serialize.serialize(transactions.SCHEMA, tx);
         const serialTxHash = new Uint8Array(sha256.array(serialTx))
@@ -139,12 +151,24 @@ export default class NearConfig extends BaseNodeCurrency {
         return Buffer.from(this.keyPair.getPublicKey().data)
 
     }
-}
 
+    async ready(): Promise<void> {
+        try {
+            // resolve loaded pubkey to parent address
+            const pubkey = this.keyPair.getPublicKey().toString()
+            const resolved = await axios.get(`${this.bundlrUrl}/account/near/lookup?address=${base64url.encode(pubkey.split(":")[1])}`) as AxiosResponse<any>
+            // @ts-ignore
+            Utils.checkAndThrow(resolved, "looking up accessKey parent account")
+            this._address = resolved?.data?.address ?? this._address
+        } catch (e) {
+            console.error(e)
+        }
+    }
+}
 export class NearBundlr extends NodeBundlr {
     public static readonly currency = "near"
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new NearConfig({ name: "near", ticker: "NEAR", providerUrl: config?.providerUrl ?? "https://rpc.mainnet.near.org", wallet })
+        const currencyConfig = new NearConfig({ name: "near", ticker: "NEAR", providerUrl: config?.providerUrl ?? "https://rpc.mainnet.near.org", wallet, bundlrUrl: url })
         super(url, currencyConfig, config)
     }
 }

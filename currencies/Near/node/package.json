@@ -32,7 +32,8 @@
     "bn.js": "^5.2.0",
     "bs58": "^5.0.0",
     "js-sha256": "^0.9.0",
-    "near-api-js": "^0.44.2"
+    "near-api-js": "^0.44.2",
+    "near-seed-phrase": "^0.2.0"
   },
   "devDependencies": {
     "@bundlr-network/client": "^0.8.0-rc1",

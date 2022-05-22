@@ -21,7 +21,7 @@ export default class NearConfig extends BaseWebCurrency {
     constructor(config: CurrencyConfig) {
         super(config);
         this.near = this.wallet._near
-        this.base = ["yoctoNEAR", 1e25]
+        this.base = ["yoctoNEAR", 1e24]
         // this.keyPair = KeyPair.fromString(this.wallet)
 
     }
@@ -148,7 +148,7 @@ export default class NearConfig extends BaseWebCurrency {
         // @ts-expect-error
         const nonce = ++accessKey.nonce
         const recentBlockHash = utils.serialize.base_decode(accessKey.block_hash)
-        const actions = [transactions.transfer(new BN(new BigNumber(amount).toString()))];
+        const actions = [transactions.transfer(new BN(new BigNumber(amount).toFixed().toString()))];
         const tx = transactions.createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash)
         const serialTx = utils.serialize.serialize(transactions.SCHEMA, tx);
         const serialTxHash = new Uint8Array(sha256.array(serialTx))
@@ -173,7 +173,7 @@ export default class NearConfig extends BaseWebCurrency {
 export class NearBundlr extends WebBundlr {
     public static readonly currency = "near"
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new NearConfig({ name: "near", ticker: "NEAR", providerUrl: config?.providerUrl ?? "https://rpc.mainnet.near.org", wallet })
+        const currencyConfig = new NearConfig({ name: "near", ticker: "NEAR", providerUrl: config?.providerUrl ?? "https://rpc.mainnet.near.org", wallet, bundlrUrl: url })
         super(url, currencyConfig, config)
     }
 }

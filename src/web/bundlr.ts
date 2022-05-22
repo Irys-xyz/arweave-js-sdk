@@ -1,5 +1,5 @@
 import { BundlrConfig } from "../common/types";
-import { Bundlr, Fund, Uploader, Utils } from "../common"
+import { Bundlr, Fund, Uploader, Utils } from "../common/index"
 import { importAndGetBundlrFlavour } from "../common/utils";
 import { WebCurrency } from "./types";
 
