@@ -19,7 +19,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
 
     protected minConfirm = 5;
     public isSlow = false;
-    public needsFee = false;
+    public needsFee = true;
 
     constructor(config: CurrencyConfig) {
         Object.assign(this, config);
