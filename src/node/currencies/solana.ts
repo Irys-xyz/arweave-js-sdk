@@ -12,6 +12,7 @@ const solanaSigner = signers.SolanaSigner;
 
 export default class SolanaConfig extends BaseNodeCurrency {
     protected providerInstance: web3.Connection;
+    minConfirm = 1;
 
     constructor(config: CurrencyConfig) {
         super(config);
@@ -57,7 +58,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
             amount: amount,
             blockHeight: new BigNumber(stx.slot),
             pending: false,
-            confirmed: currentSlot - stx.slot >= 10,
+            confirmed: currentSlot - stx.slot >= 1,
         };
         return tx;
     }

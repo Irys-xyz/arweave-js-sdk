@@ -10,6 +10,7 @@ import retry from "async-retry";
 export default class SolanaConfig extends BaseWebCurrency {
     private signer: HexInjectedSolanaSigner
     protected wallet: MessageSignerWalletAdapter
+    minConfirm = 1;
 
     constructor(config: CurrencyConfig) {
         super(config);
@@ -47,7 +48,7 @@ export default class SolanaConfig extends BaseWebCurrency {
             amount: amount,
             blockHeight: new BigNumber(stx.slot),
             pending: false,
-            confirmed: currentSlot - stx.slot >= 10,
+            confirmed: currentSlot - stx.slot >= 1,
         };
         return tx;
     }
