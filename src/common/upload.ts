@@ -8,7 +8,7 @@ import retry from "async-retry";
 import Crypto from "crypto"
 import { Readable } from "stream";
 import chunker from "./chunker"
-import S2A from "stream-to-async-iterator"
+import S2A from "./s2ai"
 
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
