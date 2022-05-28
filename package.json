@@ -46,7 +46,8 @@
     "lint:fix": "eslint src/** --fix",
     "lerna:build": "lerna run build",
     "lerna:dev:build": "yarn run dev:build && lerna run dev:build --ignore @bundlr-network/client",
-    "lerna:bootstrap": "lerna bootstrap --force-local"
+    "lerna:bootstrap": "lerna bootstrap --force-local",
+    "watch": "ttsc --watch -p esm.tsconfig.json & ttsc --watch -p cjs.tsconfig.json & webpack --watch"
   },
   "bin": {
     "bundlr": "./build/cjs/node/cli.js"
