@@ -5,10 +5,11 @@ import Api from "./api";
 import { Currency, Manifest } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
-import { Readable } from "stream";
-import SizeChunker from "./chunker";
 import Crypto from "crypto"
-// import mime from "mime-types";
+import { Readable } from "stream";
+import chunker from "./chunker"
+import S2A from "stream-to-async-iterator"
+
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -56,7 +57,7 @@ export default class Uploader {
         let res: AxiosResponse<any>
         const length = transaction.getRaw().byteLength
         if (this.forceUseChunking || length > 50_000_000) {
-            res = await this.chunkedTransactionUploader(Readable.from(transaction.getRaw()), transaction.id, length)
+            res = await this.chunkedTransactionUploader(transaction.getRaw(), transaction.id, length)
         } else {
             const { protocol, host, port, timeout } = this.api.getConfig();
             res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, transaction.getRaw(), {
@@ -169,7 +170,7 @@ export default class Uploader {
      * @param chunkSize - optional size to chunk the file - min 100_000, max 190_000_000 (in bytes)
      * @param batchSize - number of chunks to concurrently upload
      */
-    public async chunkedTransactionUploader(dataStream: Readable, id: string, size: number, chunkSize = 25_000_000, batchSize = 5,): Promise<any> {
+    public async chunkedTransactionUploader(dataStream: Readable | Buffer, id: string, size: number, chunkSize = 25_000_000, batchSize = 5,): Promise<any> {
 
         if (chunkSize < 1_000_000 || chunkSize > 190_000_000) {
             throw new Error("Invalid chunk size - must be betweem 100,000 and 190,000,000 bytes")
@@ -177,7 +178,6 @@ export default class Uploader {
         if (batchSize < 1) {
             throw new Error("batch size too small! must be >=1")
         }
-
         const promiseFactory = (d: Buffer, o: number): Promise<Record<string, any>> => {
             return new Promise((r, e) => {
                 retry(
@@ -191,10 +191,7 @@ export default class Uploader {
                 ),
                     { retries: 3, minTimeout: 1000, maxTimeout: 10_000 }
             })
-
         }
-
-
         const getres = await this.api.get(`/chunks/${this.currency}/${id}/${size}`)
         await Utils.checkAndThrow(getres, "Getting chunk info")
         const present = getres.data.map(v => +v) as Array<number>
@@ -214,20 +211,28 @@ export default class Uploader {
         let offset = 0;
         const processing = []
 
-        const ckr = new SizeChunker({
+        // const ckr = new chunker({ size: chunkSize, nopad: true })
+        const ckr = new chunker({
             chunkSize: chunkSize,
             flushTail: true
         })
 
-        dataStream.pipe(ckr)
+        if (Buffer.isBuffer(dataStream)) {
+            ckr.write(dataStream)
+            ckr.end()
+        } else {
+            dataStream.pipe(ckr)
+        }
 
-        for await (const chunk of ckr) {
+        for await (const cnk of new S2A(ckr)) {
+            const chunk: { id: number, data: Buffer } = cnk as any
+
             const data = chunk.data
 
             if (chunk.id % batchSize == 0) {
                 await Promise.allSettled(processing)
             }
-            // console.log(`posting chunk ${chunk.id} - ${offset} (${offset + data.length})`)
+            console.log(`posting chunk ${chunk.id} - ${offset} (${offset + data.length})`)
             if (missing.includes(offset)) {
                 processing.push(promiseFactory(data, offset))
             }
