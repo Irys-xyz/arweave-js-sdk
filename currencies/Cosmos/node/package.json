@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/cosmos",
-  "version": "0.0.1-rc2",
+  "version": "0.0.1-rc3",
   "description": "Cosmos Currency for Bundlr",
   "main": "index.js",
   "author": "JesseTheRobot",
