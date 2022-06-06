@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/cosmos-web",
-  "version": "0.0.1-rc1",
+  "version": "0.0.1-rc2",
   "description": "Cosmos Currency for Bundlr",
   "main": "index.js",
   "author": "JesseTheRobot",
@@ -25,10 +25,8 @@
     "cjs/**/*",
     "esm/**/*"
   ],
-  "peerDependencies": {
-    "@bundlr-network/client": "^0.8.0-rc2"
-  },
   "dependencies": {
+    "@bundlr-network/client": "^0.8.0-rc2",
     "@cosmjs/amino": "^0.28.4",
     "@cosmjs/crypto": "^0.28.4",
     "@cosmjs/proto-signing": "^0.28.4",
@@ -40,7 +38,6 @@
     "keccak": "^3.0.2"
   },
   "devDependencies": {
-    "@bundlr-network/client": "^0.8.0-rc2",
     "bignumber.js": "^9.0.2",
     "bn.js": "^5.2.0",
     "inspectpack": "^4.7.1",
