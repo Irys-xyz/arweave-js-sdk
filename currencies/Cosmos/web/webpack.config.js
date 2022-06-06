@@ -31,7 +31,7 @@ const base = {
     externalsType: "global",
     resolve: {
         extensions: [".ts", ".js"],
-        fallback: { "path": require.resolve("path-browserify") }
+        fallback: { "path": false }
     },
     plugins: [
         new DuplicatesPlugin({
@@ -94,5 +94,4 @@ const aio = {
     }
 }
 
-// module.exports = [mod, umd, aio]
-module.exports = umd
+module.exports = [umd, mod, aio]

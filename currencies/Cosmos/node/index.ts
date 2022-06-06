@@ -9,7 +9,20 @@ import * as stargate from "@cosmjs/stargate";
 import * as amino from "@cosmjs/amino";
 import { TxRaw } from "cosmjs-types/cosmos/tx/v1beta1/tx";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
-import { HdPath, Slip10RawIndex, Secp256k1, EnglishMnemonic, Bip39, Slip10, Slip10Curve, Secp256k1Keypair } from "@cosmjs/crypto";
+import {
+    HdPath,
+    Slip10RawIndex,
+    Secp256k1,
+    EnglishMnemonic,
+    Slip10,
+    Slip10Curve,
+    Secp256k1Keypair,
+
+} from "@cosmjs/crypto";
+import { toUtf8, fromHex } from "@cosmjs/encoding"
+import Crypto from "crypto"
+import { ec } from "elliptic"
+import BN from "bn.js";
 
 export interface CosmosCurrencyConfig extends CurrencyConfig {
     localConfig: {
@@ -25,7 +38,7 @@ export default class CosmosConfig extends BaseNodeCurrency {
     declare protected keyPair: Secp256k1Keypair;
     declare protected providerInstance: stargate.SigningStargateClient;
     declare signerInstance: CosmosSigner;
-    readyPromise: Promise<void>;
+
     private localConfig: {
         prefix: string,
         derivePath: string,
@@ -40,7 +53,42 @@ export default class CosmosConfig extends BaseNodeCurrency {
         super(config);
         this.localConfig = config.localConfig;
         this.base = [this.localConfig.denomination, this.localConfig.decimals];
-        this.readyPromise = this.ready()
+        const path2number = new BigNumber(this.localConfig.derivePath).toNumber();
+        this.path = [
+            Slip10RawIndex.hardened(44),
+            Slip10RawIndex.hardened(path2number),
+            Slip10RawIndex.hardened(0),
+            Slip10RawIndex.normal(0),
+            Slip10RawIndex.normal(0),
+        ];
+        // const walletSeed = await Bip39.mnemonicToSeed(new EnglishMnemonic(this.wallet));
+        const mnemonicBytes = toUtf8(new EnglishMnemonic(this.wallet).toString().normalize("NFKD"))
+        const salt = "mnemonic" //no password
+        const saltBytes = toUtf8(salt)
+        const walletSeed = Crypto.pbkdf2Sync(mnemonicBytes, saltBytes, 2048, 64, "sha512")
+        const slip = Slip10.derivePath(Slip10Curve.Secp256k1, walletSeed, this.path);
+        const privkey = slip.privkey
+        const secp256k1 = new ec("secp256k1")
+        const secp256k1N = new BN("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", "hex")
+        if (privkey.length !== 32) {
+            throw new Error("input data is not a valid secp256k1 private key");
+        }
+        const keypair = secp256k1.keyFromPrivate(privkey);
+        if (keypair.validate().result !== true) {
+            throw new Error("input data is not a valid secp256k1 private key");
+        }
+
+        const privkeyAsBigInteger = new BN(privkey);
+        if (privkeyAsBigInteger.gte(secp256k1N)) {
+            throw new Error("input data is not a valid secp256k1 private key");
+        }
+        this.keyPair = {
+            privkey: fromHex(keypair.getPrivate("hex")),
+            pubkey: Uint8Array.from(keypair.getPublic("array")),
+        };
+        // this.keyPair = await Secp256k1.makeKeypair(slip.privkey);
+        this.signerInstance = new CosmosSigner(this.keyPair.privkey, this.localConfig.prefix);
+        this._address = this.ownerToAddress(this.keyPair.pubkey);
     }
 
     protected async getProvider(): Promise<stargate.SigningStargateClient> {
@@ -161,26 +209,6 @@ export default class CosmosConfig extends BaseNodeCurrency {
         return Buffer.from(pk);
     }
 
-    public async ready(): Promise<void> {
-        if (this.readyPromise) {
-            return await this.readyPromise
-        }
-        const path2number = new BigNumber(this.localConfig.derivePath).toNumber();
-        this.path = [
-            Slip10RawIndex.hardened(44),
-            Slip10RawIndex.hardened(path2number),
-            Slip10RawIndex.hardened(0),
-            Slip10RawIndex.normal(0),
-            Slip10RawIndex.normal(0),
-        ];
-        const walletSeed = await Bip39.mnemonicToSeed(new EnglishMnemonic(this.wallet));
-        const slip = Slip10.derivePath(Slip10Curve.Secp256k1, walletSeed, this.path);
-        this.keyPair = await Secp256k1.makeKeypair(slip.privkey);
-        this.signerInstance = new CosmosSigner(this.keyPair.privkey, this.localConfig.prefix);
-        this._address = this.ownerToAddress(this.keyPair.pubkey);
-        return;
-    }
-
     public async getGas(): Promise<[BigNumber, number]> {
         return [new BigNumber(await getRedstonePrice("ATOM")), 1e6]
     }
@@ -205,7 +233,7 @@ export class KyveBundlr extends NodeBundlr {
     public static readonly currency = "kyve"
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
         const k = new CosmosConfig({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: config?.providerUrl ?? "https://rpc.korellia.kyve.network/", wallet, localConfig: { prefix: "kyve", "derivePath": "118", "fee": "1", "denomination": "tkyve", "decimals": 1e9 } })
-        k.price = async (): Promise<number> => { return 1 } // TODO: replace for mainnet
+        k.price = async (): Promise<number> => { return 0.01 } // TODO: replace for mainnet
         k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
         const currencyConfig = k;
         super(url, currencyConfig, config)

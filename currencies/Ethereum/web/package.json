@@ -25,23 +25,16 @@
         "cjs/**/*",
         "esm/**/*"
     ],
-    "peerDependencies": {
-        "@bundlr-network/client": "^0.8.0-rc1"
-    },
     "dependencies": {
+        "@bundlr-network/client": "^0.8.0-rc2",
         "bignumber.js": "^9.0.2",
         "bn.js": "^5.2.0",
         "ethers": "^5.6.2",
         "keccak": "^3.0.2"
     },
     "devDependencies": {
-        "@bundlr-network/client": "^0.8.0-rc1",
         "@types/keccak": "^3.0.1",
-        "bignumber.js": "^9.0.2",
-        "bn.js": "^5.2.0",
-        "ethers": "^5.6.2",
         "inspectpack": "^4.7.1",
-        "keccak": "^3.0.2",
         "webpack": "^5.72.0",
         "webpack-cli": "^4.9.2"
     }

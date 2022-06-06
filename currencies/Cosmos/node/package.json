@@ -24,7 +24,6 @@
     "cjs/**/*",
     "esm/**/*"
   ],
-  "peerDependencies": {},
   "dependencies": {
     "@bundlr-network/client": "^0.8.0-rc2",
     "@cosmjs/amino": "^0.28.4",
@@ -34,7 +33,10 @@
     "@types/keccak": "^3.0.1",
     "bignumber.js": "^9.0.2",
     "cosmjs-types": "^0.4.1",
+    "elliptic": "^6.5.4",
     "keccak": "^3.0.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/elliptic": "^6.4.14"
+  }
 }

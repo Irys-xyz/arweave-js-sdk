@@ -17,7 +17,7 @@ export default class InjectedCosmosSigner {
     SIG_CONFIG[SignatureConfig.COSMOS].sigLength;
   readonly signatureType: SignatureConfig = SignatureConfig.COSMOS;
 
-  constructor(wallet: Keplr, chainId: string, prefix: string ) {
+  constructor(wallet: Keplr, chainId: string, prefix: string) {
     this.signer = wallet;
     this.chainId = chainId;
     InjectedCosmosSigner.prefix = prefix;
@@ -34,7 +34,7 @@ export default class InjectedCosmosSigner {
     const address = "sign this message to connect to Bundlr.Network";
     const offlineSigner = this.signer.getOfflineSigner(this.chainId);
     const accounts = await offlineSigner.getAccounts();
-    let signed = await this.signer.signArbitrary(this.chainId, accounts[0].address , address);
+    let signed = await this.signer.signArbitrary(this.chainId, accounts[0].address, address);
     const sign = amino.decodeSignature(signed);
     const uncompressed = Secp256k1.uncompressPubkey(sign.pubkey);
     this.publicKey = Buffer.from(uncompressed);
@@ -68,24 +68,14 @@ export default class InjectedCosmosSigner {
     let p = pk;
     if (typeof pk === "string") p = base64url.toBuffer(pk);
 
-    let verified = false;
-
     const prefixBuffer = Buffer.from(signature.slice(0, 32));
     const prefixHex = prefixBuffer.toString("hex");
     const regex = /00/ig;
     const bufferRemove00s = prefixHex.replace(regex, "");
     const newPrefixBuffer = Buffer.from(bufferRemove00s, "hex").toString("utf-8");
-    
+
     const newSignature = signature.slice(-64);
-    
-    try {      
-      verified = await InjectedCosmosSigner.verifyADR036Signature(toBase64(message), toBase64(Secp256k1.compressPubkey(Buffer.from(p))), toBase64(Buffer.from(newSignature)), newPrefixBuffer)
-      //eslint-disable-next-line no-empty
-    } catch (e) {
-      console.log(e);
-    }
-    console.log(`Is Verified: ${verified}`);
-    return verified;
+    return await InjectedCosmosSigner.verifyADR036Signature(toBase64(message), toBase64(Secp256k1.compressPubkey(Buffer.from(p))), toBase64(Buffer.from(newSignature)), newPrefixBuffer)
   }
 
   static makeADR036AminoSignDoc(message: string, pubKey: string, prefix: string): amino.StdSignDoc {
