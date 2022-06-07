@@ -50,6 +50,8 @@ export interface Currency {
     createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string, tx: any }>;
 
     getPublicKey(): Promise<string | Buffer> | (string | Buffer);
+
+    ready?(): void | PromiseLike<void>;
 }
 
 export interface FundData { reward: string, target: string, quantity: string, id: string }

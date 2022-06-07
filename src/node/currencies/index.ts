@@ -9,7 +9,7 @@ import AlgorandConfig from "./algorand";
 import axios from "axios";
 import utils from "../../common/utils";
 
-export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): NodeCurrency {
+export default function getCurrency(currency: string, wallet: any, url: string, providerUrl?: string, contractAddress?: string): NodeCurrency {
     switch (currency) {
         case "arweave":
             return new ArweaveConfig({ name: "arweave", ticker: "AR", minConfirm: 10, providerUrl: providerUrl ?? "arweave.net", wallet, isSlow: true })
@@ -51,7 +51,7 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
             return k; // TODO: ensure units above are right
         }
         case "near": {
-            return new NearConfig({ name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet })
+            return new NearConfig({ name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet, bundlrUrl: url })
         }
         case "algorand": {
             return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", wallet })

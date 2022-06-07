@@ -8,16 +8,24 @@ import BN from "bn.js"
 import { sha256 } from "js-sha256";
 import { JsonRpcProvider } from "near-api-js/lib/providers";
 
-
+import { parseSeedPhrase, KEY_DERIVATION_PATH } from "near-seed-phrase"
+import base64url from "base64url";
+import axios from "axios";
 export default class NearConfig extends BaseNodeCurrency {
     protected keyPair: KeyPair
 
     protected providerInstance?: JsonRpcProvider
+    declare protected bundlrUrl: string
 
 
-    constructor(config: CurrencyConfig) {
+    constructor(config: CurrencyConfig & { bundlrUrl: string }) {
+        let wallet = config.wallet
+        if (typeof wallet === "string" && config.wallet.length != 96 || wallet.split(":")[0] === "ed25519") {
+            wallet = parseSeedPhrase(wallet, KEY_DERIVATION_PATH).secretKey
+        }
+        config.wallet = wallet;
         super(config);
-        this.base = ["yoctoNEAR", 1e25]
+        this.base = ["yoctoNEAR", 1e24]
         this.keyPair = KeyPair.fromString(this.wallet)
     }
 
@@ -118,7 +126,7 @@ export default class NearConfig extends BaseNodeCurrency {
         // @ts-expect-error
         const nonce = ++accessKey.nonce
         const recentBlockHash = utils.serialize.base_decode(accessKey.block_hash)
-        const actions = [transactions.transfer(new BN(new BigNumber(amount).toString()))];
+        const actions = [transactions.transfer(new BN(new BigNumber(amount).toFixed().toString()))];
         const tx = transactions.createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash)
         const serialTx = utils.serialize.serialize(transactions.SCHEMA, tx);
         const serialTxHash = new Uint8Array(sha256.array(serialTx))
@@ -136,5 +144,16 @@ export default class NearConfig extends BaseNodeCurrency {
         this.keyPair = KeyPair.fromString(this.wallet)
         return Buffer.from(this.keyPair.getPublicKey().data)
 
+    }
+
+    async ready(): Promise<void> {
+        try {
+            // resolve loaded pubkey to parent address
+            const pubkey = this.keyPair.getPublicKey().toString()
+            const resolved = await axios.get(`${this.bundlrUrl}/account/near/lookup?address=${base64url.encode(pubkey.split(":")[1])}`).catch(e => { return e }) as any
+            this._address = resolved?.data?.address ?? this._address
+        } catch (e) {
+            console.error(e)
+        }
     }
 }
