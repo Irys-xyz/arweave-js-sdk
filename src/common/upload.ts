@@ -194,7 +194,8 @@ export default class Uploader {
         }
         const getres = await this.api.get(`/chunks/${this.currency}/${id}/${size}`)
         if (getres.status == 201) {
-            return { data: { id } }
+            getres.data = { id }
+            return getres
         }
         Utils.checkAndThrow(getres, "Getting chunk info")
         const present = getres.data.map(v => +v) as Array<number>
