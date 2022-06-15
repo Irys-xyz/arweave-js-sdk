@@ -193,6 +193,9 @@ export default class Uploader {
             })
         }
         const getres = await this.api.get(`/chunks/${this.currency}/${id}/${size}`)
+        if (getres.status == 201) {
+            return { data: { id } }
+        }
         Utils.checkAndThrow(getres, "Getting chunk info")
         const present = getres.data.map(v => +v) as Array<number>
 
@@ -254,7 +257,7 @@ export default class Uploader {
             throw new Error("Not enough funds to send data")
         }
         // this will throw if the dataItem reconstruction fails
-        await Utils.checkAndThrow(finishUpload, "Finalising upload")
+        await Utils.checkAndThrow(finishUpload, "Finalising upload", [201])
         return finishUpload
     }
 
