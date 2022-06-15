@@ -179,21 +179,21 @@ export default class Uploader {
             throw new Error("batch size too small! must be >=1")
         }
         const promiseFactory = (d: Buffer, o: number): Promise<Record<string, any>> => {
-            return new Promise((r, e) => {
+            return new Promise((r) => {
                 retry(
                     async () => {
-                        this.api.post(`/chunks/${this.currency}/${id}/${o}`, d, {
+                        await this.api.post(`/chunks/${this.currency}/${id}/${o}`, d, {
                             headers: { "Content-Type": "application/octet-stream" },
                             maxBodyLength: Infinity, // 
                             maxContentLength: Infinity,
-                        }).then(re => r({ o, d: re })).catch(er => e({ o, e: er }))
+                        }).then(re => r({ o, d: re }))
                     }
                 ),
                     { retries: 3, minTimeout: 1000, maxTimeout: 10_000 }
             })
         }
         const getres = await this.api.get(`/chunks/${this.currency}/${id}/${size}`)
-        await Utils.checkAndThrow(getres, "Getting chunk info")
+        Utils.checkAndThrow(getres, "Getting chunk info")
         const present = getres.data.map(v => +v) as Array<number>
 
         const remainder = size % chunkSize;
@@ -209,13 +209,14 @@ export default class Uploader {
         // console.log(missing);
 
         let offset = 0;
-        const processing = []
+        let processing = []
 
         // const ckr = new chunker({ size: chunkSize, nopad: true })
-        const ckr = new chunker({
-            chunkSize: chunkSize,
-            flushTail: true
-        })
+        // const ckr = new chunker({
+        //     chunkSize: chunkSize,
+        //     flushTail: true
+        // })
+        const ckr = new chunker({ chunkSize, flushTail: true })
 
         if (Buffer.isBuffer(dataStream)) {
             ckr.write(dataStream)
@@ -224,22 +225,27 @@ export default class Uploader {
             dataStream.pipe(ckr)
         }
 
+
         for await (const cnk of new S2A(ckr)) {
+
             const chunk: { id: number, data: Buffer } = cnk as any
 
-            const data = chunk.data
 
-            if (chunk.id % batchSize == 0) {
-                await Promise.allSettled(processing)
+            const data = chunk.data
+            if (processing.length == batchSize) {
+                await Promise.all(processing)
+                processing = []
             }
-            console.log(`posting chunk ${chunk.id} - ${offset} (${offset + data.length})`)
+
+            // console.log(`posting chunk ${id} - ${offset} (${offset + data.length})`)
+
             if (missing.includes(offset)) {
                 processing.push(promiseFactory(data, offset))
             }
             offset += data.length
         }
 
-        await Promise.allSettled(processing);
+        await Promise.all(processing);
         const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
             headers: { "Content-Type": "application/octet-stream" },
             timeout: this.api.config.timeout * 10 // server side reconstruction can take a while
