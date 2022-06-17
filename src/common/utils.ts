@@ -92,7 +92,8 @@ export default class Utils {
             }
         }
 
-        throw new Error(`Tx ${txid} didn't finalize after 30 seconds`);
+        // throw new Error(`Tx ${txid} didn't finalize after 30 seconds`);
+        console.warn(`Tx ${txid} didn't finalize after 30 seconds`)
     }
 
     public unitConverter(baseUnits: BigNumber.Value): BigNumber {

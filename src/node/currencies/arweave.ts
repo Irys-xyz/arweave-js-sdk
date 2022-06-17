@@ -19,7 +19,8 @@ export default class ArweaveConfig extends BaseNodeCurrency {
 
     private async getProvider(): Promise<Arweave> {
         if (!this.providerInstance) {
-            this.providerInstance = await Arweave.init({ host: this.providerUrl ?? "arweave.net", protocol: "https", port: 443 });
+            const purl = new URL(this.providerUrl ?? "https://arweave.net")
+            this.providerInstance = Arweave.init({ host: purl.hostname, protocol: purl.protocol.replaceAll(":", "").replaceAll("/", ""), port: purl.port, network: this?.opts?.network });
         }
         return this.providerInstance;
     }
@@ -77,8 +78,8 @@ export default class ArweaveConfig extends BaseNodeCurrency {
         return new BigNumber(await (await this.getProvider()).transactions.getPrice((new BigNumber(amount)).toNumber(), to)).integerValue(BigNumber.ROUND_CEIL)
     }
 
-    async sendTx(data: any): Promise<void> {
-        await (await this.getProvider()).transactions.post(data);
+    async sendTx(data: any): Promise<any> {
+        return await (await this.getProvider()).transactions.post(data);
     }
 
     async createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string; tx: any; }> {

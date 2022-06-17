@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require("webpack");
+const { DuplicatesPlugin } = require("inspectpack/plugin");
 
 module.exports = {
     entry: './src/web/bundlr.ts',
@@ -42,6 +43,10 @@ module.exports = {
             process: 'process/browser',
             Buffer: ['buffer', 'Buffer']
         }),
+        new DuplicatesPlugin({
+            emitErrors: false,
+            verbose: false
+        })
     ],
     output: {
         filename: 'bundle.js',

@@ -18,6 +18,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     protected minConfirm = 5;
     public isSlow = false;
     public needsFee = true;
+    protected opts?: any
 
     constructor(config: CurrencyConfig) {
         Object.assign(this, config);
