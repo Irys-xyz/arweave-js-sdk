@@ -15,8 +15,8 @@ export default abstract class Bundlr {
     public utils: Utils;
     public uploader: Uploader;
     public funder: Fund;
-    public address;
-    public currency;
+    public address: string;
+    public currency: string;
     public currencyConfig: Currency;
 
     constructor() { return }

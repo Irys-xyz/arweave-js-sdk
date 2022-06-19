@@ -4,8 +4,8 @@ import internal, { Transform } from "stream";
 export default class SizeChunker extends Transform {
     protected bytesPassed = 0
     protected currentChunk = 0
-    protected chunkSize;
-    protected flushTail;
+    protected chunkSize: number;
+    protected flushTail: boolean;
     protected cache = Buffer.alloc(0)
 
     constructor(options: internal.TransformOptions & { chunkSize: number, flushTail: boolean }) {
@@ -15,7 +15,7 @@ export default class SizeChunker extends Transform {
 
     }
 
-    _transform(chunk: any, _encoding: BufferEncoding, done: internal.TransformCallback): void {
+    _transform(chunk: Buffer, _encoding: BufferEncoding, done: internal.TransformCallback): void {
         this.cache = Buffer.concat([this.cache, chunk])
         while (this.cache.length >= this.chunkSize) {
             this.push({ id: ++this.currentChunk, data: this.cache.slice(0, this.chunkSize), bytesPassed: this.bytesPassed += this.chunkSize })

@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+
+/** 
+ * Code from stream-to-async-iterator (https://github.com/basicdays/node-stream-to-async-iterator) - modified to improve browser compatibility
+ */
+
 import { Readable } from "stream";
 
 const NOT_READABLE: unique symbol = Symbol("not readable");
@@ -45,7 +51,7 @@ export default class StreamToAsyncIterator<T = unknown>
     private _size: number | undefined;
     /** The rejections of promises to call when stream errors out */
     private _rejections: Set<(err: Error) => void> = new Set();
-    get closed() {
+    get closed(): boolean {
         return this._state === STATES.ended;
     }
 
@@ -138,7 +144,7 @@ export default class StreamToAsyncIterator<T = unknown>
         let handleReadable: (() => void) | undefined = undefined;
 
         const promise = new Promise<void>((resolve, reject) => {
-            handleReadable = () => {
+            handleReadable = (): void => {
                 this._state = STATES.readable;
                 this._rejections.delete(reject);
                 resolve();
@@ -148,7 +154,7 @@ export default class StreamToAsyncIterator<T = unknown>
             this._rejections.add(reject);
         });
 
-        const cleanup = () => {
+        const cleanup = (): void => {
             if (handleReadable != null) {
                 this._stream.removeListener("readable", handleReadable);
             }

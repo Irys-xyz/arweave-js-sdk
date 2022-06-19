@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/naming-convention */
 import Axios, { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios";
 
@@ -85,12 +86,12 @@ export default class Api {
 
         if (this.config.logging) {
             instance.interceptors.request.use((request) => {
-                this.config.logger!(`Requesting: ${request.baseURL}/${request.url}`);
+                this.config.logger?.(`Requesting: ${request.baseURL}/${request.url}`);
                 return request;
             });
 
             instance.interceptors.response.use((response) => {
-                this.config.logger!(
+                this.config.logger?.(
                     `Response:   ${response.config.url} - ${response.status}`
                 );
                 return response;
