@@ -3,6 +3,7 @@ import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
 import Api from "./api";
 import { Currency } from "./types";
+// this ensures that BigNumber can represent the more precise currencies, i.e NEAR
 BigNumber.set({ DECIMAL_PLACES: 50 })
 
 export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
@@ -67,9 +68,9 @@ export default class Utils {
 
     /**
      * Calculates the price for [bytes] bytes paid for with [currency] for the loaded bundlr node.
-     * @param currency
-     * @param bytes
-     * @returns
+     * @param currency - the currency to query the price of
+     * @param bytes - the number of bytes to query the price for
+     * @returns - the price as a BigNumber (atomic units)
      */
     public async getPrice(currency: string, bytes: number): Promise<BigNumber> {
         const res = await this.api.get(`/price/${currency}/${bytes}`)
@@ -80,8 +81,7 @@ export default class Utils {
     /**
      * Polls for transaction confirmation (or at least pending status) - used for fast currencies (i.e not arweave)
      * before posting the fund request to the server (so the server doesn't have to poll)
-     * @param txid
-     * @returns
+     * @param txid - the transaction ID to poll
      */
     public async confirmationPoll(txid: string): Promise<void> {
         if (this.currencyConfig.isSlow) { return; }
@@ -95,8 +95,13 @@ export default class Utils {
         // throw new Error(`Tx ${txid} didn't finalize after 30 seconds`);
         console.warn(`Tx ${txid} didn't finalize after 30 seconds`)
     }
-
-    public unitConverter(baseUnits: BigNumber.Value): BigNumber {
-        return new BigNumber(baseUnits).dividedBy(this.currencyConfig.base[1]);
+    /**
+     * Converts atomic units into traditional decimal units, i.e:
+     * 5_000_000_000 winston -> 0.005 AR
+     * @param atomicUnits  the number of base (atomic) units to convert
+     * @returns  - the decimal conversion
+     */
+    public unitConverter(atomicUnits: BigNumber.Value): BigNumber {
+        return new BigNumber(atomicUnits).dividedBy(this.currencyConfig.base[1]);
     }
 }

@@ -48,7 +48,7 @@ export default function getCurrency(currency: string, wallet: any, url: string, 
             const k = new ERC20Config({ name: "kyve", ticker: "KYVE", minConfirm: 0, providerUrl: providerUrl ?? "https://moonbeam-alpha.api.onfinality.io/public", contractAddress: contractAddress ?? "0x3cf97096ccdb7c3a1d741973e351cb97a2ede2c1", isSlow: true, wallet, opts })
             k.price = async (): Promise<number> => { return 100 } // TODO: replace for mainnet
             k.getGas = async (): Promise<[BigNumber, number]> => { return [new BigNumber(100), 1e18] }
-            return k; // TODO: ensure units above are right
+            return k;
         }
         case "near": {
             return new NearConfig({ name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet, bundlrUrl: url, opts })

@@ -1,6 +1,6 @@
 import BigNumber from "bignumber.js";
 import { Signer } from "arbundles/src/signing";
-import { FileDataItem } from "arbundles/file";
+import { DataItem } from "arbundles";
 // common types shared between web and node versions
 
 export interface CreateTxData { amount: BigNumber.Value, to: string, fee?: string }
@@ -31,7 +31,7 @@ export interface Currency {
 
     ownerToAddress(owner: any): string;
 
-    getId(item: FileDataItem): Promise<string>;
+    getId(item: DataItem | FileDataItem): Promise<string>;
 
     price(): Promise<number>;
 
@@ -45,7 +45,7 @@ export interface Currency {
 
     getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber>;
 
-    sendTx(data: any): Promise<any>; // TODO: make signature(s) more specific
+    sendTx(data: any): Promise<any>;
 
     createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string, tx: any }>;
 
@@ -62,12 +62,3 @@ export interface Manifest {
     paths: Record<string, Record<string, Record<"id", string>>>,
     index?: Record<"path", string>
 }
-
-// // TS doesn't like string template literals it seems
-// export enum manifestType {
-//     paths = "arweave/paths"
-// }
-
-// export enum manifestVersion {
-//     "0.1.0" = "0.1.0"
-// }

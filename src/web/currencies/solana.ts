@@ -66,21 +66,12 @@ export default class SolanaConfig extends BaseWebCurrency {
 
     getSigner(): Signer {
         if (!this.signer) {
-            // if (this.wallet?.name === "Phantom") {
-            //     this.signer = new PhantomSigner(this.wallet)
-            // } else {
-            //     this.signer = new InjectedSolanaSigner(this.wallet)
-            // }
             this.signer = new HexInjectedSolanaSigner(this.wallet)
         }
         return this.signer;
     }
 
     verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        // if (this.wallet?.name === "Phantom") {
-        //     return PhantomSigner.verify(pub, data, signature)
-        // }
-        // return InjectedSolanaSigner.verify(pub, data, signature);
         return HexInjectedSolanaSigner.verify(pub, data, signature);
     }
 
@@ -99,9 +90,7 @@ export default class SolanaConfig extends BaseWebCurrency {
     }
 
     async sendTx(data: any): Promise<string> {
-
         return await this.wallet.sendTransaction(data, await this.getProvider(), { skipPreflight: true })
-
     }
 
     async createTx(
@@ -109,7 +98,6 @@ export default class SolanaConfig extends BaseWebCurrency {
         to: string,
         _fee?: string,
     ): Promise<{ txId: string; tx: any }> {
-        // TODO: figure out how to manually set fees
         const pubkey = new web3.PublicKey(await this.getPublicKey())
         const hash = await retry(
             async (bail) => {

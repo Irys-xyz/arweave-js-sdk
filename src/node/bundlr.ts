@@ -36,9 +36,11 @@ export default class NodeBundlr extends Bundlr {
     async uploadFile(path: string): Promise<AxiosResponse<any>> {
         return this.uploader.uploadFile(path);
     };
-
+    /**
+     * Readies the bundlr's selected currency (if applicable)
+     */
     async ready(): Promise<void> {
-        this.currencyConfig.ready ? await this.currencyConfig.ready() : true
+        await this.currencyConfig.ready?.()
     }
 
 }

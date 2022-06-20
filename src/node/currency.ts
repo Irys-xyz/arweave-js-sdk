@@ -1,4 +1,3 @@
-import { FileDataItem } from "arbundles/file";
 import { Signer } from "arbundles/src/signing";
 import Arweave from "arweave";
 import base64url from "base64url";
@@ -7,6 +6,8 @@ import { Tx, CurrencyConfig } from "../common/types"
 import axios from "axios";
 import { NodeCurrency } from "./types";
 import utils from "../common/utils"
+import { DataItem } from "arbundles";
+import { FileDataItem } from "arbundles/file";
 export default abstract class BaseNodeCurrency implements NodeCurrency {
     public base: [string, number];
     protected wallet: any
@@ -20,6 +21,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     public needsFee = true;
     protected opts?: any
 
+    // uses Object.assign() 
     constructor(config: CurrencyConfig) {
         Object.assign(this, config);
         this._address = this.wallet ? this.ownerToAddress(this.getPublicKey()) : undefined;
@@ -31,9 +33,13 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
         return this._address
     }
 
-
-    async getId(item: FileDataItem): Promise<string> {
-        return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
+    /**
+     * Gets the ID of the DataItem from it's signature
+     * @param item - The DataItem to get the ID of
+     * @returns the ID of the DataItem
+     */
+    async getId(item: DataItem | FileDataItem): Promise<string> {
+        return base64url.encode(Buffer.from(await Arweave.crypto.hash(Buffer.isBuffer(item.rawSignature) ? item.rawSignature : await item.rawSignature())));
     }
     async price(): Promise<number> {
         return getRedstonePrice(this.ticker);

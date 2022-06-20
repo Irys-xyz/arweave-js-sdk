@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 /** 
- * Code from stream-to-async-iterator (https://github.com/basicdays/node-stream-to-async-iterator) - modified to improve browser compatibility
+ * Code from stream-to-async-iterator (https://github.com/basicdays/node-stream-to-async-iterator)
+ *  lightly modified to improve browser compatibility
  */
 
 import { Readable } from "stream";
@@ -74,7 +75,7 @@ export default class StreamToAsyncIterator<T = unknown>
         stream.once("end", this._handleStreamEnd);
     }
 
-    [Symbol.asyncIterator]() {
+    [Symbol.asyncIterator](): AsyncIterableIterator<T> {
         return this;
     }
 

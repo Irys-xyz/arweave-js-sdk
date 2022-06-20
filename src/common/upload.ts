@@ -29,7 +29,6 @@ export default class Uploader {
         this.utils = utils;
     }
 
-
     /**
      * Uploads data to the bundler
      * @param data
@@ -82,7 +81,14 @@ export default class Uploader {
 
 
 
-
+    /**
+     * Concurrent transaction uploader, backed by an async promise pool to limit concurrency
+     * @param data - Array of data-like items to process
+     * @param concurrency - The maximum number of operations to perform at paralell
+     * @param resultProcessor - Optional postprocessor function
+     * @param logFunction - Optional logging function
+     * @returns - An oject containing a list of all errors and successfuly return results
+     */
     public async concurrentUploader(data: (DataItem | Buffer | string)[], concurrency = 5, resultProcessor?: (res: any) => Promise<any>, logFunction?: (log: string) => Promise<any>): Promise<{ errors: Array<any>, results: Array<any> }> {
         const errors = []
         const results = await PromisePool
@@ -121,7 +127,13 @@ export default class Uploader {
         return { errors, results: results.results }
     }
 
-    protected async processItem(item: string | Buffer | DataItem): Promise<any> {
+    /**
+     * generic data processing function, converts data into a dataItem if applicable
+     * then uploads the dataItem
+     * @param item - the data-like object to upload
+     * @returns - the HTTP response from the node
+     */
+    protected async processItem(item: string | Buffer | DataItem): Promise<AxiosResponse<any>> {
         if (typeof item === "string") {
             item = Buffer.from(item)
         }
@@ -134,10 +146,10 @@ export default class Uploader {
     }
 
     /**
-     * geneates a manifest JSON object 
-     * @param config.items mapping of logical paths to item IDs
-     * @param config.indexFile optional logical path of the index file for the manifest 
-     * @returns 
+     * Geneates a manifest JSON object 
+     * @param config.items - mapping of logical paths to item IDs
+     * @param config.indexFile - optional logical path of the index file for the manifest 
+     * @returns A manifest object
      */
     public async generateManifest(config: { items: Map<string, string>, indexFile?: string }): Promise<Manifest> {
         const { items, indexFile } = config
@@ -159,7 +171,6 @@ export default class Uploader {
         return manifest
 
     }
-
 
 
     /**
@@ -210,16 +221,10 @@ export default class Uploader {
                 missing.push(s);
             }
         }
-        // console.log(missing);
 
         let offset = 0;
         let processing = []
 
-        // const ckr = new chunker({ size: chunkSize, nopad: true })
-        // const ckr = new chunker({
-        //     chunkSize: chunkSize,
-        //     flushTail: true
-        // })
         const ckr = new chunker({ chunkSize, flushTail: true })
 
         if (Buffer.isBuffer(dataStream)) {
@@ -262,17 +267,14 @@ export default class Uploader {
         return finishUpload
     }
 
+    // "global" override to always use chunking regardless of the item's size
     set useChunking(state: boolean) {
         if (typeof state === "boolean") {
             this.forceUseChunking = state
         }
     }
-
+    // 'global' override for the content type to use 
     set contentType(type: string) {
-        // const fullType = mime.contentType(type)
-        // if(!fullType){
-        //     throw new Error("Invali")
-        // }
         this.contentTypeOverride = type;
     }
 }

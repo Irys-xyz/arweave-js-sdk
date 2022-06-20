@@ -48,9 +48,9 @@ export default class ERC20Config extends EthereumConfig {
 
     /**
      * Returns the fee in CONTRACT CURRENCY UNITS equivalent to the fee derived via gas currency units, i.e Wei
-     * @param amount 
-     * @param to 
-     * @returns 
+     * @param amount - amount being transferred
+     * @param to - address the amount is being sent to
+     * @returns - the fee in atomic units
      */
 
     async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
@@ -67,10 +67,6 @@ export default class ERC20Config extends EthereumConfig {
         const ctPrice = new BigNumber(await this.price()); // price for this currency
 
         const ctAmount = (new BigNumber(value).dividedToIntegerBy(ctPrice))
-        // const b = ctAmount.multipliedBy(ctPrice)
-        // const c = value.dividedBy(this.base[1])
-        // console.log(b);
-        // console.log(c)
         return ctAmount;
     }
 
@@ -90,7 +86,6 @@ export default class ERC20Config extends EthereumConfig {
         return { txId, tx: signedTx };
     }
 
-    // TODO: create a nicer solution than just overrides (larger issue: some currencies aren't on redstone)
     public async getGas(): Promise<[BigNumber, number]> {
         return [new BigNumber(await getRedstonePrice("ETH")), 1e18]
     }

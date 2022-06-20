@@ -21,7 +21,11 @@ export default abstract class Bundlr {
 
     constructor() { return }
 
-
+    /**
+     * Requests a withdrawal of the specified amount of currency from the current node
+     * @param amount - amount to request the withdrawal of
+     * @returns - the HTTP response from the node
+     */
     async withdrawBalance(amount: BigNumber.Value): Promise<AxiosResponse<any>> {
         return await withdrawBalance(this.utils, this.api, amount);
     }
@@ -33,6 +37,7 @@ export default abstract class Bundlr {
     async getLoadedBalance(): Promise<BigNumber> {
         return this.utils.getBalance(this.address)
     }
+
     /**
      * Gets the balance for the specified address
      * @param address address to query for

@@ -34,14 +34,11 @@ export default class Fund {
         } catch (e) {
             throw e;
         }
-        // tx.txId = nres ?? tx.txId;
-        if (!tx.txId) {
-            tx.txId = nres;
-        }
-
-        // console.log(tx.txId);
+        // some currencies will only give us the txID after the transaction has been posted to the relevant network
+        tx.txId = nres ?? tx.txId;
 
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
+        // poll for confirmation, so the node can find the transaction.
         await this.utils.confirmationPoll(tx.txId);
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId })
             .catch(_ => { throw new Error(`failed to post funding tx - ${tx.txId} - keep this id!`) })

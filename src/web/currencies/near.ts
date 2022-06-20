@@ -8,7 +8,6 @@ import { sha256 } from "js-sha256";
 import BaseWebCurrency from "../currency";
 
 export default class NearConfig extends BaseWebCurrency {
-    // protected keyStore: KeyPair
     protected keyPair: KeyPair
     protected wallet: WalletConnection
     protected near: Near
@@ -19,8 +18,6 @@ export default class NearConfig extends BaseWebCurrency {
         super(config);
         this.near = this.wallet._near
         this.base = ["yoctoNEAR", 1e25]
-        // this.keyPair = KeyPair.fromString(this.wallet)
-
     }
 
     async ready(): Promise<void> {
@@ -29,27 +26,15 @@ export default class NearConfig extends BaseWebCurrency {
         }
         const keystore = new keyStores.BrowserLocalStorageKeyStore()
         const account = this.wallet.account();
-        // console.log(this.address)
-        // console.log(await account.getAccessKeys())
-        // this._address = this.wallet.getAccountId()
-        // this.keyPair = KeyPair.fromString(this.wallet)
-        // console.log(await account.getAccessKeys())
         this.keyPair = await keystore.getKey(this.wallet._networkId, account.accountId)
         if (!this.keyPair) {
             this.keyPair = KeyPair.fromRandom("ed25519");
             const publicKey = this.keyPair.getPublicKey().toString();
-            // this.wallet._networkId
             await keystore.setKey(this.wallet._networkId, account.accountId, this.keyPair)
-            // can't do this :c
-            // console.log(publicKey)
             await account.addKey(publicKey);
         }
-        // console.log(this.keyPair.getPublicKey().toString());
-        // this._address = this.ownerToAddress(Buffer.from(this.keyPair.getPublicKey().data));
         this._address = await this.wallet.getAccountId();
-        // this.providerInstance = new providers.JsonRpcProvider({ url: this.providerUrl });
         this.providerInstance = this.wallet._near.connection.provider
-        // console.log(this.keyPair);
     }
 
 
@@ -75,10 +60,6 @@ export default class NearConfig extends BaseWebCurrency {
         // @ts-expect-error
         const deposit = status.receipts[0].receipt.Action.actions[0].Transfer.deposit ?? 0
 
-        // console.log(decode(status.receipts_outcome[0].block_hash))
-
-        // // const routcometx = await provider.txStatusReceipts(decode(status.receipts_outcome[0].block_hash), status.receipts_outcome[0].id)
-        // console.log({ blockHeight, status, latestBlockHeight })
         return {
             from: id,
             to: status.transaction.receiver_id,
@@ -94,7 +75,6 @@ export default class NearConfig extends BaseWebCurrency {
      * @param owner // assumed to be the "ed25519:" header + b58 encoded key 
      */
     ownerToAddress(owner: any): string {
-        // should just return the loaded address?
         const pubkey = typeof owner === "string" ? owner : encode(owner)
         return decode(pubkey.replace("ed25519:", "")).toString("hex")
     }
@@ -123,7 +103,6 @@ export default class NearConfig extends BaseWebCurrency {
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
         // const provider = await this.getProvider();
         // one unit of gas
-        // const res = await provider.connection.provider.gasPrice(await (await this.getCurrentHeight()).toNumber())
         const res = await this.providerInstance.gasPrice(null) // null == gas price as of latest block
         // multiply by action cost in gas units (assume only action is transfer)
         // 4.5x10^11 gas units for fund transfers

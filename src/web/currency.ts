@@ -7,6 +7,7 @@ import { Tx, CurrencyConfig } from "../common/types"
 import axios from "axios";
 import { WebCurrency } from "./types";
 import utils from "../common/utils";
+import { DataItem } from "arbundles";
 
 export default abstract class BaseWebCurrency implements WebCurrency {
     public base: [string, number];
@@ -35,9 +36,18 @@ export default abstract class BaseWebCurrency implements WebCurrency {
         this._address = this.wallet ? this.ownerToAddress(await this.getPublicKey()) : undefined;
     }
 
-    async getId(item: FileDataItem): Promise<string> {
-        return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
+    /**
+     * Gets the ID of the DataItem from it's signature
+     * @param item - The DataItem to get the ID of
+     * @returns the ID of the DataItem
+     */
+    async getId(item: DataItem | FileDataItem): Promise<string> {
+        return base64url.encode(Buffer.from(await Arweave.crypto.hash(Buffer.isBuffer(item.rawSignature) ? item.rawSignature : await item.rawSignature())));
     }
+    /**
+     * Gets the price of the current currency from Redstone.finance
+     * @returns the price in USD
+     */
     async price(): Promise<number> {
         return getRedstonePrice(this.ticker);
     }
@@ -53,7 +63,11 @@ export default abstract class BaseWebCurrency implements WebCurrency {
     abstract getPublicKey(): Promise<string | Buffer>
 }
 
-
+/**
+ * Gets the price of the specified currency from redstone.finance
+ * @param currency - the name of the currency to get
+ * @returns the price in USD
+ */
 export async function getRedstonePrice(currency: string): Promise<number> {
     const res = await axios.get<any>(`https://api.redstone.finance/prices?symbol=${currency}&provider=redstone&limit=1`)
     await utils.checkAndThrow(res, "Getting price data")

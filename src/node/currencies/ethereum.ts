@@ -80,9 +80,6 @@ export default class EthereumConfig extends BaseNodeCurrency {
 
         const estimatedGas = await provider.estimateGas(tx);
         const gasPrice = await provider.getGasPrice();
-
-        // const b = await provider.send("eth_maxPriorityFeePerGas", [])
-        // console.log(b)
         return new BigNumber(estimatedGas.mul(gasPrice).toString());
     }
 
@@ -98,13 +95,6 @@ export default class EthereumConfig extends BaseNodeCurrency {
         const _amount = "0x" + new BigNumber(amount).toString(16);
 
         let gasPrice = await provider.getGasPrice();
-        // const estimatedGas = await provider.estimateGas({ from: this.address, to, value: _amount });
-
-        // console.log({ gasPrice, estimatedGas })
-
-        // if (fee) {
-        //     gasPrice = ethers.BigNumber.from(Math.ceil(+fee / estimatedGas.toNumber()))
-        // }
 
         if (this.name === "matic") {
             gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(7).decimalPlaces(0).toString())
@@ -115,15 +105,9 @@ export default class EthereumConfig extends BaseNodeCurrency {
             value: _amount,
             from: this.address,
             gasPrice
-            // gasLimit: estimatedGas,
-            // nonce: b // await provider.getTransactionCount(this.address),
-            // chainId: await (await provider.getNetwork()).chainId
         });
-        // tx.gasLimit = ethers.BigNumber.from(+(tx.gasLimit.toString()) * 4)
         const signedTx = await wallet.signTransaction(tx);
         const txId = "0x" + keccak256(Buffer.from(signedTx.slice(2), "hex")).toString("hex");
-        // const c = await provider.call(tx);
-        // console.log(c)
         return { txId, tx: signedTx };
     }
 

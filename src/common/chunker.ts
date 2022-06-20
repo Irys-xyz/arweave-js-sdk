@@ -1,6 +1,10 @@
 import internal, { Transform } from "stream";
 
-
+/**
+ * SizeChunker - ingests binary data, up until the chunkSize threshold is matched or exceeded,
+ * then it emits a chunk of chunkSize bytes - keeping excess data for subsequent emissions
+ * Optionally emits whatever is left in the buffer once the stream closes.
+ */
 export default class SizeChunker extends Transform {
     protected bytesPassed = 0
     protected currentChunk = 0

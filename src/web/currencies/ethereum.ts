@@ -79,7 +79,7 @@ export default class EthereumConfig extends BaseWebCurrency {
 
     async sendTx(data: ethers.providers.TransactionRequest): Promise<string> {
         const signer = this.w3signer
-        const receipt = await signer.sendTransaction(data)// .catch((e) => { console.error(`Sending tx: ${e}`) })
+        const receipt = await signer.sendTransaction(data)
         return receipt ? receipt.hash : undefined
     }
 
@@ -98,9 +98,6 @@ export default class EthereumConfig extends BaseWebCurrency {
         return signer.publicKey;
     }
 
-    pruneBalanceTransactions(_txIds: string[]): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
 
     public async ready(): Promise<void> {
         this.w3signer = await this.wallet.getSigner();

@@ -201,7 +201,7 @@ export default class NodeUploader extends Uploader {
      * @param item can be a string value, a path to a file, a Buffer of data or a DataItem
      * @returns A dataItem
      */
-    protected async processItem(item: string | Buffer | DataItem): Promise<any> {
+    protected async processItem(item: string | Buffer | DataItem): Promise<AxiosResponse<any>> {
         let tags;
         // let returnVal;
         if (typeof item === "string") {
@@ -223,9 +223,6 @@ export default class NodeUploader extends Uploader {
             item = createData(item, signer, { tags, anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) })
             await item.sign(signer)
         }
-        // if(returnVal){
-        //     return {path: returnVal, }
-        // }
         return await this.transactionUploader(item);
     }
 
@@ -271,6 +268,11 @@ export default class NodeUploader extends Uploader {
 
 }
 
+/**
+ * Interactive function to allow users to confirm actions 
+ * @param message - mesage to prompt the user with
+ * @returns - if the user accepted or not
+ */
 async function confirmation(message: string): Promise<boolean> {
     const answers = await inquirer.prompt([
         { type: "input", name: "confirmation", message }

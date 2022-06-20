@@ -65,16 +65,11 @@ export default class ERC20Config extends EthereumConfig {
         const ctPrice = new BigNumber(await this.price()); // price for this currency
 
         const ctAmount = (new BigNumber(value).dividedToIntegerBy(ctPrice))
-        // const b = ctAmount.multipliedBy(ctPrice)
-        // const c = value.dividedBy(this.base[1])
-        // console.log(b);
-        // console.log(c)
+
         return ctAmount;
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
-        // const provider = await this.getProvider()
-        // const wallet = new Wallet(this.wallet, this.providerInstance);
         const contract = await this.getContract()
         const _amount = "0x" + new BigNumber(amount).toString(16);
         const tx = await contract.populateTransaction.transfer(to, _amount)
@@ -83,18 +78,13 @@ export default class ERC20Config extends EthereumConfig {
         tx.gasLimit = await contract.estimateGas.transfer(to, _amount)
         tx.chainId = (await this.providerInstance.getNetwork()).chainId;
         tx.nonce = await this.providerInstance.getTransactionCount(this.address)
-        // const txr = this.w3signer.populateTransaction()
-        // const signedTx = await this.wallet.signTransaction(tx);
-        // const txId = "0x" + keccak256(Buffer.from(signedTx.slice(2), "hex")).toString("hex");
+
         return { txId: undefined, tx: tx };
     }
 
-    // TODO: create a nicer solution than just overrides (larger issue: some currencies aren't on redstone)
     public async getGas(): Promise<[BigNumber, number]> {
         return [new BigNumber(await getRedstonePrice("ETH")), 1e18]
     }
-
-
 }
 
 export const erc20abi = [
