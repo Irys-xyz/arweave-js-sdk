@@ -12,7 +12,7 @@ import utils from "../../common/utils";
 export default function getCurrency(currency: string, wallet: any, url: string, providerUrl?: string, contractAddress?: string, opts?: any): NodeCurrency {
     switch (currency) {
         case "arweave":
-            return new ArweaveConfig({ name: "arweave", ticker: "AR", minConfirm: 10, providerUrl: providerUrl ?? "arweave.net", wallet, isSlow: true, opts })
+            return new ArweaveConfig({ name: "arweave", ticker: "AR", minConfirm: 10, providerUrl: providerUrl ?? "https://arweave.net", wallet, isSlow: true, opts })
         case "ethereum":
             return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", wallet, opts })
         case "matic":
