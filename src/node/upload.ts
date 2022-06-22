@@ -254,14 +254,14 @@ export default class NodeUploader extends Uploader {
                 continue;
             }
             const prefix = firstValue ? "" : ",\n"
-            wstrm.write(`${prefix}"${d.path}":{"id":"${d.id}"}`)
+            wstrm.write(`${prefix}"${d.path.replaceAll("\\", "/")}":{"id":"${d.id}"}`)
             firstValue = false;
         }
         // "trailer"
         wstrm.write(`\n}`)
         // add index
         if (indexFile) {
-            wstrm.write(`,\n"index":{"path":"${indexFile}"}`)
+            wstrm.write(`,\n"index":{"path":"${indexFile.replaceAll("\\", "/")}"}`)
         }
 
         wstrm.write(`\n}`)
