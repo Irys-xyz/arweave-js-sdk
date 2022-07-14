@@ -87,7 +87,10 @@ export default class EthereumConfig extends BaseWebCurrency {
         const amountc = ethBigNumber.from((new BigNumber(amount)).toString())
         const signer = this.w3signer
         const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() })
-        const gasPrice = await signer.getGasPrice();
+        let gasPrice = await signer.getGasPrice();
+        if (this.name === "matic") {
+            gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(10).decimalPlaces(0).toString())
+        }
         const txr = await signer.populateTransaction({ to, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas })
         return { txId: undefined, tx: txr };
     }
