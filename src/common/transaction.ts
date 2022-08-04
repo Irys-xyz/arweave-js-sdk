@@ -31,7 +31,4 @@ export default class BundlrTransaction extends DataItem {
         return this.bundlr.uploader.transactionUploader(this);
     }
 
-    setSignature(signature: Buffer): void {
-        this.getRaw().set(signature, 2)
-    }
 }
