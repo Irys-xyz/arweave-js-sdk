@@ -30,4 +30,8 @@ export default class BundlrTransaction extends DataItem {
     async upload(): Promise<any> {
         return this.bundlr.uploader.transactionUploader(this);
     }
+
+    setSignature(signature: Buffer): void {
+        this.getRaw().set(signature, 2)
+    }
 }

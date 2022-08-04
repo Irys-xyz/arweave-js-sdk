@@ -18,6 +18,7 @@ export default abstract class Bundlr {
     public address;
     public currency;
     public currencyConfig: Currency;
+    public signer: Signer;
 
     constructor() { return }
 

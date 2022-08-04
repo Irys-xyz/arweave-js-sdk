@@ -26,6 +26,7 @@ export default class NodeBundlr extends Bundlr {
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
         this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig)
+        this.signer = this.currencyConfig.getSigner()
     }
 
     /**

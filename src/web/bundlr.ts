@@ -19,6 +19,7 @@ export default class WebBundlr extends Bundlr {
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils)
+        this.signer = this.currencyConfig.getSigner()
     }
 
     // async initialisation 
