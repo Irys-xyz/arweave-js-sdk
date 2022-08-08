@@ -10,7 +10,6 @@ import { createData, DataItem } from "arbundles";
 import inquirer from "inquirer";
 import { Readable } from "stream";
 import * as csv from "csv"
-import { readFile } from "fs/promises";
 import Crypto from "crypto"
 
 export const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false) }
@@ -209,7 +208,7 @@ export default class NodeUploader extends Uploader {
                 const mimeType = mime.contentType(mime.lookup(item) || "application/octet-stream")
                 tags = [{ name: "Content-Type", value: this.contentTypeOverride ?? mimeType }]
                 // returnVal = item;
-                item = await readFile(item)
+                item = await promises.readFile(item)
 
             } else {
                 item = Buffer.from(item)
