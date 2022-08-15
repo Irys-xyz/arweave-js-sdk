@@ -19,8 +19,11 @@ export default abstract class Bundlr {
     public currency;
     public currencyConfig: Currency;
 
-    constructor() { return }
+    constructor() { return; }
 
+    get signer(): Signer {
+        return this.currencyConfig.getSigner();
+    }
 
     async withdrawBalance(amount: BigNumber.Value): Promise<AxiosResponse<any>> {
         return await withdrawBalance(this.utils, this.api, amount);
@@ -31,7 +34,7 @@ export default abstract class Bundlr {
      * @returns balance (in winston)
      */
     async getLoadedBalance(): Promise<BigNumber> {
-        return this.utils.getBalance(this.address)
+        return this.utils.getBalance(this.address);
     }
     /**
      * Gets the balance for the specified address
@@ -39,7 +42,7 @@ export default abstract class Bundlr {
      * @returns the balance (in winston)
      */
     async getBalance(address: string): Promise<BigNumber> {
-        return this.utils.getBalance(address)
+        return this.utils.getBalance(address);
     }
 
     /**
@@ -48,7 +51,7 @@ export default abstract class Bundlr {
      * @returns details about the fund transaction
      */
     async fund(amount: BigNumber.Value, multiplier?: number): Promise<FundData> {
-        return this.funder.fund(amount, multiplier)
+        return this.funder.fund(amount, multiplier);
     }
 
     /**
@@ -57,7 +60,7 @@ export default abstract class Bundlr {
      * @returns 
      */
     public async getPrice(bytes: number): Promise<BigNumber> {
-        return this.utils.getPrice(this.currency, bytes)
+        return this.utils.getPrice(this.currency, bytes);
     }
 
     /**
@@ -74,6 +77,6 @@ export default abstract class Bundlr {
      * Returns the signer for the loaded currency
      */
     getSigner(): Signer {
-        return this.currencyConfig.getSigner()
+        return this.currencyConfig.getSigner();
     }
 }
