@@ -10,12 +10,11 @@ import retry from "async-retry";
 import { AxiosResponse } from "axios";
 
 interface ChunkUploaderEvents {
-    'chunk': ({ id, offset, size, totalUploaded }: { id: number, offset: number, size: number; totalUploaded: number; }) => void;
+    'chunkUpload': ({ id, offset, size, totalUploaded }: { id: number, offset: number, size: number; totalUploaded: number; }) => void;
     'chunkError': ({ id, offset, size, res }: { id: number, offset: number, size: number; res: AxiosResponse<any>; }) => void;
-    'delete': (changedCount: number) => void;
     'resume': () => void;
     'pause': () => void;
-    'done': (finishedUpload: AxiosResponse<any, any>) => void;
+    'done': (finishedUpload: any) => void;
 }
 
 export declare interface ChunkUploader {
@@ -81,6 +80,7 @@ export class ChunkUploader extends EventEmitter {
         this.chunkSize = size;
         return this;
     }
+
     public setBatchSize(size: number) {
         if (size < 1) {
             throw new Error("Invalid batch size (must be >=1)");
@@ -100,13 +100,10 @@ export class ChunkUploader extends EventEmitter {
     }
 
     public async uploadTransaction(data: Readable | Buffer | DataItem) {
-        // TODO: Figure out a better way of type asserting based on flow, this code is dumb and there must be a better way.
         if (DataItem.isDataItem(data)) {
-            const item = data as DataItem;
-            return this.runUpload(item.getRaw());
+            return this.runUpload(data.getRaw());
         } else {
-            const data2 = data as Readable | Buffer;
-            return this.runUpload(data2);
+            return this.runUpload(data);
         }
 
     }
@@ -120,11 +117,8 @@ export class ChunkUploader extends EventEmitter {
         transactionOpts?: DataItemCreateOptions
     ) {
         let id = this.uploadID;
-        // if (chunkSize < 1_000_000 || chunkSize > 190_000_000) {
-        //     throw new Error("Invalid chunk size - must be betweem 100,000 and 190,000,000 bytes");
-        // }
 
-        const isTransaction = (transactionOpts == undefined);
+        const isTransaction = (transactionOpts === undefined);
 
         const headers = { "x-chunking-version": "2" };
 
@@ -158,9 +152,12 @@ export class ChunkUploader extends EventEmitter {
                             maxContentLength: Infinity,
                         }).then(re => {
 
-                            if (re?.status >= 300) this.emit("chunkError", { res: re, id: c, offset: o, size: d.length });
-
-                            this.emit("chunk", { id: c, offset: o, size: d.length, totalUploaded: (totalUploaded += d.length) });
+                            if (re?.status >= 300) {
+                                const e = { res: re, id: c, offset: o, size: d.length };
+                                this.emit("chunkError", e);
+                                throw e;
+                            }
+                            this.emit("chunkUpload", { id: c, offset: o, size: d.length, totalUploaded: (totalUploaded += d.length) });
                             r({ o, d: re });
                         });
                     }
@@ -254,34 +251,18 @@ export class ChunkUploader extends EventEmitter {
                 tx.rawTags,
                 teeStream
             ];
-            deephash = deepHash(sigComponents).catch((e) => {
-                console.log(e);
-            });
-
-
-            // stream.write(tx.getRaw());
+            // do *not* await, this needs to process in parallel to the upload process.
+            deephash = deepHash(sigComponents);
         }
 
-        // await for "readable" event
-        // for each readable event,
-
-
-        // if (Buffer.isBuffer(dataStream)) {
-        //     strm.write(dataStream);
-        //     ckr.end();
-        // } else {
-        //     dataStream.pipe(ckr);
-        // }
-
-
-
         let nextPresent = present.pop();
-        // "while there's data to read"
+
+        // Consume data while there's data to read.
         while (hasData) {
             if (this.paused) {
                 await new Promise(r => this.on("resume", () => r(undefined)));
             }
-            // void already present data
+            // do not upload data that's already present
             if (nextPresent) {
                 const delta = +nextPresent[0] - offset;
                 if (delta <= this.chunkSize) {
@@ -300,23 +281,22 @@ export class ChunkUploader extends EventEmitter {
 
             if (processing.length == this.batchSize) {
                 await Promise.all(processing);
-                // processing = [];
+                processing = [];
             }
-            // console.log(`posting chunk ${id} - ${offset} (${offset + data.length})`)
 
             processing.push(promiseFactory(chunk, offset, ++chunkID));
 
             offset += chunk.length;
         }
+
         if (teeStream) teeStream.end();
+
         await Promise.all(processing);
 
         if (!isTransaction) {
             const hash = await deephash;
             const sigBytes = Buffer.from(await this.currencyConfig.getSigner().sign(hash));
-            // tx.setSignature(sigBytes);
-            console.log(hash);
-            // heldChunk = Buffer.concat([tx.getRaw(), heldChunk]);
+
             heldChunk.set(sigBytes, 2); // tx will be the first part of the held chunk.
 
             await promiseFactory(heldChunk, 0, 0);
@@ -331,11 +311,15 @@ export class ChunkUploader extends EventEmitter {
         }
         // this will throw if the dataItem reconstruction fails
         Utils.checkAndThrow(finishUpload, "Finalising upload", [201]);
+        // Recover ID
+        if (finishUpload.status === 201) {
+            finishUpload.data = { id: finishUpload.statusText.split(" ")?.[1] };
+        }
         this.emit("done", finishUpload);
         return finishUpload;
     }
 
-    get completionPromise() {
+    get completionPromise(): Promise<AxiosResponse<any, any>> {
         return new Promise(r => this.on("done", r));
     }
 

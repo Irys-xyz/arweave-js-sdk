@@ -1,11 +1,10 @@
-import { createData, DataItem } from "arbundles";
+import { DataItem, DataItemCreateOptions } from "arbundles";
 import { AxiosResponse } from "axios";
 import Utils from "./utils";
 import Api from "./api";
 import { Currency, Manifest } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
-import Crypto from "crypto";
 import { ChunkUploader } from "./chunkUploader";
 import { Readable } from "stream";
 
@@ -31,19 +30,20 @@ export default class Uploader {
     /**
      * Uploads data to the bundler
      * @param data
-     * @param tags
+     * @param opts
      * @returns the response from the bundler
      */
-    public async upload(data: Buffer, tags?: { name: string, value: string; }[]): Promise<AxiosResponse<any>> {
+    public async upload(data: Buffer | Readable, opts?: DataItemCreateOptions): Promise<AxiosResponse<any>> {
 
-        const signer = await this.currencyConfig.getSigner();
-        const dataItem = createData(
-            data,
-            signer,
-            { tags, anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) }
-        );
-        await dataItem.sign(signer);
-        return await this.transactionUploader(dataItem);
+        // const signer = await this.currencyConfig.getSigner();
+        // const dataItem = createData(
+        //     data,
+        //     signer,
+        //     { tags, anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) }
+        // );
+        // await dataItem.sign(signer);
+        // return await this.transactionUploader(dataItem);
+        return await this.chunkedUploader.uploadData(data, opts);
     }
 
 
@@ -55,9 +55,9 @@ export default class Uploader {
      * Uploads a given transaction to the bundler
      * @param transaction
      */
-    public async transactionUploader(transaction: DataItem | Readable): Promise<AxiosResponse<any>> {
+    public async transactionUploader(transaction: DataItem | Readable | Buffer): Promise<AxiosResponse<any>> {
         let res: AxiosResponse<any>;
-        const isDataItem = transaction instanceof DataItem;
+        const isDataItem = DataItem.isDataItem(transaction);
         if (this.forceUseChunking || (isDataItem && transaction.getRaw().length > 50_000_000) || !isDataItem) {
             const uploader = this.chunkedUploader;
             res = await uploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction);
@@ -68,11 +68,11 @@ export default class Uploader {
                 timeout,
                 maxBodyLength: Infinity
             });
+            if (res.status == 201) {
+                res.data = { id: transaction.id };
+            }
         }
         switch (res.status) {
-            // case 201:
-            //     res.data = { id: transaction.id };
-            //     return res;
             case 402:
                 throw new Error("Not enough funds to send data");
             default:
@@ -86,7 +86,7 @@ export default class Uploader {
 
 
 
-    public async concurrentUploader(data: (DataItem | Buffer | string)[], concurrency = 5, resultProcessor?: (res: any) => Promise<any>, logFunction?: (log: string) => Promise<any>): Promise<{ errors: Array<any>, results: Array<any>; }> {
+    public async concurrentUploader(data: (DataItem | Buffer | Readable)[], concurrency = 5, resultProcessor?: (res: any) => Promise<any>, logFunction?: (log: string) => Promise<any>): Promise<{ errors: Array<any>, results: Array<any>; }> {
         const errors = [];
         const results = await PromisePool
             .for(data)
@@ -124,15 +124,16 @@ export default class Uploader {
         return { errors, results: results.results };
     }
 
-    protected async processItem(item: string | Buffer | DataItem): Promise<any> {
+    protected async processItem(item: string | Buffer | DataItem | Readable): Promise<any> {
         if (typeof item === "string") {
             item = Buffer.from(item);
         }
-        if (Buffer.isBuffer(item)) {
-            const signer = await this.currencyConfig.getSigner();
-            item = createData(item, signer, { anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) });
-            await item.sign(signer);
-        }
+        // if (Buffer.isBuffer(item)) {
+        //     const signer = await this.currencyConfig.getSigner();
+        //     item = createData(item, signer, { anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) });
+        //     await item.sign(signer);
+        // }
+
         return await this.transactionUploader(item);
     }
 
