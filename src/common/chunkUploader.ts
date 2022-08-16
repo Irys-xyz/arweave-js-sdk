@@ -8,6 +8,7 @@ import Crypto from "crypto";
 import { stringToBuffer } from "arweave/web/lib/utils";
 import retry from "async-retry";
 import { AxiosResponse } from "axios";
+import StreamToAsyncIterator from "./s2ai";
 
 interface ChunkUploaderEvents {
     'chunkUpload': ({ id, offset, size, totalUploaded }: { id: number, offset: number, size: number; totalUploaded: number; }) => void;
@@ -37,13 +38,6 @@ export class ChunkUploader extends EventEmitter {
     protected paused: Boolean = false;
     protected isResume: Boolean = false;
 
-    /**
-     * This class emits the following events
-     *  chunkUpload: when a chunk finishes uploading
-     *  finish: contains the resultant ID
-     * @param currencyConfig 
-     * @param api 
-     */
     constructor(
         currencyConfig: Currency,
         api: Api
@@ -249,7 +243,7 @@ export class ChunkUploader extends EventEmitter {
                 tx.rawTarget,
                 tx.rawAnchor,
                 tx.rawTags,
-                teeStream
+                new StreamToAsyncIterator<Buffer>(teeStream)
             ];
             // do *not* await, this needs to process in parallel to the upload process.
             deephash = deepHash(sigComponents);
