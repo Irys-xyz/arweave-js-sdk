@@ -5,7 +5,7 @@ import Api from "./api";
 import { Currency, Manifest } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
-import { ChunkUploader } from "./chunkUploader";
+import { ChunkingUploader } from "./chunkingUploader";
 import { Readable } from "stream";
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
@@ -48,7 +48,7 @@ export default class Uploader {
 
 
     get chunkedUploader() {
-        return new ChunkUploader(this.currencyConfig, this.api);
+        return new ChunkingUploader(this.currencyConfig, this.api);
     }
 
     /**

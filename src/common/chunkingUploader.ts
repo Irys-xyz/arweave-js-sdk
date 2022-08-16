@@ -10,7 +10,7 @@ import retry from "async-retry";
 import { AxiosResponse } from "axios";
 import StreamToAsyncIterator from "./s2ai";
 
-interface ChunkUploaderEvents {
+interface ChunkingUploaderEvents {
     'chunkUpload': ({ id, offset, size, totalUploaded }: { id: number, offset: number, size: number; totalUploaded: number; }) => void;
     'chunkError': ({ id, offset, size, res }: { id: number, offset: number, size: number; res: AxiosResponse<any>; }) => void;
     'resume': () => void;
@@ -18,17 +18,17 @@ interface ChunkUploaderEvents {
     'done': (finishedUpload: any) => void;
 }
 
-export declare interface ChunkUploader {
-    on<U extends keyof ChunkUploaderEvents>(
-        event: U, listener: ChunkUploaderEvents[U]
+export declare interface ChunkingUploader {
+    on<U extends keyof ChunkingUploaderEvents>(
+        event: U, listener: ChunkingUploaderEvents[U]
     ): this;
 
-    emit<U extends keyof ChunkUploaderEvents>(
-        event: U, ...args: Parameters<ChunkUploaderEvents[U]>
+    emit<U extends keyof ChunkingUploaderEvents>(
+        event: U, ...args: Parameters<ChunkingUploaderEvents[U]>
     ): boolean;
 }
 
-export class ChunkUploader extends EventEmitter {
+export class ChunkingUploader extends EventEmitter {
     protected currencyConfig: Currency;
     protected api: Api;
     public uploadID: string;
