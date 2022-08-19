@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/client",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
