@@ -2,7 +2,7 @@ import { createData, DataItem, DataItemCreateOptions, deepHash } from "arbundles
 import { PassThrough, Readable } from "stream";
 import { EventEmitter } from "events";
 import Api from "./api";
-import { Currency } from "./types";
+import { Currency, UploadResponse } from "./types";
 import Utils from "./utils";
 import Crypto from "crypto";
 import { stringToBuffer } from "arweave/web/lib/utils";
@@ -109,7 +109,7 @@ export class ChunkingUploader extends EventEmitter {
     async runUpload(
         dataStream: Readable | Buffer,
         transactionOpts?: DataItemCreateOptions
-    ) {
+    ): Promise<AxiosResponse<UploadResponse>> {
         let id = this.uploadID;
 
         const isTransaction = (transactionOpts === undefined);
@@ -136,7 +136,7 @@ export class ChunkingUploader extends EventEmitter {
             throw new Error(`Chunk size out of allowed range: ${min} - ${max}`);
         }
         let totalUploaded = 0;
-        const promiseFactory = (d: Buffer, o: number, c: number): Promise<Record<string, any>> => {
+        const promiseFactory = (d: Buffer, o: number, c: number): Promise<{ o: number, d: AxiosResponse<UploadResponse>; }> => {
             return new Promise((r) => {
                 retry(
                     async () => {
@@ -313,7 +313,7 @@ export class ChunkingUploader extends EventEmitter {
         return finishUpload;
     }
 
-    get completionPromise(): Promise<AxiosResponse<any, any>> {
+    get completionPromise(): Promise<AxiosResponse<UploadResponse, any>> {
         return new Promise(r => this.on("done", r));
     }
 

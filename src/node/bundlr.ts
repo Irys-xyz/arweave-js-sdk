@@ -2,6 +2,7 @@ import { AxiosResponse } from "axios";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
+import { UploadResponse } from "../common/types";
 import Utils from "../common/utils";
 import getCurrency from "./currencies";
 import { NodeCurrency } from "./types";
@@ -33,7 +34,7 @@ export default class NodeBundlr extends Bundlr {
      * @param path path to the file to upload
      * @returns bundler response
      */
-    async uploadFile(path: string): Promise<AxiosResponse<any>> {
+    async uploadFile(path: string): Promise<AxiosResponse<UploadResponse>> {
         return this.uploader.uploadFile(path);
     };
 

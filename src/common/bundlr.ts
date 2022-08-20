@@ -7,8 +7,9 @@ import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
-import { Currency, FundData } from "./types";
+import { Currency, FundData, UploadResponse } from "./types";
 import { Signer } from "arbundles/src/signing";
+import { Readable } from "stream";
 
 export default abstract class Bundlr {
     public api: Api;
@@ -79,4 +80,9 @@ export default abstract class Bundlr {
     getSigner(): Signer {
         return this.currencyConfig.getSigner();
     }
+
+    async upload(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<AxiosResponse<UploadResponse>> {
+        return this.uploader.uploadData(data, opts);
+    }
+
 }

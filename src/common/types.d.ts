@@ -63,6 +63,14 @@ export interface Manifest {
     index?: Record<"path", string>;
 }
 
+export interface UploadResponse {
+    id: string,
+    public: string,
+    signature: string,
+    block: number,
+    validatorSignatures: { address: string, signature: string; }[];
+}
+
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
 //     paths = "arweave/paths"
