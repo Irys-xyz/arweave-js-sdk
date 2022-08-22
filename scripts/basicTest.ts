@@ -37,6 +37,9 @@ async function main() {
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
+        res = await bundlr.upload("Hello, world!");
+        console.log(res);
+
         const transaction = await bundlr.createTransaction("aaa");
         await transaction.sign();
         console.log(transaction.id);

@@ -57,13 +57,14 @@ export default class Uploader {
         return res;
     }
 
-    public uploadData(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<AxiosResponse<UploadResponse>> {
+    public async uploadData(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<AxiosResponse<UploadResponse>> {
         if (typeof data === "string") {
             data = Buffer.from(data);
         }
         if (Buffer.isBuffer(data)) {
             if (data.length <= CHUNKING_THRESHOLD) {
                 const dataItem = createData(data, this.currencyConfig.getSigner(), opts);
+                await dataItem.sign(this.currencyConfig.getSigner());
                 return this.uploadTransaction(dataItem);
             }
         }
