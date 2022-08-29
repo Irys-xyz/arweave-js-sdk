@@ -84,7 +84,7 @@ export default class EthereumConfig extends BaseWebCurrency {
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
-        const amountc = ethBigNumber.from((new BigNumber(amount)).toString());
+        const amountc = ethBigNumber.from((new BigNumber(amount)).toFixed());
         const signer = this.w3signer;
         const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() });
         let gasPrice = await signer.getGasPrice();
