@@ -77,7 +77,7 @@ export default class EthereumConfig extends BaseWebCurrency {
         return new BigNumber(estimatedGas.mul(gasPrice).toString());
     }
 
-    async sendTx(data: ethers.providers.TransactionRequest): Promise<string> {
+    async sendTx(data: ethers.providers.TransactionRequest): Promise<string | undefined> {
         const signer = this.w3signer;
         const receipt = await signer.sendTransaction(data);// .catch((e) => { console.error(`Sending tx: ${e}`) })
         return receipt ? receipt.hash : undefined;
@@ -86,12 +86,12 @@ export default class EthereumConfig extends BaseWebCurrency {
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         const amountc = ethBigNumber.from((new BigNumber(amount)).toFixed());
         const signer = this.w3signer;
-        const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() });
+        const estimatedGas = await signer.estimateGas({ to, from: this.address, value: amountc.toHexString() });
         let gasPrice = await signer.getGasPrice();
         if (this.name === "matic") {
             gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(10).decimalPlaces(0).toString());
         }
-        const txr = await signer.populateTransaction({ to, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas });
+        const txr = await signer.populateTransaction({ to, from: this.address, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas });
         return { txId: undefined, tx: txr };
     }
 

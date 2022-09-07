@@ -3,17 +3,17 @@ import { Signer } from "arbundles/src/signing";
 import Arweave from "arweave";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
-import { Tx, CurrencyConfig } from "../common/types"
+import { Tx, CurrencyConfig } from "../common/types";
 import axios from "axios";
 import { WebCurrency } from "./types";
 import utils from "../common/utils";
 
 export default abstract class BaseWebCurrency implements WebCurrency {
     public base: [string, number];
-    protected wallet: any
-    protected _address: string
+    protected wallet: any;
+    protected _address: string;
     protected providerUrl: any;
-    protected providerInstance?: any
+    protected providerInstance?: any;
     public ticker: string;
     public name: string;
 
@@ -28,7 +28,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
     // common methods
 
     get address(): string {
-        return this._address
+        return this._address;
     }
 
     public async ready(): Promise<void> {
@@ -41,21 +41,21 @@ export default abstract class BaseWebCurrency implements WebCurrency {
     async price(): Promise<number> {
         return getRedstonePrice(this.ticker);
     }
-    abstract getTx(_txId: string): Promise<Tx>
-    abstract ownerToAddress(_owner: any): string
-    abstract sign(_data: Uint8Array): Promise<Uint8Array>
-    abstract getSigner(): Signer
-    abstract verify(_pub: any, _data: Uint8Array, _signature: Uint8Array): Promise<boolean>
-    abstract getCurrentHeight(): Promise<BigNumber>
-    abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber>
-    abstract sendTx(_data: any): Promise<any>
-    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }>
-    abstract getPublicKey(): Promise<string | Buffer>
+    abstract getTx(_txId: string): Promise<Tx>;
+    abstract ownerToAddress(_owner: any): string;
+    abstract sign(_data: Uint8Array): Promise<Uint8Array>;
+    abstract getSigner(): Signer;
+    abstract verify(_pub: any, _data: Uint8Array, _signature: Uint8Array): Promise<boolean>;
+    abstract getCurrentHeight(): Promise<BigNumber>;
+    abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber>;
+    abstract sendTx(_data: any): Promise<string | undefined>;
+    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }>;
+    abstract getPublicKey(): Promise<string | Buffer>;
 }
 
 
 export async function getRedstonePrice(currency: string): Promise<number> {
-    const res = await axios.get<any>(`https://api.redstone.finance/prices?symbol=${currency}&provider=redstone&limit=1`)
-    await utils.checkAndThrow(res, "Getting price data")
+    const res = await axios.get<any>(`https://api.redstone.finance/prices?symbol=${currency}&provider=redstone&limit=1`);
+    await utils.checkAndThrow(res, "Getting price data");
     return res.data[0].value;
 }

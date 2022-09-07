@@ -28,16 +28,18 @@ export default class Fund {
             fee = (baseFee.multipliedBy(multiplier)).toFixed(0).toString();
         }
         const tx = await c.createTx(_amount, to, fee);
-        let nres;
+        let nres: any;
         // eslint-disable-next-line no-useless-catch
         try {
             nres = await c.sendTx(tx.tx);
         } catch (e) {
             throw e;
         }
-        // tx.txId = nres ?? tx.txId;
+
+        tx.txId ??= nres;
+
         if (!tx.txId) {
-            tx.txId = nres;
+            throw new Error(`Undefined transaction ID`);
         }
 
         // console.log(tx.txId);

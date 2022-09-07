@@ -45,9 +45,9 @@ export interface Currency {
 
     getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber>;
 
-    sendTx(data: any): Promise<any>; // TODO: make signature(s) more specific
+    sendTx(data: any): Promise<string | undefined>;
 
-    createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string, tx: any; }>;
+    createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string | undefined, tx: any; }>;
 
     getPublicKey(): Promise<string | Buffer> | (string | Buffer);
 
@@ -62,6 +62,7 @@ export interface Manifest {
     paths: Record<string, Record<string, Record<"id", string>>>,
     index?: Record<"path", string>;
 }
+
 
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
