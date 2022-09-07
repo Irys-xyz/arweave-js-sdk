@@ -34,7 +34,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
     }
 
     private getKeyPair(): web3.Keypair {
-        let key = this.wallet
+        let key = this.wallet;
         if (typeof key !== "string") {
             key = bs58.encode(Buffer.from(key));
         }
@@ -42,7 +42,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
     }
 
     async getTx(txId: string): Promise<Tx> {
-        const connection = await this.getProvider()
+        const connection = await this.getProvider();
         const stx = await connection.getTransaction(txId, { commitment: "confirmed" });
         if (!stx) throw new Error("Confirmed tx not found");
 
@@ -74,7 +74,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
     getSigner(): Signer {
         const keyp = this.getKeyPair();
         const keypb = bs58.encode(
-            Buffer.concat([keyp.secretKey, keyp.publicKey.toBuffer()]),
+            Buffer.concat([Buffer.from(keyp.secretKey), keyp.publicKey.toBuffer()]),
         );
         return new solanaSigner(keypb);
     }
@@ -94,18 +94,18 @@ export default class SolanaConfig extends BaseNodeCurrency {
         //     block.blockhash,
         // );
         // return new BigNumber(feeCalc.value.lamportsPerSignature);
-        return new BigNumber(5000) // hardcode it for now
+        return new BigNumber(5000); // hardcode it for now
     }
 
     async sendTx(data: any): Promise<string | undefined> {
-        const connection = await this.getProvider()
+        const connection = await this.getProvider();
         try {
             return await web3.sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: "confirmed" });
         } catch (e) {
             if (e.message.includes("30.")) {
                 const txId = (e.message as string).match(/[A-Za-z0-9]{87,88}/g);
                 try {
-                    const conf = await connection.confirmTransaction(txId[0], "confirmed")
+                    const conf = await connection.confirmTransaction(txId[0], "confirmed");
                     if (conf) return undefined;
                     throw {
                         message: e.message,
@@ -127,7 +127,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
         amount: BigNumber.Value,
         to: string,
         _fee?: string,
-    ): Promise<{ txId: string; tx: any }> {
+    ): Promise<{ txId: string; tx: any; }> {
         // TODO: figure out how to manually set fees
 
         const keys = this.getKeyPair();
@@ -135,7 +135,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
         const hash = await retry(
             async (bail) => {
                 try {
-                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash
+                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash;
                 } catch (e) {
                     if (e.message?.includes("blockhash")) throw e;
                     else bail(e);
