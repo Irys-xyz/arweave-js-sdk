@@ -29,6 +29,7 @@
     "@solana/web3.js": "^1.36.0",
     "@supercharge/promise-pool": "^2.1.0",
     "algosdk": "^1.13.1",
+    "aptos": "^1.3.10",
     "arbundles": "^0.6.21",
     "arweave": "^1.11.4",
     "async-retry": "^1.3.3",
@@ -43,12 +44,12 @@
     "js-sha256": "^0.9.0",
     "mime-types": "^2.1.34",
     "near-api-js": "^0.44.2",
-    "near-seed-phrase": "^0.2.0",
-    "aptos": "^1.3.10"
+    "near-seed-phrase": "^0.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.16.7",
     "@babel/preset-env": "^7.16.7",
+    "@manahippo/aptos-wallet-adapter": "^0.3.6",
     "@types/async-retry": "^1.4.3",
     "@types/base64url": "^2.0.0",
     "@types/jest": "^27.0.2",
