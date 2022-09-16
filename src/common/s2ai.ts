@@ -4,7 +4,7 @@ const NOT_READABLE: unique symbol = Symbol("not readable");
 const READABLE: unique symbol = Symbol("readable");
 const ENDED: unique symbol = Symbol("ended");
 const ERRORED: unique symbol = Symbol("errored");
-const STATES = {
+export const STATES = {
     notReadable: NOT_READABLE,
     readable: READABLE,
     ended: ENDED,
@@ -36,6 +36,7 @@ export type StreamToAsyncIteratorOptions = {
 export default class StreamToAsyncIterator<T = unknown>
     implements AsyncIterableIterator<T>
 {
+
     /** The underlying readable stream */
     private _stream: Readable;
     /** Contains stream's error when stream has error'ed out */
@@ -66,6 +67,9 @@ export default class StreamToAsyncIterator<T = unknown>
         stream.once("error", this._handleStreamError);
         // eslint-disable-next-line @typescript-eslint/unbound-method
         stream.once("end", this._handleStreamEnd);
+        stream.on("readable", () => {
+            this._state = STATES.readable;
+        });
     }
 
     [Symbol.asyncIterator]() {
@@ -143,7 +147,7 @@ export default class StreamToAsyncIterator<T = unknown>
                 this._rejections.delete(reject);
                 resolve();
             };
-
+            if (this._state === STATES.readable) handleReadable; //race condition guard
             this._stream.once("readable", handleReadable);
             this._rejections.add(reject);
         });
@@ -219,5 +223,9 @@ export default class StreamToAsyncIterator<T = unknown>
 
     private _handleStreamEnd(): void {
         this._state = STATES.ended;
+    }
+
+    public get state() {
+        return this._state;
     }
 }

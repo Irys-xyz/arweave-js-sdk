@@ -74,7 +74,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
     getSigner(): Signer {
         const keyp = this.getKeyPair();
         const keypb = bs58.encode(
-            Buffer.concat([keyp.secretKey, keyp.publicKey.toBuffer()]),
+            Buffer.concat([Buffer.from(keyp.secretKey), keyp.publicKey.toBuffer()]),
         );
         return new solanaSigner(keypb);
     }

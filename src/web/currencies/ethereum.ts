@@ -69,6 +69,7 @@ export default class EthereumConfig extends BaseWebCurrency {
 
         const tx = {
             to,
+            from: this.address,
             value: "0x" + (new BigNumber(amount)).toString(16),
         };
 

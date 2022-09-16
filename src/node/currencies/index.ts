@@ -15,7 +15,7 @@ export default function getCurrency(currency: string, wallet: any, url: string, 
         case "arweave":
             return new ArweaveConfig({ name: "arweave", ticker: "AR", minConfirm: 10, providerUrl: providerUrl ?? "https://arweave.net", wallet, isSlow: true, opts });
         case "ethereum":
-            return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", wallet, opts });
+            return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet, opts })
         case "matic":
             return new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: providerUrl ?? "https://polygon-rpc.com/", wallet, opts });
         case "bnb":
