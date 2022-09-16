@@ -10,7 +10,7 @@ import utils from "../../common/utils";
 export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): BaseCurrency {
     switch (currency) {
         case "ethereum":
-            return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/", wallet })
+            return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet })
         case "matic":
             return new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: providerUrl ?? "https://polygon-rpc.com", wallet, minConfirm: 3 })
         case "arbitrum":
