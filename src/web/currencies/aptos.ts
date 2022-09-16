@@ -3,15 +3,46 @@ import { InjectedAptosSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import * as SHA3 from "js-sha3";
-import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload } from "aptos/dist/generated";
+import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction } from "aptos/src/generated";
 import BaseWebCurrency from "../currency";
-import { WalletContextState } from "@manahippo/aptos-wallet-adapter";
+
+
+export interface SignMessagePayload {
+    address?: boolean; // Should we include the address of the account in the message
+    application?: boolean; // Should we include the domain of the dapp
+    chainId?: boolean; // Should we include the current chain id the wallet is connected to
+    message: string; // The message to be signed and displayed to the user
+    nonce: string; // A nonce the dapp should generate
+}
+
+export interface SignMessageResponse {
+    address: string;
+    application: string;
+    chainId: number;
+    fullMessage: string; // The message that was generated to sign
+    message: string; // The message passed in by the user
+    nonce: string,
+    prefix: string, // Should always be APTOS
+    signature: string; // The signed full message
+}
+
+export interface AptosWallet {
+    account: () => Promise<{ address: string, publicKey: string }>
+    connect: () => Promise<{ address: string, publicKey: string }>
+    disconnect: () => Promise<void>
+    isConnected: () => Promise<boolean>
+    network: () => Promise<"Testnet" | "Mainnet">
+    signAndSubmitTransaction: (transaction: TransactionPayload) => Promise<PendingTransaction>
+    signMessage: (payload: SignMessagePayload) => Promise<SignMessageResponse>
+    signTransaction: (transaction: TransactionPayload) => Promise<Uint8Array>
+}
 
 export default class AptosConfig extends BaseWebCurrency {
 
     declare protected providerInstance?: AptosClient;
     protected signerInstance: InjectedAptosSigner;
-    declare protected wallet: WalletContextState;
+    declare protected wallet: AptosWallet;
+    protected _publicKey: Buffer
 
     constructor(config: CurrencyConfig) {
         // if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
@@ -29,8 +60,12 @@ export default class AptosConfig extends BaseWebCurrency {
     async getTx(txId: string): Promise<Tx> {
 
         const client = await this.getProvider();
-        const tx = await client.waitForTransactionWithResult(txId, { checkSuccess: true }) as Transaction_UserTransaction;
+        const tx = await client.waitForTransactionWithResult(txId, /* { checkSuccess: true } */) as Transaction_UserTransaction;
         const payload = tx?.payload as TransactionPayload_EntryFunctionPayload;
+
+        if (!tx.success) {
+            throw new Error(tx?.vm_status ?? "Unknown Aptos error")
+        }
 
         if (!(
             payload?.function === "0x1::coin::transfer" &&
@@ -61,7 +96,7 @@ export default class AptosConfig extends BaseWebCurrency {
     }
 
     getSigner(): Signer {
-        return this.signerInstance ??= new InjectedAptosSigner(this.wallet);
+        return this.signerInstance ??= new InjectedAptosSigner(this.wallet, this._publicKey);
     }
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
@@ -123,11 +158,12 @@ export default class AptosConfig extends BaseWebCurrency {
     }
 
     async getPublicKey(): Promise<string | Buffer> {
-        return Buffer.from(this.wallet.account.publicKey.toString().slice(2), "hex");
+        return this._publicKey ??= Buffer.from((await this.wallet.account()).publicKey.toString().slice(2), "hex");
     }
 
     public async ready(): Promise<void> {
-        this._address = this.ownerToAddress(await this.getPublicKey());
+        this._publicKey = await this.getPublicKey() as Buffer
+        this._address = this.ownerToAddress(this._publicKey);
     }
 
 };

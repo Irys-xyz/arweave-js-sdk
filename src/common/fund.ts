@@ -45,13 +45,13 @@ export default class Fund {
         // console.log(tx.txId);
 
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
-        await this.utils.confirmationPoll(tx.txId);
+        const confirmError = await this.utils.confirmationPoll(tx.txId);
 
         const bres = await AsyncRetry(
             async (bail) => {
                 const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
                 if (bres.status == 400) {
-                    bail(new Error(`failed to post funding tx - ${tx.txId} (keep this id!) - ${bres.data}`));
+                    bail(new Error(`failed to post funding tx - ${tx.txId} (keep this id!) - ${bres.data} ${confirmError ? ` - ${confirmError?.message ?? confirmError}` : ""}`));
                 }
                 Utils.checkAndThrow(bres, `Posting transaction ${tx.txId} information to the bundler`, [202]);
                 return bres;
@@ -65,7 +65,7 @@ export default class Fund {
         );
 
         if (!bres) {
-            throw new Error(`failed to post funding tx - ${tx.txId} - keep this id!`);
+            throw new Error(`failed to post funding tx - ${tx.txId} - keep this id! \n ${confirmError ? ` - ${confirmError?.message ?? confirmError}` : ""}`);
         }
         // const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId })
         //     .catch(_ => { throw new Error(`failed to post funding tx - ${tx.txId} - keep this id!`); });

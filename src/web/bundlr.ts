@@ -19,11 +19,13 @@ export default class WebBundlr extends Bundlr {
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
+        this._readyPromise = this.currencyConfig.ready ? this.currencyConfig.ready() : new Promise((r => r()))
     }
 
     // async initialisation 
     public async ready(): Promise<void> {
-        await this.currencyConfig.ready();
+        await this._readyPromise
+        // await this.currencyConfig.ready();
         this.address = this.currencyConfig.address;
     }
 }

@@ -51,7 +51,13 @@ export interface Currency {
 
     getPublicKey(): Promise<string | Buffer> | (string | Buffer);
 
-    ready?(): void | PromiseLike<void>;
+    ready?(): Promise<void>;
+
+    createMultiSigTx?(amount: BigNumber.Value, to: string, opts: any, fee?: string): Promise<any>;
+
+    addSignature?(multiTx: any, opts: any): Promise<any>;
+
+    sendMultiSigTx?(multiTx: any, opts: any): Promise<any>;
 }
 
 export interface FundData { reward: string, target: string, quantity: string, id: string; }

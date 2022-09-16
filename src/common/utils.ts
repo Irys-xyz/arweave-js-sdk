@@ -83,17 +83,17 @@ export default class Utils {
      * @param txid
      * @returns
      */
-    public async confirmationPoll(txid: string): Promise<void> {
+    public async confirmationPoll(txid: string): Promise<any> {
         if (this.currencyConfig.isSlow) { return; }
+        let lastError;
         for (let i = 0; i < 15; i++) {
             await sleep(3000);
-            if (await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(_ => { return false })) {
+            if (await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(err => { lastError = err; return false })) {
                 return;
             }
         }
-
-        // throw new Error(`Tx ${txid} didn't finalize after 30 seconds`);
-        console.warn(`Tx ${txid} didn't finalize after 30 seconds`)
+        console.warn(`Tx ${txid} didn't finalize after 30 seconds ${lastError ? ` - ${lastError}` : ""}`)
+        return lastError;
     }
 
     public unitConverter(baseUnits: BigNumber.Value): BigNumber {

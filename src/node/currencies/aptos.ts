@@ -4,10 +4,7 @@ import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import * as SHA3 from "js-sha3";
-import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload } from "aptos/dist/generated";
-// import TransactionPayload_EntryFunctionPayload from "aptos/dist/generated/models/TransactionPayload_EntryFunctionPayload"
-// import axios from "axios";
-// import Utils from "../../common/utils";
+import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload } from "aptos/src/generated";
 
 export default class AptosConfig extends BaseNodeCurrency {
 

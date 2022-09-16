@@ -26,6 +26,7 @@ export default class NodeBundlr extends Bundlr {
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
         this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig);
+        this._readyPromise = this.currencyConfig.ready ? this.currencyConfig.ready() : new Promise((r => r()))
     }
 
     /**
@@ -38,7 +39,7 @@ export default class NodeBundlr extends Bundlr {
     };
 
     async ready(): Promise<void> {
-        this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
+        await this._readyPromise
     }
 
 }
