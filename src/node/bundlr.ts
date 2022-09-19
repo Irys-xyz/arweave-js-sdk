@@ -20,8 +20,8 @@ export default class NodeBundlr extends Bundlr {
         super();
         const parsed = new URL(url);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
-        this.currency = currency.toLowerCase();
-        this.currencyConfig = getCurrency(this.currency, wallet, parsed.toString(), config?.providerUrl, config?.contractAddress, config?.currencyOpts);
+        this.currencyConfig = getCurrency(currency.toLowerCase(), wallet, parsed.toString(), config?.providerUrl, config?.contractAddress, config?.currencyOpts);
+        this.currency = this.currencyConfig.name
         this.address = this.currencyConfig.address;
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);

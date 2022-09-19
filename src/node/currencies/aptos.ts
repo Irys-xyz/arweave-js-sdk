@@ -14,8 +14,11 @@ export default class AptosConfig extends BaseNodeCurrency {
 
     constructor(config: CurrencyConfig) {
         if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
-        // @ts-ignore
-        config.accountInstance = new AptosAccount(config.wallet);
+
+        if (Buffer.isBuffer(config.wallet)) {
+            // @ts-ignore
+            config.accountInstance = new AptosAccount(config.wallet);
+        }
         super(config);
         this.base = ["aptom", 1e8];
     }
@@ -28,8 +31,12 @@ export default class AptosConfig extends BaseNodeCurrency {
     async getTx(txId: string): Promise<Tx> {
 
         const client = await this.getProvider();
-        const tx = await client.waitForTransactionWithResult(txId, { checkSuccess: true }) as Transaction_UserTransaction;
+        const tx = await client.waitForTransactionWithResult(txId/* , { checkSuccess: true } */) as Transaction_UserTransaction;
         const payload = tx?.payload as TransactionPayload_EntryFunctionPayload;
+
+        if (!tx.success) {
+            throw new Error(tx?.vm_status ?? "Unknown Aptos error")
+        }
 
         if (!(
             payload?.function === "0x1::coin::transfer" &&
@@ -107,6 +114,13 @@ export default class AptosConfig extends BaseNodeCurrency {
 
     getPublicKey(): string | Buffer {
         return Buffer.from(this.accountInstance.toPrivateKeyObject().publicKeyHex.slice(2), "hex");
+    }
+
+    async ready() {
+        const client = await this.getProvider()
+        this._address = await client.lookupOriginalAddress(this.address)
+            .then(hs => hs.toString())
+            .catch(_ => this.address) // fallback to original
     }
 
 };

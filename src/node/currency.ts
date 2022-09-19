@@ -7,6 +7,7 @@ import { Tx, CurrencyConfig } from "../common/types";
 import axios from "axios";
 import { NodeCurrency } from "./types";
 import utils from "../common/utils";
+import Utils from "../common/utils";
 export default abstract class BaseNodeCurrency implements NodeCurrency {
     public base: [string, number];
     protected wallet: any;
@@ -19,6 +20,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     public isSlow = false;
     public needsFee = true;
     protected opts?: any;
+    protected utils: Utils
 
     constructor(config: CurrencyConfig) {
         Object.assign(this, config);

@@ -9,6 +9,7 @@ import AlgorandConfig from "./algorand";
 import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
+import MultiSignatureAptos from "./multiAptos";
 
 export default function getCurrency(currency: string, wallet: any, url: string, providerUrl?: string, contractAddress?: string, opts?: any): NodeCurrency {
     switch (currency) {
@@ -59,6 +60,9 @@ export default function getCurrency(currency: string, wallet: any, url: string, 
         }
         case "aptos": {
             return new AptosConfig({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.devnet.aptoslabs.com", wallet, opts });
+        }
+        case "multiaptos": {
+            return new MultiSignatureAptos({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.devnet.aptoslabs.com", wallet, opts })
         }
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);

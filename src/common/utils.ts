@@ -34,7 +34,7 @@ export default class Utils {
      * @returns nonce for the current user
      */
     public async getNonce(): Promise<number> {
-        const res = await this.api.get(`/account/withdrawals/${this.currency}?address=${this.currencyConfig.address}`);
+        const res = await this.api.get(`/account/withdrawals/${this.currencyConfig.name}?address=${this.currencyConfig.address}`);
         Utils.checkAndThrow(res, "Getting withdrawal nonce");
         return (res).data;
     }
@@ -45,7 +45,7 @@ export default class Utils {
      * @returns the balance in winston
      */
     public async getBalance(address: string): Promise<BigNumber> {
-        const res = await this.api.get(`/account/balance/${this.currency}?address=${address}`);
+        const res = await this.api.get(`/account/balance/${this.currencyConfig.name}?address=${address}`);
         Utils.checkAndThrow(res, "Getting balance");
         return new BigNumber(res.data.balance);
     }
