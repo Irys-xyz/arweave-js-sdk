@@ -26,7 +26,7 @@ async function main() {
 
         const keys = JSON.parse(readFileSync("wallet.json").toString());
 
-        const nodeUrl = "http://172.17.0.3:10000";
+        const nodeUrl = "http://devnet.bundlr.network";
         const testFolder = "testFolder";
 
         const acc1 = new AptosAccount(Buffer.from("8fd100fc7d849c2d8dcc2963fa2ba735d015643c971a4ad8c37e1472813bcf21", "hex"))
@@ -51,15 +51,15 @@ async function main() {
         let res;
         let tx;
 
-        // res = await fc.fundAccount(bundlr.address, 100_000)
-        // console.log(res)
+        res = await fc.fundAccount(bundlr.address, 100_000)
+        console.log(res)
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
 
-        // let tx = await bundlr.fund(10_000, 1);
+        // tx = await bundlr.fund(100_000);
         // console.log(tx);
         // console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
