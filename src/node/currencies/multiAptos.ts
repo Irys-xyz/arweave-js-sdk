@@ -171,6 +171,10 @@ export default class MultiSignatureAptos extends Aptos {
         this.accountInstance = new AptosAccount(undefined, this.address)
     }
 
+    async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
+        return await MultiSignatureAptosSigner.verify(pub, data, signature)
+    }
+
     // async createMultiSigTx(amount: BigNumber.Value, to: string, opts: { participants: Uint8Array[], threshold: number, gasLimit?: number, perGas?: number }): Promise<AptosMultiSigTx> {
 
     //     const client = await this.getProvider()
