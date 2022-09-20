@@ -19,7 +19,8 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": false,
-    "outDir": "build"
+    "outDir": "build",
+    "experimentalDecorators": true
   },
   "include": ["src/**/*"],
   "exclude": ["src/__tests__/**"]

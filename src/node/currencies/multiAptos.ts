@@ -1,22 +1,11 @@
 import { TransactionBuilder, TransactionBuilderMultiEd25519, TxnBuilderTypes, BCS, AptosAccount } from "aptos";
-import { RawTransaction } from "aptos/src/aptos_types/transaction"
 import BigNumber from "bignumber.js";
 import { CurrencyConfig } from "../../common/types";
 import Aptos from "./aptos";
 import { Signer, MultiSignatureAptosSigner } from "arbundles/src/signing";
 // import Utils from "../../common/utils";
 
-export type AptosMultiSigTx = {
-    publicKey: string,
-    participants: HexString[]
-    // threshold: number,
-    // authKey: AuthenticationKey,
-    // address: string,
-    rawTx: RawTransaction,
-    signatures: HexString[],
-    participantSignatureMap: number[]
 
-}
 export type HexString = string;
 export default class MultiSignatureAptos extends Aptos {
 
@@ -33,11 +22,8 @@ export default class MultiSignatureAptos extends Aptos {
     }
 
     /**
-     * 
      * @param owner compound MultiEd25519PublicKey .toBytes()
      */
-
-
     ownerToAddress(pubKey: Buffer): string {
         // deserialise key
         const multiSigPublicKey = this.deserialisePubKey(pubKey)
