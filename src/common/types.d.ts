@@ -43,11 +43,11 @@ export interface Currency {
 
     getCurrentHeight(): Promise<BigNumber>;
 
-    getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber>;
+    getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber | object>;
 
     sendTx(data: any): Promise<string | undefined>;
 
-    createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string | undefined, tx: any; }>;
+    createTx(amount: BigNumber.Value, to: string, fee?: string | object): Promise<{ txId: string | undefined, tx: any; }>;
 
     getPublicKey(): Promise<string | Buffer> | (string | Buffer);
 

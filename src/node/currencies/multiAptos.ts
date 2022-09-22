@@ -18,7 +18,7 @@ export default class MultiSignatureAptos extends Aptos {
     constructor(config: CurrencyConfig & { opts: { collectSignatures } }) {
         super(config);
         this.collectSignatures = this?.opts?.collectSignatures
-        this.needsFee = false;
+        this.needsFee = true;
     }
 
     /**
@@ -61,7 +61,7 @@ export default class MultiSignatureAptos extends Aptos {
         return pkey
     }
 
-    async createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, fee?: { gasUnitPrice: number, maxGasAmount: number }): Promise<{ txId: string; tx: any; }> {
         const client = await this.getProvider()
         const { participants, threshold } = this.wallet
 
@@ -102,9 +102,9 @@ export default class MultiSignatureAptos extends Aptos {
             BigInt(sequenceNumber),
             entryFunctionPayload,
             // Max gas unit to spend
-            BigInt(fee ?? 2000),
+            BigInt(fee?.maxGasAmount ?? 100_00),
             // Gas price per unit
-            BigInt(/* (opts?.perGas ?? */ 1),
+            BigInt(fee?.gasUnitPrice ?? 100),
             // Expiration timestamp. Transaction is discarded if it is not executed within 1000 seconds (16.6 minutes) from now.
             BigInt(Math.floor(Date.now() / 1000) + 1000),
             new TxnBuilderTypes.ChainId(chainId),

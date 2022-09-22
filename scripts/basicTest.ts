@@ -7,6 +7,7 @@ import { checkPath } from "../src/node/upload";
 import { genData } from "./genData";
 import { checkManifestBundlr } from "./checkManifest";
 import { AptosAccount, FaucetClient } from "aptos";
+import BigNumber from "bignumber.js";
 
 const profiling = false;
 async function main() {
@@ -29,41 +30,22 @@ async function main() {
         const nodeUrl = "http://devnet.bundlr.network";
         const testFolder = "testFolder";
 
-        const acc1 = new AptosAccount(Buffer.from("8fd100fc7d849c2d8dcc2963fa2ba735d015643c971a4ad8c37e1472813bcf21", "hex"))
-        const acc2 = new AptosAccount(Buffer.from("e441319e1bd7fcd247739e70346d8939b171081a7411736c853d4263e8c1906b", "hex"))
-        const acc3 = new AptosAccount(Buffer.from("0cab9823aecae4c8674f9319c80abc664c65d0e5d0c33a9c2add70fd23908a26", "hex"))
-
-        const participants = [acc1, acc2, acc3].map(a => a.signingKey.publicKey)
-        const threshold = 2; // the minimum number of account signatures required.
-
-        const getSigs = async (message: Uint8Array) => {
-            const signatures = [acc1, acc3].map(a => Buffer.from(a.signBuffer(message).toString().slice(2), "hex"))
-            return { signatures: signatures, bitmap: [0, 2] }
-        }
-
-        const fc = new FaucetClient("https://fullnode.devnet.aptoslabs.com", "https://faucet.devnet.aptoslabs.com")
-
-
-        let bundlr = new Bundlr(nodeUrl, "multiAptos", { participants: participants, threshold: threshold }, { currencyOpts: { collectSignatures: getSigs } });
+        let bundlr = new Bundlr(nodeUrl, "aptos", keys.devnet.aptos.key)
         await bundlr.ready()
-        console.log(bundlr.address); //0xa140c48fe5b0bcad4dd1a21b5d56c0b8fbda18128b0b10ca82d018cc19cc488f
+        console.log(bundlr.address);
 
         let res;
         let tx;
-
-        res = await fc.fundAccount(bundlr.address, 100_000)
-        console.log(res)
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
+        tx = await bundlr.fund(1);
+        console.log(tx);
+        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
-        // tx = await bundlr.fund(100_000);
-        // console.log(tx);
-        // console.log(`balance: ${await bundlr.getLoadedBalance()}`);
-
-        const transaction = await bundlr.createTransaction("aaa");
+        const transaction = await bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
         await transaction.sign();
         console.log(transaction.id);
         console.log(await transaction.isValid());

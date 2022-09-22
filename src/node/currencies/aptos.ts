@@ -1,4 +1,4 @@
-import { AptosAccount, AptosClient, CoinClient } from "aptos";
+import { AptosAccount, AptosClient, CoinClient, HexString, /* BCS, TxnBuilderTypes */ } from "aptos";
 import { AptosSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
@@ -12,6 +12,7 @@ export default class AptosConfig extends BaseNodeCurrency {
     protected accountInstance: AptosAccount;
     protected signerInstance: AptosSigner;
 
+
     constructor(config: CurrencyConfig) {
         if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
 
@@ -20,6 +21,7 @@ export default class AptosConfig extends BaseNodeCurrency {
             config.accountInstance = new AptosAccount(config.wallet);
         }
         super(config);
+        this.needsFee = true;
         this.base = ["aptom", 1e8];
     }
 
@@ -79,7 +81,7 @@ export default class AptosConfig extends BaseNodeCurrency {
 
     }
 
-    async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
+    async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number, maxGasAmount: number }> {
         const client = await this.getProvider();
         const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
             "0x1::coin::transfer",
@@ -87,9 +89,10 @@ export default class AptosConfig extends BaseNodeCurrency {
             [to ?? "0x149f7dc9c8e43c14ab46d3a6b62cfe84d67668f764277411f98732bf6718acf9", new BigNumber(amount).toNumber()],
         );
 
-        const rawTransaction = await client.generateRawTransaction(this.accountInstance.address(), payload);
-        const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction);
-        return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
+        const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload);
+        const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
+        // return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
+        return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: +simulationResult[0].max_gas_amount }
         // const est = await provider.client.transactions.estimateGasPrice();
         // return new BigNumber(est.gas_estimate/* (await (await this.getProvider()).client.transactions.estimateGasPrice()).gas_estimate */); // * by gas limit (for upper limit)
     }
@@ -98,7 +101,7 @@ export default class AptosConfig extends BaseNodeCurrency {
         return (await (await (this.getProvider())).submitSignedBCSTransaction(data)).hash;
     }
 
-    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, fee?: { gasUnitPrice: number, maxGasAmount: number }): Promise<{ txId: string; tx: any; }> {
         const client = await this.getProvider();
         const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
             "0x1::coin::transfer",
@@ -106,7 +109,7 @@ export default class AptosConfig extends BaseNodeCurrency {
             [to, new BigNumber(amount).toNumber()],
         );
 
-        const rawTransaction = await client.generateRawTransaction(this.accountInstance.address(), payload);
+        const rawTransaction = await client.generateRawTransaction(this.accountInstance.address(), payload, { gasUnitPrice: BigInt(fee?.gasUnitPrice ?? 100), maxGasAmount: BigInt(fee?.maxGasAmount ?? 100_000) });
         const bcsTxn = AptosClient.generateBCSTransaction(this.accountInstance, rawTransaction);
 
         return { txId: undefined, tx: bcsTxn };

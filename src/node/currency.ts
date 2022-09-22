@@ -46,9 +46,9 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     abstract getSigner(): Signer;
     abstract verify(_pub: any, _data: Uint8Array, _signature: Uint8Array): Promise<boolean>;
     abstract getCurrentHeight(): Promise<BigNumber>;
-    abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber>;
+    abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber | object>;
     abstract sendTx(_data: any): Promise<string | undefined>;
-    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }>;
+    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string | object): Promise<{ txId: string; tx: any; }>;
     abstract getPublicKey(): string | Buffer;
 }
 
