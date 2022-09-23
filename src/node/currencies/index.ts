@@ -16,7 +16,7 @@ export default function getCurrency(currency: string, wallet: any, url: string, 
         case "ethereum":
             return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet, opts })
         case "matic":
-            return new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: providerUrl ?? "https://polygon-rpc.com/", wallet, opts })
+            return new EthereumConfig({ name: "matic", ticker: "MATIC", minConfirm: 1, providerUrl: providerUrl ?? "https://polygon-rpc.com/", wallet, opts })
         case "bnb":
             return new EthereumConfig({ name: "bnb", ticker: "BNB", providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org/", wallet, opts })
         case "fantom":
