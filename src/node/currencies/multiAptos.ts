@@ -1,8 +1,9 @@
-import { TransactionBuilder, TransactionBuilderMultiEd25519, TxnBuilderTypes, BCS, AptosAccount } from "aptos";
+import { TransactionBuilder, TransactionBuilderMultiEd25519, TxnBuilderTypes, BCS, AptosAccount, CoinClient, TransactionBuilderEd25519, HexString as HString } from "aptos";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig } from "../../common/types";
 import Aptos from "./aptos";
 import { Signer, MultiSignatureAptosSigner } from "arbundles/src/signing";
+import { UserTransaction } from "aptos/src/generated";
 // import Utils from "../../common/utils";
 
 
@@ -59,6 +60,42 @@ export default class MultiSignatureAptos extends Aptos {
 
         pkey.set(Buffer.from(threshold.toString()), 1024)
         return pkey
+    }
+
+    async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number; }> {
+        const client = await this.getProvider();
+
+        const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
+            "0x1::coin::transfer",
+            ["0x1::aptos_coin::AptosCoin"],
+            [to ?? "0x149f7dc9c8e43c14ab46d3a6b62cfe84d67668f764277411f98732bf6718acf9", new BigNumber(amount).toNumber()],
+        );
+
+        const rawTransaction = await client.generateRawTransaction(new HString(this.address), payload);
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {
+            // @ts-ignore
+            const invalidSigBytes = new Uint8Array(64);
+            return new TxnBuilderTypes.Ed25519Signature(invalidSigBytes);
+        }, new Uint8Array(32));
+
+        const signedSimulation = txnBuilder.sign(rawTransaction);
+
+        const queryParams = {
+            estimate_gas_unit_price: true,
+            estimate_max_gas_amount: true,
+        };
+
+        const simulationResult = await client.client.request.request<UserTransaction[]>({
+            url: "/transactions/simulate",
+            query: queryParams,
+            method: "POST",
+            body: signedSimulation,
+            mediaType: "application/x.aptos.signed_transaction+bcs",
+        });
+
+        return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: +simulationResult[0].max_gas_amount }
     }
 
     async createTx(amount: BigNumber.Value, to: string, fee?: { gasUnitPrice: number, maxGasAmount: number }): Promise<{ txId: string; tx: any; }> {

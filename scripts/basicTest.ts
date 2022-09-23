@@ -30,12 +30,29 @@ async function main() {
         const nodeUrl = "http://devnet.bundlr.network";
         const testFolder = "testFolder";
 
-        let bundlr = new Bundlr(nodeUrl, "aptos", keys.devnet.aptos.key)
+        const key = keys.devnet.aptos.key;
+
+        const account = new AptosAccount(Buffer.from(key.slice(2), "hex"))
+        console.log(account.address())
+
+        const signingFunction = async (msg: Uint8Array) => {
+            return account.signBuffer(msg).toUint8Array()
+        }
+
+        let bundlr = Bundlr.init({ url: nodeUrl, currency: "aptos", publicKey: account.pubKey().toString(), signingFunction })
+        // let bundlr = Bundlr.init({ url: nodeUrl, currency: "aptos", privateKey: key })
+
+        //new Bundlr(nodeUrl, "aptos", keys.devnet.aptos.key)
         await bundlr.ready()
         console.log(bundlr.address);
+        account.pubKey
+
+
 
         let res;
         let tx;
+
+
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
@@ -45,10 +62,13 @@ async function main() {
         console.log(tx);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
-        const transaction = await bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
-        await transaction.sign();
+        const transaction = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
+        const signingInfo = await transaction.getSignatureData()
+        const signed = await bundlr.currencyConfig.sign(signingInfo)
+        transaction.setSignature(Buffer.from(signed))
         console.log(transaction.id);
         console.log(await transaction.isValid());
+
         res = await transaction.upload();
         console.log(`Upload: ${JSON.stringify(res.data)}`);
 

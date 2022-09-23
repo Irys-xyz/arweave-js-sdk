@@ -1,26 +1,28 @@
-import { AptosAccount, AptosClient, CoinClient, HexString, /* BCS, TxnBuilderTypes */ } from "aptos";
+import { AptosAccount, AptosClient, CoinClient, HexString, TransactionBuilder, TransactionBuilderEd25519, TxnBuilderTypes, /* BCS, TxnBuilderTypes */ } from "aptos";
 import { AptosSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import * as SHA3 from "js-sha3";
-import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload } from "aptos/src/generated";
+import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
 
 export default class AptosConfig extends BaseNodeCurrency {
 
     declare protected providerInstance?: AptosClient;
     protected accountInstance: AptosAccount;
     protected signerInstance: AptosSigner;
+    declare protected signingFn: (msg: Uint8Array) => Promise<Uint8Array>
+    declare opts: any
 
 
     constructor(config: CurrencyConfig) {
         if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
-
-        if (Buffer.isBuffer(config.wallet)) {
+        if (!config?.opts?.signingFunction && Buffer.isBuffer(config.wallet)) {
             // @ts-ignore
             config.accountInstance = new AptosAccount(config.wallet);
         }
         super(config);
+        this.signingFn = config?.opts?.signingFunction
         this.needsFee = true;
         this.base = ["aptom", 1e8];
     }
@@ -69,7 +71,14 @@ export default class AptosConfig extends BaseNodeCurrency {
     }
 
     getSigner(): Signer {
-        return this.signerInstance ??= new AptosSigner(this.accountInstance.toPrivateKeyObject().privateKeyHex, this.accountInstance.toPrivateKeyObject().publicKeyHex);
+        if (this.signerInstance) return this.signerInstance
+        if (this.signingFn) {
+            const signer = new AptosSigner("", "0x" + this.getPublicKey().toString("hex"))
+            signer.sign = this.signingFn //override signer fn
+            return this.signerInstance = signer;
+        } else {
+            return this.signerInstance = new AptosSigner(this.accountInstance.toPrivateKeyObject().privateKeyHex, this.accountInstance.toPrivateKeyObject().publicKeyHex);
+        }
     }
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
@@ -90,9 +99,33 @@ export default class AptosConfig extends BaseNodeCurrency {
         );
 
         const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload);
-        const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
-        // return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {
+            // @ts-ignore
+            const invalidSigBytes = new Uint8Array(64);
+            return new TxnBuilderTypes.Ed25519Signature(invalidSigBytes);
+        }, this.getPublicKey() as Buffer);
+
+        const signedSimulation = txnBuilder.sign(rawTransaction);
+
+        const queryParams = {
+            estimate_gas_unit_price: true,
+            estimate_max_gas_amount: true,
+        };
+
+        const simulationResult = await client.client.request.request<UserTransaction[]>({
+            url: "/transactions/simulate",
+            query: queryParams,
+            method: "POST",
+            body: signedSimulation,
+            mediaType: "application/x.aptos.signed_transaction+bcs",
+        });
+
         return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: +simulationResult[0].max_gas_amount }
+
+        //const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
+        // return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
         // const est = await provider.client.transactions.estimateGasPrice();
         // return new BigNumber(est.gas_estimate/* (await (await this.getProvider()).client.transactions.estimateGasPrice()).gas_estimate */); // * by gas limit (for upper limit)
     }
@@ -109,14 +142,25 @@ export default class AptosConfig extends BaseNodeCurrency {
             [to, new BigNumber(amount).toNumber()],
         );
 
-        const rawTransaction = await client.generateRawTransaction(this.accountInstance.address(), payload, { gasUnitPrice: BigInt(fee?.gasUnitPrice ?? 100), maxGasAmount: BigInt(fee?.maxGasAmount ?? 100_000) });
-        const bcsTxn = AptosClient.generateBCSTransaction(this.accountInstance, rawTransaction);
+        const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload, { gasUnitPrice: BigInt(fee?.gasUnitPrice ?? 100), maxGasAmount: BigInt(fee?.maxGasAmount ?? 100_000) });
+        // const bcsTxn = AptosClient.generateBCSTransaction(this.accountInstance, rawTransaction);
+
+        const signingMessage = TransactionBuilder.getSigningMessage(rawTransaction);
+        const sig = await this.sign(signingMessage)
+
+        const txnBuilder = new TransactionBuilderEd25519((_) => {
+            // @ts-ignore
+            return new TxnBuilderTypes.Ed25519Signature(sig);
+        }, this.getPublicKey() as Buffer);
+
+        const bcsTxn = txnBuilder.sign(rawTransaction);
 
         return { txId: undefined, tx: bcsTxn };
     }
 
     getPublicKey(): string | Buffer {
-        return Buffer.from(this.accountInstance.toPrivateKeyObject().publicKeyHex.slice(2), "hex");
+        if (this.opts?.signingFunction) return this.wallet
+        return Buffer.from(this.accountInstance.pubKey().toString().slice(2), "hex");
     }
 
     async ready() {
