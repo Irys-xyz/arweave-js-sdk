@@ -185,14 +185,14 @@ async function init(opts, operation): Promise<Bundlr> {
     }
     try {
         // create and ready the bundlr instance
-        bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet, { providerUrl: opts.providerUrl, contractAddress: opts.contractAddress });
+        bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet ?? "", { providerUrl: opts.providerUrl, contractAddress: opts.contractAddress });
         // await bundler.ready()
 
     } catch (err) {
         throw new Error(`Error initialising Bundlr client - ${options.debug ? err.stack : err.message}`);
     }
     // log the loaded address
-    if (bundler.address) {
+    if (wallet && bundler.address) {
         console.log(`Loaded address: ${bundler.address}`);
     }
 
