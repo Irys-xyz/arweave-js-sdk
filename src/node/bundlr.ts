@@ -50,9 +50,15 @@ export default class NodeBundlr extends Bundlr {
     * @param logFunction - for handling logging from the uploader for UX
     * @returns 
     */
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    public async uploadFolder(path: string, indexFile?: string, batchSize = 10, interactivePreflight?: boolean, keepDeleted = true, logFunction?: (log: string) => Promise<any>): Promise<string> {
-        return this.uploader.uploadFolder(path, indexFile, batchSize, interactivePreflight, keepDeleted, logFunction)
+    public async uploadFolder({ path, batchSize = 10, keepDeleted = true, indexFile, interactivePreflight, logFunction }: {
+        path: string,
+        batchSize: number,
+        keepDeleted: boolean,
+        indexFile?: string,
+        interactivePreflight?: boolean,
+        logFunction?: (log: string) => Promise<any>
+    }): Promise<string> {
+        return this.uploader.uploadFolder({ path, indexFile, batchSize, interactivePreflight, keepDeleted, logFunction })
     }
 
 

@@ -55,11 +55,18 @@ export default class NodeUploader extends Uploader {
     * @returns 
      */
     // eslint-disable-next-line @typescript-eslint/ban-types
-    public async uploadFolder(path: string, indexFile?: string, batchSize = 10, interactivePreflight?: boolean, keepDeleted = true, logFunction?: (log: string) => Promise<any>): Promise<string> {
+    public async uploadFolder({ path, batchSize = 10, keepDeleted = true, indexFile, interactivePreflight, logFunction }: {
+        path: string,
+        batchSize: number,
+        keepDeleted: boolean,
+        indexFile?: string,
+        interactivePreflight?: boolean,
+        logFunction?: (log: string) => Promise<any>
+    }): Promise<string> {
         path = p.resolve(path);
         const alreadyProcessed = new Map();
 
-        if (! await checkPath(path)) {
+        if (!await checkPath(path)) {
             throw new Error(`Unable to access path: ${path}`);
         }
 

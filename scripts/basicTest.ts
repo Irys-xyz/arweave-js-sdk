@@ -81,7 +81,7 @@ async function main() {
             await genData(`./${testFolder}`, 1_000, 100, 100_000);
         }
 
-        const resu = await bundlr.uploadFolder(`./${testFolder}`, undefined, 10, false, true, async (log): Promise<void> => { console.log(log); });
+        const resu = await bundlr.uploadFolder({ path: `./${testFolder}`, batchSize: 10, keepDeleted: false, logFunction: async (log): Promise<void> => { console.log(log); } });
         console.log(resu);
 
         /* const checkResults = */ await checkManifestBundlr(`./${testFolder}`, nodeUrl);
