@@ -1,8 +1,6 @@
-import { AxiosResponse } from "axios";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
-import { UploadResponse } from "../common/types";
 import Utils from "../common/utils";
 import getCurrency from "./currencies";
 import { NodeCurrency } from "./types";
@@ -12,6 +10,9 @@ import NodeUploader from "./upload";
 export default class NodeBundlr extends Bundlr {
     public uploader: NodeUploader; // re-define type
     public currencyConfig: NodeCurrency;
+    public uploadFolder: typeof this.uploader.uploadFolder
+    public uploadFile: typeof this.uploader.uploadFile
+
     /**
      * Constructs a new Bundlr instance, as well as supporting subclasses
      * @param url - URL to the bundler
@@ -27,16 +28,8 @@ export default class NodeBundlr extends Bundlr {
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
         this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig);
+        this.uploadFolder = this.uploader.uploadFolder
     }
-
-    /**
-     * Upload a file at the specified path to the bundler
-     * @param path path to the file to upload
-     * @returns bundler response
-     */
-    async uploadFile(path: string): Promise<AxiosResponse<UploadResponse>> {
-        return this.uploader.uploadFile(path);
-    };
 
     async ready(): Promise<void> {
         this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
