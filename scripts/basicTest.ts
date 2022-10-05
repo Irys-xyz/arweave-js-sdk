@@ -81,15 +81,13 @@ async function main() {
             await genData(`./${testFolder}`, 1_000, 100, 100_000);
         }
 
-        const resu = await bundlr.uploadFolder({ path: `./${testFolder}`, batchSize: 10, keepDeleted: false, logFunction: async (log): Promise<void> => { console.log(log); } });
+        const resu = await bundlr.uploadFolder(`./${testFolder}`, { batchSize: 10, keepDeleted: false, logFunction: async (log): Promise<void> => { console.log(log); } });
         console.log(resu);
 
         /* const checkResults = */ await checkManifestBundlr(`./${testFolder}`, nodeUrl);
-        /*         console.log(checkResults); */
 
         res = await bundlr.uploadFile(`./${testFolder}/0.json`);
-        console.log(JSON.stringify(res.data));
-        console.log(JSON.stringify(res.status));
+        console.log(JSON.stringify(res));
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
@@ -98,7 +96,7 @@ async function main() {
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
         let resw = await bundlr.withdrawBalance(1);
-        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        console.log(`withdrawal: ${JSON.stringify(resw)}`);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
 

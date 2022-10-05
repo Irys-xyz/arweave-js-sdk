@@ -2,12 +2,11 @@ import Utils from "./utils";
 import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
-import { AxiosResponse } from "axios";
 import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
-import { Currency, FundData, UploadResponse } from "./types";
+import { Currency, FundResponse, UploadResponse, WithdrawalResponse } from "./types";
 import { Signer } from "arbundles/src/signing";
 import { Readable } from "stream";
 
@@ -26,8 +25,8 @@ export default abstract class Bundlr {
         return this.currencyConfig.getSigner();
     }
 
-    async withdrawBalance(amount: BigNumber.Value): Promise<AxiosResponse<any>> {
-        return await withdrawBalance(this.utils, this.api, amount);
+    async withdrawBalance(amount: BigNumber.Value): Promise<WithdrawalResponse> {
+        return withdrawBalance(this.utils, this.api, amount);
     }
 
     /**
@@ -51,7 +50,7 @@ export default abstract class Bundlr {
      * @param amount amount to send in atomic units
      * @returns details about the fund transaction
      */
-    async fund(amount: BigNumber.Value, multiplier?: number): Promise<FundData> {
+    async fund(amount: BigNumber.Value, multiplier?: number): Promise<FundResponse> {
         return this.funder.fund(amount, multiplier);
     }
 
@@ -81,7 +80,7 @@ export default abstract class Bundlr {
         return this.currencyConfig.getSigner();
     }
 
-    async upload(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<AxiosResponse<UploadResponse>> {
+    async upload(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<UploadResponse> {
         return this.uploader.uploadData(data, opts);
     }
 

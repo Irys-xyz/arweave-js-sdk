@@ -1,4 +1,3 @@
-import { AxiosResponse } from "axios";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
@@ -36,7 +35,7 @@ export default class NodeBundlr extends Bundlr {
     * @param path path to the file to upload
     * @returns bundler response
     */
-    async uploadFile(path: string): Promise<AxiosResponse<UploadResponse>> {
+    async uploadFile(path: string): Promise<UploadResponse> {
         return this.uploader.uploadFile(path);
     };
 
@@ -50,15 +49,14 @@ export default class NodeBundlr extends Bundlr {
     * @param logFunction - for handling logging from the uploader for UX
     * @returns 
     */
-    public async uploadFolder({ path, batchSize = 10, keepDeleted = true, indexFile, interactivePreflight, logFunction }: {
-        path: string,
-        batchSize: number,
-        keepDeleted: boolean,
+    public async uploadFolder(path: string, { batchSize = 10, keepDeleted = true, indexFile, interactivePreflight, logFunction }: {
+        batchSize?: number,
+        keepDeleted?: boolean,
         indexFile?: string,
         interactivePreflight?: boolean,
-        logFunction?: (log: string) => Promise<any>
-    }): Promise<string> {
-        return this.uploader.uploadFolder({ path, indexFile, batchSize, interactivePreflight, keepDeleted, logFunction })
+        logFunction?: (log: string) => Promise<void>;
+    } = {}): Promise<UploadResponse> {
+        return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction });
     }
 
 

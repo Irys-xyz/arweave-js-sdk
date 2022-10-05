@@ -54,7 +54,7 @@ export interface Currency {
     ready?(): void | PromiseLike<void>;
 }
 
-export interface FundData { reward: string, target: string, quantity: string, id: string; }
+
 
 export interface Manifest {
     manifest: string,
@@ -69,6 +69,19 @@ export interface UploadResponse {
     signature: string,
     block: number,
     validatorSignatures: { address: string, signature: string; }[];
+}
+
+export interface FundResponse {
+    reward: string,
+    target: string,
+    quantity: string,
+    id: string;
+}
+export interface WithdrawalResponse {
+    tx_id: string;
+    requested: number;
+    fee: number,
+    final: number;
 }
 
 // // TS doesn't like string template literals it seems

@@ -55,10 +55,7 @@ program.command("withdraw").description("Sends a fund withdrawal request").argum
             const confirmed = confirmation(`Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`);
             if (confirmed) {
                 const res = await bundlr.withdrawBalance(new BigNumber(amount));
-                if (res.status != 200) {
-                    throw new Error(res.data);
-                }
-                console.log(`Withdrawal request for ${res?.data?.requested} ${bundlr.currencyConfig.base[0]} successful\nTransaction ID: ${res?.data?.tx_id} with network fee ${res?.data?.fee} for a total cost of ${res?.data?.final} `);
+                console.log(`Withdrawal request for ${res?.requested} ${bundlr.currencyConfig.base[0]} successful\nTransaction ID: ${res?.tx_id} with network fee ${res?.fee} for a total cost of ${res?.final} `);
             } else {
                 console.log("confirmation failed");
             }
@@ -74,7 +71,7 @@ program.command("upload").description("Uploads a specified file").argument("<fil
         try {
             const bundlr = await init(options, "upload");
             const res = await bundlr.uploadFile(file);
-            console.log(`Uploaded to https://arweave.net/${res?.data?.id}`);
+            console.log(`Uploaded to https://arweave.net/${res?.id}`);
         } catch (err) {
             console.error(`Error whilst uploading file: ${options.debug ? err.stack : err.message} `);
             return;
@@ -96,17 +93,14 @@ program.command("deploy").description("(DEPRECATED - use the functionally identi
 async function uploadDir(folder: string): Promise<void> {
     try {
         const bundler = await init(options, "upload");
-        const res = await bundler.uploadFolder({
-            path: folder,
+        const res = await bundler.uploadFolder(folder, {
             indexFile: options.indexFile,
             batchSize: +options.batchSize,
             interactivePreflight: options.confirmation,
             keepDeleted: !options.removeDeleted,
-            logFunction: async (log): Promise<void> => { console.log(log) }
+            logFunction: async (log): Promise<void> => { console.log(log); }
         });
-        if (res != "none") {
-            console.log(`Uploaded to https://arweave.net/${res}`);
-        }
+        console.log(`Uploaded to https://arweave.net/${res.id}`);
     } catch (err) {
         console.error(`Error whilst uploading ${folder} - ${options.debug ? err.stack : err.message}`);
     }

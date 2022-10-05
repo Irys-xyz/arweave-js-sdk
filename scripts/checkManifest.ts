@@ -44,7 +44,7 @@ export async function checkManifest(path) {
 export async function checkManifestBundlr(path: string, nodeURL: string) {
     path = p.resolve(path);
     const basePath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-`);
-    const manifestID = (await promises.readFile(`${basePath}id.txt`)).toString();
+    const { id: manifestID } = JSON.parse((await promises.readFile(`${basePath}id.txt`, "utf-8")));
     console.log(`validating manifest with ID ${manifestID}`);
     const files: string[] = [];
     for await (const f of walk(path)) {
@@ -54,7 +54,7 @@ export async function checkManifestBundlr(path: string, nodeURL: string) {
     console.log(manifest);
     const results = await PromisePool
         .for(files)
-        .withConcurrency(200)
+        .withConcurrency(1)
         .process(async (ip, i) => {
             if (i % 50 === 0) {
                 console.log(`Processed ${i} entries`);

@@ -57,7 +57,7 @@ export default class Uploader {
         return res;
     }
 
-    public async uploadData(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<AxiosResponse<UploadResponse>> {
+    public async uploadData(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<UploadResponse> {
         if (typeof data === "string") {
             data = Buffer.from(data);
         }
@@ -65,10 +65,10 @@ export default class Uploader {
             if (data.length <= CHUNKING_THRESHOLD) {
                 const dataItem = createData(data, this.currencyConfig.getSigner(), opts);
                 await dataItem.sign(this.currencyConfig.getSigner());
-                return this.uploadTransaction(dataItem);
+                return (await this.uploadTransaction(dataItem)).data;
             }
         }
-        return this.chunkedUploader.uploadData(data, opts);
+        return (await this.chunkedUploader.uploadData(data, opts)).data;
     }
 
 

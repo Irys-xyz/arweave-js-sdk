@@ -139,7 +139,7 @@ export class ChunkingUploader extends EventEmitter {
         const promiseFactory = (d: Buffer, o: number, c: number): Promise<{ o: number, d: AxiosResponse<UploadResponse>; }> => {
             return new Promise((r) => {
                 retry(
-                    async () => {
+                    async (bail) => {
                         await this.api.post(`/chunks/${this.currency}/${id}/${o}`, d, {
                             headers: { "Content-Type": "application/octet-stream", ...headers },
                             maxBodyLength: Infinity,
@@ -149,6 +149,7 @@ export class ChunkingUploader extends EventEmitter {
                             if (re?.status >= 300) {
                                 const e = { res: re, id: c, offset: o, size: d.length };
                                 this.emit("chunkError", e);
+                                if (re?.status === 402) bail(new Error("Not enough funds to send data"));
                                 throw e;
                             }
                             this.emit("chunkUpload", { id: c, offset: o, size: d.length, totalUploaded: (totalUploaded += d.length) });
@@ -313,7 +314,7 @@ export class ChunkingUploader extends EventEmitter {
         return finishUpload;
     }
 
-    get completionPromise(): Promise<AxiosResponse<UploadResponse, any>> {
+    get completionPromise(): Promise<AxiosResponse<UploadResponse>> {
         return new Promise(r => this.on("done", r));
     }
 

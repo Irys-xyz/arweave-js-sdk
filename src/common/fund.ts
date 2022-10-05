@@ -1,6 +1,6 @@
 import AsyncRetry from "async-retry";
 import BigNumber from "bignumber.js";
-import { FundData } from "./types";
+import { FundResponse } from "./types";
 import Utils from "./utils";
 
 export default class Fund {
@@ -16,7 +16,7 @@ export default class Fund {
      * @param multiplier - network tx fee multiplier - only works for specific currencies
      * @returns  - funding receipt
      */
-    public async fund(amount: BigNumber.Value, multiplier = 1.0): Promise<FundData> {
+    public async fund(amount: BigNumber.Value, multiplier = 1.0): Promise<FundResponse> {
         const _amount = new BigNumber(amount);
         if (!_amount.isInteger()) { throw new Error("must use an integer for funding amount"); }
         const c = this.utils.currencyConfig;

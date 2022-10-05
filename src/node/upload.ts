@@ -1,5 +1,4 @@
 import { promises, PathLike, createReadStream, createWriteStream } from "fs";
-import { AxiosResponse } from "axios";
 import { Currency, UploadResponse } from "../common/types";
 import Uploader from "../common/upload";
 import Api from "../common/api";
@@ -23,7 +22,7 @@ export default class NodeUploader extends Uploader {
      * @param path to the file to be uploaded
      * @returns the response from the bundler
      */
-    public async uploadFile(path: string): Promise<AxiosResponse<UploadResponse>> {
+    public async uploadFile(path: string): Promise<UploadResponse> {
         if (!promises.stat(path).then(_ => true).catch(_ => false)) {
             throw new Error(`Unable to access path: ${path}`);
         }
@@ -55,14 +54,13 @@ export default class NodeUploader extends Uploader {
     * @returns 
      */
     // eslint-disable-next-line @typescript-eslint/ban-types
-    public async uploadFolder({ path, batchSize = 10, keepDeleted = true, indexFile, interactivePreflight, logFunction }: {
-        path: string,
+    public async uploadFolder(path, { batchSize = 10, keepDeleted = true, indexFile, interactivePreflight, logFunction }: {
         batchSize: number,
         keepDeleted: boolean,
         indexFile?: string,
         interactivePreflight?: boolean,
-        logFunction?: (log: string) => Promise<any>
-    }): Promise<string> {
+        logFunction?: (log: string) => Promise<void>;
+    } = { batchSize: 10, keepDeleted: true }): Promise<UploadResponse> {
         path = p.resolve(path);
         const alreadyProcessed = new Map();
 
@@ -136,7 +134,7 @@ export default class NodeUploader extends Uploader {
             // return the txID of the upload
             const idpath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`);
             if (await checkPath(idpath)) {
-                return (await promises.readFile(idpath)).toString();
+                return JSON.parse((await promises.readFile(idpath, "utf-8"))) as UploadResponse;
             }
             return undefined;
         }
@@ -162,8 +160,8 @@ export default class NodeUploader extends Uploader {
         stringifier.pipe(wstrm);
 
         const processor = async (data): Promise<void> => {
-            if (data?.res?.data?.id) {
-                stringifier.write([p.relative(path, data.item), data.res.data.id]);
+            if (data?.res?.id) {
+                stringifier.write([p.relative(path, data.item), data.res.id]);
             }
         };
 
@@ -193,10 +191,10 @@ export default class NodeUploader extends Uploader {
                 throw new Error(`Failed to upload manifest: ${e.message}`);
             });
         await logFunction("Done!");
-        if (mres?.data?.id) {
-            await promises.writeFile(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`), mres.data.id);
+        if (mres?.id) {
+            await promises.writeFile(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`), JSON.stringify(mres));
         }
-        return mres.data?.id ?? "none";
+        return mres;
     }
 
 
