@@ -1,32 +1,32 @@
 import { NearSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
-import { CurrencyConfig, Tx } from "../../common/types"
-import BaseNodeCurrency from "../currency"
-import { KeyPair, utils, transactions, providers } from "near-api-js"
+import { CurrencyConfig, Tx } from "../../common/types";
+import BaseNodeCurrency from "../currency";
+import { KeyPair, utils, transactions, providers } from "near-api-js";
 import { decode, encode } from "bs58";
-import BN from "bn.js"
+import BN from "bn.js";
 import { sha256 } from "js-sha256";
 import { JsonRpcProvider } from "near-api-js/lib/providers";
 
-import { parseSeedPhrase, KEY_DERIVATION_PATH } from "near-seed-phrase"
+import { parseSeedPhrase, KEY_DERIVATION_PATH } from "near-seed-phrase";
 import base64url from "base64url";
 import axios from "axios";
 export default class NearConfig extends BaseNodeCurrency {
-    protected keyPair: KeyPair
+    protected keyPair: KeyPair;
 
-    protected providerInstance?: JsonRpcProvider
-    declare protected bundlrUrl: string
+    protected providerInstance?: JsonRpcProvider;
+    declare protected bundlrUrl: string;
 
 
-    constructor(config: CurrencyConfig & { bundlrUrl: string }) {
-        let wallet = config.wallet
-        if (typeof wallet === "string" && config.wallet.length != 96 || wallet?.split(":")[0] === "ed25519") {
-            wallet = parseSeedPhrase(wallet, KEY_DERIVATION_PATH).secretKey
+    constructor(config: CurrencyConfig & { bundlrUrl: string; }) {
+        let wallet = config.wallet;
+        if (wallet?.split(":") !== "ed25519") {
+            wallet = parseSeedPhrase(wallet, KEY_DERIVATION_PATH).secretKey;
         }
         config.wallet = wallet;
         super(config);
-        this.base = ["yoctoNEAR", 1e24]
-        this.keyPair = KeyPair.fromString(this.wallet)
+        this.base = ["yoctoNEAR", 1e24];
+        this.keyPair = KeyPair.fromString(this.wallet);
     }
 
     protected async getProvider(): Promise<JsonRpcProvider> {
@@ -44,20 +44,20 @@ export default class NearConfig extends BaseNodeCurrency {
      */
     async getTx(txId: string): Promise<Tx> {
         // NOTE: their type defs are out of date with their actual API (23-01-2022)... beware the expect-error when debugging! 
-        const provider = await this.getProvider()
+        const provider = await this.getProvider();
         const [id, hash] = txId.split(":");
-        const status = await provider.txStatusReceipts(decode(hash), id)
+        const status = await provider.txStatusReceipts(decode(hash), id);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
 
         const blockHeight = (await provider.block(status.transaction_outcome.block_hash));
-        const latestBlockHeight = (await provider.block({ finality: "final" })).header.height
+        const latestBlockHeight = (await provider.block({ finality: "final" })).header.height;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
-        if (status.receipts_outcome[0].outcome.status.SuccessValue !== "") { throw new Error("Transaction failed!") }
+        if (status.receipts_outcome[0].outcome.status.SuccessValue !== "") { throw new Error("Transaction failed!"); }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
-        const deposit = status.receipts[0].receipt.Action.actions[0].Transfer.deposit ?? 0
+        const deposit = status.receipts[0].receipt.Action.actions[0].Transfer.deposit ?? 0;
         return {
             from: id,
             to: status.transaction.receiver_id,
@@ -65,7 +65,7 @@ export default class NearConfig extends BaseNodeCurrency {
             blockHeight: new BigNumber(blockHeight.header.height),
             pending: false,
             confirmed: latestBlockHeight - blockHeight.header.height >= this.minConfirm
-        }
+        };
     }
 
 
@@ -76,24 +76,24 @@ export default class NearConfig extends BaseNodeCurrency {
     ownerToAddress(owner: any): string {
         return (typeof owner === "string")
             ? decode(owner.replace("ed25519:", "")).toString("hex")
-            : decode(encode(owner)).toString("hex")
+            : decode(encode(owner)).toString("hex");
     }
 
 
     async sign(data: Uint8Array): Promise<Uint8Array> {
-        return this.getSigner().sign(data)
+        return this.getSigner().sign(data);
     }
 
     getSigner(): Signer {
-        return new NearSigner(this.wallet)
+        return new NearSigner(this.wallet);
     }
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return NearSigner.verify(pub, data, signature)
+        return NearSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
-        const provider = await this.getProvider()
+        const provider = await this.getProvider();
         const res = await provider.status();
         return new BigNumber(res.sync_info.latest_block_height);
     }
@@ -106,30 +106,30 @@ export default class NearConfig extends BaseNodeCurrency {
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
         // TODO: use https://docs.near.org/docs/concepts/gas and https://docs.near.org/docs/api/rpc/protocol#genesis-config
         // to derive cost from genesis config to generalise support.
-        const provider = await this.getProvider()
-        const res = await provider.gasPrice(null) // null == gas price as of latest block
+        const provider = await this.getProvider();
+        const res = await provider.gasPrice(null); // null == gas price as of latest block
         // multiply by action cost in gas units (assume only action is transfer)
         // 4.5x10^11 gas units for fund transfers
-        return new BigNumber(res.gas_price).multipliedBy(450_000_000_000)
+        return new BigNumber(res.gas_price).multipliedBy(450_000_000_000);
     }
 
     async sendTx(data: any): Promise<any> {
         data as transactions.SignedTransaction;
-        const res = await (await this.getProvider()).sendTransaction(data)
-        return `${this.address}:${res.transaction.hash}` // encode into compound format
+        const res = await (await this.getProvider()).sendTransaction(data);
+        return `${this.address}:${res.transaction.hash}`; // encode into compound format
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
-        const provider = await this.getProvider()
-        const accessKey = await provider.query(({ request_type: "view_access_key", finality: "final", account_id: this.address, public_key: this.keyPair.getPublicKey().toString() }))
+        const provider = await this.getProvider();
+        const accessKey = await provider.query(({ request_type: "view_access_key", finality: "final", account_id: this.address, public_key: this.keyPair.getPublicKey().toString() }));
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
-        const nonce = ++accessKey.nonce
-        const recentBlockHash = utils.serialize.base_decode(accessKey.block_hash)
+        const nonce = ++accessKey.nonce;
+        const recentBlockHash = utils.serialize.base_decode(accessKey.block_hash);
         const actions = [transactions.transfer(new BN(new BigNumber(amount).toFixed().toString()))];
-        const tx = transactions.createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash)
+        const tx = transactions.createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash);
         const serialTx = utils.serialize.serialize(transactions.SCHEMA, tx);
-        const serialTxHash = new Uint8Array(sha256.array(serialTx))
+        const serialTxHash = new Uint8Array(sha256.array(serialTx));
         const signature = this.keyPair.sign(serialTxHash);
         const signedTx = new transactions.SignedTransaction({
             transaction: tx,
@@ -138,22 +138,22 @@ export default class NearConfig extends BaseNodeCurrency {
                 data: signature.signature,
             }),
         });
-        return { tx: signedTx, txId: undefined }
+        return { tx: signedTx, txId: undefined };
     }
     getPublicKey(): string | Buffer {
-        this.keyPair = KeyPair.fromString(this.wallet)
-        return Buffer.from(this.keyPair.getPublicKey().data)
+        this.keyPair = KeyPair.fromString(this.wallet);
+        return Buffer.from(this.keyPair.getPublicKey().data);
 
     }
 
     async ready(): Promise<void> {
         try {
             // resolve loaded pubkey to parent address
-            const pubkey = this.keyPair.getPublicKey().toString()
-            const resolved = await axios.get(`${this.bundlrUrl}/account/near/lookup?address=${base64url.encode(pubkey.split(":")[1])}`).catch(e => { return e }) as any
-            this._address = resolved?.data?.address ?? this._address
+            const pubkey = this.keyPair.getPublicKey().toString();
+            const resolved = await axios.get(`${this.bundlrUrl}/account/near/lookup?address=${base64url.encode(pubkey.split(":")[1])}`).catch(e => { return e; }) as any;
+            this._address = resolved?.data?.address ?? this._address;
         } catch (e) {
-            console.error(e)
+            console.error(e);
         }
     }
 }
