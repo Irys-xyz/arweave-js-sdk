@@ -27,14 +27,14 @@ export interface SignMessageResponse {
 }
 
 export interface AptosWallet {
-    account: () => Promise<{ address: string, publicKey: string }>
-    connect: () => Promise<{ address: string, publicKey: string }>
-    disconnect: () => Promise<void>
-    isConnected: () => Promise<boolean>
-    network: () => Promise<"Testnet" | "Mainnet">
-    signAndSubmitTransaction: (transaction: TransactionPayload) => Promise<PendingTransaction>
-    signMessage: (payload: SignMessagePayload) => Promise<SignMessageResponse>
-    signTransaction: (transaction: TransactionPayload) => Promise<Uint8Array>
+    account: () => Promise<{ address: string, publicKey: string; }>;
+    connect: () => Promise<{ address: string, publicKey: string; }>;
+    disconnect: () => Promise<void>;
+    isConnected: () => Promise<boolean>;
+    network: () => Promise<"Testnet" | "Mainnet">;
+    signAndSubmitTransaction: (transaction: TransactionPayload) => Promise<PendingTransaction>;
+    signMessage: (payload: SignMessagePayload) => Promise<SignMessageResponse>;
+    signTransaction: (transaction: TransactionPayload) => Promise<Uint8Array>;
 }
 
 export default class AptosConfig extends BaseWebCurrency {
@@ -42,7 +42,7 @@ export default class AptosConfig extends BaseWebCurrency {
     declare protected providerInstance?: AptosClient;
     protected signerInstance: InjectedAptosSigner;
     declare protected wallet: AptosWallet;
-    protected _publicKey: Buffer
+    protected _publicKey: Buffer;
 
     constructor(config: CurrencyConfig) {
         // if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
@@ -64,7 +64,7 @@ export default class AptosConfig extends BaseWebCurrency {
         const payload = tx?.payload as TransactionPayload_EntryFunctionPayload;
 
         if (!tx.success) {
-            throw new Error(tx?.vm_status ?? "Unknown Aptos error")
+            throw new Error(tx?.vm_status ?? "Unknown Aptos error");
         }
 
         if (!(
@@ -162,8 +162,16 @@ export default class AptosConfig extends BaseWebCurrency {
     }
 
     public async ready(): Promise<void> {
-        this._publicKey = await this.getPublicKey() as Buffer
+        this._publicKey = await this.getPublicKey() as Buffer;
         this._address = this.ownerToAddress(this._publicKey);
+        const client = await this.getProvider();
+        this._address = await client.lookupOriginalAddress(this.address)
+            .then(hs => hs.toString())
+            .catch(_ => this._address); // fallback to original
+
+        if (this._address.length == 66 && this._address.charAt(2) === '0') {
+            this._address = this._address.slice(0, 2) + this._address.slice(3);
+        }
     }
 
 };
