@@ -20,7 +20,7 @@ export default class NearConfig extends BaseNodeCurrency {
 
     constructor(config: CurrencyConfig & { bundlrUrl: string; }) {
         let wallet = config.wallet;
-        if (typeof wallet === "string" && config.wallet.length != 96 || wallet.split(":")[0] === "ed25519") {
+        if (wallet?.split(":") !== "ed25519") {
             wallet = parseSeedPhrase(wallet, KEY_DERIVATION_PATH).secretKey;
         }
         config.wallet = wallet;
@@ -116,7 +116,7 @@ export default class NearConfig extends BaseNodeCurrency {
     async sendTx(data: any): Promise<any> {
         data as transactions.SignedTransaction;
         const res = await (await this.getProvider()).sendTransaction(data);
-        return { txId: `${this.address}:${res.transaction.hash}` }; // encode into compound format
+        return `${this.address}:${res.transaction.hash}`; // encode into compound format
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {

@@ -3,7 +3,7 @@ import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
 import Api from "./api";
 import { Currency } from "./types";
-BigNumber.set({ DECIMAL_PLACES: 50 })
+BigNumber.set({ DECIMAL_PLACES: 50 });
 
 export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -56,9 +56,9 @@ export default class Utils {
      */
     public async getBundlerAddress(currency: string): Promise<string> {
 
-        const res = await this.api.get("/info")
+        const res = await this.api.get("/info");
         Utils.checkAndThrow(res, "Getting Bundler address");
-        const address = res.data.addresses[currency]
+        const address = res.data.addresses[currency];
         if (!address) {
             throw new Error(`Specified bundler does not support currency ${currency}`);
         }
@@ -72,7 +72,7 @@ export default class Utils {
      * @returns
      */
     public async getPrice(currency: string, bytes: number): Promise<BigNumber> {
-        const res = await this.api.get(`/price/${currency}/${bytes}`)
+        const res = await this.api.get(`/price/${currency}/${bytes}`);
         Utils.checkAndThrow(res, "Getting storage cost");
         return new BigNumber((res).data);
     }
@@ -86,13 +86,13 @@ export default class Utils {
     public async confirmationPoll(txid: string): Promise<any> {
         if (this.currencyConfig.isSlow) { return; }
         let lastError;
-        for (let i = 0; i < 15; i++) {
-            await sleep(3000);
-            if (await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(err => { lastError = err; return false })) {
+        for (let i = 0; i < 30; i++) {
+            await sleep(1000);
+            if (await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed; }).catch(err => { lastError = err; return false; })) {
                 return;
             }
         }
-        console.warn(`Tx ${txid} didn't finalize after 30 seconds ${lastError ? ` - ${lastError}` : ""}`)
+        console.warn(`Tx ${txid} didn't finalize after 30 seconds ${lastError ? ` - ${lastError}` : ""}`);
         return lastError;
     }
 
