@@ -20,7 +20,7 @@ export default class NearConfig extends BaseNodeCurrency {
 
     constructor(config: CurrencyConfig & { bundlrUrl: string; }) {
         let wallet = config.wallet;
-        if (wallet?.split(":") !== "ed25519") {
+        if (wallet?.split(":")?.[0] !== "ed25519") {
             wallet = parseSeedPhrase(wallet, KEY_DERIVATION_PATH).secretKey;
         }
         config.wallet = wallet;
