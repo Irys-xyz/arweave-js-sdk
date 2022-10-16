@@ -17,7 +17,7 @@ export default class AptosConfig extends BaseNodeCurrency {
 
     constructor(config: CurrencyConfig) {
         if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
-        if (!config?.opts?.signingFunction && Buffer.isBuffer(config.wallet)) {
+        if (!config?.opts?.signingFunction && Buffer.isBuffer(config?.wallet)) {
             // @ts-ignore
             config.accountInstance = new AptosAccount(config.wallet);
         }

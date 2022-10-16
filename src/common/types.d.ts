@@ -13,7 +13,7 @@ export interface Tx {
     pending: boolean;
     confirmed: boolean;
 }
-export interface CurrencyConfig { name: string, ticker: string, minConfirm?: number, wallet: any, providerUrl: string, isSlow?: boolean, opts?: any; }
+export interface CurrencyConfig { name: string, ticker: string, minConfirm?: number, wallet?: string | Object, providerUrl: string, isSlow?: boolean, opts?: any; }
 
 export interface Currency {
     isSlow: boolean;
