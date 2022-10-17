@@ -169,7 +169,7 @@ export default class AptosConfig extends BaseNodeCurrency {
             .then(hs => hs.toString())
             .catch(_ => this._address); // fallback to original
 
-        if (this._address.length == 66 && this._address.charAt(2) === '0') {
+        if (this._address?.length == 66 && this._address.charAt(2) === '0') {
             this._address = this._address.slice(0, 2) + this._address.slice(3);
         }
     }
