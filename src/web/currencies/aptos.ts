@@ -1,10 +1,10 @@
-import { AptosClient, CoinClient, HexString } from "aptos";
+import { AptosClient, CoinClient, HexString, TransactionBuilderEd25519, TxnBuilderTypes } from "aptos";
 import { InjectedAptosSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import * as SHA3 from "js-sha3";
 // import { Ed25519PublicKey } from "aptos/src/aptos_types/ed25519";
-import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction } from "aptos/src/generated";
+import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
 import BaseWebCurrency from "../currency";
 
 
@@ -109,7 +109,7 @@ export default class AptosConfig extends BaseWebCurrency {
 
     }
 
-    async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
+    async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number, maxGasAmount: number; }> {
         const client = await this.getProvider();
         const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
             "0x1::coin::transfer",
@@ -118,14 +118,33 @@ export default class AptosConfig extends BaseWebCurrency {
         );
 
         const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload);
-        const pubkey = (await this.getPublicKey()) as Buffer;
-        //@ts-ignore
-        const simulationResult = await client.simulateTransaction(/* new Ed25519PublicKey(await this.getPublicKey()) */{ //emulate required parts of Ed25519PublicKey, as importing it causes typechecking to break...
-            toBytes: () => {
-                return pubkey;
-            }
-        }, rawTransaction);
-        return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {
+            // @ts-ignore
+            const invalidSigBytes = new Uint8Array(64);
+            return new TxnBuilderTypes.Ed25519Signature(invalidSigBytes);
+        }, await this.getPublicKey() as Buffer);
+
+        const signedSimulation = txnBuilder.sign(rawTransaction);
+
+        const queryParams = {
+            estimate_gas_unit_price: true,
+            estimate_max_gas_amount: true,
+        };
+
+        const simulationResult = await client.client.request.request<UserTransaction[]>({
+            url: "/transactions/simulate",
+            query: queryParams,
+            method: "POST",
+            body: signedSimulation,
+            mediaType: "application/x.aptos.signed_transaction+bcs",
+        });
+
+        return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: +simulationResult[0].max_gas_amount };
+
+        //const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
+        // return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
         // const est = await provider.client.transactions.estimateGasPrice();
         // return new BigNumber(est.gas_estimate/* (await (await this.getProvider()).client.transactions.estimateGasPrice()).gas_estimate */); // * by gas limit (for upper limit)
     }
