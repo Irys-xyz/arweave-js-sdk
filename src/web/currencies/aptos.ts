@@ -61,7 +61,7 @@ export default class AptosConfig extends BaseWebCurrency {
     async getTx(txId: string): Promise<Tx> {
 
         const client = await this.getProvider();
-        const tx = await client.waitForTransactionWithResult(txId, /* { checkSuccess: true } */) as Transaction_UserTransaction;
+        const tx = await client.waitForTransactionWithResult(txId, /* { checkSuccess: true } */ { timeoutSecs: 1, checkSuccess: true }) as Transaction_UserTransaction;
         const payload = tx?.payload as TransactionPayload_EntryFunctionPayload;
 
         if (!tx.success) {
