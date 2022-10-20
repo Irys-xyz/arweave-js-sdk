@@ -1,8 +1,9 @@
-import { AptosAccount, AptosClient, CoinClient, HexString } from "aptos";
+import { AptosClient, CoinClient, HexString } from "aptos";
 import { InjectedAptosSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import * as SHA3 from "js-sha3";
+// import { Ed25519PublicKey } from "aptos/src/aptos_types/ed25519";
 import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction } from "aptos/src/generated";
 import BaseWebCurrency from "../currency";
 
@@ -117,12 +118,13 @@ export default class AptosConfig extends BaseWebCurrency {
         );
 
         const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload);
-        const pubkey = (await this.getPublicKey()).toString("hex");
-        const simulationResult = await client.simulateTransaction({ //emulate required parts of AptosAccount
-            pubKey: () => {
-                return new HexString(pubkey);
+        const pubkey = (await this.getPublicKey()) as Buffer;
+        //@ts-ignore
+        const simulationResult = await client.simulateTransaction(/* new Ed25519PublicKey(await this.getPublicKey()) */{ //emulate required parts of Ed25519PublicKey, as importing it causes typechecking to break...
+            toBytes: () => {
+                return pubkey;
             }
-        } as AptosAccount, rawTransaction);
+        }, rawTransaction);
         return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
         // const est = await provider.client.transactions.estimateGasPrice();
         // return new BigNumber(est.gas_estimate/* (await (await this.getProvider()).client.transactions.estimateGasPrice()).gas_estimate */); // * by gas limit (for upper limit)

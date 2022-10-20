@@ -43,7 +43,7 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
         case "near":
             return new NearConfig({ name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet });
         case "aptos":
-            return new AptosConfig({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.devnet.aptoslabs.com", wallet });
+            return new AptosConfig({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1", wallet });
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
     }

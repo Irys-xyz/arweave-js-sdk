@@ -21,12 +21,12 @@ export default class NodeBundlr extends Bundlr {
         const parsed = new URL(url);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
         this.currencyConfig = getCurrency(currency.toLowerCase(), wallet, parsed.toString(), config?.providerUrl, config?.contractAddress, config?.currencyOpts);
-        this.currency = this.currencyConfig.name
+        this.currency = this.currencyConfig.name;
         this.address = this.currencyConfig.address;
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
         this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig);
-        this._readyPromise = this.currencyConfig.ready ? this.currencyConfig.ready() : new Promise((r => r()))
+        this._readyPromise = this.currencyConfig.ready ? this.currencyConfig.ready() : new Promise((r => r()));
     }
 
     /**
@@ -39,7 +39,8 @@ export default class NodeBundlr extends Bundlr {
     };
 
     async ready(): Promise<void> {
-        await this._readyPromise
+        await this._readyPromise;
+        this.address = this.currencyConfig.address;
     }
 
     static init(opts: {
@@ -48,10 +49,10 @@ export default class NodeBundlr extends Bundlr {
         privateKey?: string,
         publicKey?: string,
         signingFunction?: (msg: Uint8Array) => Promise<Uint8Array>,
-        collectSignatures?: (msg: Uint8Array) => Promise<{ signatures: string[], bitmap: number[] }>
+        collectSignatures?: (msg: Uint8Array) => Promise<{ signatures: string[], bitmap: number[]; }>;
     }): NodeBundlr {
-        const { url, currency, privateKey, publicKey, signingFunction, collectSignatures } = opts
-        return new NodeBundlr(url, currency, signingFunction ? publicKey : privateKey, { currencyOpts: { signingFunction, collectSignatures } })
+        const { url, currency, privateKey, publicKey, signingFunction, collectSignatures } = opts;
+        return new NodeBundlr(url, currency, signingFunction ? publicKey : privateKey, { currencyOpts: { signingFunction, collectSignatures } });
     }
 
 }

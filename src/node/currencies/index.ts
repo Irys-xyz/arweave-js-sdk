@@ -62,7 +62,7 @@ export default function getCurrency(currency: string, wallet: any, url: string, 
             return new AptosConfig({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.devnet.aptoslabs.com", wallet, opts });
         }
         case "multiaptos": {
-            return new MultiSignatureAptos({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.devnet.aptoslabs.com", wallet, opts });
+            return new MultiSignatureAptos({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1", wallet, opts });
         }
         default:
             throw new Error(`Unknown/Unsupported currency ${currency}`);
