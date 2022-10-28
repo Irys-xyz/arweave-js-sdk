@@ -59,7 +59,7 @@ export default function getCurrency(currency: string, wallet: any, url: string, 
             return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", wallet, opts });
         }
         case "aptos": {
-            return new AptosConfig({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.devnet.aptoslabs.com", wallet, opts });
+            return new AptosConfig({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com", wallet, opts });
         }
         case "multiaptos": {
             return new MultiSignatureAptos({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1", wallet, opts });
