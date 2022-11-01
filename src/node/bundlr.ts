@@ -59,10 +59,5 @@ export default class NodeBundlr extends Bundlr {
         return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction });
     }
 
-
-    async ready(): Promise<void> {
-        this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
-    }
-
 }
 

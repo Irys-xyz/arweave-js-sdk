@@ -22,9 +22,4 @@ export default class WebBundlr extends Bundlr {
         this.address = "Please run `await bundlr.ready()`";
     }
 
-    // async initialisation 
-    public async ready(): Promise<void> {
-        await this.currencyConfig.ready();
-        this.address = this.currencyConfig.address;
-    }
 }

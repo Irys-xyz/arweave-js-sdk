@@ -84,4 +84,9 @@ export default abstract class Bundlr {
         return this.uploader.uploadData(data, opts);
     }
 
+    async ready(): Promise<void> {
+        this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
+        this.address = this.currencyConfig.address;
+    }
+
 }
