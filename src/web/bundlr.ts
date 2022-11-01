@@ -14,12 +14,11 @@ export default class WebBundlr extends Bundlr {
         super();
         const parsed = new URL(url);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
-        this.currency = currency.toLowerCase();
-        this.currencyConfig = getCurrency(currency, provider, config?.providerUrl, config?.contractAddress);
+        this.currencyConfig = getCurrency(currency.toLowerCase(), provider, config?.providerUrl, config?.contractAddress);
+        this.currency = this.currencyConfig.name;
         this.utils = new Utils(this.api, this.currency, this.currencyConfig);
         this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);
         this.funder = new Fund(this.utils);
         this.address = "Please run `await bundlr.ready()`";
     }
-
 }

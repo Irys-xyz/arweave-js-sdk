@@ -18,6 +18,7 @@ export default abstract class Bundlr {
     public address;
     public currency;
     public currencyConfig: Currency;
+    protected _readyPromise: Promise<void>
 
     constructor() { return; }
 

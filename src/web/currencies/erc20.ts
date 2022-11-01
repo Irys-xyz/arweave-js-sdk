@@ -4,7 +4,7 @@ import { CurrencyConfig, Tx } from "../../common/types";
 import { getRedstonePrice } from "../currency";
 import EthereumConfig from "./ethereum";
 
-export interface ERC20CurrencyConfig extends CurrencyConfig { contractAddress: string }
+export interface ERC20CurrencyConfig extends CurrencyConfig { contractAddress: string; }
 
 export default class ERC20Config extends EthereumConfig {
     private contractInstance: ethers.Contract;
@@ -18,19 +18,19 @@ export default class ERC20Config extends EthereumConfig {
     async getContract(): Promise<ethers.Contract> {
         if (!this.contractInstance) {
             this.contractInstance = new ethers.Contract(this.contractAddress, erc20abi, this.w3signer);
-            this.base = ["wei", Math.pow(10, await this.contractInstance.decimals())]
+            this.base = ["wei", Math.pow(10, await this.contractInstance.decimals())];
         }
-        return this.contractInstance
+        return this.contractInstance;
     }
 
     async getTx(txId: string): Promise<Tx> {
-        const response = await (this.providerInstance).getTransaction(txId)
+        const response = await (this.providerInstance).getTransaction(txId);
         if (!response) throw new Error("Tx doesn't exist");
         if (
             response.data.length !== 138 ||
             response.data.slice(2, 10) !== "a9059cbb" // standard ERC20-ABI method ID for transfers
         ) {
-            throw new Error("Tx isn't a ERC20 transfer")
+            throw new Error("Tx isn't a ERC20 transfer");
         }
         const to = `0x${response.data.slice(34, 74)}`;
         const amount = new BigNumber(response.data.slice(74), 16);
@@ -57,14 +57,14 @@ export default class ERC20Config extends EthereumConfig {
         const contract = await this.getContract();
 
         const gasPrice = await this.providerInstance.getGasPrice();
-        const gasLimit = await contract.estimateGas.transfer(to, _amount)
+        const gasLimit = await contract.estimateGas.transfer(to, _amount);
         const units = new BigNumber(gasPrice.mul(gasLimit).toString()); // price in WEI
         const [fiatGasPrice] = await this.getGas(); // get price of gas units
-        const value = fiatGasPrice.multipliedBy(units) // value of the fee
+        const value = fiatGasPrice.multipliedBy(units); // value of the fee
         // convert value 
         const ctPrice = new BigNumber(await this.price()); // price for this currency
 
-        const ctAmount = (new BigNumber(value).dividedToIntegerBy(ctPrice))
+        const ctAmount = (new BigNumber(value).dividedToIntegerBy(ctPrice));
         // const b = ctAmount.multipliedBy(ctPrice)
         // const c = value.dividedBy(this.base[1])
         // console.log(b);
@@ -75,14 +75,14 @@ export default class ERC20Config extends EthereumConfig {
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
         // const provider = await this.getProvider()
         // const wallet = new Wallet(this.wallet, this.providerInstance);
-        const contract = await this.getContract()
+        const contract = await this.getContract();
         const _amount = "0x" + new BigNumber(amount).toString(16);
-        const tx = await contract.populateTransaction.transfer(to, _amount)
+        const tx = await contract.populateTransaction.transfer(to, _amount);
         // Needed *specifically* for ERC20
         tx.gasPrice = await this.providerInstance.getGasPrice();
-        tx.gasLimit = await contract.estimateGas.transfer(to, _amount)
+        tx.gasLimit = await contract.estimateGas.transfer(to, _amount);
         tx.chainId = (await this.providerInstance.getNetwork()).chainId;
-        tx.nonce = await this.providerInstance.getTransactionCount(this.address)
+        tx.nonce = await this.providerInstance.getTransactionCount(this.address);
         // const txr = this.w3signer.populateTransaction()
         // const signedTx = await this.wallet.signTransaction(tx);
         // const txId = "0x" + keccak256(Buffer.from(signedTx.slice(2), "hex")).toString("hex");
@@ -91,7 +91,7 @@ export default class ERC20Config extends EthereumConfig {
 
     // TODO: create a nicer solution than just overrides (larger issue: some currencies aren't on redstone)
     public async getGas(): Promise<[BigNumber, number]> {
-        return [new BigNumber(await getRedstonePrice("ETH")), 1e18]
+        return [new BigNumber(await getRedstonePrice("ETH")), 1e18];
     }
 
 
@@ -318,4 +318,4 @@ export const erc20abi = [
         "name": "Transfer",
         "type": "event"
     }
-]
+];

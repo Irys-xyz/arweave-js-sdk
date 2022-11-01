@@ -13,7 +13,7 @@ export interface Tx {
     pending: boolean;
     confirmed: boolean;
 }
-export interface CurrencyConfig { name: string, ticker: string, minConfirm?: number, wallet: any, providerUrl: string, isSlow?: boolean, opts?: any; }
+export interface CurrencyConfig { name: string, ticker: string, minConfirm?: number, wallet?: string | Object, providerUrl: string, isSlow?: boolean, opts?: any; }
 
 export interface Currency {
     isSlow: boolean;
@@ -43,15 +43,21 @@ export interface Currency {
 
     getCurrentHeight(): Promise<BigNumber>;
 
-    getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber>;
+    getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber | object>;
 
-    sendTx(data: any): Promise<any>; // TODO: make signature(s) more specific
+    sendTx(data: any): Promise<string | undefined>;
 
-    createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string, tx: any; }>;
+    createTx(amount: BigNumber.Value, to: string, fee?: string | object): Promise<{ txId: string | undefined, tx: any; }>;
 
     getPublicKey(): Promise<string | Buffer> | (string | Buffer);
 
-    ready?(): void | PromiseLike<void>;
+    ready?(): Promise<void>;
+
+    // createMultiSigTx?(amount: BigNumber.Value, to: string, opts: any, fee?: string): Promise<any>;
+
+    // addSignature?(multiTx: any, opts: any): Promise<any>;
+
+    // submitMultiSigTx?(multiTx: any, opts: any): Promise<any>;
 }
 
 
@@ -62,6 +68,7 @@ export interface Manifest {
     paths: Record<string, Record<string, Record<"id", string>>>,
     index?: Record<"path", string>;
 }
+
 
 export interface UploadResponse {
     id: string,
@@ -83,6 +90,7 @@ export interface WithdrawalResponse {
     fee: number,
     final: number;
 }
+
 
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
