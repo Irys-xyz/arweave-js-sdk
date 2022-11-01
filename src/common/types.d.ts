@@ -60,13 +60,35 @@ export interface Currency {
     // submitMultiSigTx?(multiTx: any, opts: any): Promise<any>;
 }
 
-export interface FundData { reward: string, target: string, quantity: string, id: string; }
+
 
 export interface Manifest {
     manifest: string,
     version: string,
     paths: Record<string, Record<string, Record<"id", string>>>,
     index?: Record<"path", string>;
+}
+
+
+export interface UploadResponse {
+    id: string,
+    public: string,
+    signature: string,
+    block: number,
+    validatorSignatures: { address: string, signature: string; }[];
+}
+
+export interface FundResponse {
+    reward: string,
+    target: string,
+    quantity: string,
+    id: string;
+}
+export interface WithdrawalResponse {
+    tx_id: string;
+    requested: number;
+    fee: number,
+    final: number;
 }
 
 

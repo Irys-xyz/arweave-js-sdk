@@ -2,6 +2,7 @@ import { createData, DataItem, DataItemCreateOptions } from "arbundles";
 import { Signer } from "arbundles/src/signing";
 import Bundlr from "./bundlr";
 import Crypto from "crypto";
+import { UploadResponse } from "./types";
 
 /**
  * Extended DataItem that allows for seamless bundlr operations, such as signing and uploading.
@@ -27,8 +28,8 @@ export default class BundlrTransaction extends DataItem {
         return this.getRaw().length;
     }
 
-    async upload(): Promise<any> {
-        return this.bundlr.uploader.transactionUploader(this);
+    async upload(): Promise<UploadResponse> {
+        return (await this.bundlr.uploader.uploadTransaction(this)).data;
     }
 
 }

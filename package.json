@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/client",
-  "version": "0.9.0-a9",
+  "version": "0.9.0-b8",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
@@ -75,7 +75,7 @@
     "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
     "tslib": "^2.3.1",
-    "typescript": "^4.5.4",
+    "typescript": "^4.8.4",
     "v8-profiler-next": "^1.8.0",
     "webpack": "^5.65.0",
     "webpack-bundle-analyzer": "^4.5.0",

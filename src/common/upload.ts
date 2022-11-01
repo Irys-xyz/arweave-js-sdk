@@ -1,15 +1,15 @@
-import { DataItem, DataItemCreateOptions } from "arbundles";
+import { createData, DataItem, DataItemCreateOptions } from "arbundles";
 import { AxiosResponse } from "axios";
 import Utils from "./utils";
 import Api from "./api";
-import { Currency, Manifest } from "./types";
+import { Currency, Manifest, UploadResponse } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
 import { ChunkingUploader } from "./chunkingUploader";
 import { Readable } from "stream";
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
-
+export const CHUNKING_THRESHOLD = 50_000_000;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export default class Uploader {
     protected readonly api: Api;
@@ -26,41 +26,15 @@ export default class Uploader {
         this.utils = utils;
     }
 
-
-    /**
-     * Uploads data to the bundler
-     * @param data
-     * @param opts
-     * @returns the response from the bundler
-     */
-    public async upload(data: Buffer | Readable, opts?: DataItemCreateOptions): Promise<AxiosResponse<any>> {
-
-        // const signer = await this.currencyConfig.getSigner();
-        // const dataItem = createData(
-        //     data,
-        //     signer,
-        //     { tags, anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) }
-        // );
-        // await dataItem.sign(signer);
-        // return await this.transactionUploader(dataItem);
-        return await this.chunkedUploader.uploadData(data, opts);
-    }
-
-
-    get chunkedUploader() {
-        return new ChunkingUploader(this.currencyConfig, this.api);
-    }
-
     /**
      * Uploads a given transaction to the bundler
      * @param transaction
      */
-    public async transactionUploader(transaction: DataItem | Readable | Buffer): Promise<AxiosResponse<any>> {
-        let res: AxiosResponse<any>;
+    public async uploadTransaction(transaction: DataItem | Readable | Buffer): Promise<AxiosResponse<UploadResponse>> {
+        let res: AxiosResponse<UploadResponse>;
         const isDataItem = DataItem.isDataItem(transaction);
-        if (this.forceUseChunking || (isDataItem && transaction.getRaw().length > 50_000_000) || !isDataItem) {
-            const uploader = this.chunkedUploader;
-            res = await uploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction);
+        if (this.forceUseChunking || (isDataItem && transaction.getRaw().length >= CHUNKING_THRESHOLD) || !isDataItem) {
+            res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction);
         } else {
             const { protocol, host, port, timeout } = this.api.getConfig();
             res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, transaction.getRaw(), {
@@ -69,7 +43,7 @@ export default class Uploader {
                 maxBodyLength: Infinity
             });
             if (res.status == 201) {
-                res.data = { id: transaction.id };
+                res.data = { ...res.data, id: transaction.id };
             }
         }
         switch (res.status) {
@@ -77,15 +51,29 @@ export default class Uploader {
                 throw new Error("Not enough funds to send data");
             default:
                 if (res.status >= 400) {
-                    throw new Error(`whilst uploading DataItem: ${res.status} ${res.statusText}`);
+                    throw new Error(`whilst uploading Bundlr transaction: ${res.status} ${res.statusText}`);
                 }
         }
         return res;
     }
 
+    public async uploadData(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<UploadResponse> {
+        if (typeof data === "string") {
+            data = Buffer.from(data);
+        }
+        if (Buffer.isBuffer(data)) {
+            if (data.length <= CHUNKING_THRESHOLD) {
+                const dataItem = createData(data, this.currencyConfig.getSigner(), opts);
+                await dataItem.sign(this.currencyConfig.getSigner());
+                return (await this.uploadTransaction(dataItem)).data;
+            }
+        }
+        return (await this.chunkedUploader.uploadData(data, opts)).data;
+    }
 
 
 
+    // concurrently uploads transactions
     public async concurrentUploader(data: (DataItem | Buffer | Readable)[], concurrency = 5, resultProcessor?: (res: any) => Promise<any>, logFunction?: (log: string) => Promise<any>): Promise<{ errors: Array<any>, results: Array<any>; }> {
         const errors = [];
         const results = await PromisePool
@@ -124,17 +112,11 @@ export default class Uploader {
         return { errors, results: results.results };
     }
 
-    protected async processItem(item: string | Buffer | DataItem | Readable): Promise<any> {
-        if (typeof item === "string") {
-            item = Buffer.from(item);
+    protected async processItem(data: string | Buffer | Readable | DataItem, opts?: DataItemCreateOptions): Promise<any> {
+        if (DataItem.isDataItem(data)) {
+            return this.uploadTransaction(data);
         }
-        // if (Buffer.isBuffer(item)) {
-        //     const signer = await this.currencyConfig.getSigner();
-        //     item = createData(item, signer, { anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) });
-        //     await item.sign(signer);
-        // }
-
-        return await this.transactionUploader(item);
+        return this.uploadData(data, opts);
     }
 
     /**
@@ -164,10 +146,9 @@ export default class Uploader {
 
     };
 
-
-
-
-
+    get chunkedUploader() {
+        return new ChunkingUploader(this.currencyConfig, this.api);
+    }
 
 
     set useChunking(state: boolean) {

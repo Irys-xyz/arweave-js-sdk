@@ -2,7 +2,7 @@ import { createData, DataItem, DataItemCreateOptions, deepHash } from "arbundles
 import { PassThrough, Readable } from "stream";
 import { EventEmitter } from "events";
 import Api from "./api";
-import { Currency } from "./types";
+import { Currency, UploadResponse } from "./types";
 import Utils from "./utils";
 import Crypto from "crypto";
 import { stringToBuffer } from "arweave/web/lib/utils";
@@ -109,7 +109,7 @@ export class ChunkingUploader extends EventEmitter {
     async runUpload(
         dataStream: Readable | Buffer,
         transactionOpts?: DataItemCreateOptions
-    ) {
+    ): Promise<AxiosResponse<UploadResponse>> {
         let id = this.uploadID;
 
         const isTransaction = (transactionOpts === undefined);
@@ -136,10 +136,10 @@ export class ChunkingUploader extends EventEmitter {
             throw new Error(`Chunk size out of allowed range: ${min} - ${max}`);
         }
         let totalUploaded = 0;
-        const promiseFactory = (d: Buffer, o: number, c: number): Promise<Record<string, any>> => {
+        const promiseFactory = (d: Buffer, o: number, c: number): Promise<{ o: number, d: AxiosResponse<UploadResponse>; }> => {
             return new Promise((r) => {
                 retry(
-                    async () => {
+                    async (bail) => {
                         await this.api.post(`/chunks/${this.currency}/${id}/${o}`, d, {
                             headers: { "Content-Type": "application/octet-stream", ...headers },
                             maxBodyLength: Infinity,
@@ -149,6 +149,7 @@ export class ChunkingUploader extends EventEmitter {
                             if (re?.status >= 300) {
                                 const e = { res: re, id: c, offset: o, size: d.length };
                                 this.emit("chunkError", e);
+                                if (re?.status === 402) bail(new Error("Not enough funds to send data"));
                                 throw e;
                             }
                             this.emit("chunkUpload", { id: c, offset: o, size: d.length, totalUploaded: (totalUploaded += d.length) });
@@ -313,7 +314,7 @@ export class ChunkingUploader extends EventEmitter {
         return finishUpload;
     }
 
-    get completionPromise(): Promise<AxiosResponse<any, any>> {
+    get completionPromise(): Promise<AxiosResponse<UploadResponse>> {
         return new Promise(r => this.on("done", r));
     }
 

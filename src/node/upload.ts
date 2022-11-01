@@ -1,6 +1,5 @@
 import { promises, PathLike, createReadStream, createWriteStream } from "fs";
-import { AxiosResponse } from "axios";
-import { Currency } from "../common/types";
+import { Currency, UploadResponse } from "../common/types";
 import Uploader from "../common/upload";
 import Api from "../common/api";
 import Utils from "../common/utils";
@@ -9,6 +8,7 @@ import mime from "mime-types";
 import inquirer from "inquirer";
 import { Readable } from "stream";
 import * as csv from "csv";
+import { DataItem } from "arbundles";
 
 export const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false); };
 
@@ -22,7 +22,7 @@ export default class NodeUploader extends Uploader {
      * @param path to the file to be uploaded
      * @returns the response from the bundler
      */
-    public async uploadFile(path: string): Promise<AxiosResponse<any>> {
+    public async uploadFile(path: string): Promise<UploadResponse> {
         if (!promises.stat(path).then(_ => true).catch(_ => false)) {
             throw new Error(`Unable to access path: ${path}`);
         }
@@ -31,7 +31,7 @@ export default class NodeUploader extends Uploader {
 
         const data = createReadStream(path);
 
-        return await this.upload(data, { tags });
+        return await this.uploadData(data, { tags });
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -54,11 +54,17 @@ export default class NodeUploader extends Uploader {
     * @returns 
      */
     // eslint-disable-next-line @typescript-eslint/ban-types
-    public async uploadFolder(path: string, indexFile?: string, batchSize = 10, interactivePreflight?: boolean, keepDeleted = true, logFunction?: (log: string) => Promise<any>): Promise<string> {
+    public async uploadFolder(path, { batchSize = 10, keepDeleted = true, indexFile, interactivePreflight, logFunction }: {
+        batchSize: number,
+        keepDeleted: boolean,
+        indexFile?: string,
+        interactivePreflight?: boolean,
+        logFunction?: (log: string) => Promise<void>;
+    } = { batchSize: 10, keepDeleted: true }): Promise<UploadResponse> {
         path = p.resolve(path);
         const alreadyProcessed = new Map();
 
-        if (! await checkPath(path)) {
+        if (!await checkPath(path)) {
             throw new Error(`Unable to access path: ${path}`);
         }
 
@@ -128,7 +134,7 @@ export default class NodeUploader extends Uploader {
             // return the txID of the upload
             const idpath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`);
             if (await checkPath(idpath)) {
-                return (await promises.readFile(idpath)).toString();
+                return JSON.parse((await promises.readFile(idpath, "utf-8"))) as UploadResponse;
             }
             return undefined;
         }
@@ -154,8 +160,8 @@ export default class NodeUploader extends Uploader {
         stringifier.pipe(wstrm);
 
         const processor = async (data): Promise<void> => {
-            if (data?.res?.data?.id) {
-                stringifier.write([p.relative(path, data.item), data.res.data.id]);
+            if (data?.res?.id) {
+                stringifier.write([p.relative(path, data.item), data.res.id]);
             }
         };
 
@@ -180,15 +186,15 @@ export default class NodeUploader extends Uploader {
         // upload the manifest
         await logFunction("Uploading JSON manifest...");
         const tags = [{ name: "Type", value: "manifest" }, { name: "Content-Type", value: "application/x.arweave-manifest+json" }];
-        const mres = await this.upload(createReadStream(jsonManifestPath), { tags })
+        const mres = await this.uploadData(createReadStream(jsonManifestPath), { tags })
             .catch((e) => {
                 throw new Error(`Failed to upload manifest: ${e.message}`);
             });
         await logFunction("Done!");
-        if (mres?.data?.id) {
-            await promises.writeFile(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`), mres.data.id);
+        if (mres?.id) {
+            await promises.writeFile(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`), JSON.stringify(mres));
         }
-        return mres.data?.id ?? "none";
+        return mres;
     }
 
 
@@ -197,16 +203,18 @@ export default class NodeUploader extends Uploader {
      * @param item can be a string value, a path to a file, a Buffer of data or a DataItem
      * @returns A dataItem
      */
-    protected async processItem(item: string | Buffer | Readable): Promise<any> {
+    protected async processItem(item: string | Buffer | Readable | DataItem): Promise<any> {
+        if (DataItem.isDataItem(item)) {
+            return this.uploadTransaction(item);
+        }
+
         let tags;
-        // let returnVal;
         if (typeof item === "string") {
             if (await checkPath(item)) {
                 const mimeType = mime.contentType(mime.lookup(item) || "application/octet-stream");
                 tags = [{ name: "Content-Type", value: this.contentTypeOverride ?? mimeType }];
                 // returnVal = item;
                 item = createReadStream(item);
-
             } else {
                 item = Buffer.from(item);
                 if (this.contentTypeOverride) {
@@ -214,17 +222,7 @@ export default class NodeUploader extends Uploader {
                 }
             }
         }
-        // if (Buffer.isBuffer(item)) {
-        //     // const signer = await this.currencyConfig.getSigner();
-        //     // item = createData(item, signer, { tags, anchor: Crypto.randomBytes(32).toString("base64").slice(0, 32) });
-        //     // await item.sign(signer);
-        // }
-        // if(returnVal){
-        //     return {path: returnVal, }
-        // }
-
-        return await this.chunkedUploader.uploadData(item, { tags });
-        // return await this.transactionUploader(item);
+        return this.uploadData(item, { tags });
     }
 
 

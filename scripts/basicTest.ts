@@ -58,6 +58,13 @@ async function main() {
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
+
+        res = await bundlr.upload("Hello, world!");
+        console.log(res);
+
+        const transaction = await bundlr.createTransaction("aaa");
+        await transaction.sign();
+
         tx = await bundlr.fund(1);
         console.log(tx);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
@@ -66,6 +73,7 @@ async function main() {
         const signingInfo = await transaction.getSignatureData()
         const signed = await bundlr.currencyConfig.sign(signingInfo)
         transaction.setSignature(Buffer.from(signed))
+
         console.log(transaction.id);
         console.log(await transaction.isValid());
 
@@ -106,15 +114,13 @@ async function main() {
             await genData(`./${testFolder}`, 1_000, 100, 100_000);
         }
 
-        const resu = await bundlr.uploader.uploadFolder(`./${testFolder}`, undefined, 10, false, true, async (log): Promise<void> => { console.log(log); });
+        const resu = await bundlr.uploadFolder(`./${testFolder}`, { batchSize: 10, keepDeleted: false, logFunction: async (log): Promise<void> => { console.log(log); } });
         console.log(resu);
 
         /* const checkResults = */ await checkManifestBundlr(`./${testFolder}`, nodeUrl);
-        /*         console.log(checkResults); */
 
         res = await bundlr.uploadFile(`./${testFolder}/0.json`);
-        console.log(JSON.stringify(res.data));
-        console.log(JSON.stringify(res.status));
+        console.log(JSON.stringify(res));
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
@@ -123,7 +129,7 @@ async function main() {
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
         let resw = await bundlr.withdrawBalance(1);
-        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        console.log(`withdrawal: ${JSON.stringify(resw)}`);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
 

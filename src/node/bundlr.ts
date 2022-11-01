@@ -1,7 +1,7 @@
-import { AxiosResponse } from "axios";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
+import { UploadResponse } from "../common/types";
 import Utils from "../common/utils";
 import getCurrency from "./currencies";
 import { NodeCurrency } from "./types";
@@ -11,6 +11,7 @@ import NodeUploader from "./upload";
 export default class NodeBundlr extends Bundlr {
     public uploader: NodeUploader; // re-define type
     public currencyConfig: NodeCurrency;
+
     /**
      * Constructs a new Bundlr instance, as well as supporting subclasses
      * @param url - URL to the bundler
@@ -29,19 +30,34 @@ export default class NodeBundlr extends Bundlr {
         this._readyPromise = this.currencyConfig.ready ? this.currencyConfig.ready() : new Promise((r => r()));
     }
 
+
     /**
-     * Upload a file at the specified path to the bundler
-     * @param path path to the file to upload
-     * @returns bundler response
-     */
-    async uploadFile(path: string): Promise<AxiosResponse<any>> {
+    * Upload a file at the specified path to the bundler
+    * @param path path to the file to upload
+    * @returns bundler response
+    */
+    async uploadFile(path: string): Promise<UploadResponse> {
         return this.uploader.uploadFile(path);
     };
 
-    async ready(): Promise<void> {
-        await this._readyPromise;
-        this.address = this.currencyConfig.address;
-    }
+
+    /**
+    * @param path - path to the folder to be uploaded
+    * @param indexFile - path to the index file (i.e index.html)
+    * @param batchSize - number of items to upload concurrently
+    * @param interactivePreflight - whether to interactively prompt the user for confirmation of upload (CLI ONLY)
+    * @param keepDeleted - Whether to keep previously uploaded (but now deleted) files in the manifest
+    * @param logFunction - for handling logging from the uploader for UX
+    * @returns 
+    */
+    public async uploadFolder(path: string, { batchSize = 10, keepDeleted = true, indexFile, interactivePreflight, logFunction }: {
+        batchSize?: number,
+        keepDeleted?: boolean,
+        indexFile?: string,
+        interactivePreflight?: boolean,
+        logFunction?: (log: string) => Promise<void>;
+    } = {}): Promise<UploadResponse> {
+        return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction });
 
     static init(opts: {
         url: string,
@@ -53,6 +69,7 @@ export default class NodeBundlr extends Bundlr {
     }): NodeBundlr {
         const { url, currency, privateKey, publicKey, signingFunction, collectSignatures } = opts;
         return new NodeBundlr(url, currency, signingFunction ? publicKey : privateKey, { currencyOpts: { signingFunction, collectSignatures } });
+
     }
 
 }
