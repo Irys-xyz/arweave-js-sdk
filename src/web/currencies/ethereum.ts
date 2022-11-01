@@ -78,7 +78,7 @@ export default class EthereumConfig extends BaseWebCurrency {
         return new BigNumber(estimatedGas.mul(gasPrice).toString());
     }
 
-    async sendTx(data: ethers.providers.TransactionRequest): Promise<string> {
+    async sendTx(data: ethers.providers.TransactionRequest): Promise<string | undefined> {
         const signer = this.w3signer;
         const receipt = await signer.sendTransaction(data);// .catch((e) => { console.error(`Sending tx: ${e}`) })
         return receipt ? receipt.hash : undefined;

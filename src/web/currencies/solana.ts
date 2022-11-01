@@ -8,8 +8,8 @@ import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
 
 export default class SolanaConfig extends BaseWebCurrency {
-    private signer: HexInjectedSolanaSigner
-    protected wallet: MessageSignerWalletAdapter
+    private signer: HexInjectedSolanaSigner;
+    protected wallet: MessageSignerWalletAdapter;
     minConfirm = 1;
 
     constructor(config: CurrencyConfig) {
@@ -32,7 +32,7 @@ export default class SolanaConfig extends BaseWebCurrency {
 
 
     async getTx(txId: string): Promise<Tx> {
-        const connection = await this.getProvider()
+        const connection = await this.getProvider();
         const stx = await connection.getTransaction(txId, { commitment: "confirmed" });
         if (!stx) throw new Error("Confirmed tx not found");
 
@@ -55,7 +55,7 @@ export default class SolanaConfig extends BaseWebCurrency {
 
     ownerToAddress(owner: any): string {
         if (typeof owner === "string") {
-            owner = Buffer.from(owner)
+            owner = Buffer.from(owner);
         }
         return bs58.encode(owner);
     }
@@ -71,7 +71,7 @@ export default class SolanaConfig extends BaseWebCurrency {
             // } else {
             //     this.signer = new InjectedSolanaSigner(this.wallet)
             // }
-            this.signer = new HexInjectedSolanaSigner(this.wallet)
+            this.signer = new HexInjectedSolanaSigner(this.wallet);
         }
         return this.signer;
     }
@@ -95,26 +95,24 @@ export default class SolanaConfig extends BaseWebCurrency {
         //     block.blockhash,
         // );
         // return new BigNumber(feeCalc.value.lamportsPerSignature);
-        return new BigNumber(5000) // hardcode it for now
+        return new BigNumber(5000); // hardcode it for now
     }
 
-    async sendTx(data: any): Promise<string> {
-
-        return await this.wallet.sendTransaction(data, await this.getProvider(), { skipPreflight: true })
-
+    async sendTx(data: any): Promise<string | undefined> {
+        return await this.wallet.sendTransaction(data, await this.getProvider(), { skipPreflight: true });
     }
 
     async createTx(
         amount: BigNumber.Value,
         to: string,
         _fee?: string,
-    ): Promise<{ txId: string; tx: any }> {
+    ): Promise<{ txId: string; tx: any; }> {
         // TODO: figure out how to manually set fees
-        const pubkey = new web3.PublicKey(await this.getPublicKey())
+        const pubkey = new web3.PublicKey(await this.getPublicKey());
         const hash = await retry(
             async (bail) => {
                 try {
-                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash
+                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash;
                 } catch (e) {
                     if (e.message?.includes("blockhash")) throw e;
                     else bail(e);

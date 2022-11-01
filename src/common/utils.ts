@@ -3,7 +3,7 @@ import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
 import Api from "./api";
 import { Currency } from "./types";
-BigNumber.set({ DECIMAL_PLACES: 50 })
+BigNumber.set({ DECIMAL_PLACES: 50 });
 
 export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -34,7 +34,7 @@ export default class Utils {
      * @returns nonce for the current user
      */
     public async getNonce(): Promise<number> {
-        const res = await this.api.get(`/account/withdrawals/${this.currency}?address=${this.currencyConfig.address}`);
+        const res = await this.api.get(`/account/withdrawals/${this.currencyConfig.name}?address=${this.currencyConfig.address}`);
         Utils.checkAndThrow(res, "Getting withdrawal nonce");
         return (res).data;
     }
@@ -45,7 +45,7 @@ export default class Utils {
      * @returns the balance in winston
      */
     public async getBalance(address: string): Promise<BigNumber> {
-        const res = await this.api.get(`/account/balance/${this.currency}?address=${address}`);
+        const res = await this.api.get(`/account/balance/${this.currencyConfig.name}?address=${address}`);
         Utils.checkAndThrow(res, "Getting balance");
         return new BigNumber(res.data.balance);
     }
@@ -56,9 +56,9 @@ export default class Utils {
      */
     public async getBundlerAddress(currency: string): Promise<string> {
 
-        const res = await this.api.get("/info")
+        const res = await this.api.get("/info");
         Utils.checkAndThrow(res, "Getting Bundler address");
-        const address = res.data.addresses[currency]
+        const address = res.data.addresses[currency];
         if (!address) {
             throw new Error(`Specified bundler does not support currency ${currency}`);
         }
@@ -72,7 +72,7 @@ export default class Utils {
      * @returns
      */
     public async getPrice(currency: string, bytes: number): Promise<BigNumber> {
-        const res = await this.api.get(`/price/${currency}/${bytes}`)
+        const res = await this.api.get(`/price/${currency}/${bytes}`);
         Utils.checkAndThrow(res, "Getting storage cost");
         return new BigNumber((res).data);
     }
@@ -83,17 +83,17 @@ export default class Utils {
      * @param txid
      * @returns
      */
-    public async confirmationPoll(txid: string): Promise<void> {
+    public async confirmationPoll(txid: string): Promise<any> {
         if (this.currencyConfig.isSlow) { return; }
+        let lastError;
         for (let i = 0; i < 30; i++) {
             await sleep(1000);
-            if (await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed }).catch(_ => { return false })) {
+            if (await this.currencyConfig.getTx(txid).then(v => { return v?.confirmed; }).catch(err => { lastError = err; return false; })) {
                 return;
             }
         }
-
-        // throw new Error(`Tx ${txid} didn't finalize after 30 seconds`);
-        console.warn(`Tx ${txid} didn't finalize after 30 seconds`)
+        console.warn(`Tx ${txid} didn't finalize after 30 seconds ${lastError ? ` - ${lastError}` : ""}`);
+        return lastError;
     }
 
     public unitConverter(baseUnits: BigNumber.Value): BigNumber {
