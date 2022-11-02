@@ -7,6 +7,7 @@ import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
 import { ChunkingUploader } from "./chunkingUploader";
 import { Readable } from "stream";
+import Crypto from "crypto";
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 export const CHUNKING_THRESHOLD = 50_000_000;
@@ -43,7 +44,7 @@ export default class Uploader {
                 maxBodyLength: Infinity
             });
             if (res.status == 201) {
-                res.data = { ...res.data, id: transaction.id };
+                throw new Error(res.data as any as string);
             }
         }
         switch (res.status) {
@@ -63,7 +64,7 @@ export default class Uploader {
         }
         if (Buffer.isBuffer(data)) {
             if (data.length <= CHUNKING_THRESHOLD) {
-                const dataItem = createData(data, this.currencyConfig.getSigner(), opts);
+                const dataItem = createData(data, this.currencyConfig.getSigner(), { ...opts, anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32) });
                 await dataItem.sign(this.currencyConfig.getSigner());
                 return (await this.uploadTransaction(dataItem)).data;
             }

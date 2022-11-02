@@ -6,8 +6,6 @@ import Crypto from "crypto";
 import { checkPath } from "../src/node/upload";
 import { genData } from "./genData";
 import { checkManifestBundlr } from "./checkManifest";
-import { AptosAccount, FaucetClient } from "aptos";
-import BigNumber from "bignumber.js";
 
 const profiling = false;
 async function main() {
@@ -30,55 +28,35 @@ async function main() {
         const nodeUrl = "http://devnet.bundlr.network";
         const testFolder = "testFolder";
 
-        const key = keys.devnet.aptos.key;
+        const key = keys.aptos;
 
-        const account = new AptosAccount(Buffer.from(key.slice(2), "hex"))
-        console.log(account.address())
-
-        const signingFunction = async (msg: Uint8Array) => {
-            return account.signBuffer(msg).toUint8Array()
-        }
-
-        let bundlr = Bundlr.init({ url: nodeUrl, currency: "aptos", publicKey: account.pubKey().toString(), signingFunction })
+        // let bundlr = await Bundlr.init({ url: nodeUrl, currency: "aptos", publicKey: account.pubKey().toString(), signingFunction });
         // let bundlr = Bundlr.init({ url: nodeUrl, currency: "aptos", privateKey: key })
 
-        //new Bundlr(nodeUrl, "aptos", keys.devnet.aptos.key)
-        await bundlr.ready()
+        let bundlr = new Bundlr(nodeUrl, "aptos", key, { providerUrl: "https://fullnode.devnet.aptoslabs.com" });
+        await bundlr.ready();
         console.log(bundlr.address);
-        account.pubKey
-
-
 
         let res;
         let tx;
-
-
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
-
         res = await bundlr.upload("Hello, world!");
         console.log(res);
 
-        const transaction = await bundlr.createTransaction("aaa");
-        await transaction.sign();
-
-        tx = await bundlr.fund(1);
-        console.log(tx);
-        console.log(`balance: ${await bundlr.getLoadedBalance()}`);
-
         const transaction = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
-        const signingInfo = await transaction.getSignatureData()
-        const signed = await bundlr.currencyConfig.sign(signingInfo)
-        transaction.setSignature(Buffer.from(signed))
+        const signingInfo = await transaction.getSignatureData();
+        const signed = await bundlr.currencyConfig.sign(signingInfo);
+        transaction.setSignature(Buffer.from(signed));
 
         console.log(transaction.id);
         console.log(await transaction.isValid());
 
         res = await transaction.upload();
-        console.log(`Upload: ${JSON.stringify(res.data)}`);
+        console.log(`Upload: ${JSON.stringify(res)}`);
 
         const ctx = bundlr.createTransaction(Crypto.randomBytes(15_000_000).toString("base64"));
         await ctx.sign();
@@ -114,7 +92,7 @@ async function main() {
             await genData(`./${testFolder}`, 1_000, 100, 100_000);
         }
 
-        const resu = await bundlr.uploadFolder(`./${testFolder}`, { batchSize: 10, keepDeleted: false, logFunction: async (log): Promise<void> => { console.log(log); } });
+        const resu = await bundlr.uploadFolder(`./${testFolder}`, { batchSize: 50, keepDeleted: false, logFunction: async (log): Promise<void> => { console.log(log); } });
         console.log(resu);
 
         /* const checkResults = */ await checkManifestBundlr(`./${testFolder}`, nodeUrl);
