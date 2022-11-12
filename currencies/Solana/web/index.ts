@@ -1,8 +1,8 @@
 import { Signer } from "@bundlr-network/client/build/esm/common/signing/index";
 import BigNumber from "bignumber.js";
-import HexInjectedSolanaSigner from "./HexInjectedSolanaSigner"
+import HexInjectedSolanaSigner from "./HexInjectedSolanaSigner";
 import { CreatedTx, CurrencyConfig, Tx } from "@bundlr-network/client/build/esm/common/types";
-import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency"
+import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency";
 import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
 import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
@@ -10,8 +10,9 @@ import retry from "async-retry";
 import WebBundlr from "@bundlr-network/client/build/esm/web/index";
 
 export default class SolanaConfig extends BaseWebCurrency {
-    private signer!: HexInjectedSolanaSigner
-    declare protected wallet: MessageSignerWalletAdapter
+    private signer: HexInjectedSolanaSigner;
+    protected wallet: MessageSignerWalletAdapter;
+    minConfirm = 1;
 
     constructor(config: CurrencyConfig) {
         super(config);
@@ -33,7 +34,7 @@ export default class SolanaConfig extends BaseWebCurrency {
 
 
     async getTx(txId: string): Promise<Tx> {
-        const connection = await this.getProvider()
+        const connection = await this.getProvider();
         const stx = await connection.getTransaction(txId, { commitment: "confirmed" });
         if (!stx) throw new Error("Confirmed tx not found");
 
@@ -49,14 +50,14 @@ export default class SolanaConfig extends BaseWebCurrency {
             amount: amount,
             blockHeight: new BigNumber(stx.slot),
             pending: false,
-            confirmed: currentSlot - stx.slot >= 10,
+            confirmed: currentSlot - stx.slot >= 1,
         };
         return tx;
     }
 
     ownerToAddress(owner: any): string {
         if (typeof owner === "string") {
-            owner = Buffer.from(owner)
+            owner = Buffer.from(owner);
         }
         return bs58.encode(owner);
     }
@@ -67,7 +68,7 @@ export default class SolanaConfig extends BaseWebCurrency {
 
     getSigner(): Signer {
         if (!this.signer) {
-            this.signer = new HexInjectedSolanaSigner(this.wallet)
+            this.signer = new HexInjectedSolanaSigner(this.wallet);
         }
         return this.signer;
     }
@@ -80,7 +81,7 @@ export default class SolanaConfig extends BaseWebCurrency {
         const bh = await retry(
             async (bail) => {
                 try {
-                    return (await (await this.getProvider()).getEpochInfo()).blockHeight
+                    return (await (await this.getProvider()).getEpochInfo()).blockHeight;
                 } catch (e: any) {
                     if (e.message?.includes("blockheight")) throw e;
                     else bail(e);
@@ -90,9 +91,9 @@ export default class SolanaConfig extends BaseWebCurrency {
             { retries: 3, minTimeout: 1000 }
         );
         if (bh) {
-            return new BigNumber(bh)
+            return new BigNumber(bh);
         }
-        throw new Error("Solana BlockHash is null")
+        throw new Error("Solana BlockHash is null");
     }
 
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
@@ -102,27 +103,25 @@ export default class SolanaConfig extends BaseWebCurrency {
         //     block.blockhash,
         // );
         // return new BigNumber(feeCalc.value.lamportsPerSignature);
-        return new BigNumber(5000) // hardcode it for now
+        return new BigNumber(5000); // hardcode it for now
     }
 
-    async sendTx(data: any): Promise<string> {
-
-        return await this.wallet.sendTransaction(data, await this.getProvider(), { skipPreflight: true })
-
+    async sendTx(data: any): Promise<string | undefined> {
+        return await this.wallet.sendTransaction(data, await this.getProvider(), { skipPreflight: true });
     }
 
     async createTx(
         amount: BigNumber.Value,
         to: string,
         _fee?: string,
-    ): Promise<CreatedTx> {
+    ): Promise<{ txId: string | undefined; tx: any; }> {
         // TODO: figure out how to manually set fees
-        const pubkey = new web3.PublicKey(await this.getPublicKey())
+        const pubkey = new web3.PublicKey(await this.getPublicKey());
         const hash = await retry(
             async (bail) => {
                 try {
-                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash
-                } catch (e: any) {
+                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash;
+                } catch (e) {
                     if (e.message?.includes("blockhash")) throw e;
                     else bail(e);
                     throw new Error("Unreachable");
@@ -148,19 +147,19 @@ export default class SolanaConfig extends BaseWebCurrency {
     }
 
     async getPublicKey(): Promise<string | Buffer> {
-        const pkey = this.wallet?.publicKey?.toBuffer()
+        const pkey = this.wallet?.publicKey?.toBuffer();
         if (!pkey) {
-            throw new Error("Public Key is undefined!")
+            throw new Error("Public Key is undefined!");
         }
-        return pkey
+        return pkey;
     }
 
 }
 
 export class SolanaBundlr extends WebBundlr {
-    public static readonly currency = "solana"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: config?.providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "solana";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: config?.providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet });
+        super(url, currencyConfig, config);
     }
 }

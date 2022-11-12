@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require("webpack");
 const { DuplicatesPlugin } = require("inspectpack/plugin");
-const DtsBundleWebpack = require('dts-bundle-webpack')
+const DtsBundleWebpack = require('dts-bundle-webpack');
 
 const base = {
     entry: './src/web/index.ts',
@@ -85,7 +85,7 @@ const mod = {
     experiments: {
         outputModule: true,
     }
-}
+};
 const umd = {
     ...base,
     externalsType: 'global',
@@ -98,6 +98,6 @@ const umd = {
         globalObject: "globalThis",
         umdNamedDefine: true,
     }
-}
+};
 
-module.exports = [mod, umd]
+module.exports = [mod, umd];

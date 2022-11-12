@@ -2,7 +2,7 @@
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
 import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
-import { Signer } from "@bundlr-network/client/build/cjs/common/signing/index"
+import { Signer } from "@bundlr-network/client/build/cjs/common/signing/index";
 import NodeBundlr from "@bundlr-network/client/build/cjs/node/index";
 import * as algosdk from "algosdk";
 import axios from "axios";
@@ -18,8 +18,8 @@ export default class AlgorandConfig extends BaseNodeCurrency {
 
     constructor(config: CurrencyConfig) {
         super(config);
-        this.base = ["microAlgos", 1e6]
-        this.keyPair = algosdk.mnemonicToSecretKey(this.wallet)
+        this.base = ["microAlgos", 1e6];
+        this.keyPair = algosdk.mnemonicToSecretKey(this.wallet);
         this.apiURL = this.providerUrl.slice(0, 8) + "node." + this.providerUrl.slice(8);
         this.indexerURL = this.providerUrl.slice(0, 8) + "algoindexer." + this.providerUrl.slice(8);
     }
@@ -38,7 +38,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
             blockHeight: txBlockHeight,
             pending: false,
             confirmed: latestBlockHeight - txBlockHeight.toNumber() >= this.minConfirm
-        }
+        };
         return tx;
     }
 
@@ -47,15 +47,15 @@ export default class AlgorandConfig extends BaseNodeCurrency {
     }
 
     async sign(data: Uint8Array): Promise<Uint8Array> {
-        return this.getSigner().sign(data)
+        return this.getSigner().sign(data);
     }
 
     getSigner(): Signer {
-        return new AlgorandSigner(this.keyPair.sk, this.getPublicKey())
+        return new AlgorandSigner(this.keyPair.sk, this.getPublicKey());
     }
 
     async verify(pub: string | Buffer, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return AlgorandSigner.verify(pub, data, signature)
+        return AlgorandSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -71,10 +71,10 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         return new BigNumber(response.data["min-fee"]);
     }
 
-    async sendTx(data: any): Promise<string> {
+    async sendTx(data: any): Promise<string | undefined> {
         const endpoint = `${this.apiURL}/v2/transactions`;
         const response = await axios.post(endpoint, data);
-        return response.data["txId"]; // return TX id
+        return response.data["txId"];
     }
 
     async createTx(amount: BigNumber.Value, to: string): Promise<{ txId: string; tx: any; }> {
@@ -97,7 +97,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         });
         const signed = algosdk.signTransaction(unsigned, this.keyPair.sk);
 
-        return { tx: signed.blob, txId: signed.txID }
+        return { tx: signed.blob, txId: signed.txID };
     }
 
     getPublicKey(): string | Buffer {
@@ -109,9 +109,9 @@ export default class AlgorandConfig extends BaseNodeCurrency {
 }
 
 export class AlgorandBundlr extends NodeBundlr {
-    public static readonly currency = "algorand"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: config?.providerUrl ?? "https://algoexplorerapi.io", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "algorand";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: config?.providerUrl ?? "https://algoexplorerapi.io", wallet });
+        super(url, currencyConfig, config);
     }
 }

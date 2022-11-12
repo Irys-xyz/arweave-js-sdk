@@ -2,28 +2,32 @@ import Utils from "./utils";
 import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
-import { AxiosResponse } from "axios";
 import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
-import { Currency, FundData } from "./types";
-import { Signer } from "./signing";
+import { Currency, FundResponse, UploadResponse, WithdrawalResponse } from "./types";
+import { Signer } from "arbundles/src/signing";
+import { Readable } from "stream";
 
 export default abstract class Bundlr {
-    public api!: Api;
-    public utils!: Utils;
-    public uploader!: Uploader;
-    public funder!: Fund;
-    public address!: string;
-    public currency!: string;
-    public currencyConfig!: Currency;
+    public api: Api;
+    public utils: Utils;
+    public uploader: Uploader;
+    public funder: Fund;
+    public address;
+    public currency;
+    public currencyConfig: Currency;
+    protected _readyPromise: Promise<void>;
 
-    constructor() { return }
+    constructor() { return; }
 
+    get signer(): Signer {
+        return this.currencyConfig.getSigner();
+    }
 
-    async withdrawBalance(amount: BigNumber.Value): Promise<AxiosResponse<any>> {
-        return await withdrawBalance(this.utils, this.api, amount);
+    async withdrawBalance(amount: BigNumber.Value): Promise<WithdrawalResponse> {
+        return withdrawBalance(this.utils, this.api, amount);
     }
 
     /**
@@ -31,7 +35,7 @@ export default abstract class Bundlr {
      * @returns balance (in winston)
      */
     async getLoadedBalance(): Promise<BigNumber> {
-        return this.utils.getBalance(this.address)
+        return this.utils.getBalance(this.address);
     }
     /**
      * Gets the balance for the specified address
@@ -39,7 +43,7 @@ export default abstract class Bundlr {
      * @returns the balance (in winston)
      */
     async getBalance(address: string): Promise<BigNumber> {
-        return this.utils.getBalance(address)
+        return this.utils.getBalance(address);
     }
 
     /**
@@ -47,8 +51,8 @@ export default abstract class Bundlr {
      * @param amount amount to send in atomic units
      * @returns details about the fund transaction
      */
-    async fund(amount: BigNumber.Value, multiplier?: number): Promise<FundData> {
-        return this.funder.fund(amount, multiplier)
+    async fund(amount: BigNumber.Value, multiplier?: number): Promise<FundResponse> {
+        return this.funder.fund(amount, multiplier);
     }
 
     /**
@@ -57,7 +61,7 @@ export default abstract class Bundlr {
      * @returns 
      */
     public async getPrice(bytes: number): Promise<BigNumber> {
-        return this.utils.getPrice(this.currency, bytes)
+        return this.utils.getPrice(this.currency, bytes);
     }
 
     /**
@@ -74,6 +78,16 @@ export default abstract class Bundlr {
      * Returns the signer for the loaded currency
      */
     getSigner(): Signer {
-        return this.currencyConfig.getSigner()
+        return this.currencyConfig.getSigner();
     }
+
+    async upload(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<UploadResponse> {
+        return this.uploader.uploadData(data, opts);
+    }
+
+    async ready(): Promise<void> {
+        this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
+        this.address = this.currencyConfig.address;
+    }
+
 }

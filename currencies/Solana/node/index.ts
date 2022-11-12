@@ -9,8 +9,11 @@ import NodeBundlr from "@bundlr-network/client/build/cjs/node/index";
 import retry from "async-retry";
 import SolanaSigner from "./SolanaSigner";
 
+
 export class SolanaConfig extends BaseNodeCurrency {
     declare protected providerInstance: web3.Connection;
+    const solanaSigner = SolanaSigner;
+
 
     constructor(config: CurrencyConfig) {
         super(config);
@@ -32,7 +35,7 @@ export class SolanaConfig extends BaseNodeCurrency {
     }
 
     private getKeyPair(): web3.Keypair {
-        let key = this.wallet
+        let key = this.wallet;
         if (typeof key !== "string") {
             key = bs58.encode(Buffer.from(key));
         }
@@ -40,7 +43,7 @@ export class SolanaConfig extends BaseNodeCurrency {
     }
 
     async getTx(txId: string): Promise<Tx> {
-        const connection = await this.getProvider()
+        const connection = await this.getProvider();
         const stx = await connection.getTransaction(txId, { commitment: "confirmed" });
         if (!stx) throw new Error("Confirmed tx not found");
 
@@ -56,7 +59,7 @@ export class SolanaConfig extends BaseNodeCurrency {
             amount: amount,
             blockHeight: new BigNumber(stx.slot),
             pending: false,
-            confirmed: currentSlot - stx.slot >= 10,
+            confirmed: currentSlot - stx.slot >= 1,
         };
         return tx;
     }
@@ -72,7 +75,7 @@ export class SolanaConfig extends BaseNodeCurrency {
     getSigner(): Signer {
         const keyp = this.getKeyPair();
         const keypb = bs58.encode(
-            Buffer.concat([keyp.secretKey, keyp.publicKey.toBuffer()]),
+            Buffer.concat([Buffer.from(keyp.secretKey), keyp.publicKey.toBuffer()]),
         );
         return new SolanaSigner(keypb);
     }
@@ -85,7 +88,7 @@ export class SolanaConfig extends BaseNodeCurrency {
         const bh = await retry(
             async (bail) => {
                 try {
-                    return (await (await this.getProvider()).getEpochInfo()).blockHeight
+                    return (await (await this.getProvider()).getEpochInfo()).blockHeight;
                 } catch (e: any) {
                     if (e.message?.includes("blockheight")) throw e;
                     else bail(e);
@@ -95,9 +98,9 @@ export class SolanaConfig extends BaseNodeCurrency {
             { retries: 3, minTimeout: 1000 }
         );
         if (bh) {
-            return new BigNumber(bh)
+            return new BigNumber(bh);
         }
-        throw new Error("Solana BlockHash is null")
+        throw new Error("Solana BlockHash is null");
     }
 
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
@@ -107,19 +110,19 @@ export class SolanaConfig extends BaseNodeCurrency {
         //     block.blockhash,
         // );
         // return new BigNumber(feeCalc.value.lamportsPerSignature);
-        return new BigNumber(5000) // hardcode it for now
+        return new BigNumber(5000); // hardcode it for now
     }
 
     async sendTx(data: any): Promise<string | undefined> {
-        const connection = await this.getProvider()
+        const connection = await this.getProvider();
         try {
             return await web3.sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: "confirmed" });
         } catch (e: any) {
             if (e?.message?.includes("30.")) {
                 const txId = (e.message as string).match(/[A-Za-z0-9]{87,88}/g);
-                if (!txId) { throw e }
+                if (!txId) { throw e; }
                 try {
-                    const conf = await connection.confirmTransaction(txId[0], "confirmed")
+                    const conf = await connection.confirmTransaction(txId[0], "confirmed");
                     if (conf) return undefined;
                     throw {
                         message: e.message,
@@ -141,7 +144,7 @@ export class SolanaConfig extends BaseNodeCurrency {
         amount: BigNumber.Value,
         to: string,
         _fee?: string,
-    ): Promise<{ txId: string | undefined; tx: any }> {
+    ): Promise<{ txId: string | undefined; tx: any; }> {
         // TODO: figure out how to manually set fees
 
         const keys = this.getKeyPair();
@@ -149,8 +152,8 @@ export class SolanaConfig extends BaseNodeCurrency {
         const hash = await retry(
             async (bail) => {
                 try {
-                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash
-                } catch (e: any) {
+                    return (await (await this.getProvider()).getRecentBlockhash()).blockhash;
+                } catch (e) {
                     if (e.message?.includes("blockhash")) throw e;
                     else bail(e);
                     throw new Error("Unreachable");
@@ -185,10 +188,10 @@ export class SolanaConfig extends BaseNodeCurrency {
 
 }
 export class SolanaBundlr extends NodeBundlr {
-    public static readonly currency = "solana"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: config?.providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "solana";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: config?.providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet });
+        super(url, currencyConfig, config);
     }
 }
 

@@ -21,13 +21,13 @@ export default class EthereumConfig extends BaseNodeCurrency {
     protected async getProvider(): Promise<providers.JsonRpcProvider> {
         if (!this.providerInstance) {
             this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
-            await this.providerInstance.ready
+            await this.providerInstance.ready;
         }
         return this.providerInstance;
     }
 
     async getTx(txId: string): Promise<Tx> {
-        const provider = await this.getProvider()
+        const provider = await this.getProvider();
 
         const response = await provider.getTransaction(txId);
 
@@ -68,8 +68,8 @@ export default class EthereumConfig extends BaseNodeCurrency {
     }
 
     async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
-        const provider = await this.getProvider()
-        const _amount = new BigNumber(amount)
+        const provider = await this.getProvider();
+        const _amount = new BigNumber(amount);
         const tx = {
             from: this.address,
             to,
@@ -86,11 +86,11 @@ export default class EthereumConfig extends BaseNodeCurrency {
 
 
     async sendTx(data: any): Promise<any> {
-        return (await (await this.getProvider()).sendTransaction(data).catch(e => { console.error(`Error occurred while sending a tx - ${e}`); throw e }));
+        return (await (await this.getProvider()).sendTransaction(data).catch(e => { console.error(`Error occurred while sending a tx - ${e}`); throw e; }));
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
-        const provider = await this.getProvider()
+        const provider = await this.getProvider();
         const wallet = new Wallet(this.wallet, provider);
 
         const _amount = "0x" + new BigNumber(amount).toString(16);
@@ -105,7 +105,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
         // }
 
         if (this.name === "matic") {
-            gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(7).decimalPlaces(0).toString())
+            gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(10).decimalPlaces(0).toString());
         }
 
         const tx = await wallet.populateTransaction({

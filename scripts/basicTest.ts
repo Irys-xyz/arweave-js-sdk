@@ -1,19 +1,18 @@
 // eslint-disable-file @typescript-eslint/no-unused-vars
 
 // import Bundlr from "../"; //testing built code
-import Bundlr from "../src/index" //testing direct from TS source
+import Bundlr from "../src/index"; //testing direct from TS source
 
 import { promises, readFileSync, writeFileSync } from 'fs';
-import * as v8 from "v8-profiler-next"
-import Crypto from "crypto"
-import { checkManifest } from "./checkManifest";
+import * as v8 from "v8-profiler-next";
+import Crypto from "crypto";
+import { checkPath } from "../src/node/upload";
 import { genData } from "./genData";
-
-// import { ArweaveBundlr } from "@bundlr-network/arweave";
+import { checkManifestBundlr } from "./checkManifest";
 
 const profiling = false;
 async function main() {
-    const title = new Date().toUTCString()
+    const title = new Date().toUTCString();
     try {
         if (profiling) {
             v8.setGenerateType(1); // set profile type
@@ -21,85 +20,126 @@ async function main() {
             v8.startSamplingHeapProfiling(); // heap
             setInterval(() => {
                 for (const [key, value] of Object.entries(process.memoryUsage())) {
-                    console.log(`Memory usage by ${key}, ${value / 1000000}MB `)
+                    console.log(`Memory usage by ${key}, ${value / 1000000}MB `);
                 }
-            }, 2000)
+            }, 2000);
             console.log("profiling configured");
         }
 
-
         const keys = JSON.parse(readFileSync("wallet.json").toString());
 
-        let bundlr = await Bundlr.init("https://devnet.bundlr.network", "arweave", keys.arweave)
-        //let bundlr = new ArweaveBundlr("https://devnet.bundlr.network", keys.arweave)
-        console.log(bundlr.address)
+        const nodeUrl = "http://devnet.bundlr.network";
+        const testFolder = "testFolder";
+
+        const key = keys.aptos;
+
+        // let bundlr = await Bundlr.init({ url: nodeUrl, currency: "aptos", publicKey: account.pubKey().toString(), signingFunction });
+        // let bundlr = Bundlr.init({ url: nodeUrl, currency: "aptos", privateKey: key })
+
+        let bundlr = new Bundlr(nodeUrl, "aptos", key, { providerUrl: "https://fullnode.devnet.aptoslabs.com" });
+        await bundlr.ready();
+        console.log(bundlr.address);
+
+        let res;
+        let tx;
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
-        const tags = [{ name: "Content-Type", value: "text/plain" }]
-        const transaction = bundlr.createTransaction("Hello, Bundlr!", { tags });
-        await transaction.sign();
 
-        console.log(transaction.id)
+        res = await bundlr.upload("Hello, world!");
+        console.log(res);
+
+        const transaction = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
+        const signingInfo = await transaction.getSignatureData();
+        const signed = await bundlr.currencyConfig.sign(signingInfo);
+        transaction.setSignature(Buffer.from(signed));
+
+        console.log(transaction.id);
         console.log(await transaction.isValid());
-        const res = await transaction.upload();
-        console.log(`Upload: ${JSON.stringify(res.data)}`);
 
-        let rec = await bundlr.uploadFile("a.txt");
-        console.log(JSON.stringify(rec.data));
-        console.log(JSON.stringify(rec.status));
+        res = await transaction.upload();
+        console.log(`Upload: ${JSON.stringify(res)}`);
+
+        const ctx = bundlr.createTransaction(Crypto.randomBytes(15_000_000).toString("base64"));
+        await ctx.sign();
+        console.log(ctx.isSigned());
+
+        const uploader = bundlr.uploader.chunkedUploader;
+        uploader.on("chunkUpload", (chunkInfo) => {
+            console.log(chunkInfo);
+        });
+        res = uploader.setChunkSize(600_000).setBatchSize(1).uploadTransaction(ctx);
+
+        await new Promise(r => uploader.on("chunkUpload", r));
+        uploader.pause();
+        const uploadInfo = uploader.getResumeData();
+        const uploader2 = bundlr.uploader.chunkedUploader;
+
+        uploader2.on("chunkError", (e) => {
+            console.error(`Error uploading chunk number ${e.id} - ${e.res.statusText}`);
+        });
+        uploader2.on("chunkUpload", (chunkInfo) => {
+            console.log(`Uploaded Chunk with ID ${chunkInfo.id}, offset of ${chunkInfo.offset}, size ${chunkInfo.size} Bytes, with a total of ${chunkInfo.totalUploaded}`);
+        });
+
+        res = await uploader2.setResumeData(uploadInfo).setChunkSize(600_000).uploadTransaction(ctx);
+        console.log(res);
+
+        await promises.rm(`${testFolder}-manifest.json`, { force: true });
+        await promises.rm(`${testFolder}-manifest.csv`, { force: true });
+        await promises.rm(`${testFolder}-id.txt`, { force: true });
 
 
-        const ctx = bundlr.createTransaction(Crypto.randomBytes(15_000_000).toString("base64"))
-        await ctx.sign()
+        if (!await checkPath(`./${testFolder}`)) {
+            await genData(`./${testFolder}`, 1_000, 100, 100_000);
+        }
 
-        bundlr.uploader.useChunking = true
-        const cres = await ctx.upload()
-        console.log(cres)
-        bundlr.uploader.useChunking = false
-
-        await promises.rm("testFolder-manifest.json", { force: true })
-        await promises.rm("testFolder-manifest.csv", { force: true })
-        await promises.rm("testFolder-id.txt", { force: true })
-        await promises.rm("./testFolder", { recursive: true, force: true })
-
-        const concurrency = 10
-        await genData("./testFolder", 10, 1_000, 10_000)
-
-        const resu = await bundlr.uploader.uploadFolder("./testFolder", "0.json", concurrency, false, true, async (log): Promise<void> => { console.log(log) })
+        const resu = await bundlr.uploadFolder(`./${testFolder}`, { batchSize: 50, keepDeleted: false, logFunction: async (log): Promise<void> => { console.log(log); } });
         console.log(resu);
 
-        await checkManifest("./testFolder", concurrency)
+        /* const checkResults = */ await checkManifestBundlr(`./${testFolder}`, nodeUrl);
+
+        res = await bundlr.uploadFile(`./${testFolder}/0.json`);
+        console.log(JSON.stringify(res));
 
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
-        let tx = await bundlr.fund(1, 1);
+        tx = await bundlr.fund(1, 1);
         console.log(tx);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
         let resw = await bundlr.withdrawBalance(1);
-        console.log(`withdrawal: ${JSON.stringify(resw.data)}`);
+        console.log(`withdrawal: ${JSON.stringify(resw)}`);
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
 
 
     } catch (e) {
         console.log(e);
     } finally {
-        console.log("done!");
-        if (!profiling) {
-            return
-        };
+        console.log("Done!");
 
-        const cpuprofile = v8.stopProfiling(title)
+        if (!profiling) return;
+
+        const cpuprofile = v8.stopProfiling(title);
         cpuprofile.export((_err, res) => {
-            writeFileSync(`./profiles/cpu/${title}.cpuprofile`, res ?? Buffer.alloc(0))
-        })
+            writeFileSync(`./profiles/cpu/${title}.cpuprofile`, res ?? "");
+        });
         cpuprofile.delete();
         const heapProfile = v8.stopSamplingHeapProfiling();
         heapProfile.export((_err, res) => {
-            writeFileSync(`./profiles/heap/${title}.heapprofile`, res ?? Buffer.alloc(0))
-        })
+            writeFileSync(`./profiles/heap/${title}.heapprofile`, res ?? "");
+        });
     }
 }
-main();
+
+if (require.main === module) {
+    const trap = (con, err) => {
+        console.error(`Trapped error ${con}: ${JSON.stringify(err)}`);
+    };
+    // process.on("beforeExit", trap.bind(this, "beforeExit"))
+    // process.on("exit", trap.bind(this, "exit"))
+    process.on("uncaughtException", trap.bind(this, "uncaughtException"));
+    process.on("unhandledRejection", trap.bind(this, "unhandledRejection"));
+    main();
+}
