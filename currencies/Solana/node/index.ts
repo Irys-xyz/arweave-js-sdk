@@ -1,18 +1,16 @@
-import { Signer } from "@bundlr-network/client/build/cjs/common/signing/index";
 import BigNumber from "bignumber.js";
 import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
-import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
-import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
-import NodeBundlr from "@bundlr-network/client/build/cjs/node/index";
 import retry from "async-retry";
-import SolanaSigner from "./SolanaSigner";
+import NodeBundlr, { BaseNodeCurrency, CurrencyConfig, Tx } from "@bundlr-network/client/node";
+import SolanaSigner from "arbundles/src/signing/chains/SolanaSigner";
+import { Signer } from "arbundles/src/signing/Signer";
 
 
 export class SolanaConfig extends BaseNodeCurrency {
     declare protected providerInstance: web3.Connection;
-    const solanaSigner = SolanaSigner;
+    protected solanaSigner = SolanaSigner;
 
 
     constructor(config: CurrencyConfig) {
@@ -153,7 +151,7 @@ export class SolanaConfig extends BaseNodeCurrency {
             async (bail) => {
                 try {
                     return (await (await this.getProvider()).getRecentBlockhash()).blockhash;
-                } catch (e) {
+                } catch (e: any) {
                     if (e.message?.includes("blockhash")) throw e;
                     else bail(e);
                     throw new Error("Unreachable");

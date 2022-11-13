@@ -3,13 +3,13 @@
     "compilerOptions": {
         "module": "esnext",
         "outDir": "build/esm",
-        "target": "esnext",
-        "plugins": [
-            {
-                "transform": "./scripts/transformer.js",
-                "after": true
-            }
-        ]
+        "target": "esnext"
+        // "plugins": [
+        //     {
+        //         "transform": "./scripts/transformer.js",
+        //         "after": true
+        //     }
+        // ]
     },
     "include": [
         "src"

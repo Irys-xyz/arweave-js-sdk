@@ -3,7 +3,7 @@ import { PassThrough, Readable } from "stream";
 import { EventEmitter } from "events";
 import Api from "./api";
 import { Currency, UploadResponse } from "./types";
-import Utils from "./utils";
+import { Utils } from "./utils";
 import Crypto from "crypto";
 import { stringToBuffer } from "arweave/web/lib/utils";
 import retry from "async-retry";

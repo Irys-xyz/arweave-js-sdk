@@ -1,10 +1,8 @@
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
-import { CurrencyConfig, Tx } from "@bundlr-network/client/build/esm/common/types";
-import { getRedstonePrice } from "@bundlr-network/client/build/esm/node/currency";
+import WebBundlr, { CurrencyConfig, getRedstonePrice, Tx, Utils } from "@bundlr-network/client/web";
 import EthereumConfig from "@bundlr-network/ethereum-web";
-import WebBundlr from "@bundlr-network/client/build/esm/web/index"
-import utils from "@bundlr-network/client/build/esm/common/utils"
+
 import axios from "axios";
 
 export interface ERC20CurrencyConfig extends CurrencyConfig { contractAddress: string; }
@@ -102,29 +100,29 @@ export default class ERC20Config extends EthereumConfig {
 
 
 export class BobaBundlr extends WebBundlr {
-    public static readonly currency = "boba"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const k = new ERC20Config({ name: "boba", ticker: "BOBA", providerUrl: config?.providerUrl ?? "https://mainnet.boba.network/", contractAddress: config?.contractAddress ?? "0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7", minConfirm: 1, wallet })
+    public static readonly currency = "boba";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const k = new ERC20Config({ name: "boba", ticker: "BOBA", providerUrl: config?.providerUrl ?? "https://mainnet.boba.network/", contractAddress: config?.contractAddress ?? "0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7", minConfirm: 1, wallet });
         // for L1 mainnet: "https://main-light.eth.linkpool.io/" and "0x42bbfa2e77757c645eeaad1655e0911a7553efbc"
         k.price = async (): Promise<number> => {
-            const res = await axios.post("https://api.livecoinwatch.com/coins/single", JSON.stringify({ "currency": "USD", "code": `${k.ticker}` }), { headers: { "x-api-key": "75a7a824-6577-45e6-ad86-511d590c7cc8", "content-type": "application/json" } }) as any
-            utils.checkAndThrow(res, "Getting price data")
+            const res = await axios.post("https://api.livecoinwatch.com/coins/single", JSON.stringify({ "currency": "USD", "code": `${k.ticker}` }), { headers: { "x-api-key": "75a7a824-6577-45e6-ad86-511d590c7cc8", "content-type": "application/json" } }) as any;
+            Utils.checkAndThrow(res, "Getting price data");
             if (!res?.data?.rate) {
-                throw new Error(`unable to get price for ${k.name}`)
+                throw new Error(`unable to get price for ${k.name}`);
             }
-            return +res.data.rate
-        }
+            return +res.data.rate;
+        };
         // const currencyConfig = new ERC20Config({ name: "chainlink", ticker: "LINK", providerUrl: config?.providerUrl ?? "https://main-light.eth.linkpool.io/", contractAddress: config?.contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet })
-        super(url, k, config)
+        super(url, k, config);
     }
 }
 
 
 export class ChainlinkBundlr extends WebBundlr {
-    public static readonly currency = "chainlink"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new ERC20Config({ name: "chainlink", ticker: "LINK", providerUrl: config?.providerUrl ?? "https://main-light.eth.linkpool.io/", contractAddress: config?.contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "chainlink";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new ERC20Config({ name: "chainlink", ticker: "LINK", providerUrl: config?.providerUrl ?? "https://main-light.eth.linkpool.io/", contractAddress: config?.contractAddress ?? "0x514910771AF9Ca656af840dff83E8264EcF986CA", wallet });
+        super(url, currencyConfig, config);
     }
 }
 

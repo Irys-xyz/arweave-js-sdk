@@ -1,6 +1,6 @@
 import BigNumber from "bignumber.js";
-import { Signer } from "./signing";
 import { DataItem } from "arbundles";
+import { Signer } from "arbundles/src/signing";
 // common types shared between web and node versions
 
 export interface CreateTxData { amount: BigNumber.Value, to: string, fee?: string; }
@@ -49,7 +49,7 @@ export interface Currency {
 
     sendTx(data: any): Promise<string | undefined>;
 
-    createTx(amount: BigNumber.Value, to: string, fee?: string | object): Promise<{ txId: string | undefined, tx: any; }>;
+    createTx(amount: BigNumber.Value, to: string, fee?: string | object): Promise<CreatedTx>;
 
     getPublicKey(): Promise<string | Buffer> | (string | Buffer);
 
@@ -106,11 +106,15 @@ export interface Withdrawal {
 //     paths = "arweave/paths"
 // }
 
-export interface BundlrConfig {
+export interface BundlrConfig extends MultiSigFns {
     timeout?: number,
     providerUrl?: string,
     contractAddress?: string,
-    minConfirm?: number,
+    minConfirm?: number;
+}
+export interface MultiSigFns {
     signingFunction?: (msg: Uint8Array) => Promise<Uint8Array>,
     collectSignatures?: (msg: Uint8Array) => Promise<{ signatures: string[], bitmap: number[]; }>;
 }
+
+export interface CreatedTx { txId: string | undefined, tx: any; }

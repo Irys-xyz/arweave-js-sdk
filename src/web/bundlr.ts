@@ -4,7 +4,7 @@ import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
 import Uploader from "../common/upload";
-import Utils, { importAndGetBundlrFlavour } from "../common/utils";
+import { Utils, importAndGetBundlrFlavour } from "../common/utils";
 // import EthereumConfig from "./currencies/ethereum";
 // import NearConfig from "./currencies/near";
 // import SolanaConfig from "./currencies/solana";

@@ -26,7 +26,6 @@
   ],
   "dependencies": {
     "@bundlr-network/client": "^0.8.0-rc2",
-    "@noble/ed25519": "^1.6.0",
     "algosdk": "^1.15.0",
     "axios": "^0.26.1",
     "base64url": "^3.0.1",

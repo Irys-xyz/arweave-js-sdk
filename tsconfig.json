@@ -3,7 +3,7 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": "src",
-    "module": "NodeNext",
+    "module": "ES2022",
     "declaration": true,
     "esModuleInterop": true,
     "inlineSourceMap": false,
@@ -32,9 +32,8 @@
     "outDir": "build",
     "experimentalDecorators": true
   },
-  "compileOnSave": true,
-  "exclude": ["node_modules", "dist", "scripts", "chains", "keys"],
-  "include": ["src"]
+  "exclude": ["node_modules", "dist", "esm", "cjs"],
+  "include": ["src", "currencies"]
   // "references": [
   //   {"path": "src/currencies/Arweave/node"},
   //   {"path": "src/currencies/Arweave/web"}

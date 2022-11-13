@@ -30,7 +30,7 @@ const base = {
     },
     externalsType: "global",
     resolve: {
-        extensions: [".ts", ".js"],
+        extensions: [".ts", ".js", ".mjs"],
     },
     plugins: [
         new DuplicatesPlugin({
@@ -57,7 +57,7 @@ const mod = {
     experiments: {
         outputModule: true,
     }
-}
+};
 const umd = {
     ...base,
     externals: {
@@ -72,7 +72,7 @@ const umd = {
         globalObject: "globalThis",
         umdNamedDefine: true,
     }
-}
+};
 const aio = {
     ...base,
     output: {
@@ -91,6 +91,6 @@ const aio = {
     experiments: {
         outputModule: true,
     }
-}
+};
 
-module.exports = [mod, umd, aio]
+module.exports = [mod, umd, aio];

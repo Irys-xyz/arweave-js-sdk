@@ -10,13 +10,15 @@
         ],
         "listEmittedFiles": false,
         "listFiles": false,
-        "moduleResolution": "node",
+        "moduleResolution": "NodeNext",
         "noFallthroughCasesInSwitch": true,
         "pretty": true,
         "resolveJsonModule": true,
         "skipLibCheck": true,
         "strict": true,
         "traceResolution": false,
+        "strictNullChecks": false,
+        "strictNullChecks": false,
         "types": [
             "node"
         ],

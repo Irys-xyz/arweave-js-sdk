@@ -1,6 +1,6 @@
 import { createData, DataItem, DataItemCreateOptions } from "arbundles";
 import { AxiosResponse } from "axios";
-import Utils from "./utils";
+import { Utils } from "./utils";
 import Api from "./api";
 import { Currency, Manifest, UploadResponse } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
@@ -9,7 +9,6 @@ import { ChunkingUploader } from "./chunkingUploader";
 import { Readable } from "stream";
 import Crypto from "crypto";
 
-export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 export const CHUNKING_THRESHOLD = 50_000_000;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export default class Uploader {

@@ -1,29 +1,59 @@
-import { AptosAccount, AptosClient, CoinClient, HexString, TransactionBuilder, TransactionBuilderEd25519, TxnBuilderTypes, /* BCS, TxnBuilderTypes */ } from "aptos";
-import { AptosSigner, Signer } from "arbundles/src/signing";
+import { AptosClient, CoinClient, HexString, TransactionBuilderEd25519, TxnBuilderTypes } from "aptos";
+import { InjectedAptosSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
-import { CurrencyConfig, Tx } from "../../common/types";
-import BaseNodeCurrency from "../currency";
+import { BaseWebCurrency, CurrencyConfig, Tx } from "@bundlr-network/client/web";
 import * as SHA3 from "js-sha3";
-import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
+// import { Ed25519PublicKey } from "aptos/src/aptos_types/ed25519";
+// import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
+type Transaction_UserTransaction = any;
+type TransactionPayload_EntryFunctionPayload = any;
+type TransactionPayload = any;
+type PendingTransaction = any;
+type UserTransaction = any;
 
-export default class AptosConfig extends BaseNodeCurrency {
+
+export interface SignMessagePayload {
+    address?: boolean; // Should we include the address of the account in the message
+    application?: boolean; // Should we include the domain of the dapp
+    chainId?: boolean; // Should we include the current chain id the wallet is connected to
+    message: string; // The message to be signed and displayed to the user
+    nonce: string; // A nonce the dapp should generate
+}
+
+export interface SignMessageResponse {
+    address: string;
+    application: string;
+    chainId: number;
+    fullMessage: string; // The message that was generated to sign
+    message: string; // The message passed in by the user
+    nonce: string,
+    prefix: string, // Should always be APTOS
+    signature: string; // The signed full message
+}
+
+export interface AptosWallet {
+    account: () => Promise<{ address: string, publicKey: string; }>;
+    connect: () => Promise<{ address: string, publicKey: string; }>;
+    disconnect: () => Promise<void>;
+    isConnected: () => Promise<boolean>;
+    network: () => Promise<"Testnet" | "Mainnet">;
+    signAndSubmitTransaction: (transaction: TransactionPayload) => Promise<PendingTransaction>;
+    signMessage: (payload: SignMessagePayload) => Promise<SignMessageResponse>;
+    signTransaction: (transaction: TransactionPayload) => Promise<Uint8Array>;
+}
+
+export default class AptosConfig extends BaseWebCurrency {
 
     declare protected providerInstance?: AptosClient;
-    protected accountInstance: AptosAccount;
-    protected signerInstance: AptosSigner;
-    declare protected signingFn: (msg: Uint8Array) => Promise<Uint8Array>;
-    declare opts: any;
-
+    protected signerInstance: InjectedAptosSigner;
+    declare protected wallet: AptosWallet;
+    protected _publicKey: Buffer;
 
     constructor(config: CurrencyConfig) {
-        if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
-        if (!config?.opts?.signingFunction && Buffer.isBuffer(config?.wallet)) {
-            // @ts-ignore
-            config.accountInstance = new AptosAccount(config.wallet);
-        }
+        // if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
+        // // @ts-ignore
+        // config.accountInstance = new AptosAccount(config.wallet);
         super(config);
-        this.signingFn = config?.opts?.signingFunction;
-        this.needsFee = true;
         this.base = ["aptom", 1e8];
     }
 
@@ -35,7 +65,7 @@ export default class AptosConfig extends BaseNodeCurrency {
     async getTx(txId: string): Promise<Tx> {
 
         const client = await this.getProvider();
-        const tx = await client.waitForTransactionWithResult(txId/* , { checkSuccess: true } */) as Transaction_UserTransaction;
+        const tx = await client.waitForTransactionWithResult(txId, /* { checkSuccess: true } */ { timeoutSecs: 1, checkSuccess: true }) as Transaction_UserTransaction;
         const payload = tx?.payload as TransactionPayload_EntryFunctionPayload;
 
         if (!tx.success) {
@@ -71,18 +101,11 @@ export default class AptosConfig extends BaseNodeCurrency {
     }
 
     getSigner(): Signer {
-        if (this.signerInstance) return this.signerInstance;
-        if (this.signingFn) {
-            const signer = new AptosSigner("", "0x" + this.getPublicKey().toString("hex"));
-            signer.sign = this.signingFn; //override signer fn
-            return this.signerInstance = signer;
-        } else {
-            return this.signerInstance = new AptosSigner(this.accountInstance.toPrivateKeyObject().privateKeyHex, this.accountInstance.toPrivateKeyObject().publicKeyHex);
-        }
+        return this.signerInstance ??= new InjectedAptosSigner(this.wallet, this._publicKey);
     }
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return await AptosSigner.verify(pub, data, signature);
+        return await InjectedAptosSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -105,7 +128,7 @@ export default class AptosConfig extends BaseNodeCurrency {
             // @ts-ignore
             const invalidSigBytes = new Uint8Array(64);
             return new TxnBuilderTypes.Ed25519Signature(invalidSigBytes);
-        }, this.getPublicKey() as Buffer);
+        }, await this.getPublicKey() as Buffer);
 
         const signedSimulation = txnBuilder.sign(rawTransaction);
 
@@ -131,45 +154,47 @@ export default class AptosConfig extends BaseNodeCurrency {
     }
 
     async sendTx(data: any): Promise<string | undefined> {
-        return (await (await (this.getProvider())).submitSignedBCSTransaction(data)).hash;
+        return (await this.wallet.signAndSubmitTransaction(data)).hash;
+        // return (await (await (this.getProvider())).submitSignedBCSTransaction(data)).hash;
     }
 
-    async createTx(amount: BigNumber.Value, to: string, fee?: { gasUnitPrice: number, maxGasAmount: number; }): Promise<{ txId: string; tx: any; }> {
-        const client = await this.getProvider();
-        const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
-            "0x1::coin::transfer",
-            ["0x1::aptos_coin::AptosCoin"],
-            [to, new BigNumber(amount).toNumber()],
-        );
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+        //const client = await this.getProvider();
+        // const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
+        //     "0x1::coin::transfer",
+        //     ["0x1::aptos_coin::AptosCoin"],
+        //     [to, new BigNumber(amount).toNumber()],
+        // );
 
-        const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload, { gasUnitPrice: BigInt(fee?.gasUnitPrice ?? 100), maxGasAmount: BigInt(fee?.maxGasAmount ?? 100_000) });
+        const tx = {
+            arguments: [to, new BigNumber(amount).toNumber()],
+            function: '0x1::coin::transfer',
+            type: 'entry_function_payload',
+            type_arguments: ['0x1::aptos_coin::AptosCoin'],
+        };
+
+
+        // const rawTransaction = await client.generateRawTransaction(this.accountInstance.address(), payload);
         // const bcsTxn = AptosClient.generateBCSTransaction(this.accountInstance, rawTransaction);
 
-        const signingMessage = TransactionBuilder.getSigningMessage(rawTransaction);
-        const sig = await this.sign(signingMessage);
+        // const tx = await this.wallet.signTransaction(transaction);
 
-        const txnBuilder = new TransactionBuilderEd25519((_) => {
-            // @ts-ignore
-            return new TxnBuilderTypes.Ed25519Signature(sig);
-        }, this.getPublicKey() as Buffer);
-
-        const bcsTxn = txnBuilder.sign(rawTransaction);
-
-        return { txId: undefined, tx: bcsTxn };
+        return { txId: undefined, tx };
     }
 
-    getPublicKey(): string | Buffer {
-        if (this.opts?.signingFunction) return this.wallet;
-        return Buffer.from(this.accountInstance.pubKey().toString().slice(2), "hex");
+    async getPublicKey(): Promise<string | Buffer> {
+        return this._publicKey ??= Buffer.from((await this.wallet.account()).publicKey.toString().slice(2), "hex");
     }
 
-    async ready() {
+    public async ready(): Promise<void> {
+        this._publicKey = await this.getPublicKey() as Buffer;
+        this._address = this.ownerToAddress(this._publicKey);
         const client = await this.getProvider();
         this._address = await client.lookupOriginalAddress(this.address)
             .then(hs => hs.toString())
             .catch(_ => this._address); // fallback to original
 
-        if (this._address?.length == 66 && this._address.charAt(2) === '0') {
+        if (this._address.length == 66 && this._address.charAt(2) === '0') {
             this._address = this._address.slice(0, 2) + this._address.slice(3);
         }
     }

@@ -1,12 +1,10 @@
 
 import BigNumber from "bignumber.js";
-import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
-import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
-import { Signer } from "@bundlr-network/client/build/cjs/common/signing/index";
-import NodeBundlr from "@bundlr-network/client/build/cjs/node/index";
+import NodeBundlr, { CurrencyConfig, Tx, BaseNodeCurrency } from "@bundlr-network/client/node";
 import * as algosdk from "algosdk";
 import axios from "axios";
-import AlgorandSigner from "./AlgorandSigner";
+import { AlgorandSigner, Signer } from "arbundles/src/signing";
+
 
 
 export default class AlgorandConfig extends BaseNodeCurrency {

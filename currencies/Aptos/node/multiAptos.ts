@@ -1,24 +1,27 @@
 import { TransactionBuilder, TransactionBuilderMultiEd25519, TxnBuilderTypes, BCS, AptosAccount, CoinClient, TransactionBuilderEd25519, HexString as HString } from "aptos";
 import BigNumber from "bignumber.js";
-import { CurrencyConfig } from "../../common/types";
-import Aptos from "./aptos";
+import Aptos from "./index";
 import { Signer, MultiSignatureAptosSigner } from "arbundles/src/signing";
-import { UserTransaction } from "aptos/src/generated";
+// import { UserTransaction } from "aptos/src/generated";
+type UserTransaction = any;
+import { CurrencyConfig } from "@bundlr-network/client/node";
+import { MultiSigFns } from "@bundlr-network/client/node";
 // import Utils from "../../common/utils";
+
 
 
 export type HexString = string;
 export default class MultiSignatureAptos extends Aptos {
 
-    declare wallet: { participants: Buffer[], threshold: number }
+    declare wallet: { participants: Buffer[], threshold: number; };
     //@ts-ignore
     declare protected signerInstance: MultiSignatureAptosSigner;
-    protected collectSignatures: (message: Uint8Array) => Promise<{ signatures: Buffer[], bitmap: number[] }>
+    protected collectSignatures: (message: Uint8Array) => Promise<{ signatures: Buffer[], bitmap: number[]; }>;
 
 
-    constructor(config: CurrencyConfig & { opts: { collectSignatures } }) {
+    constructor(config: CurrencyConfig & { opts: MultiSigFns; }) {
         super(config);
-        this.collectSignatures = this?.opts?.collectSignatures
+        this.collectSignatures = this?.opts?.collectSignatures;
         this.needsFee = true;
     }
 
@@ -27,39 +30,39 @@ export default class MultiSignatureAptos extends Aptos {
      */
     ownerToAddress(pubKey: Buffer): string {
         // deserialise key
-        const multiSigPublicKey = this.deserialisePubKey(pubKey)
+        const multiSigPublicKey = this.deserialisePubKey(pubKey);
 
         // derive address
         const authKey2 = TxnBuilderTypes.AuthenticationKey.fromMultiEd25519PublicKey(multiSigPublicKey);
-        return authKey2.derivedAddress().toString()
+        return authKey2.derivedAddress().toString();
     }
 
 
     protected deserialisePubKey(pubKey: Buffer): TxnBuilderTypes.MultiEd25519PublicKey {
-        const threshold = +pubKey.slice(32 * 32).toString()
-        const keys = []
-        const nullBuf = Buffer.alloc(32, 0)
+        const threshold = +pubKey.slice(32 * 32).toString();
+        const keys = [];
+        const nullBuf = Buffer.alloc(32, 0);
         for (let i = 0; i < 32; i++) {
-            let key = pubKey.subarray(i * 32, (i + 1) * 32)
-            if (!key.equals(nullBuf)) keys.push(new TxnBuilderTypes.Ed25519PublicKey(key))
+            let key = pubKey.subarray(i * 32, (i + 1) * 32);
+            if (!key.equals(nullBuf)) keys.push(new TxnBuilderTypes.Ed25519PublicKey(key));
         }
         // reconstruct key
         return new TxnBuilderTypes.MultiEd25519PublicKey(
             keys,
             threshold
-        )
+        );
     }
 
     getPublicKey(): string | Buffer {
-        const { participants, threshold } = this.wallet
+        const { participants, threshold } = this.wallet;
 
-        const pkey = Buffer.alloc(32 * 32 + 1)
+        const pkey = Buffer.alloc(32 * 32 + 1);
         participants.forEach((k, i) => {
             pkey.set(k, i * 32);
-        })
+        });
 
-        pkey.set(Buffer.from(threshold.toString()), 1024)
-        return pkey
+        pkey.set(Buffer.from(threshold.toString()), 1024);
+        return pkey;
     }
 
     async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number; }> {
@@ -95,19 +98,19 @@ export default class MultiSignatureAptos extends Aptos {
             mediaType: "application/x.aptos.signed_transaction+bcs",
         });
 
-        return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: +simulationResult[0].max_gas_amount }
+        return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: +simulationResult[0].max_gas_amount };
     }
 
-    async createTx(amount: BigNumber.Value, to: string, fee?: { gasUnitPrice: number, maxGasAmount: number }): Promise<{ txId: string; tx: any; }> {
-        const client = await this.getProvider()
-        const { participants, threshold } = this.wallet
+    async createTx(amount: BigNumber.Value, to: string, fee?: { gasUnitPrice: number, maxGasAmount: number; }): Promise<{ txId: string; tx: any; }> {
+        const client = await this.getProvider();
+        const { participants, threshold } = this.wallet;
 
         const multiSigPublicKey = new TxnBuilderTypes.MultiEd25519PublicKey(
             participants.map(v => new TxnBuilderTypes.Ed25519PublicKey(v)),
             threshold
-        )
+        );
 
-        const authKey = TxnBuilderTypes.AuthenticationKey.fromMultiEd25519PublicKey(multiSigPublicKey)
+        const authKey = TxnBuilderTypes.AuthenticationKey.fromMultiEd25519PublicKey(multiSigPublicKey);
         const mutisigAccountAddress = authKey.derivedAddress();
 
         const token = new TxnBuilderTypes.TypeTagStruct(TxnBuilderTypes.StructTag.fromString("0x1::aptos_coin::AptosCoin"));
@@ -147,14 +150,14 @@ export default class MultiSignatureAptos extends Aptos {
             new TxnBuilderTypes.ChainId(chainId),
         );
 
-        return { tx: rawTx, txId: undefined }
+        return { tx: rawTx, txId: undefined };
 
     }
 
     async sendTx(data: any): Promise<string> {
-        const client = await this.getProvider()
-        const signingMessage = TransactionBuilder.getSigningMessage(data)
-        const { signatures, bitmap } = await this.collectSignatures(signingMessage)
+        const client = await this.getProvider();
+        const signingMessage = TransactionBuilder.getSigningMessage(data);
+        const { signatures, bitmap } = await this.collectSignatures(signingMessage);
         const txnBuilder = new TransactionBuilderMultiEd25519((_: TxnBuilderTypes.SigningMessage) => {
             // Bitmap masks which public key has signed transaction.
             // See https://aptos-labs.github.io/ts-sdk-doc/classes/TxnBuilderTypes.MultiEd25519Signature.html#createBitmap
@@ -174,28 +177,28 @@ export default class MultiSignatureAptos extends Aptos {
         //@ts-ignore
         const bcsTxn = txnBuilder.sign(data);
         const txRes = await client.submitSignedBCSTransaction(bcsTxn);
-        return txRes.hash
+        return txRes.hash;
     }
 
     getSigner(): Signer {
-        if (this.signerInstance) return this.signerInstance
-        const pkey = Buffer.alloc(1025)
-        const deserKey = this.deserialisePubKey(this.getPublicKey() as Buffer)
+        if (this.signerInstance) return this.signerInstance;
+        const pkey = Buffer.alloc(1025);
+        const deserKey = this.deserialisePubKey(this.getPublicKey() as Buffer);
         deserKey.public_keys.forEach((k, i) => {
             pkey.set(k.value, i * 32);
-        })
-        pkey.set(Buffer.from(deserKey.threshold.toString()), 1024)
+        });
+        pkey.set(Buffer.from(deserKey.threshold.toString()), 1024);
 
-        return this.signerInstance ??= new MultiSignatureAptosSigner(pkey, this.collectSignatures)
+        return this.signerInstance ??= new MultiSignatureAptosSigner(pkey, this.collectSignatures);
     }
 
     async ready(): Promise<void> {
-        await super.ready()
-        this.accountInstance = new AptosAccount(undefined, this.address)
+        await super.ready();
+        this.accountInstance = new AptosAccount(undefined, this.address);
     }
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return await MultiSignatureAptosSigner.verify(pub, data, signature)
+        return await MultiSignatureAptosSigner.verify(pub, data, signature);
     }
 
     // async createMultiSigTx(amount: BigNumber.Value, to: string, opts: { participants: Uint8Array[], threshold: number, gasLimit?: number, perGas?: number }): Promise<AptosMultiSigTx> {

@@ -2,12 +2,11 @@ import { promises, PathLike, createReadStream, createWriteStream } from "fs";
 import { Currency, UploadResponse } from "../common/types";
 import Uploader from "../common/upload";
 import Api from "../common/api";
-import Utils from "../common/utils";
+import { Utils } from "../common/utils";
 import * as p from "path";
 import mime from "mime-types";
 import inquirer from "inquirer";
 import { Readable } from "stream";
-import * as csv from "csv";
 import { DataItem } from "arbundles";
 
 export const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false); };
@@ -61,6 +60,7 @@ export default class NodeUploader extends Uploader {
         interactivePreflight?: boolean,
         logFunction?: (log: string) => Promise<void>;
     } = { batchSize: 10, keepDeleted: true }): Promise<UploadResponse> {
+        const csv = await import("csv");
         path = p.resolve(path);
         const alreadyProcessed = new Map();
 
@@ -233,6 +233,7 @@ export default class NodeUploader extends Uploader {
      * @returns the path to the generated manifest
      */
     private async generateManifestFromCsv(path: string, nowRemoved?: Map<string, true>, indexFile?: string): Promise<string> {
+        const csv = await import("csv");
         const csvstrm = csv.parse({ delimiter: ",", columns: true });
         const csvPath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.csv`);
         const manifestPath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.json`);

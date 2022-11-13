@@ -1,8 +1,8 @@
 import { createData, DataItem, DataItemCreateOptions } from "arbundles";
-import { Signer } from "./signing";
 import Bundlr from "./bundlr";
 import Crypto from "crypto";
 import { UploadResponse } from "./types";
+import { Signer } from "arbundles/src/signing";
 
 /**
  * Extended DataItem that allows for seamless bundlr operations, such as signing and uploading.

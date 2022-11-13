@@ -1,17 +1,16 @@
-import { Signer } from "@bundlr-network/client/build/esm/common/signing/index";
 import BigNumber from "bignumber.js";
-import HexInjectedSolanaSigner from "./HexInjectedSolanaSigner";
-import { CreatedTx, CurrencyConfig, Tx } from "@bundlr-network/client/build/esm/common/types";
-import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency";
 import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
-import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
+//@ts-ignore - this is a type import so will not be holden to the runtime differences of an esm module.
+import type { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
-import WebBundlr from "@bundlr-network/client/build/esm/web/index";
+import WebBundlr, { BaseWebCurrency, CreatedTx, CurrencyConfig, Tx } from "@bundlr-network/client/web";
+import { HexInjectedSolanaSigner, Signer } from "arbundles/src/signing/index";
+
 
 export default class SolanaConfig extends BaseWebCurrency {
-    private signer: HexInjectedSolanaSigner;
-    protected wallet: MessageSignerWalletAdapter;
+    private signer!: HexInjectedSolanaSigner;
+    declare protected wallet: MessageSignerWalletAdapter;
     minConfirm = 1;
 
     constructor(config: CurrencyConfig) {
@@ -40,8 +39,9 @@ export default class SolanaConfig extends BaseWebCurrency {
 
         const currentSlot = await connection.getSlot("confirmed");
 
-        const amount = new BigNumber(stx?.meta?.postBalances[1] ?? 0).minus(
-            new BigNumber(stx?.meta?.preBalances[1] ?? 0),
+
+        const amount = new BigNumber(stx?.meta?.postBalances?.[1] ?? 0).minus(
+            new BigNumber(stx?.meta?.preBalances?.[1] ?? 0),
         );
 
         const tx: Tx = {
@@ -68,32 +68,26 @@ export default class SolanaConfig extends BaseWebCurrency {
 
     getSigner(): Signer {
         if (!this.signer) {
+            // if (this.wallet?.name === "Phantom") {
+            //     this.signer = new PhantomSigner(this.wallet)
+            // } else {
+            //     this.signer = new InjectedSolanaSigner(this.wallet)
+            // }
             this.signer = new HexInjectedSolanaSigner(this.wallet);
         }
         return this.signer;
     }
 
     verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
+        // if (this.wallet?.name === "Phantom") {
+        //     return PhantomSigner.verify(pub, data, signature)
+        // }
+        // return InjectedSolanaSigner.verify(pub, data, signature);
         return HexInjectedSolanaSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
-        const bh = await retry(
-            async (bail) => {
-                try {
-                    return (await (await this.getProvider()).getEpochInfo()).blockHeight;
-                } catch (e: any) {
-                    if (e.message?.includes("blockheight")) throw e;
-                    else bail(e);
-                    throw new Error("Unreachable");
-                }
-            },
-            { retries: 3, minTimeout: 1000 }
-        );
-        if (bh) {
-            return new BigNumber(bh);
-        }
-        throw new Error("Solana BlockHash is null");
+        return new BigNumber((await (await this.getProvider()).getEpochInfo()).blockHeight ?? 0);
     }
 
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
@@ -114,14 +108,14 @@ export default class SolanaConfig extends BaseWebCurrency {
         amount: BigNumber.Value,
         to: string,
         _fee?: string,
-    ): Promise<{ txId: string | undefined; tx: any; }> {
+    ): Promise<CreatedTx> {
         // TODO: figure out how to manually set fees
         const pubkey = new web3.PublicKey(await this.getPublicKey());
         const hash = await retry(
             async (bail) => {
                 try {
                     return (await (await this.getProvider()).getRecentBlockhash()).blockhash;
-                } catch (e) {
+                } catch (e: any) {
                     if (e.message?.includes("blockhash")) throw e;
                     else bail(e);
                     throw new Error("Unreachable");
@@ -147,11 +141,7 @@ export default class SolanaConfig extends BaseWebCurrency {
     }
 
     async getPublicKey(): Promise<string | Buffer> {
-        const pkey = this.wallet?.publicKey?.toBuffer();
-        if (!pkey) {
-            throw new Error("Public Key is undefined!");
-        }
-        return pkey;
+        return this?.wallet?.publicKey?.toBuffer();
     }
 
 }

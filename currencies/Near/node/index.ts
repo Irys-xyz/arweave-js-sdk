@@ -1,22 +1,19 @@
-import { Signer } from "@bundlr-network/client/build/cjs/common/signing/index";
 import BigNumber from "bignumber.js";
-import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
-import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
 import { KeyPair, utils, transactions, providers } from "near-api-js";
 import { decode, encode } from "bs58";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";
 import { JsonRpcProvider } from "near-api-js/lib/providers";
-import NearSigner from "./NearSigner";
-import { NodeBundlr } from "@bundlr-network/client/build/cjs/node/index";
-
+//@ts-ignore
 import { parseSeedPhrase, KEY_DERIVATION_PATH } from "near-seed-phrase";
 import base64url from "base64url";
 import axios from "axios";
+import NodeBundlr, { BaseNodeCurrency, CreatedTx, CurrencyConfig, Tx, } from "@bundlr-network/client/node";
+import { NearSigner, Signer } from "arbundles/src/signing/index";
 export default class NearConfig extends BaseNodeCurrency {
     protected keyPair: KeyPair;
 
-    protected providerInstance?: JsonRpcProvider;
+    declare protected providerInstance?: JsonRpcProvider;
     declare protected bundlrUrl: string;
 
 
@@ -77,8 +74,8 @@ export default class NearConfig extends BaseNodeCurrency {
      */
     ownerToAddress(owner: any): string {
         return (typeof owner === "string")
-            ? decode(owner.replace("ed25519:", "")).toString("hex")
-            : decode(encode(owner)).toString("hex");
+            ? Buffer.from(decode(owner.replace("ed25519:", ""))).toString("hex")
+            : Buffer.from(decode(encode(owner))).toString("hex");
     }
 
 
@@ -121,7 +118,7 @@ export default class NearConfig extends BaseNodeCurrency {
         return `${this.address}:${res.transaction.hash}`; // encode into compound format
     }
 
-    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<CreatedTx> {
         const provider = await this.getProvider();
         const accessKey = await provider.query(({ request_type: "view_access_key", finality: "final", account_id: this.address, public_key: this.keyPair.getPublicKey().toString() }));
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -163,7 +160,7 @@ export default class NearConfig extends BaseNodeCurrency {
 export class NearBundlr extends NodeBundlr {
     public static readonly currency = "near";
     constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
-        const currencyConfig = new NearConfig({ name: "near", ticker: "NEAR", providerUrl: config?.providerUrl ?? "https://rpc.mainnet.near.org", wallet });
+        const currencyConfig = new NearConfig({ name: "near", ticker: "NEAR", providerUrl: config?.providerUrl ?? "https://rpc.mainnet.near.org", wallet, bundlrUrl: url });
         super(url, currencyConfig, config);
     }
 }

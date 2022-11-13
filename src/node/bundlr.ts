@@ -2,14 +2,14 @@ import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
 import { BundlrConfig, UploadResponse } from "../common/types";
-import Utils, { importAndGetBundlrFlavour } from "../common/utils";
+import { importAndGetBundlrFlavour, Utils } from "../common/utils";
 import { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 
 
-export default class NodeBundlr extends Bundlr {
-    public uploader: NodeUploader; // re-define type
-    public currencyConfig: NodeCurrency;
+export class NodeBundlr extends Bundlr {
+    declare public uploader: NodeUploader; // re-define type
+    declare public currencyConfig: NodeCurrency;
 
     /**
      * Constructs a new Bundlr instance, as well as supporting subclasses
@@ -142,3 +142,4 @@ export default class NodeBundlr extends Bundlr {
 // }
 
 
+export default NodeBundlr;

@@ -1,4 +1,4 @@
-import Utils from "./utils";
+import { Utils } from "./utils";
 import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";

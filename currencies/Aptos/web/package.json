@@ -1,7 +1,7 @@
 {
-  "name": "@bundlr-network/erc20-web",
+  "name": "@bundlr-network/aptos-web",
   "version": "0.0.1-rc2",
-  "description": "ERC20 Currency for Bundlr",
+  "description": "Aptos Currency for Bundlr",
   "main": "index.js",
   "author": "JesseTheRobot",
   "license": "MIT",

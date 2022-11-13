@@ -1,7 +1,7 @@
 import AsyncRetry from "async-retry";
 import BigNumber from "bignumber.js";
 import { FundResponse } from "./types";
-import Utils from "./utils";
+import { Utils } from "./utils";
 
 export default class Fund {
     protected utils: Utils;

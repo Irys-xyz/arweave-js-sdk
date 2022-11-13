@@ -1,13 +1,11 @@
-import keccak256 from "./keccak256";
+//@ts-ignore
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet, providers } from "ethers";
 import BigNumber from "bignumber.js";
-import { Signer } from "@bundlr-network/client/build/cjs/common/signing/index"
-// import { JsonRpcProvider } from "ethers";
-import { CurrencyConfig, Tx } from "@bundlr-network/client/build/cjs/common/types";
-import BaseNodeCurrency from "@bundlr-network/client/build/cjs/node/currency";
-import NodeBundlr from "@bundlr-network/client/build/cjs/node/index";
-import EthereumSigner from "./EthereumSigner"
+import NodeBundlr, { BaseNodeCurrency, CurrencyConfig, Tx } from "@bundlr-network/client/node";
+import EthereumSigner from "arbundles/src/signing/chains/ethereumSigner";
+import { Signer } from "arbundles/src/signing/Signer";
+import keccak256 from "./keccak256";
 
 export default class EthereumConfig extends BaseNodeCurrency {
     declare protected providerInstance: providers.JsonRpcProvider;
@@ -133,57 +131,57 @@ export default class EthereumConfig extends BaseNodeCurrency {
 
 
 export class EthereumBundlr extends NodeBundlr {
-    public static readonly currency = "ethereum"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://main-light.eth.linkpool.io/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "ethereum";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://main-light.eth.linkpool.io/", wallet });
+        super(url, currencyConfig, config);
     }
 }
 
 export class MaticBundlr extends NodeBundlr {
-    public static readonly currency = "matic"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "matic", ticker: "MATIC", minConfirm: 8, providerUrl: config?.providerUrl ?? "https://morning-hidden-forest.matic.quiknode.pro/2864d4b10b348d1e7799cea5cbab433418741098/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "matic";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "matic", ticker: "MATIC", minConfirm: 8, providerUrl: config?.providerUrl ?? "https://morning-hidden-forest.matic.quiknode.pro/2864d4b10b348d1e7799cea5cbab433418741098/", wallet });
+        super(url, currencyConfig, config);
     }
 }
 
 export class BnbBundlr extends NodeBundlr {
-    public static readonly currency = "bnb"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "bnb", ticker: "BNB", providerUrl: config?.providerUrl ?? "https://bsc-dataseed.binance.org/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "bnb";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "bnb", ticker: "BNB", providerUrl: config?.providerUrl ?? "https://bsc-dataseed.binance.org/", wallet });
+        super(url, currencyConfig, config);
     }
 }
 
 export class FantomBundlr extends NodeBundlr {
-    public static readonly currency = "fantom"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "fantom", ticker: "FTM", providerUrl: config?.providerUrl ?? "https://rpc.ftm.tools/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "fantom";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "fantom", ticker: "FTM", providerUrl: config?.providerUrl ?? "https://rpc.ftm.tools/", wallet });
+        super(url, currencyConfig, config);
     }
 }
 
 export class AvalancheBundlr extends NodeBundlr {
-    public static readonly currency = "avalanche"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: config?.providerUrl ?? "https://api.avax-test.network/ext/bc/C/rpc/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "avalanche";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: config?.providerUrl ?? "https://api.avax-test.network/ext/bc/C/rpc/", wallet });
+        super(url, currencyConfig, config);
     }
 }
 
 export class BobaEthBundlr extends NodeBundlr {
-    public static readonly currency = "boba-eth"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "boba-eth", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://mainnet.boba.network/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "boba-eth";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "boba-eth", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://mainnet.boba.network/", wallet });
+        super(url, currencyConfig, config);
     }
 }
 
 export class ArbitrumBundlr extends NodeBundlr {
-    public static readonly currency = "arbitrum"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://arb1.arbitrum.io/rpc/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "arbitrum";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://arb1.arbitrum.io/rpc/", wallet });
+        super(url, currencyConfig, config);
     }
 }

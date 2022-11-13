@@ -1,14 +1,14 @@
 import { DataItem } from "arbundles";
-import { Signer } from "../common/signing/index";
 import Arweave from "arweave";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
-import { Tx, CurrencyConfig } from "../common/types";
+import { Tx, CurrencyConfig, CreatedTx } from "../common/types";
 import axios from "axios";
 import { WebCurrency } from "./types";
-import utils from "../common/utils";
+import { Utils } from "../common/utils";
+import { Signer } from "arbundles/src/signing";
 
-export default abstract class BaseWebCurrency implements WebCurrency {
+export abstract class BaseWebCurrency implements WebCurrency {
     public base: [string, number];
     protected wallet: any;
     protected _address: string;
@@ -49,14 +49,14 @@ export default abstract class BaseWebCurrency implements WebCurrency {
     abstract getCurrentHeight(): Promise<BigNumber>;
     abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber | object>;
     abstract sendTx(_data: any): Promise<string | undefined>;
-    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }>;
+    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<CreatedTx>;
     abstract getPublicKey(): Promise<string | Buffer>;
 }
 
 
 export async function getRedstonePrice(currency: string): Promise<number> {
     const res = await axios.get<any>(`https://api.redstone.finance/prices?symbol=${currency}&provider=redstone&limit=1`);
-    await utils.checkAndThrow(res, "Getting price data");
+    Utils.checkAndThrow(res, "Getting price data");
     return res.data[0].value;
 }
 // export const registeredCurrencies: Record<string, WebCurrency> = {}

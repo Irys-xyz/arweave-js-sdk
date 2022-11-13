@@ -1,13 +1,9 @@
-import keccak256 from "./keccak256";
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
-import InjectedEthereumSigner from "./injectedEthereumSigner"
-import { Signer } from "@bundlr-network/client/build/esm/common/signing/index";
-import { Tx, CurrencyConfig } from "@bundlr-network/client/build/esm/common/types";
-import BaseWebCurrency from "@bundlr-network/client/build/esm/web/currency";
-import WebBundlr from "@bundlr-network/client/build/esm/web/index";
-
-const ethBigNumber = ethers.BigNumber // required for hexString conversions (w/ 0x padding)
+import WebBundlr, { BaseWebCurrency, CurrencyConfig, Tx } from "@bundlr-network/client/web";
+import { InjectedEthereumSigner, Signer } from "arbundles/src/signing/index";
+import keccak256 from "./keccak256";
+const ethBigNumber = ethers.BigNumber; // required for hexString conversions (w/ 0x padding)
 
 export default class EthereumConfig extends BaseWebCurrency {
     protected signer!: InjectedEthereumSigner;
@@ -15,13 +11,13 @@ export default class EthereumConfig extends BaseWebCurrency {
     protected w3signer!: ethers.providers.JsonRpcSigner;
 
     constructor(config: CurrencyConfig) {
-        super(config)
+        super(config);
         this.base = ["wei", 1e18];
     }
 
 
     async getTx(txId: string): Promise<Tx> {
-        const provider = this.providerInstance
+        const provider = this.providerInstance;
         const response = await provider.getTransaction(txId);
 
         if (!response) throw new Error("Tx doesn't exist");
@@ -49,7 +45,7 @@ export default class EthereumConfig extends BaseWebCurrency {
         if (!this.signer) {
             this.signer = new InjectedEthereumSigner(this.wallet);
         }
-        return this.signer
+        return this.signer;
     }
 
 
@@ -58,14 +54,14 @@ export default class EthereumConfig extends BaseWebCurrency {
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
-        const provider = this.providerInstance
+        const provider = this.providerInstance;
         const response = await provider.send("eth_blockNumber", []);
 
         return new BigNumber(response, 16);
     }
 
     async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
-        const provider = this.providerInstance
+        const provider = this.providerInstance;
         await provider._ready();
 
         const tx = {
@@ -79,22 +75,22 @@ export default class EthereumConfig extends BaseWebCurrency {
     }
 
     async sendTx(data: ethers.providers.TransactionRequest): Promise<any> {
-        const signer = this.w3signer
-        const receipt = await signer.sendTransaction(data)// .catch((e) => { console.error(`Sending tx: ${e}`) })
-        return receipt ? receipt.hash : undefined
+        const signer = this.w3signer;
+        const receipt = await signer.sendTransaction(data);// .catch((e) => { console.error(`Sending tx: ${e}`) })
+        return receipt ? receipt.hash : undefined;
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
-        const amountc = ethBigNumber.from((new BigNumber(amount)).toString())
-        const signer = this.w3signer
-        const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() })
+        const amountc = ethBigNumber.from((new BigNumber(amount)).toString());
+        const signer = this.w3signer;
+        const estimatedGas = await signer.estimateGas({ to, value: amountc.toHexString() });
         const gasPrice = await signer.getGasPrice();
-        const txr = await signer.populateTransaction({ to, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas })
+        const txr = await signer.populateTransaction({ to, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas });
         return { txId: "", tx: txr };
     }
 
     public async getPublicKey(): Promise<string | Buffer> {
-        const signer = await this.getSigner() as InjectedEthereumSigner
+        const signer = await this.getSigner() as InjectedEthereumSigner;
         await signer.setPublicKey();
         return signer.publicKey;
     }
@@ -115,54 +111,54 @@ export default class EthereumConfig extends BaseWebCurrency {
 
 
 export class EthereumBundlr extends WebBundlr {
-    public static readonly currency = "ethereum"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://main-light.eth.linkpool.io/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "ethereum";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://main-light.eth.linkpool.io/", wallet });
+        super(url, currencyConfig, config);
     }
 }
 export class MaticBundlr extends WebBundlr {
-    public static readonly currency = "matic"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: config?.providerUrl ?? "https://polygon-rpc.com", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "matic";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: config?.providerUrl ?? "https://polygon-rpc.com", wallet });
+        super(url, currencyConfig, config);
     }
 }
 
 export class BnbBundlr extends WebBundlr {
-    public static readonly currency = "bnb"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "bnb", ticker: "BNB", providerUrl: config?.providerUrl ?? "https://bsc-dataseed.binance.org", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "bnb";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "bnb", ticker: "BNB", providerUrl: config?.providerUrl ?? "https://bsc-dataseed.binance.org", wallet });
+        super(url, currencyConfig, config);
     }
 }
 
 export class FantomBundlr extends WebBundlr {
-    public static readonly currency = "fantom"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "fantom", ticker: "FTM", providerUrl: config?.providerUrl ?? "https://rpc.ftm.tools/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "fantom";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "fantom", ticker: "FTM", providerUrl: config?.providerUrl ?? "https://rpc.ftm.tools/", wallet });
+        super(url, currencyConfig, config);
     }
 }
 export class AvalancheBundlr extends WebBundlr {
-    public static readonly currency = "avalanche"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: config?.providerUrl ?? "https://api.avax.network/ext/bc/C/rpc", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "avalanche";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: config?.providerUrl ?? "https://api.avax.network/ext/bc/C/rpc", wallet });
+        super(url, currencyConfig, config);
     }
 }
 export class BobaEthBundlr extends WebBundlr {
-    public static readonly currency = "boba-eth"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "boba-eth", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://mainnet.boba.network/", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "boba-eth";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "boba-eth", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://mainnet.boba.network/", wallet });
+        super(url, currencyConfig, config);
     }
 }
 
 export class ArbitrumBundlr extends WebBundlr {
-    public static readonly currency = "arbitrum"
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string }) {
-        const currencyConfig = new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet })
-        super(url, currencyConfig, config)
+    public static readonly currency = "arbitrum";
+    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+        const currencyConfig = new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: config?.providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet });
+        super(url, currencyConfig, config);
     }
 }
