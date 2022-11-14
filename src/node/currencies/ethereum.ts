@@ -91,13 +91,15 @@ export default class EthereumConfig extends BaseNodeCurrency {
         return (await (await this.getProvider()).sendTransaction(data).catch(e => { console.error(`Error occurred while sending a tx - ${e}`); throw e; }));
     }
 
-    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string; tx: any; }> {
         const provider = await this.getProvider();
         const wallet = new Wallet(this.wallet, provider);
 
         const _amount = "0x" + new BigNumber(amount).toString(16);
 
         let gasPrice = await provider.getGasPrice();
+        let gasEstimate = (fee) ? ethers.BigNumber.from(new BigNumber(fee).dividedToIntegerBy(gasPrice.toString()).toFixed()) : undefined;
+
         // const estimatedGas = await provider.estimateGas({ from: this.address, to, value: _amount });
 
         // console.log({ gasPrice, estimatedGas })
@@ -114,8 +116,9 @@ export default class EthereumConfig extends BaseNodeCurrency {
             to,
             value: _amount,
             from: this.address,
-            gasPrice
+            gasPrice,
             // gasLimit: estimatedGas,
+            gasLimit: gasEstimate
             // nonce: b // await provider.getTransactionCount(this.address),
             // chainId: await (await provider.getNetwork()).chainId
         });
