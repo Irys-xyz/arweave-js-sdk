@@ -54,7 +54,7 @@ export async function checkManifestBundlr(path: string, nodeURL: string) {
     console.log(manifest);
     const results = await PromisePool
         .for(files)
-        .withConcurrency(1)
+        .withConcurrency(100)
         .process(async (ip, i) => {
             if (i % 50 === 0) {
                 console.log(`Processed ${i} entries`);

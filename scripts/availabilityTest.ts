@@ -11,7 +11,7 @@ async function a() {
         console.log(bundler.address);
         for (let i = 0; i < 400; i++) {
             try {
-                await sleep(10_000);
+                //await sleep(10_000);
                 const transaction = await bundler.createTransaction(Crypto.randomBytes(32).toString("base64"));
                 await transaction.sign();
                 console.log(transaction.id);
