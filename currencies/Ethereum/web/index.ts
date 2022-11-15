@@ -1,8 +1,11 @@
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
-import WebBundlr, { BaseWebCurrency, CurrencyConfig, Tx } from "@bundlr-network/client/web";
-import { InjectedEthereumSigner, Signer } from "arbundles/src/signing/index";
+import WebBundlr, { BaseWebCurrency, CurrencyConfig, Signer, Tx } from "@bundlr-network/client/web";
 import keccak256 from "./keccak256";
+import InjectedEthereumSigner from "./injectedEthereumSigner";
+export { default as injectedEthereumSigner } from "./injectedEthereumSigner";
+export { default as keccak256 } from "./keccak256";
+
 const ethBigNumber = ethers.BigNumber; // required for hexString conversions (w/ 0x padding)
 
 export default class EthereumConfig extends BaseWebCurrency {

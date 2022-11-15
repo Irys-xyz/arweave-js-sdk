@@ -15,9 +15,9 @@
             "import": "./esm/web/index.js",
             "require": "./cjs/web/index.js"
         },
-        "./*": {
-            "import": "./*.js",
-            "require": "./*.js"
+        "./signer": {
+            "import": "./esm/web/injectedEthereumSigner.js",
+            "require": "./cjs/web/injectedEthereumSigner.js"
         },
         "./bundle": "./esm/web/bundle.js"
     },

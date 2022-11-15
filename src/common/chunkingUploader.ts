@@ -1,4 +1,3 @@
-import { createData, DataItem, DataItemCreateOptions, deepHash } from "arbundles";
 import { PassThrough, Readable } from "stream";
 import { EventEmitter } from "events";
 import Api from "./api";
@@ -9,6 +8,9 @@ import { stringToBuffer } from "arweave/web/lib/utils";
 import retry from "async-retry";
 import { AxiosResponse } from "axios";
 import StreamToAsyncIterator from "./s2ai";
+import { DataItem, DataItemCreateOptions } from "./signing";
+import { deepHash } from "./signing/deepHash";
+import { createData } from "./signing/dataCreate";
 
 interface ChunkingUploaderEvents {
     'chunkUpload': ({ id, offset, size, totalUploaded }: { id: number, offset: number, size: number; totalUploaded: number; }) => void;

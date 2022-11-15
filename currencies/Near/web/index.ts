@@ -3,9 +3,10 @@ import { KeyPair, utils, transactions, providers, WalletConnection, Near, keySto
 import { decode, encode } from "bs58";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";
-import WebBundlr, { BaseWebCurrency, CreatedTx, CurrencyConfig, Tx } from "@bundlr-network/client/web";
-import { Signer } from "arbundles/src/signing/Signer";
-import { NearSigner } from "arbundles/src/signing/index";
+import WebBundlr, { BaseWebCurrency, CreatedTx, CurrencyConfig, Signer, Tx } from "@bundlr-network/client/web";
+import NearSigner from "./NearSigner";
+export { default as Curve25519 } from "./curve25519";
+export { default as NearSigner } from "./NearSigner";
 
 
 export default class NearConfig extends BaseWebCurrency {

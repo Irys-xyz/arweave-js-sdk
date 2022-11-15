@@ -1,4 +1,4 @@
-import { createData, DataItem, DataItemCreateOptions } from "arbundles";
+
 import { AxiosResponse } from "axios";
 import { Utils } from "./utils";
 import Api from "./api";
@@ -8,6 +8,7 @@ import retry from "async-retry";
 import { ChunkingUploader } from "./chunkingUploader";
 import { Readable } from "stream";
 import Crypto from "crypto";
+import { createData, DataItem, DataItemCreateOptions } from "./signing";
 
 export const CHUNKING_THRESHOLD = 50_000_000;
 // eslint-disable-next-line @typescript-eslint/naming-convention

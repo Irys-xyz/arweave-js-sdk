@@ -1,4 +1,3 @@
-import { DataItem } from "arbundles";
 import Arweave from "arweave";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
@@ -6,7 +5,8 @@ import { Tx, CurrencyConfig, CreatedTx } from "../common/types";
 import axios from "axios";
 import { NodeCurrency } from "./types";
 import { Utils } from "../common/utils";
-import { Signer } from "arbundles/src/signing";
+import { DataItem, Signer } from "../common/signing";
+
 export abstract class BaseNodeCurrency implements NodeCurrency {
     public base: [string, number];
     protected wallet: any;

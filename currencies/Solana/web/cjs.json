@@ -18,7 +18,6 @@
         "strict": true,
         "traceResolution": false,
         "strictNullChecks": false,
-        "strictNullChecks": false,
         "types": [
             "node"
         ],

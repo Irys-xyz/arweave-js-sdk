@@ -19,9 +19,13 @@
       "import": "./esm/node/keccak256.js",
       "require": "./cjs/node/keccak256.js"
     },
-    "./*": {
-      "import": "./*.js",
-      "require": "./*.js"
+    "./signer": {
+      "import": "./esm/node/EthereumSigner.js",
+      "require": "./cjs/node/EthereumSigner.js"
+    },
+    "./secp256k1": {
+      "import": "./esm/node/secp256k1.js",
+      "require": "./cjs/node/secp256k1.js"
     }
   },
   "files": [

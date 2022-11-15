@@ -15,9 +15,13 @@
       "import": "./esm/node/index.js",
       "require": "./cjs/node/index.js"
     },
-    "./*": {
-      "import": "./*.js",
-      "require": "./*.js"
+    "./signer": {
+      "import": "./esm/node/NearSigner.js",
+      "require": "./cjs/node/NearSigner.js"
+    },
+    "./curve25519": {
+      "import": "./esm/node/curve25519.js",
+      "require": "./cjsnode/curve25519.js"
     }
   },
   "files": [

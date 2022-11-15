@@ -11,7 +11,7 @@ import { Utils, importAndGetBundlrFlavour } from "../common/utils";
 // import CosmosConfig from "./currencies/cosmos";
 import { WebCurrency } from "./types";
 
-export default class WebBundlr extends Bundlr {
+export class WebBundlr extends Bundlr {
     declare currencyConfig: WebCurrency;
     constructor(url: string, currencyConfig: WebCurrency, config?: BundlrConfig) {
         super();
@@ -36,3 +36,5 @@ export default class WebBundlr extends Bundlr {
         return newBundlr;
     }
 }
+
+export default WebBundlr;

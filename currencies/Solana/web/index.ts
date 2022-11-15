@@ -4,8 +4,11 @@ import bs58 from "bs58";
 //@ts-ignore - this is a type import so will not be holden to the runtime differences of an esm module.
 import type { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
-import WebBundlr, { BaseWebCurrency, CreatedTx, CurrencyConfig, Tx } from "@bundlr-network/client/web";
-import { HexInjectedSolanaSigner, Signer } from "arbundles/src/signing/index";
+import { WebBundlr, BaseWebCurrency, CreatedTx, CurrencyConfig, Tx, Signer } from "@bundlr-network/client/web";
+import HexInjectedSolanaSigner from "./HexInjectedSolanaSigner";
+
+export { default as InjectedSolanaSigner } from "./InjectedSolanaSigner";
+export { default as HexInjectedSolanaSigner } from "./HexInjectedSolanaSigner";
 
 
 export default class SolanaConfig extends BaseWebCurrency {

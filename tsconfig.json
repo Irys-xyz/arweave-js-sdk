@@ -3,12 +3,12 @@
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": "src",
-    "module": "ES2022",
+    "module": "CommonJS",
     "declaration": true,
     "esModuleInterop": true,
     "inlineSourceMap": false,
-    "lib": ["esnext"],
-    "target": "esnext",
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
     "listEmittedFiles": false,
     "listFiles": false,
     "moduleResolution": "NodeNext",
@@ -29,11 +29,12 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": false,
-    "outDir": "build",
+    // "outDir": "./build",
     "experimentalDecorators": true
   },
-  "exclude": ["node_modules", "dist", "esm", "cjs"],
-  "include": ["src", "currencies"]
+  //"exclude": ["**/node_modules", "**/dist", "**/esm", "**/cjs"],
+  "include": ["src/**/*", "currencies/**/*"],
+  "exclude": ["**/node_modules/*", "**/dist/*", "**/esm/*", "**/cjs/*"]
   // "references": [
   //   {"path": "src/currencies/Arweave/node"},
   //   {"path": "src/currencies/Arweave/web"}

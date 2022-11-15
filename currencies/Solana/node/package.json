@@ -15,9 +15,17 @@
       "import": "./esm/node/index.js",
       "require": "./cjs/node/index.js"
     },
-    "./*": {
-      "import": "./*.js",
-      "require": "./*.js"
+    "./curve25519": {
+      "import": "./esm/node/curve25519.js",
+      "require": "./cjs/node/curve25519.js"
+    },
+    "./signer": {
+      "import": "./esm/node/SolanaSigner.js",
+      "require": "./cjs/node/SolanaSigner.js"
+    },
+    "./hexSigner": {
+      "import": "./esm/node/HexSolanaSigner.js",
+      "require": "./cjs/node/HexSolanaSigner.js"
     }
   },
   "files": [

@@ -60,7 +60,8 @@ const base = {
     plugins: [
         new DtsBundleWebpack({
             name: "@bundlr-network/client",
-            main: "./build/esm/index.d.ts"
+            main: "./build/types/index.d.ts",
+
         }),
         // new webpack.ProvidePlugin({
         //     arbundles: "arbundles"

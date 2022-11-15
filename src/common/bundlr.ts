@@ -2,13 +2,13 @@ import { Utils } from "./utils";
 import { withdrawBalance } from "./withdrawal";
 import Uploader from "./upload";
 import Fund from "./fund";
-import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
 import { Currency, FundResponse, UploadResponse, WithdrawalResponse } from "./types";
-import { Signer } from "arbundles/src/signing";
 import { Readable } from "stream";
+import { DataItemCreateOptions } from "./signing/types";
+import { Signer } from "./signing/index";
 
 export default abstract class Bundlr {
     public api: Api;

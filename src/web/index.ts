@@ -18,8 +18,8 @@
 // globalThis.path ??= path;
 // /** @ts-ignore */
 
-import { default as WebBundlr } from "./bundlr";
-export { WebBundlr, WebBundlr as default };
+import { WebBundlr } from "./bundlr";
+export { WebBundlr as default };
 // export { default } from "./bundlr"
 export * from "./bundlr";
 export * from "./currency";

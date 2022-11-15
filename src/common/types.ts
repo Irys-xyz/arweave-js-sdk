@@ -1,6 +1,5 @@
 import BigNumber from "bignumber.js";
-import { DataItem } from "arbundles";
-import { Signer } from "arbundles/src/signing";
+import { DataItem, Signer } from "./signing";
 // common types shared between web and node versions
 
 export interface CreateTxData { amount: BigNumber.Value, to: string, fee?: string; }

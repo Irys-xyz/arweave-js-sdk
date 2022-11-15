@@ -36,7 +36,7 @@ async function main() {
         // let bundlr = await Bundlr.init({ url: nodeUrl, currency: "aptos", publicKey: account.pubKey().toString(), signingFunction });
         // let bundlr = Bundlr.init({ url: nodeUrl, currency: "aptos", privateKey: key })
 
-        let bundlr = new Bundlr(nodeUrl, "aptos", key, { providerUrl: "https://fullnode.devnet.aptoslabs.com" });
+        let bundlr = await Bundlr.init(nodeUrl, "solana", keys.solana);
         await bundlr.ready();
         console.log(bundlr.address);
 

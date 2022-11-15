@@ -14,6 +14,14 @@
     ".": {
       "import": "./esm/node/index.js",
       "require": "./cjs/node/index.js"
+    },
+    "./signer": {
+      "import": "./esm/node/Signer.js",
+      "require": "./esm/node/Signer.js"
+    },
+    "./rsa4096pss": {
+      "import": "./esm/node/Rsa4096Pss.js",
+      "require": "./esm/node/Rsa4096Pss.js"
     }
   },
   "files": [

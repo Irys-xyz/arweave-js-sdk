@@ -2,10 +2,12 @@
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet, providers } from "ethers";
 import BigNumber from "bignumber.js";
-import NodeBundlr, { BaseNodeCurrency, CurrencyConfig, Tx } from "@bundlr-network/client/node";
-import EthereumSigner from "arbundles/src/signing/chains/ethereumSigner";
-import { Signer } from "arbundles/src/signing/Signer";
+import NodeBundlr, { BaseNodeCurrency, CurrencyConfig, Signer, Tx } from "@bundlr-network/client/node";
 import keccak256 from "./keccak256";
+import EthereumSigner from "./EthereumSigner";
+export { default as EthereumSigner } from "./EthereumSigner";
+export { default as keccak256 } from "./keccak256";
+export { default as secp256k1 } from "./secp256k1";
 
 export default class EthereumConfig extends BaseNodeCurrency {
     declare protected providerInstance: providers.JsonRpcProvider;

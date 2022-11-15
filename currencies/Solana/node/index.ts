@@ -3,10 +3,12 @@ import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import retry from "async-retry";
-import NodeBundlr, { BaseNodeCurrency, CurrencyConfig, Tx } from "@bundlr-network/client/node";
+import { BaseNodeCurrency, CurrencyConfig, Tx, NodeBundlr } from "@bundlr-network/client/node";
 import SolanaSigner from "arbundles/src/signing/chains/SolanaSigner";
 import { Signer } from "arbundles/src/signing/Signer";
-
+export { default as SolanaSigner } from "./SolanaSigner";
+export { default as HexSolanaSigner } from "./HexSolanaSigner";
+export { default as Curve25519 } from "./curve25519";
 
 export class SolanaConfig extends BaseNodeCurrency {
     declare protected providerInstance: web3.Connection;

@@ -7,7 +7,7 @@ import * as p from "path";
 import mime from "mime-types";
 import inquirer from "inquirer";
 import { Readable } from "stream";
-import { DataItem } from "arbundles";
+import { DataItem } from "../common/signing";
 
 export const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false); };
 

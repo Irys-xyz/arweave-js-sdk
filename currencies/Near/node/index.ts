@@ -8,8 +8,11 @@ import { JsonRpcProvider } from "near-api-js/lib/providers";
 import { parseSeedPhrase, KEY_DERIVATION_PATH } from "near-seed-phrase";
 import base64url from "base64url";
 import axios from "axios";
-import NodeBundlr, { BaseNodeCurrency, CreatedTx, CurrencyConfig, Tx, } from "@bundlr-network/client/node";
-import { NearSigner, Signer } from "arbundles/src/signing/index";
+import NodeBundlr, { BaseNodeCurrency, CreatedTx, CurrencyConfig, Signer, Tx, } from "@bundlr-network/client/node";
+import NearSigner from "./NearSigner";
+
+export { default as NearSigner } from "./NearSigner";
+export { default as Curve25519 } from "./curve25519";
 export default class NearConfig extends BaseNodeCurrency {
     protected keyPair: KeyPair;
 
