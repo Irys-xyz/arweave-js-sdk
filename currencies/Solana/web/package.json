@@ -1,6 +1,6 @@
 {
     "name": "@bundlr-network/solana-web",
-    "version": "0.1.0-a1",
+    "version": "0.1.0-a2",
     "description": "Solana Currency for Bundlr",
     "main": "./esm/web/index.js",
     "types": "./esm/web/index.d.ts",
@@ -33,7 +33,7 @@
         "esm/**/*"
     ],
     "dependencies": {
-        "@bundlr-network/client": "^0.8.0-rc2",
+        "@bundlr-network/client": "^0.10.0-a1",
         "@noble/ed25519": "^1.6.0",
         "@solana/web3.js": "^1.36.0",
         "async-retry": "^1.3.3",
