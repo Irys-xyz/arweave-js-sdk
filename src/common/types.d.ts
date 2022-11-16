@@ -3,7 +3,7 @@ import { Signer } from "arbundles/src/signing";
 import { FileDataItem } from "arbundles/file";
 // common types shared between web and node versions
 
-export interface CreateTxData { amount: BigNumber.Value, to: string, fee?: string }
+export interface CreateTxData { amount: BigNumber.Value, to: string, fee?: string; }
 
 export interface Tx {
     from: string;
@@ -11,21 +11,21 @@ export interface Tx {
     amount: BigNumber;
     blockHeight?: BigNumber;
     pending: boolean;
-    confirmed: boolean
+    confirmed: boolean;
 }
-export interface CurrencyConfig { name: string, ticker: string, minConfirm?: number, wallet: any, providerUrl: string, isSlow?: boolean, opts?: any }
+export interface CurrencyConfig { name: string, ticker: string, minConfirm?: number, wallet?: string | Object, providerUrl: string, isSlow?: boolean, opts?: any; }
 
 export interface Currency {
-    isSlow: boolean
-    needsFee: boolean
+    isSlow: boolean;
+    needsFee: boolean;
 
     base: [string, number];
 
-    name: string
+    name: string;
 
     get address(): string;
 
-    ticker: string
+    ticker: string;
 
     getTx(txId: string): Promise<Tx>;
 
@@ -43,25 +43,54 @@ export interface Currency {
 
     getCurrentHeight(): Promise<BigNumber>;
 
-    getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber>;
+    getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber | object>;
 
-    sendTx(data: any): Promise<any>; // TODO: make signature(s) more specific
+    sendTx(data: any): Promise<string | undefined>;
 
-    createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string, tx: any }>;
+    createTx(amount: BigNumber.Value, to: string, fee?: string | object): Promise<{ txId: string | undefined, tx: any; }>;
 
     getPublicKey(): Promise<string | Buffer> | (string | Buffer);
 
-    ready?(): void | PromiseLike<void>;
+    ready?(): Promise<void>;
+
+    // createMultiSigTx?(amount: BigNumber.Value, to: string, opts: any, fee?: string): Promise<any>;
+
+    // addSignature?(multiTx: any, opts: any): Promise<any>;
+
+    // submitMultiSigTx?(multiTx: any, opts: any): Promise<any>;
 }
 
-export interface FundData { reward: string, target: string, quantity: string, id: string }
+
 
 export interface Manifest {
     manifest: string,
     version: string,
     paths: Record<string, Record<string, Record<"id", string>>>,
-    index?: Record<"path", string>
+    index?: Record<"path", string>;
 }
+
+
+export interface UploadResponse {
+    id: string,
+    public: string,
+    signature: string,
+    block: number,
+    validatorSignatures: { address: string, signature: string; }[];
+}
+
+export interface FundResponse {
+    reward: string,
+    target: string,
+    quantity: string,
+    id: string;
+}
+export interface WithdrawalResponse {
+    tx_id: string;
+    requested: number;
+    fee: number,
+    final: number;
+}
+
 
 // // TS doesn't like string template literals it seems
 // export enum manifestType {

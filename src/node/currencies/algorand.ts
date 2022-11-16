@@ -1,7 +1,7 @@
 import { AlgorandSigner, Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
-import { CurrencyConfig, Tx } from "../../common/types"
-import BaseNodeCurrency from "../currency"
+import { CurrencyConfig, Tx } from "../../common/types";
+import BaseNodeCurrency from "../currency";
 
 import * as algosdk from "algosdk";
 import axios from "axios";
@@ -16,8 +16,8 @@ export default class AlgorandConfig extends BaseNodeCurrency {
 
     constructor(config: CurrencyConfig) {
         super(config);
-        this.base = ["microAlgos", 1e6]
-        this.keyPair = algosdk.mnemonicToSecretKey(this.wallet)
+        this.base = ["microAlgos", 1e6];
+        this.keyPair = algosdk.mnemonicToSecretKey(this.wallet);
         this.apiURL = this.providerUrl.slice(0, 8) + "node." + this.providerUrl.slice(8);
         this.indexerURL = this.providerUrl.slice(0, 8) + "algoindexer." + this.providerUrl.slice(8);
     }
@@ -36,7 +36,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
             blockHeight: txBlockHeight,
             pending: false,
             confirmed: latestBlockHeight - txBlockHeight.toNumber() >= this.minConfirm
-        }
+        };
         return tx;
     }
 
@@ -45,15 +45,15 @@ export default class AlgorandConfig extends BaseNodeCurrency {
     }
 
     async sign(data: Uint8Array): Promise<Uint8Array> {
-        return this.getSigner().sign(data)
+        return this.getSigner().sign(data);
     }
 
     getSigner(): Signer {
-        return new AlgorandSigner(this.keyPair.sk, this.getPublicKey())
+        return new AlgorandSigner(this.keyPair.sk, this.getPublicKey());
     }
 
     async verify(pub: string | Buffer, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return AlgorandSigner.verify(pub, data, signature)
+        return AlgorandSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -69,10 +69,10 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         return new BigNumber(response.data["min-fee"]);
     }
 
-    async sendTx(data: any): Promise<string> {
+    async sendTx(data: any): Promise<string | undefined> {
         const endpoint = `${this.apiURL}/v2/transactions`;
         const response = await axios.post(endpoint, data);
-        return response.data["txId"]; // return TX id
+        return response.data["txId"];
     }
 
     async createTx(amount: BigNumber.Value, to: string): Promise<{ txId: string; tx: any; }> {
@@ -95,7 +95,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         });
         const signed = algosdk.signTransaction(unsigned, this.keyPair.sk);
 
-        return { tx: signed.blob, txId: signed.txID }
+        return { tx: signed.blob, txId: signed.txID };
     }
 
     getPublicKey(): string | Buffer {
