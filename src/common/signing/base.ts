@@ -5,7 +5,7 @@ import { deepHash } from "./deepHash";
 
 
 export async function getSignatureData(item: DataItem): Promise<Uint8Array> {
-    if (isBrowser) {
+    if (isBrowser()) {
         //@ts-ignore
         const web = await import("arweave/web/lib/deepHash");
         //@ts-ignore

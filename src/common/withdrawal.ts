@@ -2,7 +2,7 @@
 import { stringToBuffer } from "arweave/node/lib/utils";
 import { Utils } from "./utils";
 import BigNumber from "bignumber.js";
-import Api from "./api";
+import { Api } from "./api";
 import base64url from "base64url";
 import { WithdrawalResponse } from "./types";
 import { deepHash } from "./signing";

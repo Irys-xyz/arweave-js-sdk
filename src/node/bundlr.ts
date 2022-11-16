@@ -1,10 +1,10 @@
-import Api from "../common/api";
-import Bundlr from "../common/bundlr";
-import Fund from "../common/fund";
+import { Api } from "../common/api";
+import { Bundlr } from "../common/bundlr";
+import { Fund } from "../common/fund";
 import { BundlrConfig, UploadResponse } from "../common/types";
 import { importAndGetBundlrFlavour, Utils } from "../common/utils";
 import { NodeCurrency } from "./types";
-import NodeUploader from "./upload";
+import { NodeUploader } from "./upload";
 
 
 export class NodeBundlr extends Bundlr {
@@ -19,7 +19,7 @@ export class NodeBundlr extends Bundlr {
     constructor(url: string, currencyConfig: NodeCurrency, config?: BundlrConfig) {
         super();
         const parsed = new URL(url);
-        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
+        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000, adapter: config?.api?.adapter });
         if (config?.minConfirm) {
             currencyConfig.minConfirm = config?.minConfirm;
         }

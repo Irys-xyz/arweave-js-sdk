@@ -117,5 +117,36 @@ export function arraybufferEqual(buf1: Uint8Array, buf2: Uint8Array): boolean {
     return true;
 }
 
-//@ts-ignore
-export const isBrowser = typeof window !== "undefined" && typeof window.document !== "undefined";
+
+// const ibc = new class {
+//     //@ts-ignore
+//     private default = typeof ServiceWorkerGlobalScope !== "undefined" || (typeof window !== "undefined" && typeof window.document !== "undefined");
+//     private is = this.default;
+
+//     get isBrowser() {
+//         return this.is;
+//     }
+//     setIsBrowser(v: boolean) {
+//         this.is = v;
+//     }
+//     get restore() {
+//         return this.is = this.default;
+//     }
+// };
+
+
+const ibs = (function () {
+    //@ts-ignore
+    const d = typeof ServiceWorkerGlobalScope !== "undefined" || (typeof window !== "undefined" && typeof window.document !== "undefined");
+    var is = d;
+    return {
+        isBrowser: () => { return is; },
+        setIsBrowser: (v: boolean) => { return is = v; },
+        restore: () => { return is = d; }
+    };
+})();
+
+export const isBrowser = ibs.isBrowser;
+export const restore = ibs.restore;
+export const setIsBrowser = ibs.setIsBrowser;
+

@@ -1,3 +1,5 @@
-export { default } from "./node";
-export { default as WebBundlr } from "./web";
-export * as Common from "./common";
+import { NodeBundlr } from "./node";
+import { WebBundlr } from "./web";
+export default NodeBundlr;
+export * from "./common";
+export { NodeBundlr, WebBundlr };

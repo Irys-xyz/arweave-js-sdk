@@ -1,9 +1,8 @@
 import * as p from "path";
-import { promises, readFileSync } from "fs";
-import axios from "axios";
+import { promises } from "fs";
 import PromisePool from "@supercharge/promise-pool/dist";
 import Axios from "axios";
-import assert from "assert";
+
 
 export async function checkManifest(path) {
     path = p.resolve(path);

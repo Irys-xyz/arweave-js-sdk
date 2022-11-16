@@ -88,3 +88,5 @@ export abstract class BundleItem {
         throw new Error("You must implement `verify`");
     }
 }
+
+export type SignerIndex = { [k: number]: { pkg: string[], obj: staticSigner; }; };

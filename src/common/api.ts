@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import Axios, { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios";
+import Axios, { AxiosResponse, AxiosRequestConfig, AxiosInstance, AxiosAdapter } from "axios";
 
 // taken from the arweave.js lib
 export interface ApiConfig {
@@ -10,10 +10,11 @@ export interface ApiConfig {
     logging?: boolean;
     // eslint-disable-next-line @typescript-eslint/ban-types
     logger?: Function;
+    adapter?: AxiosAdapter;
 }
 
 // TODO: overhaul this
-export default class Api {
+export class Api {
     public readonly METHOD_GET = "GET";
     public readonly METHOD_POST = "POST";
 
@@ -42,6 +43,7 @@ export default class Api {
             timeout: config.timeout || 20000,
             logging: config.logging || false,
             logger: config.logger || console.log,
+            adapter: config.adapter
         };
     }
 
@@ -81,6 +83,7 @@ export default class Api {
             baseURL: `${this.config.protocol}://${this.config.host}:${this.config.port}`,
             timeout: this.config.timeout,
             maxContentLength: 1024 * 1024 * 512,
+            adapter: this.config.adapter
         });
 
         if (this.config.logging) {

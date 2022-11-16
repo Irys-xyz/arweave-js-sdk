@@ -1,6 +1,8 @@
 import Arweave from "arweave";
 import { getSignatureData } from "./base";
 import { DataItem } from "./DataItem";
+import { SignerIndex } from "./types";
+
 
 export abstract class Signer {
   readonly publicKey!: Buffer;
@@ -47,3 +49,44 @@ export async function sign(item: DataItem, signer: Signer): Promise<Buffer> {
   item.getRaw().set(signature, 2);
   return id;
 }
+
+
+// global obj
+
+export const signerIndex: SignerIndex = {
+  1: { pkg: ["@bundlr-network/arweave/signer"], obj: undefined }, //Arweave
+  2: { //Curve25519
+    pkg: [
+      "@bundlr-network/solana/curve25519",
+      "@bundlr-network/algorand/curve25519",
+      "@bundlr-network/aptos/curve25519"
+    ], obj: undefined
+  },
+  3: { //Ethereum
+    pkg: [
+      "@bundlr-network/ethereum/signer",
+      "@bundlr-network/ethereum-web/signer"
+    ], obj: undefined
+  },
+  4: { //Hex encoded Solana
+    pkg: [
+      "@bundlr-network/solana/hexSigner",
+      "@bundlr-network/solana-web/hexSigner"
+    ], obj: undefined
+  },
+  5: { //Aptos
+    pkg: [
+      "@bundlr-network/aptos-web/signer",
+      "@bundlr-network/aptos/signer"
+    ], obj: undefined
+  },
+  6: { //multiSig aptos
+    pkg: [
+      "@bundlr-network/aptos-web/signer",
+      "@bundlr-network/aptos/signer"
+    ], obj: undefined
+  },
+};
+
+
+(globalThis.Bundlr ??= {}).signerIndex ??= signerIndex;

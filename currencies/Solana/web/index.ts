@@ -151,7 +151,7 @@ export default class SolanaConfig extends BaseWebCurrency {
 
 export class SolanaBundlr extends WebBundlr {
     public static readonly currency = "solana";
-    constructor(url: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
+    constructor(url: string, wallet?: MessageSignerWalletAdapter, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
         const currencyConfig = new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: config?.providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet });
         super(url, currencyConfig, config);
     }

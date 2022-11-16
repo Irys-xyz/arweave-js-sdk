@@ -2,7 +2,8 @@
   "name": "@bundlr-network/solana",
   "version": "0.0.1-rc1",
   "description": "Solana Currency for Bundlr",
-  "main": "index.js",
+  "main": "./cjs/node/index.js",
+  "types": "./esm/node/index.d.ts",
   "author": "JesseTheRobot",
   "license": "MIT",
   "scripts": {
@@ -12,6 +13,7 @@
   },
   "exports": {
     ".": {
+      "types": "./esm/node/index.d.ts",
       "import": "./esm/node/index.js",
       "require": "./cjs/node/index.js"
     },

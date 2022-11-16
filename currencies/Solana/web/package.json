@@ -8,19 +8,23 @@
     "author": "JesseTheRobot",
     "license": "MIT",
     "scripts": {
-        "dev:build": "rm -rf ./cjs && rm -rf ./esm && ttsc -p ./esm.json",
+        "dev:build": "rm -rf ./cjs && rm -rf ./esm && tsc -p ./cjs.json && ttsc -p ./esm.json",
         "build": "yarn run dev:build && webpack",
-        "watch": "ttsc --watch -p esm.json & webpack --watch"
+        "watch": "ttsc --watch -p esm.json & ttsc --watch -p cjs.json & webpack --watch"
     },
     "exports": {
         ".": {
-            "import": "./esm/web/index.js"
+            "types": "./esm/web/index.d.ts",
+            "import": "./esm/web/index.js",
+            "require": "./cjs/web/index.js"
         },
         "./signer": {
-            "import": "./esm/web/InjectedSolanaSigner.js"
+            "import": "./esm/web/InjectedSolanaSigner.js",
+            "require": "./cjs/web/InjectedSolanaSigner.js"
         },
         "./hexSigner": {
-            "import": "./esm/web/HexInjectedSolanaSigner.js"
+            "import": "./esm/web/HexInjectedSolanaSigner.js",
+            "require": "./cjs/web/HexInjectedSolanaSigner.js"
         },
         "./bundle": "./esm/web/bundle.js"
     },

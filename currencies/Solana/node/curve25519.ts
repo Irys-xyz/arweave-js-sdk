@@ -36,3 +36,6 @@ export default class Curve25519 implements Signer {
         );
     }
 }
+
+//@ts-ignore
+globalThis.Bundlr.signerIndex[2].obj ??= Curve25519;

@@ -9,7 +9,8 @@
   "files": [
     "build/**/*.js",
     "build/**/*.js.map",
-    "build/**/*.ts"
+    "build/**/*.ts",
+    "build/**/*.d.ts"
   ],
   "exports": {
     ".": {
@@ -39,12 +40,12 @@
       "default": "./build/esm/umd.bundle.js"
     }
   },
-  "main": "./build/cjs/index.js",
   "types": "./build/types/index.d.ts",
+  "main": "./build/cjs/index.js",
   "module": "./build/esm/index.js",
   "browser": "./build/esm/web/index.js",
   "scripts": {
-    "dev:build": "rm -rf build && tsc -p cjs.tsconfig.json && ttsc -p esm.tsconfig.json && chmod +x ./build/cjs/node/cli.js && chmod +x ./build/esm/node/cli.js && ./scripts/fixup.sh && (cd ./build/esm && ts-node ../../scripts/rename.ts)",
+    "dev:build": "rm -rf build && tsc -p cjs.tsconfig.json && ttsc -p esm.tsconfig.json && chmod +x ./build/cjs/node/cli.js && chmod +x ./build/esm/node/cli.js && tsc -p cjs.tsconfig.json --declarationDir ./build/types",
     "prod:build": "yarn run dev:build && yarn run lerna:build",
     "lint:check": "eslint src/**",
     "build": "webpack",
@@ -69,8 +70,6 @@
     "mime-types": "^2.1.34"
   },
   "devDependencies": {
-    "arbundles": "^0.7.0",
-    "ttypescript": "^1.5.13",
     "@babel/core": "^7.16.7",
     "@babel/preset-env": "^7.16.7",
     "@manahippo/aptos-wallet-adapter": "^0.3.6",
@@ -85,6 +84,7 @@
     "@types/path-browserify": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^5.1.0",
     "@typescript-eslint/parser": "^5.1.0",
+    "arbundles": "^0.7.0",
     "assert": "^2.0.0",
     "axios": "^0.25.0",
     "browserify-zlib": "^0.2.0",
@@ -110,6 +110,7 @@
     "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
     "tslib": "^2.3.1",
+    "ttypescript": "^1.5.13",
     "typescript": "^4.8.4",
     "v8-profiler-next": "^1.8.0",
     "webpack": "^5.65.0",

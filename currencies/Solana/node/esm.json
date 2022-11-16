@@ -21,7 +21,6 @@
         "types": [
             "node"
         ],
-        //transformer 
         "outDir": "./esm",
         "module": "esnext",
         "target": "esnext",

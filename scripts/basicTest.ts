@@ -1,14 +1,19 @@
 // eslint-disable-file @typescript-eslint/no-unused-vars
 
-// import Bundlr from "../"; //testing built code
-import Bundlr from "../src/index"; //testing direct from TS source
-
 import { promises, readFileSync, writeFileSync } from 'fs';
 import * as v8 from "v8-profiler-next";
 import Crypto from "crypto";
 import { checkPath } from "../src/node/upload";
 import { genData } from "./genData";
 import { checkManifestBundlr } from "./checkManifest";
+import { NodeBundlr, setIsBrowser } from "../src";
+
+import { SolanaBundlr } from "../currencies/Solana/node/index";
+import { SolanaBundlr as SB } from '../currencies/Solana/web/index';
+
+import bs58 from 'bs58';
+
+import { sign } from "@noble/ed25519";
 
 const profiling = false;
 async function main() {
@@ -31,14 +36,14 @@ async function main() {
         const nodeUrl = "http://devnet.bundlr.network";
         const testFolder = "testFolder";
 
-        const key = keys.aptos;
+        const { providerUrl, key } = keys.devnet.solana;
 
-        // let bundlr = await Bundlr.init({ url: nodeUrl, currency: "aptos", publicKey: account.pubKey().toString(), signingFunction });
-        // let bundlr = Bundlr.init({ url: nodeUrl, currency: "aptos", privateKey: key })
+        //note: types are broken just here. package consumers don't have any issue.
 
-        let bundlr = await Bundlr.init(nodeUrl, "solana", keys.solana);
+        const bundlr = new SolanaBundlr(nodeUrl, key, { providerUrl }) as unknown as NodeBundlr;
         await bundlr.ready();
         console.log(bundlr.address);
+
 
         let res;
         let tx;
@@ -47,14 +52,14 @@ async function main() {
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
-        res = await bundlr.upload("Hello, world!");
-        console.log(res);
+        // res = await bundlr.upload("Hello, world!");
+        // console.log(res);
 
-        const transaction = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
-        const signingInfo = await transaction.getSignatureData();
-        const signed = await bundlr.currencyConfig.sign(signingInfo);
-        transaction.setSignature(Buffer.from(signed));
-
+        const transaction = bundlr.createTransaction("Hello world!");
+        // const signingInfo = await transaction.getSignatureData();
+        // const signed = await bundlr.currencyConfig.sign(signingInfo);
+        // await transaction.setSignature(Buffer.from(signed));
+        await transaction.sign();
         console.log(transaction.id);
         console.log(await transaction.isValid());
 

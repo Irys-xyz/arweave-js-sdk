@@ -1,10 +1,35 @@
-// In TypeScript 3.7, could be written as a single type:
-// `type DeepHashChunk = Uint8Array | DeepHashChunk[];`
 import Arweave from "arweave";
-import { createHash } from "crypto";
+import { isBrowser } from "./utils";
 
 export type DeepHashChunk = Uint8Array | AsyncIterable<Buffer> | DeepHashChunks;
 export type DeepHashChunks = DeepHashChunk[];
+
+// node crypto createHash : web subtleCrypto digest
+let map = {
+    "sha256": "SHA-256",
+    "sha384": "SHA-384"
+};
+
+Object.entries(map).forEach(([k, v]) => { map[v] = k; });
+
+export async function createHashShim(algo: string) {
+    if (isBrowser()) {
+        algo = (algo.includes("-")) ? algo : algo = map[algo];
+        const shimClass = class {
+            context = [];
+            constructor() { this.context = []; };
+            update(data: Buffer) {
+                this.context.push(data);
+            }
+            async digest() { return Buffer.from(await crypto.subtle.digest(algo, Buffer.concat(this.context))); }
+        };
+        return new shimClass();
+    } else {
+        return (await import("crypto")).createHash((algo.includes("-")) ? algo = map[algo] : algo);
+    }
+    // console.log(Object.keys(Crypto));
+    // return Crypto.createHash(algo);
+}
 
 export async function deepHash(data: DeepHashChunk): Promise<Uint8Array> {
     if (
@@ -12,8 +37,9 @@ export async function deepHash(data: DeepHashChunk): Promise<Uint8Array> {
         "function"
     ) {
         const _data = data as AsyncIterable<Buffer>;
+        let context = await createHashShim("sha384");
 
-        const context = createHash("sha384");
+
 
         let length = 0;
 
@@ -29,7 +55,7 @@ export async function deepHash(data: DeepHashChunk): Promise<Uint8Array> {
 
         const taggedHash = Arweave.utils.concatBuffers([
             await Arweave.crypto.hash(tag, "SHA-384"),
-            context.digest(),
+            await context.digest(),
         ]);
 
         return await Arweave.crypto.hash(taggedHash, "SHA-384");
@@ -79,11 +105,11 @@ export async function deepHashChunks(
 export async function hashStream(
     stream: AsyncIterable<Buffer>,
 ): Promise<Buffer> {
-    const context = createHash("sha384");
+    const context = await createHashShim("sha384");
 
     for await (const chunk of stream) {
         context.update(chunk);
     }
 
-    return context.digest();
+    return await context.digest();
 }

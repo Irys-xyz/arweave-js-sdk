@@ -1,7 +1,7 @@
 import { promises, PathLike, createReadStream, createWriteStream } from "fs";
 import { Currency, UploadResponse } from "../common/types";
-import Uploader from "../common/upload";
-import Api from "../common/api";
+import { Uploader } from "../common/upload";
+import { Api } from "../common/api";
 import { Utils } from "../common/utils";
 import * as p from "path";
 import mime from "mime-types";
@@ -11,7 +11,7 @@ import { DataItem } from "../common/signing";
 
 export const checkPath = async (path: PathLike): Promise<boolean> => { return promises.stat(path).then(_ => true).catch(_ => false); };
 
-export default class NodeUploader extends Uploader {
+export class NodeUploader extends Uploader {
 
     constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency) {
         super(api, utils, currency, currencyConfig);
@@ -34,7 +34,7 @@ export default class NodeUploader extends Uploader {
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-    private async* walk(dir: string) {
+    public async* walk(dir: string) {
         for await (const d of await promises.opendir(dir)) {
             const entry = p.join(dir, d.name);
             if (d.isDirectory()) yield* await this.walk(entry);

@@ -1,8 +1,8 @@
 // import Api from "arweave/node/lib/api";
 import { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
-import Api from "./api";
-import Bundlr from "./bundlr";
+import { Api } from "./api";
+import { Bundlr } from "./bundlr";
 import { Currency } from "./types";
 BigNumber.set({ DECIMAL_PLACES: 50 });
 

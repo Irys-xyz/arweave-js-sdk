@@ -25,3 +25,5 @@ export default class HexSolanaSigner extends InjectedSolanaSigner {
         );
     }
 }
+//@ts-ignore
+(globalThis.Bundlr ??= {}).signerIndex[4].obj ??= HexSolanaSigner;

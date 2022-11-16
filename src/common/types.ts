@@ -1,3 +1,4 @@
+import { AxiosAdapter } from "axios";
 import BigNumber from "bignumber.js";
 import { DataItem, Signer } from "./signing";
 // common types shared between web and node versions
@@ -110,6 +111,9 @@ export interface BundlrConfig extends MultiSigFns {
     providerUrl?: string,
     contractAddress?: string,
     minConfirm?: number;
+    api?: {
+        adapter?: AxiosAdapter;
+    };
 }
 export interface MultiSigFns {
     signingFunction?: (msg: Uint8Array) => Promise<Uint8Array>,

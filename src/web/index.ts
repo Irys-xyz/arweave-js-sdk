@@ -19,22 +19,23 @@
 // /** @ts-ignore */
 
 import { WebBundlr } from "./bundlr";
-export { WebBundlr as default };
+// export { WebBundlr as default };
+export default WebBundlr;
 // export { default } from "./bundlr"
 export * from "./bundlr";
 export * from "./currency";
 export * from "./types";
 export * from "../common";
 
-// on demand injection.
-const currencies: Array<[Array<string>, Array<string>]> = [
-    [["@bundlr-network/ethereum-web", "BundlrEthereumWeb"], ["ethereum", "matic", "bnb", "fantom", "avalanche", "boba-eth", "arbitrum"]],
-    [["@bundlr-network/near-web", "BundlrNearWeb"], ["near"]],
-    [["@bundlr-network/solana-web", "BundlrSolanaWeb"], ["solana"]],
-    [["@bundlr-network/erc20-web", "BundlrErc20Web"], ["boba", "chainlink"]],
-    [["@bundlr-network/cosmos-web", "BundlrCosmosWeb"], ["cosmos", "akash", "kyve"]]
-];
-// @ts-ignore
-globalThis.Bundlr?.currencyArrayMap ? (globalThis.Bundlr.currencyArrayMap.concat(currencies)) : (globalThis.Bundlr = { currencyArrayMap: currencies });
-// @ts-ignore
-globalThis.BundlrClient ??= WebBundlr;
+// // on demand injection.
+// const currencies: Array<[Array<string>, Array<string>]> = [
+//     [["@bundlr-network/ethereum-web", "BundlrEthereumWeb"], ["ethereum", "matic", "bnb", "fantom", "avalanche", "boba-eth", "arbitrum"]],
+//     [["@bundlr-network/near-web", "BundlrNearWeb"], ["near"]],
+//     [["@bundlr-network/solana-web", "BundlrSolanaWeb"], ["solana"]],
+//     [["@bundlr-network/erc20-web", "BundlrErc20Web"], ["boba", "chainlink"]],
+//     [["@bundlr-network/cosmos-web", "BundlrCosmosWeb"], ["cosmos", "akash", "kyve"]]
+// ];
+// // @ts-ignore
+// globalThis.Bundlr?.currencyArrayMap ? (globalThis.Bundlr.currencyArrayMap.concat(currencies)) : (globalThis.Bundlr = { currencyArrayMap: currencies });
+// // @ts-ignore
+// globalThis.BundlrClient ??= WebBundlr;

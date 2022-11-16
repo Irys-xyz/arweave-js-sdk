@@ -3,7 +3,7 @@ import BigNumber from "bignumber.js";
 import { FundResponse } from "./types";
 import { Utils } from "./utils";
 
-export default class Fund {
+export class Fund {
     protected utils: Utils;
 
     constructor(utils: Utils) {

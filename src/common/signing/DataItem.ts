@@ -1,11 +1,10 @@
 import { byteArrayToLong } from "./utils";
 import base64url from "base64url";
 import { Buffer } from "buffer";
-import { BundleItem, indexToType, sign, Signer } from "./index";
+import { BundleItem, createHashShim, indexToType, sign, Signer } from "./index";
 import { getSignatureData } from "./base";
 import axios, { AxiosResponse } from "axios";
 import { SIG_CONFIG, SignatureConfig } from "./constants";
-import * as crypto from "crypto";
 import Arweave from "arweave";
 import { deserializeTags } from "./tags";
 
@@ -14,6 +13,7 @@ export const MIN_BINARY_SIZE = 80;
 export class DataItem implements BundleItem {
     private readonly binary: Buffer;
     private _id: Buffer;
+    private _rawId: Buffer;
 
     constructor(binary: Buffer) {
         this.binary = binary;
@@ -66,11 +66,11 @@ export class DataItem implements BundleItem {
     }
 
     get rawId(): Buffer {
-        return crypto.createHash("sha256").update(this.rawSignature).digest();
+        return this._rawId;
     }
 
     set rawId(id: Buffer) {
-        this._id = id;
+        this._rawId = id;
     }
 
     get rawSignature(): Buffer {
@@ -200,12 +200,20 @@ export class DataItem implements BundleItem {
     public async sign(signer: Signer): Promise<Buffer> {
         //@ts-ignore
         this._id = await sign(this, signer);
+        this._rawId = await this.genRawId();
         return this.rawId;
     }
 
     public async setSignature(signature: Buffer): Promise<void> {
         this.binary.set(signature, 2);
         this._id = Buffer.from(await Arweave.crypto.hash(signature));
+        this._rawId = await this.genRawId();
+    }
+
+    protected async genRawId() {
+        const context = await createHashShim("sha256");
+        context.update(this.rawSignature);
+        return await context.digest();
     }
 
     public isSigned(): boolean {

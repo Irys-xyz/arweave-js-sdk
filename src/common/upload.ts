@@ -1,7 +1,7 @@
 
 import { AxiosResponse } from "axios";
 import { Utils } from "./utils";
-import Api from "./api";
+import { Api } from "./api";
 import { Currency, Manifest, UploadResponse } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
@@ -12,7 +12,7 @@ import { createData, DataItem, DataItemCreateOptions } from "./signing";
 
 export const CHUNKING_THRESHOLD = 50_000_000;
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export default class Uploader {
+export class Uploader {
     protected readonly api: Api;
     protected currency: string;
     protected currencyConfig: Currency;
@@ -37,11 +37,12 @@ export default class Uploader {
         if (this.forceUseChunking || (isDataItem && transaction.getRaw().length >= CHUNKING_THRESHOLD) || !isDataItem) {
             res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction);
         } else {
-            const { protocol, host, port, timeout } = this.api.getConfig();
+            const { protocol, host, port, timeout, adapter } = this.api.getConfig();
             res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, transaction.getRaw(), {
                 headers: { "Content-Type": "application/octet-stream" },
                 timeout,
-                maxBodyLength: Infinity
+                maxBodyLength: Infinity,
+                adapter
             });
             if (res.status == 201) {
                 throw new Error(res.data as any as string);
