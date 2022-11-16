@@ -1,6 +1,6 @@
 {
     "name": "@bundlr-network/solana-web",
-    "version": "0.0.1-rc4",
+    "version": "0.1.0-a1",
     "description": "Solana Currency for Bundlr",
     "main": "./esm/web/index.js",
     "types": "./esm/web/index.d.ts",
