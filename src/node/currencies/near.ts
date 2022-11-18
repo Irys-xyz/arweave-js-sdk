@@ -150,7 +150,7 @@ export default class NearConfig extends BaseNodeCurrency {
         try {
             // resolve loaded pubkey to parent address
             const pubkey = this.keyPair.getPublicKey().toString();
-            const resolved = await axios.get(`${this.bundlrUrl}/account/near/lookup?address=${base64url.encode(pubkey.split(":")[1])}`).catch(e => { return e; }) as any;
+            const resolved = await axios.get(`${this.bundlrUrl}account/near/lookup?address=${base64url.encode(pubkey.split(":")[1])}`).catch(e => { return e; }) as any;
             this._address = resolved?.data?.address ?? this._address;
         } catch (e) {
             console.error(e);

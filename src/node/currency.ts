@@ -20,7 +20,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     public isSlow = false;
     public needsFee = true;
     protected opts?: any;
-    protected utils: Utils
+    protected utils: Utils;
 
     constructor(config: CurrencyConfig) {
         Object.assign(this, config);
