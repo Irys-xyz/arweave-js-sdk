@@ -66,9 +66,12 @@ export default class NodeBundlr extends Bundlr {
         publicKey?: string,
         signingFunction?: (msg: Uint8Array) => Promise<Uint8Array>,
         collectSignatures?: (msg: Uint8Array) => Promise<{ signatures: string[], bitmap: number[]; }>;
+        providerUrl?: string;
+        timeout?: number;
+        contractAddress?: string;
     }): Promise<NodeBundlr> {
-        const { url, currency, privateKey, publicKey, signingFunction, collectSignatures } = opts;
-        const bundlr = new NodeBundlr(url, currency, signingFunction ? publicKey : privateKey, { currencyOpts: { signingFunction, collectSignatures } });
+        const { url, currency, privateKey, publicKey, signingFunction, collectSignatures, providerUrl, timeout, contractAddress } = opts;
+        const bundlr = new NodeBundlr(url, currency, signingFunction ? publicKey : privateKey, { providerUrl, timeout, contractAddress, currencyOpts: { signingFunction, collectSignatures } });
         await bundlr.ready();
         return bundlr;
     }
