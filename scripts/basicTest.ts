@@ -28,12 +28,12 @@ async function main() {
         const nodeUrl = "http://devnet.bundlr.network";
         const testFolder = "testFolder";
 
-        const key = keys.aptos;
+        const { key, providerUrl } = keys.testnet.solana;
 
         // let bundlr = await Bundlr.init({ url: nodeUrl, currency: "aptos", publicKey: account.pubKey().toString(), signingFunction });
         // let bundlr = Bundlr.init({ url: nodeUrl, currency: "aptos", privateKey: key })
 
-        let bundlr = new Bundlr(nodeUrl, "aptos", key, { providerUrl: "https://fullnode.devnet.aptoslabs.com" });
+        let bundlr = new Bundlr(nodeUrl, "solana", key, { providerUrl });
         await bundlr.ready();
         console.log(bundlr.address);
 
