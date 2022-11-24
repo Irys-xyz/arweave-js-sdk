@@ -76,6 +76,7 @@ export interface UploadResponse {
     signature: string,
     block: number,
     validatorSignatures: { address: string, signature: string; }[];
+    timestamp: number;
 }
 
 export interface FundResponse {
