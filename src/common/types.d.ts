@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 import { Signer } from "arbundles/src/signing";
 import { FileDataItem } from "arbundles/file";
+import { DataItemCreateOptions } from "arbundles";
 // common types shared between web and node versions
 
 export interface CreateTxData { amount: BigNumber.Value, to: string, fee?: string; }
@@ -72,10 +73,10 @@ export interface Manifest {
 
 export interface UploadResponse {
     id: string,
-    public: string,
-    signature: string,
-    block: number,
-    validatorSignatures: { address: string, signature: string; }[];
+    public?: string,
+    signature?: string,
+    block?: number,
+    validatorSignatures?: { address: string, signature: string; }[];
     timestamp: number;
 }
 
@@ -92,7 +93,10 @@ export interface WithdrawalResponse {
     final: number;
 }
 
-
+export type CreateAndUploadOptions = DataItemCreateOptions & { upload?: UploadOptions; };
+export interface UploadOptions {
+    getReceipt?: boolean;
+}
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
 //     paths = "arweave/paths"

@@ -2,7 +2,7 @@ import { createData, DataItem, DataItemCreateOptions, deepHash } from "arbundles
 import { PassThrough, Readable } from "stream";
 import { EventEmitter } from "events";
 import Api from "./api";
-import { Currency, UploadResponse } from "./types";
+import { Currency, UploadOptions, UploadResponse } from "./types";
 import Utils from "./utils";
 import Crypto from "crypto";
 import { stringToBuffer } from "arweave/web/lib/utils";
@@ -37,6 +37,7 @@ export class ChunkingUploader extends EventEmitter {
     protected batchSize: number;
     protected paused: Boolean = false;
     protected isResume: Boolean = false;
+    protected uploadOptions: UploadOptions;
 
     constructor(
         currencyConfig: Currency,
@@ -93,7 +94,8 @@ export class ChunkingUploader extends EventEmitter {
         this.emit("resume");
     }
 
-    public async uploadTransaction(data: Readable | Buffer | DataItem) {
+    public async uploadTransaction(data: Readable | Buffer | DataItem, opts?: UploadOptions) {
+        this.uploadOptions = opts;
         if (DataItem.isDataItem(data)) {
             return this.runUpload(data.getRaw());
         } else {
@@ -102,8 +104,11 @@ export class ChunkingUploader extends EventEmitter {
 
     }
 
-    public async uploadData(dataStream: Readable | Buffer, transactionOpts?: DataItemCreateOptions) {
-        return this.runUpload(dataStream, { ...transactionOpts });
+
+
+    public async uploadData(dataStream: Readable | Buffer, options?: DataItemCreateOptions & { upload?: UploadOptions; }) {
+        this.uploadOptions = options.upload;
+        return this.runUpload(dataStream, { ...options });
     }
 
     async runUpload(
@@ -296,6 +301,8 @@ export class ChunkingUploader extends EventEmitter {
 
             await promiseFactory(heldChunk, 0, 0);
         }
+
+        if (this.uploadOptions.getReceipt === true) headers["x-proof-type"] = "receipt";
 
         const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
             headers: { "Content-Type": "application/octet-stream", ...headers },

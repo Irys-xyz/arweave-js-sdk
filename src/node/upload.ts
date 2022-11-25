@@ -1,5 +1,5 @@
 import { promises, PathLike, createReadStream, createWriteStream } from "fs";
-import { Currency, UploadResponse } from "../common/types";
+import { CreateAndUploadOptions, Currency, UploadResponse } from "../common/types";
 import Uploader from "../common/upload";
 import Api from "../common/api";
 import Utils from "../common/utils";
@@ -22,16 +22,16 @@ export default class NodeUploader extends Uploader {
      * @param path to the file to be uploaded
      * @returns the response from the bundler
      */
-    public async uploadFile(path: string): Promise<UploadResponse> {
+    public async uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
         if (!promises.stat(path).then(_ => true).catch(_ => false)) {
             throw new Error(`Unable to access path: ${path}`);
         }
         const mimeType = mime.contentType(mime.lookup(path) || "application/octet-stream");
-        const tags = [{ name: "Content-Type", value: this.contentTypeOverride ?? mimeType }];
+        opts.tags = [{ name: "Content-Type", value: this.contentTypeOverride ?? mimeType }, ...opts.tags];
 
         const data = createReadStream(path);
 
-        return await this.uploadData(data, { tags });
+        return await this.uploadData(data, opts);
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

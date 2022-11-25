@@ -6,7 +6,7 @@ import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
-import { Currency, FundResponse, UploadResponse, WithdrawalResponse } from "./types";
+import { CreateAndUploadOptions, Currency, FundResponse, UploadResponse, WithdrawalResponse } from "./types";
 import { Signer } from "arbundles/src/signing";
 import { Readable } from "stream";
 
@@ -18,7 +18,7 @@ export default abstract class Bundlr {
     public address;
     public currency;
     public currencyConfig: Currency;
-    protected _readyPromise: Promise<void>
+    protected _readyPromise: Promise<void>;
 
     constructor() { return; }
 
@@ -81,7 +81,7 @@ export default abstract class Bundlr {
         return this.currencyConfig.getSigner();
     }
 
-    async upload(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<UploadResponse> {
+    async upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
         return this.uploader.uploadData(data, opts);
     }
 

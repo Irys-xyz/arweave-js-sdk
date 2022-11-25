@@ -44,7 +44,7 @@ async function main() {
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
-        res = await bundlr.upload("Hello, world!");
+        res = await bundlr.upload("Hello, world!", { upload: { getReceipt: true } });
         console.log(res);
 
         const transaction = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
@@ -66,7 +66,7 @@ async function main() {
         uploader.on("chunkUpload", (chunkInfo) => {
             console.log(chunkInfo);
         });
-        res = uploader.setChunkSize(600_000).setBatchSize(1).uploadTransaction(ctx);
+        res = uploader.setChunkSize(600_000).setBatchSize(2).uploadTransaction(ctx, { getReceipt: false });
 
         await new Promise(r => uploader.on("chunkUpload", r));
         uploader.pause();
@@ -83,16 +83,17 @@ async function main() {
         res = await uploader2.setResumeData(uploadInfo).setChunkSize(600_000).uploadTransaction(ctx);
         console.log(res);
 
+
         await promises.rm(`${testFolder}-manifest.json`, { force: true });
         await promises.rm(`${testFolder}-manifest.csv`, { force: true });
         await promises.rm(`${testFolder}-id.txt`, { force: true });
 
 
         if (!await checkPath(`./${testFolder}`)) {
-            await genData(`./${testFolder}`, 1_000, 100, 100_000);
+            await genData(`./${testFolder}`, 1_000, 100, 10_000);
         }
 
-        const resu = await bundlr.uploadFolder(`./${testFolder}`, { batchSize: 50, keepDeleted: false, logFunction: async (log): Promise<void> => { console.log(log); } });
+        const resu = await bundlr.uploadFolder(`./${testFolder}`, { batchSize: 20, keepDeleted: false, logFunction: async (log): Promise<void> => { console.log(log); } });
         console.log(resu);
 
         /* const checkResults = */ await checkManifestBundlr(`./${testFolder}`, nodeUrl);

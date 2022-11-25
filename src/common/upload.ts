@@ -1,8 +1,8 @@
-import { createData, DataItem, DataItemCreateOptions } from "arbundles";
+import { createData, DataItem } from "arbundles";
 import { AxiosResponse } from "axios";
 import Utils from "./utils";
 import Api from "./api";
-import { Currency, Manifest, UploadResponse } from "./types";
+import { CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadResponse } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
 import { ChunkingUploader } from "./chunkingUploader";
@@ -31,15 +31,18 @@ export default class Uploader {
      * Uploads a given transaction to the bundler
      * @param transaction
      */
-    public async uploadTransaction(transaction: DataItem | Readable | Buffer): Promise<AxiosResponse<UploadResponse>> {
+    public async uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>> {
         let res: AxiosResponse<UploadResponse>;
         const isDataItem = DataItem.isDataItem(transaction);
         if (this.forceUseChunking || (isDataItem && transaction.getRaw().length >= CHUNKING_THRESHOLD) || !isDataItem) {
-            res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction);
+            res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction, opts);
         } else {
+
             const { protocol, host, port, timeout } = this.api.getConfig();
+            const headers = { "Content-Type": "application/octet-stream" };
+            if (opts.getReceipt === true) headers["x-proof-type"] = "receipt";
             res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, transaction.getRaw(), {
-                headers: { "Content-Type": "application/octet-stream" },
+                headers: headers,
                 timeout,
                 maxBodyLength: Infinity
             });
@@ -58,7 +61,7 @@ export default class Uploader {
         return res;
     }
 
-    public async uploadData(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<UploadResponse> {
+    public async uploadData(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
         if (typeof data === "string") {
             data = Buffer.from(data);
         }
@@ -66,7 +69,7 @@ export default class Uploader {
             if (data.length <= CHUNKING_THRESHOLD) {
                 const dataItem = createData(data, this.currencyConfig.getSigner(), { ...opts, anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32) });
                 await dataItem.sign(this.currencyConfig.getSigner());
-                return (await this.uploadTransaction(dataItem)).data;
+                return (await this.uploadTransaction(dataItem, { ...opts?.upload })).data;
             }
         }
         return (await this.chunkedUploader.uploadData(data, opts)).data;
@@ -113,9 +116,9 @@ export default class Uploader {
         return { errors, results: results.results };
     }
 
-    protected async processItem(data: string | Buffer | Readable | DataItem, opts?: DataItemCreateOptions): Promise<any> {
+    protected async processItem(data: string | Buffer | Readable | DataItem, opts?: CreateAndUploadOptions): Promise<any> {
         if (DataItem.isDataItem(data)) {
-            return this.uploadTransaction(data);
+            return this.uploadTransaction(data, { ...opts?.upload });
         }
         return this.uploadData(data, opts);
     }
