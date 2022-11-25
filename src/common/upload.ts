@@ -40,7 +40,7 @@ export default class Uploader {
 
             const { protocol, host, port, timeout } = this.api.getConfig();
             const headers = { "Content-Type": "application/octet-stream" };
-            if (opts.getReceipt === true) headers["x-proof-type"] = "receipt";
+            if (opts?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
             res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, transaction.getRaw(), {
                 headers: headers,
                 timeout,

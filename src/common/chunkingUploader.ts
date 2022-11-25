@@ -302,7 +302,7 @@ export class ChunkingUploader extends EventEmitter {
             await promiseFactory(heldChunk, 0, 0);
         }
 
-        if (this.uploadOptions.getReceipt === true) headers["x-proof-type"] = "receipt";
+        if (this?.uploadOptions?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
 
         const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
             headers: { "Content-Type": "application/octet-stream", ...headers },

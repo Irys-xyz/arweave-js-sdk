@@ -44,10 +44,14 @@ async function main() {
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
-        res = await bundlr.upload("Hello, world!", { upload: { getReceipt: true } });
+        res = await bundlr.upload("Hello, world!", { upload: { getReceiptSignature: true } });
         console.log(res);
 
         const transaction = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
+        await transaction.sign();
+        res = await transaction.upload({ getReceiptSignature: false });
+
+
         const signingInfo = await transaction.getSignatureData();
         const signed = await bundlr.currencyConfig.sign(signingInfo);
         transaction.setSignature(Buffer.from(signed));
@@ -66,7 +70,7 @@ async function main() {
         uploader.on("chunkUpload", (chunkInfo) => {
             console.log(chunkInfo);
         });
-        res = uploader.setChunkSize(600_000).setBatchSize(2).uploadTransaction(ctx, { getReceipt: false });
+        res = uploader.setChunkSize(600_000).setBatchSize(2).uploadTransaction(ctx, { getReceiptSignature: false });
 
         await new Promise(r => uploader.on("chunkUpload", r));
         uploader.pause();

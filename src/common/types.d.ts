@@ -95,7 +95,7 @@ export interface WithdrawalResponse {
 
 export type CreateAndUploadOptions = DataItemCreateOptions & { upload?: UploadOptions; };
 export interface UploadOptions {
-    getReceipt?: boolean;
+    getReceiptSignature?: boolean;
 }
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
