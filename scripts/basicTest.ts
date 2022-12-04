@@ -44,7 +44,18 @@ async function main() {
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
 
-        res = await bundlr.upload("Hello, world!", { upload: { getReceiptSignature: true } });
+
+
+        tx = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
+        await tx.sign();
+
+
+        const now = performance.now();
+        res = await tx.upload({ getReceiptSignature: false });
+        // tx = bundlr;
+        // res = await bundlr.upload("Hello, world!", { upload: { getReceiptSignature: true } });
+        console.log(performance.now() - now);
+
         console.log(res);
 
         const transaction = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });

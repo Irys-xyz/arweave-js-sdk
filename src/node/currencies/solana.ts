@@ -47,6 +47,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
         if (!stx) throw new Error("Confirmed tx not found");
 
         const currentSlot = await connection.getSlot("confirmed");
+        if (!stx.meta) throw new Error(`Unable to resolve transaction ${txId}`);
 
         const amount = new BigNumber(stx.meta.postBalances[1]).minus(
             new BigNumber(stx.meta.preBalances[1]),
@@ -84,7 +85,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
-        return new BigNumber((await (await this.getProvider()).getEpochInfo()).blockHeight);
+        return new BigNumber((await (await this.getProvider()).getEpochInfo()).blockHeight ?? 0);
     }
 
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
@@ -104,6 +105,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
         } catch (e) {
             if (e.message.includes("30.")) {
                 const txId = (e.message as string).match(/[A-Za-z0-9]{87,88}/g);
+                if (!txId) throw e;
                 try {
                     const conf = await connection.confirmTransaction(txId[0], "confirmed");
                     if (conf) return undefined;
@@ -127,7 +129,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
         amount: BigNumber.Value,
         to: string,
         _fee?: string,
-    ): Promise<{ txId: string; tx: any; }> {
+    ): Promise<{ txId: string | undefined; tx: any; }> {
         // TODO: figure out how to manually set fees
 
         const keys = this.getKeyPair();

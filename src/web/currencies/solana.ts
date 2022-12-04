@@ -37,6 +37,7 @@ export default class SolanaConfig extends BaseWebCurrency {
         if (!stx) throw new Error("Confirmed tx not found");
 
         const currentSlot = await connection.getSlot("confirmed");
+        if (!stx.meta) throw new Error(`Unable to resolve transaction ${txId}`);
 
         const amount = new BigNumber(stx.meta.postBalances[1]).minus(
             new BigNumber(stx.meta.preBalances[1]),
@@ -85,7 +86,7 @@ export default class SolanaConfig extends BaseWebCurrency {
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
-        return new BigNumber((await (await this.getProvider()).getEpochInfo()).blockHeight);
+        return new BigNumber((await (await this.getProvider()).getEpochInfo()).blockHeight ?? 0);
     }
 
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
@@ -106,7 +107,7 @@ export default class SolanaConfig extends BaseWebCurrency {
         amount: BigNumber.Value,
         to: string,
         _fee?: string,
-    ): Promise<{ txId: string; tx: any; }> {
+    ): Promise<{ txId: string | undefined; tx: any; }> {
         // TODO: figure out how to manually set fees
         const pubkey = new web3.PublicKey(await this.getPublicKey());
         const hash = await retry(
@@ -139,6 +140,7 @@ export default class SolanaConfig extends BaseWebCurrency {
     }
 
     async getPublicKey(): Promise<string | Buffer> {
+        if (!this.wallet.publicKey) throw new Error(`Wallet.publicKet is undefined`);
         return this.wallet.publicKey.toBuffer();
     }
 

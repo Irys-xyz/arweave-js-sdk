@@ -38,8 +38,8 @@ export default class Uploader {
             res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction, opts);
         } else {
 
-            const { protocol, host, port, timeout } = this.api.getConfig();
-            const headers = { "Content-Type": "application/octet-stream" };
+            const { protocol, host, port, timeout, headers: confHeaders } = this.api.getConfig();
+            const headers = { "Content-Type": "application/octet-stream", ...confHeaders };
             if (opts?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
             res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, transaction.getRaw(), {
                 headers: headers,
@@ -79,7 +79,8 @@ export default class Uploader {
 
     // concurrently uploads transactions
     public async concurrentUploader(data: (DataItem | Buffer | Readable)[], concurrency = 5, resultProcessor?: (res: any) => Promise<any>, logFunction?: (log: string) => Promise<any>): Promise<{ errors: Array<any>, results: Array<any>; }> {
-        const errors = [];
+        const errors = [] as Error[];
+        let logFn = logFunction ? logFunction : async (_: any): Promise<any> => { return; };
         const results = await PromisePool
             .for(data)
             .withConcurrency(concurrency >= 1 ? concurrency : 5)
@@ -95,7 +96,7 @@ export default class Uploader {
                         try {
                             const res = await this.processItem(item);
                             if (i % concurrency == 0) {
-                                await logFunction(`Processed ${i} Items`);
+                                await logFn(`Processed ${i} Items`);
                             }
                             if (resultProcessor) {
                                 return await resultProcessor({ item, res, i });

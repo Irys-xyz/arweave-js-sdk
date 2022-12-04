@@ -12,7 +12,7 @@ export default class EthereumConfig extends BaseWebCurrency {
     protected signer: InjectedEthereumSigner;
     protected wallet: ethers.providers.Web3Provider;
     protected w3signer: ethers.providers.JsonRpcSigner;
-    protected providerInstance?: ethers.providers.JsonRpcProvider;
+    protected providerInstance!: ethers.providers.JsonRpcProvider;
 
     constructor(config: CurrencyConfig) {
         super(config);
@@ -25,11 +25,12 @@ export default class EthereumConfig extends BaseWebCurrency {
         const response = await provider.getTransaction(txId);
 
         if (!response) throw new Error("Tx doesn't exist");
+        if (!response.to) throw new Error(`Unable to resolve transactions ${txId} receiver`);
 
         return {
             from: response.from,
             to: response.to,
-            blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : null,
+            blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : undefined,
             amount: new BigNumber(response.value.toHexString(), 16),
             pending: response.blockNumber ? false : true,
             confirmed: response.confirmations >= this.minConfirm,
@@ -84,7 +85,7 @@ export default class EthereumConfig extends BaseWebCurrency {
         return receipt ? receipt.hash : undefined;
     }
 
-    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any; }> {
         const amountc = ethBigNumber.from((new BigNumber(amount)).toFixed());
         const signer = this.w3signer;
         const estimatedGas = await signer.estimateGas({ to, from: this.address, value: amountc.toHexString() });

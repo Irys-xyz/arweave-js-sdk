@@ -119,7 +119,7 @@ export default class NearConfig extends BaseNodeCurrency {
         return `${this.address}:${res.transaction.hash}`; // encode into compound format
     }
 
-    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string) {
         const provider = await this.getProvider();
         const accessKey = await provider.query(({ request_type: "view_access_key", finality: "final", account_id: this.address, public_key: this.keyPair.getPublicKey().toString() }));
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -127,6 +127,7 @@ export default class NearConfig extends BaseNodeCurrency {
         const nonce = ++accessKey.nonce;
         const recentBlockHash = utils.serialize.base_decode(accessKey.block_hash);
         const actions = [transactions.transfer(new BN(new BigNumber(amount).toFixed().toString()))];
+        if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
         const tx = transactions.createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash);
         const serialTx = utils.serialize.serialize(transactions.SCHEMA, tx);
         const serialTxHash = new Uint8Array(sha256.array(serialTx));

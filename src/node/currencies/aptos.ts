@@ -77,7 +77,7 @@ export default class AptosConfig extends BaseNodeCurrency {
             signer.sign = this.signingFn; //override signer fn
             return this.signerInstance = signer;
         } else {
-            return this.signerInstance = new AptosSigner(this.accountInstance.toPrivateKeyObject().privateKeyHex, this.accountInstance.toPrivateKeyObject().publicKeyHex);
+            return this.signerInstance = new AptosSigner(this.accountInstance.toPrivateKeyObject().privateKeyHex, this.accountInstance.toPrivateKeyObject().publicKeyHex as string);
         }
     }
 
@@ -91,6 +91,7 @@ export default class AptosConfig extends BaseNodeCurrency {
     }
 
     async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number, maxGasAmount: number; }> {
+        if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
         const client = await this.getProvider();
         const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
             "0x1::coin::transfer",
@@ -134,7 +135,8 @@ export default class AptosConfig extends BaseNodeCurrency {
         return (await (await (this.getProvider())).submitSignedBCSTransaction(data)).hash;
     }
 
-    async createTx(amount: BigNumber.Value, to: string, fee?: { gasUnitPrice: number, maxGasAmount: number; }): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, fee?: { gasUnitPrice: number, maxGasAmount: number; }): Promise<{ txId: string | undefined; tx: any; }> {
+        if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
         const client = await this.getProvider();
         const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
             "0x1::coin::transfer",
@@ -165,7 +167,7 @@ export default class AptosConfig extends BaseNodeCurrency {
 
     async ready() {
         const client = await this.getProvider();
-        this._address = await client.lookupOriginalAddress(this.address)
+        this._address = await client.lookupOriginalAddress(this.address ?? "")
             .then(hs => hs.toString())
             .catch(_ => this._address); // fallback to original
 

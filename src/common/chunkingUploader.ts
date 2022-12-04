@@ -37,7 +37,7 @@ export class ChunkingUploader extends EventEmitter {
     protected batchSize: number;
     protected paused: Boolean = false;
     protected isResume: Boolean = false;
-    protected uploadOptions: UploadOptions;
+    protected uploadOptions: UploadOptions | undefined;
 
     constructor(
         currencyConfig: Currency,
@@ -107,7 +107,7 @@ export class ChunkingUploader extends EventEmitter {
 
 
     public async uploadData(dataStream: Readable | Buffer, options?: DataItemCreateOptions & { upload?: UploadOptions; }) {
-        this.uploadOptions = options.upload;
+        this.uploadOptions = options?.upload;
         return this.runUpload(dataStream, { ...options });
     }
 
@@ -204,7 +204,7 @@ export class ChunkingUploader extends EventEmitter {
         };
 
 
-        let tx: DataItem;
+        let tx!: DataItem;
 
         // doesn't matter if we randomise ID (anchor) between resumes, as the tx header/signing info is always uploaded last.
         if (!isTransaction) {
@@ -226,11 +226,11 @@ export class ChunkingUploader extends EventEmitter {
         }
 
         let offset = 0;
-        let processing = [];
+        let processing = [] as Promise<any>[];
         let chunkID = 0;
-        let heldChunk: Buffer;
-        let teeStream: PassThrough;
-        let deephash: Promise<any>;
+        let heldChunk!: Buffer;
+        let teeStream!: PassThrough;
+        let deephash!: Promise<any>;
 
         if (!isTransaction) {
             teeStream = new PassThrough();
@@ -306,7 +306,7 @@ export class ChunkingUploader extends EventEmitter {
 
         const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
             headers: { "Content-Type": "application/octet-stream", ...headers },
-            timeout: this.api.config.timeout * 10 // server side reconstruction can take a while
+            timeout: this.api.config?.timeout ?? 40_000 * 10 // server side reconstruction can take a while
         });
         if (finishUpload.status === 402) {
             throw new Error("Not enough funds to send data");

@@ -34,13 +34,14 @@ export default class EthereumConfig extends BaseNodeCurrency {
         const response = await provider.getTransaction(txId);
 
         if (!response) throw new Error("Tx doesn't exist");
+        if (!response.to) throw new Error(`Unable to determine transaction ${txId} recepient`);
 
         // console.log(response.confirmations);
 
         return {
             from: response.from,
             to: response.to,
-            blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : null,
+            blockHeight: response.blockNumber ? new BigNumber(response.blockNumber) : undefined,
             amount: new BigNumber(response.value.toHexString(), 16),
             pending: response.blockNumber ? false : true,
             confirmed: response.confirmations >= this.minConfirm,
@@ -91,7 +92,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
         return (await (await this.getProvider()).sendTransaction(data).catch(e => { console.error(`Error occurred while sending a tx - ${e}`); throw e; }));
     }
 
-    async createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string | undefined; tx: any; }> {
         const provider = await this.getProvider();
         const wallet = new Wallet(this.wallet, provider);
 

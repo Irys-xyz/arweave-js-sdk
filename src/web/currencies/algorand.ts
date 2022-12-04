@@ -79,7 +79,7 @@
 //         return response.data["txId"]; // return TX id
 //     }
 
-//     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+//     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any; }> {
 
 //         const endpoint = `${this.apiURL}/v2/transactions/params`;
 //         const response = await axios.get(endpoint);

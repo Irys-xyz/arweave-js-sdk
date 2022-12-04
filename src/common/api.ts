@@ -10,6 +10,7 @@ export interface ApiConfig {
     logging?: boolean;
     // eslint-disable-next-line @typescript-eslint/ban-types
     logger?: Function;
+    headers?: { [key: string]: string; };
 }
 
 // TODO: overhaul this
@@ -42,6 +43,7 @@ export default class Api {
             timeout: config.timeout || 20000,
             logging: config.logging || false,
             logger: config.logger || console.log,
+            headers: config.headers || {}
         };
     }
 
@@ -50,7 +52,7 @@ export default class Api {
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse<T>> {
         try {
-            return await this.request().get<T>(endpoint, config);
+            return await this.request().get<T>(endpoint, { ...config, headers: { ...config?.headers, ...this.config?.headers } });
         } catch (error: any) {
             if (error.response && error.response.status) {
                 return error.response;
@@ -62,11 +64,11 @@ export default class Api {
 
     public async post<T = any>(
         endpoint: string,
-        body: Buffer | string | object,
+        body: Buffer | string | object | null,
         config?: AxiosRequestConfig
     ): Promise<AxiosResponse<T>> {
         try {
-            return await this.request().post(endpoint, body, config);
+            return await this.request().post(endpoint, body, { ...config, headers: { ...config?.headers, ...this.config?.headers } });
         } catch (error: any) {
             if (error.response && error.response.status) {
                 return error.response;
@@ -81,6 +83,7 @@ export default class Api {
             baseURL: `${this.config.protocol}://${this.config.host}:${this.config.port}`,
             timeout: this.config.timeout,
             maxContentLength: 1024 * 1024 * 512,
+            headers: this.config.headers
         });
 
         if (this.config.logging) {

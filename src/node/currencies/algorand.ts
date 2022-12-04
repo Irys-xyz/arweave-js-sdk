@@ -75,7 +75,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         return response.data["txId"];
     }
 
-    async createTx(amount: BigNumber.Value, to: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string): Promise<{ txId: string | undefined; tx: any; }> {
         const endpoint = `${this.apiURL}/v2/transactions/params`;
         const response = await axios.get(endpoint);
         const params = await response.data;

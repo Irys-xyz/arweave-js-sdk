@@ -21,7 +21,7 @@ export default class Fund {
         if (!_amount.isInteger()) { throw new Error("must use an integer for funding amount"); }
         const c = this.utils.currencyConfig;
         const to = await this.utils.getBundlerAddress(this.utils.currency);
-        let fee: Object | BigNumber;
+        let fee!: Object | BigNumber;
         if (c.needsFee) {
             // winston's fee is actually for amount of data, not funds, so we have to 0 this.
             const baseFee = await c.getFee(c.base[0] === "winston" ? 0 : _amount, to);

@@ -24,7 +24,7 @@ export interface Currency {
 
     name: string;
 
-    get address(): string;
+    get address(): string | undefined;
 
     ticker: string;
 
