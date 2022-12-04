@@ -47,7 +47,8 @@ export default class Uploader {
                 maxBodyLength: Infinity
             });
             if (res.status == 201) {
-                throw new Error(res.data as any as string);
+                if (opts?.getReceiptSignature === true) { throw new Error(res.statusText); }
+                res.data = { id: transaction.id };
             }
         }
         switch (res.status) {
