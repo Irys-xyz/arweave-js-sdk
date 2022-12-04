@@ -1,7 +1,6 @@
 // eslint-disable-file @typescript-eslint/no-unused-vars
 import Bundlr from "../src";
 import { promises, readFileSync, writeFileSync } from 'fs';
-import * as v8 from "v8-profiler-next";
 import Crypto from "crypto";
 import { checkPath } from "../src/node/upload";
 import { genData } from "./genData";
@@ -9,20 +8,8 @@ import { checkManifestBundlr } from "./checkManifest";
 
 const profiling = false;
 async function main() {
-    const title = new Date().toUTCString();
-    try {
-        if (profiling) {
-            v8.setGenerateType(1); // set profile type
-            v8.startProfiling(title, true); // cpu
-            v8.startSamplingHeapProfiling(); // heap
-            setInterval(() => {
-                for (const [key, value] of Object.entries(process.memoryUsage())) {
-                    console.log(`Memory usage by ${key}, ${value / 1000000}MB `);
-                }
-            }, 2000);
-            console.log("profiling configured");
-        }
 
+    try {
         const keys = JSON.parse(readFileSync("wallet.json").toString());
 
         const nodeUrl = "http://devnet.bundlr.network";
@@ -43,8 +30,6 @@ async function main() {
         console.log(`balance: ${await bundlr.getLoadedBalance()}`);
         const bAddress = await bundlr.utils.getBundlerAddress(bundlr.currency);
         console.log(`bundlr address: ${bAddress}`);
-
-
 
         tx = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
         await tx.sign();
@@ -131,18 +116,6 @@ async function main() {
         console.log(e);
     } finally {
         console.log("Done!");
-
-        if (!profiling) return;
-
-        const cpuprofile = v8.stopProfiling(title);
-        cpuprofile.export((_err, res) => {
-            writeFileSync(`./profiles/cpu/${title}.cpuprofile`, res ?? "");
-        });
-        cpuprofile.delete();
-        const heapProfile = v8.stopSamplingHeapProfiling();
-        heapProfile.export((_err, res) => {
-            writeFileSync(`./profiles/heap/${title}.heapprofile`, res ?? "");
-        });
     }
 }
 

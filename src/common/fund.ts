@@ -25,7 +25,7 @@ export default class Fund {
         if (c.needsFee) {
             // winston's fee is actually for amount of data, not funds, so we have to 0 this.
             const baseFee = await c.getFee(c.base[0] === "winston" ? 0 : _amount, to);
-            fee = BigNumber.isBigNumber(baseFee) ? (baseFee.multipliedBy(multiplier)).toFixed(0).toString() : baseFee;
+            fee = BigNumber.isBigNumber(baseFee) ? baseFee.multipliedBy(multiplier).integerValue(BigNumber.ROUND_CEIL) : baseFee;
         }
         const tx = await c.createTx(_amount, to, fee);
         let nres: any;
