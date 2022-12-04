@@ -11,7 +11,7 @@ import utils from "../common/utils";
 export default abstract class BaseWebCurrency implements WebCurrency {
     public base: [string, number];
     protected wallet: any;
-    protected _address: string;
+    protected _address: string | undefined;
     protected providerUrl: any;
     protected providerInstance?: any;
     public ticker: string;
@@ -27,11 +27,11 @@ export default abstract class BaseWebCurrency implements WebCurrency {
 
     // common methods
 
-    get address(): string {
+    get address() {
         return this._address;
     }
 
-    public async ready(): Promise<void> {
+    public async ready() {
         this._address = this.wallet ? this.ownerToAddress(await this.getPublicKey()) : undefined;
     }
 
@@ -49,7 +49,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
     abstract getCurrentHeight(): Promise<BigNumber>;
     abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber | object>;
     abstract sendTx(_data: any): Promise<string | undefined>;
-    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string; tx: any; }>;
+    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any; }>;
     abstract getPublicKey(): Promise<string | Buffer>;
 }
 

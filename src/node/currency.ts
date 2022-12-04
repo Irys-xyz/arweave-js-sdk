@@ -11,7 +11,7 @@ import Utils from "../common/utils";
 export default abstract class BaseNodeCurrency implements NodeCurrency {
     public base: [string, number];
     protected wallet: any;
-    protected _address: string;
+    protected _address: string | undefined;
     protected providerUrl: any;
     protected providerInstance?: any;
     public ticker: string;
@@ -29,7 +29,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
 
     // common methods
 
-    get address(): string {
+    get address() {
         return this._address;
     }
 
@@ -48,7 +48,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
     abstract getCurrentHeight(): Promise<BigNumber>;
     abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber | object>;
     abstract sendTx(_data: any): Promise<string | undefined>;
-    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string | object): Promise<{ txId: string; tx: any; }>;
+    abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string | object): Promise<{ txId: string | undefined; tx: any; }>;
     abstract getPublicKey(): string | Buffer;
 }
 

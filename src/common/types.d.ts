@@ -24,7 +24,7 @@ export interface Currency {
 
     name: string;
 
-    get address(): string;
+    get address(): string | undefined;
 
     ticker: string;
 
@@ -72,12 +72,23 @@ export interface Manifest {
 
 
 export interface UploadResponse {
+    // The ID of the transaction
     id: string,
+
+    /**
+     * All below (bar timestamp) are optional (requiring the getReceiptSignature option)
+     */
+
+    // The Arweave public key of the node that received the transaction
     public?: string,
+    // The signature of this receipt
     signature?: string,
+    // the maximum expected Arweave block height for transaction inclusion
     block?: number,
+    // List of validator signatures
     validatorSignatures?: { address: string, signature: string; }[];
-    timestamp: number;
+    // The UNIX (MS precision) timestamp of when the node received the Tx. Only optional if the upload receives a `201` error in response to a duplicate transaction upload.
+    timestamp?: number;
 }
 
 export interface FundResponse {
@@ -95,6 +106,7 @@ export interface WithdrawalResponse {
 
 export type CreateAndUploadOptions = DataItemCreateOptions & { upload?: UploadOptions; };
 export interface UploadOptions {
+    // If you want to receive the cryptographic receipt for your upload - if the upload is a duplicate (i.e A transaction with the same signature has already been uploaded), setting this to true will cause it to throw.
     getReceiptSignature?: boolean;
 }
 // // TS doesn't like string template literals it seems

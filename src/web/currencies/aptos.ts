@@ -116,7 +116,7 @@ export default class AptosConfig extends BaseWebCurrency {
             ["0x1::aptos_coin::AptosCoin"],
             [to ?? "0x149f7dc9c8e43c14ab46d3a6b62cfe84d67668f764277411f98732bf6718acf9", new BigNumber(amount).toNumber()],
         );
-
+        if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
         const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload);
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -154,7 +154,7 @@ export default class AptosConfig extends BaseWebCurrency {
         // return (await (await (this.getProvider())).submitSignedBCSTransaction(data)).hash;
     }
 
-    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string; tx: any; }> {
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any; }> {
         //const client = await this.getProvider();
         // const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
         //     "0x1::coin::transfer",
@@ -186,11 +186,12 @@ export default class AptosConfig extends BaseWebCurrency {
         this._publicKey = await this.getPublicKey() as Buffer;
         this._address = this.ownerToAddress(this._publicKey);
         const client = await this.getProvider();
-        this._address = await client.lookupOriginalAddress(this.address)
+
+        this._address = await client.lookupOriginalAddress(this.address ?? "")
             .then(hs => hs.toString())
             .catch(_ => this._address); // fallback to original
 
-        if (this._address.length == 66 && this._address.charAt(2) === '0') {
+        if (this._address?.length == 66 && this._address.charAt(2) === '0') {
             this._address = this._address.slice(0, 2) + this._address.slice(3);
         }
     }

@@ -17,10 +17,10 @@ export default class NodeBundlr extends Bundlr {
      * @param url - URL to the bundler
      * @param wallet - private key (in whatever form required)
      */
-    constructor(url: string, currency: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string, currencyOpts?: any; }) {
+    constructor(url: string, currency: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string, currencyOpts?: any; headers?: { [key: string]: string; }; }) {
         super();
         const parsed = new URL(url);
-        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
+        this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000, headers: config?.headers });
         this.currencyConfig = getCurrency(currency.toLowerCase(), wallet, parsed.toString(), config?.providerUrl, config?.contractAddress, config?.currencyOpts);
         this.currency = this.currencyConfig.name;
         this.address = this.currencyConfig.address;
@@ -56,7 +56,7 @@ export default class NodeBundlr extends Bundlr {
         indexFile?: string,
         interactivePreflight?: boolean,
         logFunction?: (log: string) => Promise<void>;
-    } = {}): Promise<UploadResponse> {
+    } = {}): Promise<UploadResponse | undefined> {
         return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction });
     }
     public static async init(opts: {

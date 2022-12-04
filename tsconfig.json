@@ -18,7 +18,7 @@
     "noUnusedParameters": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "outDir": "build",
     "experimentalDecorators": true
   },

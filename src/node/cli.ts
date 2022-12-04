@@ -52,7 +52,7 @@ program.command("withdraw").description("Sends a fund withdrawal request").argum
     .action(async (amount: string) => {
         try {
             const bundlr = await init(options, "withdraw");
-            const confirmed = confirmation(`Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`);
+            const confirmed = await confirmation(`Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`);
             if (confirmed) {
                 const res = await bundlr.withdrawBalance(new BigNumber(amount));
                 console.log(`Withdrawal request for ${res?.requested} ${bundlr.currencyConfig.base[0]} successful\nTransaction ID: ${res?.tx_id} with network fee ${res?.fee} for a total cost of ${res?.final} `);
@@ -100,6 +100,7 @@ async function uploadDir(folder: string): Promise<void> {
             keepDeleted: !options.removeDeleted,
             logFunction: async (log): Promise<void> => { console.log(log); }
         });
+        if (!res) return console.log("Nothing to upload");
         console.log(`Uploaded to https://arweave.net/${res.id}`);
     } catch (err) {
         console.error(`Error whilst uploading ${folder} - ${options.debug ? err.stack : err.message}`);

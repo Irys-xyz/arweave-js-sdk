@@ -27,7 +27,7 @@ export default class NodeUploader extends Uploader {
             throw new Error(`Unable to access path: ${path}`);
         }
         const mimeType = mime.contentType(mime.lookup(path) || "application/octet-stream");
-        opts.tags = [{ name: "Content-Type", value: this.contentTypeOverride ?? mimeType }, ...opts.tags];
+        (opts ??= {}).tags = [{ name: "Content-Type", value: this.contentTypeOverride ?? mimeType }, ...(opts?.tags ?? [])];
 
         const data = createReadStream(path);
 
@@ -60,7 +60,7 @@ export default class NodeUploader extends Uploader {
         indexFile?: string,
         interactivePreflight?: boolean,
         logFunction?: (log: string) => Promise<void>;
-    } = { batchSize: 10, keepDeleted: true }): Promise<UploadResponse> {
+    } = { batchSize: 10, keepDeleted: true }): Promise<UploadResponse | undefined> {
         path = p.resolve(path);
         const alreadyProcessed = new Map();
 
@@ -108,7 +108,7 @@ export default class NodeUploader extends Uploader {
         }
 
 
-        const files = [];
+        const files = [] as any[];
         let total = 0;
         let i = 0;
         for await (const f of this.walk(path)) {
