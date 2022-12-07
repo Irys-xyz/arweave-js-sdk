@@ -11,8 +11,8 @@ export default class WebBundlr extends Bundlr {
     public currencyConfig: WebCurrency;
 
     constructor(url: string, currency: string, provider?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string; }) {
-        super();
         const parsed = new URL(url);
+        super(parsed);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
         this.currencyConfig = getCurrency(currency.toLowerCase(), provider, config?.providerUrl, config?.contractAddress);
         this.currency = this.currencyConfig.name;

@@ -18,8 +18,8 @@ export default class NodeBundlr extends Bundlr {
      * @param wallet - private key (in whatever form required)
      */
     constructor(url: string, currency: string, wallet?: any, config?: { timeout?: number, providerUrl?: string, contractAddress?: string, currencyOpts?: any; headers?: { [key: string]: string; }; }) {
-        super();
         const parsed = new URL(url);
+        super(parsed);
         this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000, headers: config?.headers });
         this.currencyConfig = getCurrency(currency.toLowerCase(), wallet, parsed.toString(), config?.providerUrl, config?.contractAddress, config?.currencyOpts);
         this.currency = this.currencyConfig.name;

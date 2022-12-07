@@ -19,8 +19,9 @@ export default abstract class Bundlr {
     public currency;
     public currencyConfig: Currency;
     protected _readyPromise: Promise<void>;
+    public url: URL;
 
-    constructor() { return; }
+    constructor(url) { this.url = url; }
 
     get signer(): Signer {
         return this.currencyConfig.getSigner();
