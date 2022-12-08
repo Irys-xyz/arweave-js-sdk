@@ -6,13 +6,14 @@ import { checkPath } from "../src/node/upload";
 import { genData } from "./genData";
 import { checkManifestBundlr } from "./checkManifest";
 
-const profiling = false;
+const profiling = true;
 async function main() {
 
     try {
+        if (profiling) console.profile();
         const keys = JSON.parse(readFileSync("wallet.json").toString());
 
-        const nodeUrl = "http://devnet.bundlr.network";
+        const nodeUrl = "http://node1.bundlr.network";
         const testFolder = "testFolder";
 
         const { key, providerUrl } = keys.testnet.solana;
@@ -36,12 +37,13 @@ async function main() {
 
 
         const now = performance.now();
-        res = await tx.upload({ getReceiptSignature: false });
+        res = await tx.upload({ getReceiptSignature: true });
         // tx = bundlr;
         // res = await bundlr.upload("Hello, world!", { upload: { getReceiptSignature: true } });
         console.log(performance.now() - now);
+        const r3 = await res.verify();
 
-        console.log(res);
+        console.log(r3);
 
         const transaction = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
         await transaction.sign();
@@ -115,12 +117,14 @@ async function main() {
     } catch (e) {
         console.log(e);
     } finally {
+        if (profiling) console.profileEnd();
         console.log("Done!");
     }
 }
 
 if (require.main === module) {
     const trap = (con, err) => {
+        if (profiling) console.profileEnd();
         console.error(`Trapped error ${con}: ${JSON.stringify(err)}`);
     };
     // process.on("beforeExit", trap.bind(this, "beforeExit"))

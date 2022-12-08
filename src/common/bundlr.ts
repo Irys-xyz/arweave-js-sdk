@@ -65,6 +65,10 @@ export default abstract class Bundlr {
         return this.utils.getPrice(this.currency, bytes);
     }
 
+    public async verifyReceipt(receipt: Required<UploadResponse>) {
+        return Utils.verifyReceipt(receipt);
+    }
+
     /**
      * Create a new BundlrTransactions (flex currency arbundles dataItem)
      * @param data 

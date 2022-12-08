@@ -59,6 +59,9 @@ export default class Uploader {
                     throw new Error(`whilst uploading Bundlr transaction: ${res.status} ${res.statusText}`);
                 }
         }
+        if (opts?.getReceiptSignature) {
+            res.data.verify = Utils.verifyReceipt.bind({}, res.data);
+        }
         return res;
     }
 

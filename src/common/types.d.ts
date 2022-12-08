@@ -89,6 +89,8 @@ export interface UploadResponse {
     validatorSignatures?: { address: string, signature: string; }[];
     // The UNIX (MS precision) timestamp of when the node received the Tx. Only optional if the upload receives a `201` error in response to a duplicate transaction upload.
     timestamp?: number;
+    // Injected verification function (same as Utils/Bundlr.verifyReceipt) - only present if getReceiptSignature is set.
+    verify?: () => Promise<boolean>;
 }
 
 export interface FundResponse {

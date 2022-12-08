@@ -318,6 +318,9 @@ export class ChunkingUploader extends EventEmitter {
             if (this?.uploadOptions?.getReceiptSignature === true) { throw new Error(finishUpload.statusText); }
             finishUpload.data = { id: finishUpload.statusText.split(" ")?.[1] };
         }
+        if (this?.uploadOptions?.getReceiptSignature) {
+            finishUpload.data.verify = Utils.verifyReceipt.bind({}, finishUpload.data.data);
+        }
         this.emit("done", finishUpload);
         return finishUpload;
     }

@@ -1,5 +1,8 @@
 // import Api from "arweave/node/lib/api";
+import { deepHash } from "arbundles";
+import Arweave from "arweave";
 import { AxiosResponse } from "axios";
+import base64url from "base64url";
 import BigNumber from "bignumber.js";
 import Api from "./api";
 import { Currency } from "./types";
@@ -98,5 +101,17 @@ export default class Utils {
 
     public unitConverter(baseUnits: BigNumber.Value): BigNumber {
         return new BigNumber(baseUnits).dividedBy(this.currencyConfig.base[1]);
+    }
+
+    static async verifyReceipt(receipt: { id: string, block: number, timestamp: number; public: string; signature: string; }): Promise<boolean> {
+        const { id, block, timestamp, public: pubKey, signature } = receipt;
+        const dh = await deepHash([
+            Arweave.utils.stringToBuffer("Bundlr"),
+            Arweave.utils.stringToBuffer("1"),
+            Arweave.utils.stringToBuffer(id),
+            Arweave.utils.stringToBuffer(block.toString()),
+            Arweave.utils.stringToBuffer(timestamp.toString())
+        ]);
+        return await Arweave.crypto.verify(pubKey, dh, base64url.toBuffer(signature));
     }
 }
