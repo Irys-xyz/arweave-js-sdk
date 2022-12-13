@@ -42,17 +42,12 @@ export default class Fund {
             throw new Error(`Undefined transaction ID`);
         }
 
-        // console.log(tx.txId);
-
         Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
-        const confirmError = await this.utils.confirmationPoll(tx.txId);
+        let confirmError = await this.utils.confirmationPoll(tx.txId);
 
         const bres = await AsyncRetry(
-            async (bail) => {
+            async () => {
                 const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
-                if (bres.status == 400) {
-                    bail(new Error(`failed to post funding tx - ${tx.txId} (keep this id!) - ${bres.data} ${confirmError ? ` - ${confirmError?.message ?? confirmError}` : ""}`));
-                }
                 Utils.checkAndThrow(bres, `Posting transaction ${tx.txId} information to the bundler`, [202]);
                 return bres;
             },
@@ -62,13 +57,11 @@ export default class Fund {
                 minTimeout: 100,
                 randomize: true
             }
-        );
+        ).catch(e => { confirmError = e; return undefined; });
 
         if (!bres) {
             throw new Error(`failed to post funding tx - ${tx.txId} - keep this id! \n ${confirmError ? ` - ${confirmError?.message ?? confirmError}` : ""}`);
         }
-        // const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId })
-        //     .catch(_ => { throw new Error(`failed to post funding tx - ${tx.txId} - keep this id!`); });
 
         return { reward: BigNumber.isBigNumber(fee) ? fee.toString() : JSON.stringify(fee), target: to, quantity: _amount.toString(), id: tx.txId };
     }
