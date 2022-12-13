@@ -75,7 +75,7 @@ export default abstract class Bundlr {
      * @param opts - dataItemCreateOptions
      * @returns - a new BundlrTransaction instance
      */
-    createTransaction(data: string | Uint8Array, opts?: DataItemCreateOptions): BundlrTransaction {
+    createTransaction(data: string | Buffer, opts?: DataItemCreateOptions): BundlrTransaction {
         return new BundlrTransaction(data, this, opts);
     }
 
@@ -94,5 +94,13 @@ export default abstract class Bundlr {
         this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
         this.address = this.currencyConfig.address;
     }
+
+    public transaction: { fromRaw: (rawTransaction: Uint8Array) => BundlrTransaction; } = ((oThis) => {
+        return {
+            fromRaw(rawTransaction: Uint8Array): BundlrTransaction {
+                return new BundlrTransaction(rawTransaction, oThis, { dataIsRawTransaction: true });
+            }
+        };
+    })(this);
 
 }

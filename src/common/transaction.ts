@@ -12,8 +12,8 @@ export default class BundlrTransaction extends DataItem {
     private bundlr: Bundlr;
     private signer: Signer;
 
-    constructor(data: string | Uint8Array, bundlr: Bundlr, opts?: DataItemCreateOptions) {
-        super(createData(data, bundlr.currencyConfig.getSigner(), {
+    constructor(data: string | Uint8Array, bundlr: Bundlr, opts?: DataItemCreateOptions & { dataIsRawTransaction?: boolean; }) {
+        super(opts?.dataIsRawTransaction === true ? Buffer.from(data) : createData(data, bundlr.currencyConfig.getSigner(), {
             ...opts, anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32)
         }).getRaw());
         this.bundlr = bundlr;
@@ -32,4 +32,7 @@ export default class BundlrTransaction extends DataItem {
         return (await this.bundlr.uploader.uploadTransaction(this, opts)).data;
     }
 
+    static fromRaw(rawTransaction: Buffer, bundlrInstance: Bundlr): BundlrTransaction {
+        return new BundlrTransaction(rawTransaction, bundlrInstance, { dataIsRawTransaction: true });
+    }
 }
