@@ -95,12 +95,13 @@ export default abstract class Bundlr {
         this.address = this.currencyConfig.address;
     }
 
-    public transaction: { fromRaw: (rawTransaction: Uint8Array) => BundlrTransaction; } = ((oThis) => {
+    get transaction() {
+        const oThis = this;
         return {
             fromRaw(rawTransaction: Uint8Array): BundlrTransaction {
                 return new BundlrTransaction(rawTransaction, oThis, { dataIsRawTransaction: true });
             }
         };
-    })(this);
+    }
 
 }

@@ -35,6 +35,8 @@ async function main() {
         tx = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
         await tx.sign();
 
+        tx = bundlr.transaction.fromRaw(tx.getRaw());
+
 
         const now = performance.now();
         res = await tx.upload({ getReceiptSignature: true });
