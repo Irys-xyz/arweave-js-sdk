@@ -315,7 +315,7 @@ export class ChunkingUploader extends EventEmitter {
         Utils.checkAndThrow(finishUpload, "Finalising upload", [201]);
         // Recover ID
         if (finishUpload.status === 201) {
-            if (this?.uploadOptions?.getReceiptSignature === true) { throw new Error(finishUpload.statusText); }
+            if (this?.uploadOptions?.getReceiptSignature === true) { throw new Error(finishUpload.data as any as string); }
             finishUpload.data = { id: finishUpload.statusText.split(" ")?.[1] };
         }
         if (this?.uploadOptions?.getReceiptSignature) {

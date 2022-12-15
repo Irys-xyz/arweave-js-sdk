@@ -24,50 +24,23 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.
         data.publicKey = Buffer.from(data.publicKey);
     }
 
-    // const a = data.publicKey.toString(); //fine
-    // console.log(a)
-
     const signature = await c.sign(deephash);
-
     const isValid = await c.verify(data.publicKey, deephash, signature);
-
-    // const opk = Buffer.from(data.publicKey)
-    // const osig = data.signature; // (uint8array)
 
     data.publicKey = base64url.encode(data.publicKey);
     data.signature = base64url.encode(Buffer.from(signature));
 
-    // const b = base64url.decode(data.publicKey)
-    // console.log(b) //fine
-
     const cpk = base64url.toBuffer(data.publicKey);
     const csig = base64url.toBuffer(data.signature);
 
-    // console.log(cpk.toString()) //fine
-    // console.log(`bad: ${base64url(cpk)}`)
-    // console.log(base64url.decode(data.publicKey))
-
-    // await c.ownerToAddress(await item.rawOwner());
-
     // should match opk and csig
     const dh2 = await deepHash([stringToBuffer(data.currency), stringToBuffer(data.amount.toString()), stringToBuffer(data.nonce.toString())]);
-    // console.log(cpk.equals(opk));
-    // console.log(csig.equals(osig))
-    // TODO: remove check once paranoia is gone
+
     const isValid2 = await c.verify(cpk, dh2, csig);
     const isValid3 = c.ownerToAddress(c.name == "arweave" ? base64url.decode(data.publicKey) : base64url.toBuffer(data.publicKey)) === c.address;
-    // console.log({ opk, osig })
-    // console.log(isValid2)
-    // console.log(isValid)
 
     if (!(isValid || isValid2 || isValid3)) { throw new Error(`Internal withdrawal validation failed - please report this!\nDebug Info:${JSON.stringify(data)}`); }
 
-    // console.log(JSON.stringify({
-    //     ...data,
-    //     publicKey: base64url.toBuffer(data.publicKey),
-    //     signature: base64url.toBuffer(data.signature)
-    // }))
-    // console.log(`derived: ${c.ownerToAddress(base64url.decode(data.publicKey))}`)
     const res = await api.post("/account/withdraw", data);
     Utils.checkAndThrow(res, "Withdrawing balance");
     return res.data;
