@@ -74,9 +74,10 @@ export default class NearConfig extends BaseNodeCurrency {
      * @param owner // assumed to be the "ed25519:" header + b58 encoded key 
      */
     ownerToAddress(owner: any): string {
-        return (typeof owner === "string")
-            ? decode(owner.replace("ed25519:", "")).toString("hex")
-            : decode(encode(owner)).toString("hex");
+        return Buffer.from((typeof owner === "string")
+            ? decode(owner.replace("ed25519:", ""))
+            : decode(encode(owner))
+        ).toString("hex");
     }
 
 

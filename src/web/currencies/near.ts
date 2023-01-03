@@ -96,7 +96,7 @@ export default class NearConfig extends BaseWebCurrency {
     ownerToAddress(owner: any): string {
         // should just return the loaded address?
         const pubkey = typeof owner === "string" ? owner : encode(owner);
-        return decode(pubkey.replace("ed25519:", "")).toString("hex");
+        return Buffer.from(decode(pubkey.replace("ed25519:", ""))).toString("hex");
     }
 
 
