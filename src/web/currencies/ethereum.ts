@@ -1,7 +1,6 @@
-import keccak256 from "arbundles/src/signing/keccak256";
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
-import { InjectedEthereumSigner, Signer } from "arbundles/src/signing";
+import { InjectedEthereumSigner, Signer } from "arbundles";
 import { Tx, CurrencyConfig } from "../../common/types";
 import BaseWebCurrency from "../currency";
 
@@ -38,7 +37,7 @@ export default class EthereumConfig extends BaseWebCurrency {
     }
 
     ownerToAddress(owner: any): string {
-        return "0x" + keccak256(Buffer.from(owner.slice(1))).slice(-20).toString("hex");
+        return owner; // "0x" + keccak256(Buffer.from(owner.slice(1))).slice(-20).toString("hex");
     }
 
     async sign(data: Uint8Array): Promise<Uint8Array> {

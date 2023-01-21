@@ -1,5 +1,5 @@
 import { AptosClient, CoinClient, HexString, TransactionBuilderEd25519, TxnBuilderTypes } from "aptos";
-import { InjectedAptosSigner, Signer } from "arbundles/src/signing";
+import { InjectedAptosSigner, Signer } from "arbundles";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import * as SHA3 from "js-sha3";

@@ -1,15 +1,12 @@
-import keccak256 from "arbundles/src/signing/keccak256";
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet } from "ethers";
 import BigNumber from "bignumber.js";
-import { signers } from "arbundles";
-import { Signer } from "arbundles/src/signing";
 import { JsonRpcProvider } from "@ethersproject/providers";
 import { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 
+import { TypedEthereumSigner, keccak256 } from "arbundles";
 
-const ethereumSigner = signers.EthereumSigner;
 
 export default class EthereumConfig extends BaseNodeCurrency {
     protected providerInstance: JsonRpcProvider;
@@ -53,16 +50,16 @@ export default class EthereumConfig extends BaseNodeCurrency {
     }
 
     async sign(data: Uint8Array): Promise<Uint8Array> {
-        const signer = new ethereumSigner(this.wallet);
+        const signer = new TypedEthereumSigner(this.wallet);
         return signer.sign(data);
     }
 
-    getSigner(): Signer {
-        return new ethereumSigner(this.wallet);
+    getSigner(): TypedEthereumSigner {
+        return new TypedEthereumSigner(this.wallet);
     }
 
     verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return ethereumSigner.verify(pub, data, signature);
+        return TypedEthereumSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -99,7 +96,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
         const _amount = "0x" + new BigNumber(amount).toString(16);
 
         let gasPrice = await provider.getGasPrice();
-        let gasEstimate = (fee) ? ethers.BigNumber.from(new BigNumber(fee).dividedToIntegerBy(gasPrice.toString()).toFixed()) : undefined;
+        const gasEstimate = (fee) ? ethers.BigNumber.from(new BigNumber(fee).dividedToIntegerBy(gasPrice.toString()).toFixed()) : undefined;
 
         // const estimatedGas = await provider.estimateGas({ from: this.address, to, value: _amount });
 

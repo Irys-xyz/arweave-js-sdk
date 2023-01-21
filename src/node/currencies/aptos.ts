@@ -1,5 +1,5 @@
 import { AptosAccount, AptosClient, CoinClient, HexString, TransactionBuilder, TransactionBuilderEd25519, TxnBuilderTypes, /* BCS, TxnBuilderTypes */ } from "aptos";
-import { AptosSigner, Signer } from "arbundles/src/signing";
+import { AptosSigner, Signer } from "arbundles";
 import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";

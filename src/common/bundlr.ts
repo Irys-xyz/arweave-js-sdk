@@ -7,7 +7,7 @@ import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
 import { CreateAndUploadOptions, Currency, FundResponse, UploadResponse, WithdrawalResponse } from "./types";
-import { Signer } from "arbundles/src/signing";
+import { Signer } from "arbundles";
 import { Readable } from "stream";
 
 export default abstract class Bundlr {
@@ -65,7 +65,7 @@ export default abstract class Bundlr {
         return this.utils.getPrice(this.currency, bytes);
     }
 
-    public async verifyReceipt(receipt: Required<UploadResponse>) {
+    public async verifyReceipt(receipt: Required<UploadResponse>): Promise<boolean> {
         return Utils.verifyReceipt(receipt);
     }
 
@@ -95,7 +95,9 @@ export default abstract class Bundlr {
         this.address = this.currencyConfig.address;
     }
 
+    // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
     get transaction() {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const oThis = this;
         return {
             fromRaw(rawTransaction: Uint8Array): BundlrTransaction {

@@ -2,7 +2,7 @@ import { TransactionBuilder, TransactionBuilderMultiEd25519, TxnBuilderTypes, BC
 import BigNumber from "bignumber.js";
 import { CurrencyConfig } from "../../common/types";
 import Aptos from "./aptos";
-import { Signer, MultiSignatureAptosSigner } from "arbundles/src/signing";
+import { Signer, MultiSignatureAptosSigner } from "arbundles";
 import { UserTransaction } from "aptos/src/generated";
 // import Utils from "../../common/utils";
 

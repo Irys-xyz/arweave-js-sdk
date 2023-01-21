@@ -1,5 +1,5 @@
 import Arweave from "arweave";
-import { ArweaveSigner, Signer } from "arbundles/src/signing";
+import { ArweaveSigner, Signer } from "arbundles";
 import BigNumber from "bignumber.js";
 import crypto from "crypto";
 import { CurrencyConfig, Tx } from "../../common/types";

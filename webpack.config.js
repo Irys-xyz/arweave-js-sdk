@@ -20,6 +20,7 @@ module.exports = {
         ],
     },
     resolve: {
+        symlinks: false,
         extensions: ['.ts', '.js'],
         alias: {
             process: "process/browser",

@@ -1,14 +1,12 @@
-import { Signer } from "arbundles/src/signing";
+import { Signer } from "arbundles";
 import BigNumber from "bignumber.js";
 import * as web3 from "@solana/web3.js";
-import { signers } from "arbundles";
+import { SolanaSigner } from "arbundles";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import retry from "async-retry";
-
-const solanaSigner = signers.SolanaSigner;
 
 export default class SolanaConfig extends BaseNodeCurrency {
     protected providerInstance: web3.Connection;
@@ -77,11 +75,11 @@ export default class SolanaConfig extends BaseNodeCurrency {
         const keypb = bs58.encode(
             Buffer.concat([Buffer.from(keyp.secretKey), keyp.publicKey.toBuffer()]),
         );
-        return new solanaSigner(keypb);
+        return new SolanaSigner(keypb);
     }
 
     verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return solanaSigner.verify(pub, data, signature);
+        return SolanaSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
