@@ -19,7 +19,8 @@
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
     "copy-types": "cp src/common/types.d.ts build/common && cp src/node/types.d.ts build/node && cp src/web/types.d.ts build/web",
-    "watch": "tsc --watch -p tsconfig.json & webpack --watch"
+    "watch": "tsc --watch -p tsconfig.json & webpack --watch",
+    "webpack:analyze": "webpack --profile --json /tmp/wp.json && webpack-bundle-analyzer /tmp/wp.json"
   },
   "bin": {
     "bundlr": "./build/node/cli.js"
