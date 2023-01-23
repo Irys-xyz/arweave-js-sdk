@@ -10,9 +10,9 @@ import BaseWebCurrency from "../currency";
 export default class NearConfig extends BaseWebCurrency {
     // protected keyStore: KeyPair
     protected keyPair: KeyPair;
-    protected wallet: WalletConnection;
+    declare protected wallet: WalletConnection;
     protected near: Near;
-    protected providerInstance: providers.Provider;
+    declare protected providerInstance: providers.Provider;
 
 
     constructor(config: CurrencyConfig) {
@@ -121,11 +121,11 @@ export default class NearConfig extends BaseWebCurrency {
     }
 
     async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
-        //const provider = await this.getProvider();
+        // const provider = await this.getProvider();
         // one unit of gas
         // const res = await provider.connection.provider.gasPrice(await (await this.getCurrentHeight()).toNumber())
-        //@ts-ignore
-        const latestBlockHeight = (await provider.block({ finality: "final" })).header.height;
+
+        const latestBlockHeight = (await this.providerInstance.block({ finality: "final" })).header.height;
         const res = await this.providerInstance.gasPrice(latestBlockHeight); // null == gas price as of latest block
         // multiply by action cost in gas units (assume only action is transfer)
         // 4.5x10^11 gas units for fund transfers

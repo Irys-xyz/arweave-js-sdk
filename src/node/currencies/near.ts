@@ -14,7 +14,7 @@ import axios from "axios";
 export default class NearConfig extends BaseNodeCurrency {
     protected keyPair: KeyPair;
 
-    protected providerInstance?: JsonRpcProvider;
+    declare protected providerInstance?: JsonRpcProvider;
     declare protected bundlrUrl: string;
 
 
@@ -120,7 +120,7 @@ export default class NearConfig extends BaseNodeCurrency {
         return `${this.address}:${res.transaction.hash}`; // encode into compound format
     }
 
-    async createTx(amount: BigNumber.Value, to: string, _fee?: string) {
+    async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any; }> {
         const provider = await this.getProvider();
         const accessKey = await provider.query(({ request_type: "view_access_key", finality: "final", account_id: this.address, public_key: this.keyPair.getPublicKey().toString() }));
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment

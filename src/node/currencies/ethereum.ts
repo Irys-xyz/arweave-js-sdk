@@ -9,7 +9,7 @@ import { TypedEthereumSigner, keccak256 } from "arbundles";
 
 
 export default class EthereumConfig extends BaseNodeCurrency {
-    protected providerInstance: JsonRpcProvider;
+    declare protected providerInstance: JsonRpcProvider;
 
     constructor(config: CurrencyConfig) {
         super(config);
@@ -46,7 +46,8 @@ export default class EthereumConfig extends BaseNodeCurrency {
     }
 
     ownerToAddress(owner: any): string {
-        return "0x" + keccak256(owner.slice(1)).slice(-20).toString("hex");
+        // return "0x" + keccak256(owner.slice(1)).slice(-20).toString("hex");
+        return owner.toString();
     }
 
     async sign(data: Uint8Array): Promise<Uint8Array> {
@@ -129,7 +130,8 @@ export default class EthereumConfig extends BaseNodeCurrency {
     }
 
     getPublicKey(): string | Buffer {
-        return Buffer.from(publicKeyCreate(Buffer.from(this.wallet, "hex"), false));
+        // return Buffer.from(publicKeyCreate(Buffer.from(this.wallet, "hex"), false));
+        return Buffer.from(<string>this._address ?? "0x" + keccak256(Buffer.from(publicKeyCreate(Buffer.from(this.wallet, "hex"), false)).slice(1)).slice(-20).toString("hex"));
     }
 
 }

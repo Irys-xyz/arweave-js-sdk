@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import * as SHA3 from "js-sha3";
 // import { Ed25519PublicKey } from "aptos/src/aptos_types/ed25519";
-import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
+// import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
 import BaseWebCurrency from "../currency";
 
 
@@ -33,9 +33,9 @@ export interface AptosWallet {
     disconnect: () => Promise<void>;
     isConnected: () => Promise<boolean>;
     network: () => Promise<"Testnet" | "Mainnet">;
-    signAndSubmitTransaction: (transaction: TransactionPayload) => Promise<PendingTransaction>;
+    signAndSubmitTransaction: (transaction: /* TransactionPayload */ any) => Promise</* PendingTransaction */any>;
     signMessage: (payload: SignMessagePayload) => Promise<SignMessageResponse>;
-    signTransaction: (transaction: TransactionPayload) => Promise<Uint8Array>;
+    signTransaction: (transaction: /* TransactionPayload */any) => Promise<Uint8Array>;
 }
 
 export default class AptosConfig extends BaseWebCurrency {
@@ -61,8 +61,8 @@ export default class AptosConfig extends BaseWebCurrency {
     async getTx(txId: string): Promise<Tx> {
 
         const client = await this.getProvider();
-        const tx = await client.waitForTransactionWithResult(txId, /* { checkSuccess: true } */ { timeoutSecs: 1, checkSuccess: true }) as Transaction_UserTransaction;
-        const payload = tx?.payload as TransactionPayload_EntryFunctionPayload;
+        const tx = await client.waitForTransactionWithResult(txId, /* { checkSuccess: true } */ { timeoutSecs: 1, checkSuccess: true }) as any; // Transaction_UserTransaction;
+        const payload = tx?.payload as any;// TransactionPayload_EntryFunctionPayload;
 
         if (!tx.success) {
             throw new Error(tx?.vm_status ?? "Unknown Aptos error");
@@ -105,6 +105,7 @@ export default class AptosConfig extends BaseWebCurrency {
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         return new BigNumber((await (await this.getProvider()).client.blocks.httpRequest.request({ method: "GET", url: "/" }) as { block_height: string; }).block_height);
 
     }
@@ -121,7 +122,6 @@ export default class AptosConfig extends BaseWebCurrency {
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {
-            // @ts-ignore
             const invalidSigBytes = new Uint8Array(64);
             return new TxnBuilderTypes.Ed25519Signature(invalidSigBytes);
         }, await this.getPublicKey() as Buffer);
@@ -133,7 +133,7 @@ export default class AptosConfig extends BaseWebCurrency {
             estimate_max_gas_amount: true,
         };
 
-        const simulationResult = await client.client.request.request<UserTransaction[]>({
+        const simulationResult = await client.client.request.request</* UserTransaction */ any[]>({
             url: "/transactions/simulate",
             query: queryParams,
             method: "POST",
@@ -143,7 +143,7 @@ export default class AptosConfig extends BaseWebCurrency {
 
         return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: +simulationResult[0].max_gas_amount };
 
-        //const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
+        // const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
         // return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
         // const est = await provider.client.transactions.estimateGasPrice();
         // return new BigNumber(est.gas_estimate/* (await (await this.getProvider()).client.transactions.estimateGasPrice()).gas_estimate */); // * by gas limit (for upper limit)
@@ -155,7 +155,7 @@ export default class AptosConfig extends BaseWebCurrency {
     }
 
     async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any; }> {
-        //const client = await this.getProvider();
+        // const client = await this.getProvider();
         // const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
         //     "0x1::coin::transfer",
         //     ["0x1::aptos_coin::AptosCoin"],
@@ -164,9 +164,9 @@ export default class AptosConfig extends BaseWebCurrency {
 
         const tx = {
             arguments: [to, new BigNumber(amount).toNumber()],
-            function: '0x1::coin::transfer',
-            type: 'entry_function_payload',
-            type_arguments: ['0x1::aptos_coin::AptosCoin'],
+            function: "0x1::coin::transfer",
+            type: "entry_function_payload",
+            type_arguments: ["0x1::aptos_coin::AptosCoin"],
         };
 
 
@@ -191,7 +191,7 @@ export default class AptosConfig extends BaseWebCurrency {
             .then(hs => hs.toString())
             .catch(_ => this._address); // fallback to original
 
-        if (this._address?.length == 66 && this._address.charAt(2) === '0') {
+        if (this._address?.length == 66 && this._address.charAt(2) === "0") {
             this._address = this._address.slice(0, 2) + this._address.slice(3);
         }
     }

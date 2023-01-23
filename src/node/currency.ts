@@ -29,7 +29,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
 
     // common methods
 
-    get address() {
+    get address(): string | undefined {
         return this._address;
     }
 

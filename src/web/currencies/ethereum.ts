@@ -9,9 +9,9 @@ const ethereumSigner = InjectedEthereumSigner;
 
 export default class EthereumConfig extends BaseWebCurrency {
     protected signer: InjectedEthereumSigner;
-    protected wallet: ethers.providers.Web3Provider;
+    declare protected wallet: ethers.providers.Web3Provider;
     protected w3signer: ethers.providers.JsonRpcSigner;
-    protected providerInstance!: ethers.providers.JsonRpcProvider;
+    declare protected providerInstance: ethers.providers.JsonRpcProvider;
 
     constructor(config: CurrencyConfig) {
         super(config);

@@ -9,7 +9,7 @@ import BaseNodeCurrency from "../currency";
 import retry from "async-retry";
 
 export default class SolanaConfig extends BaseNodeCurrency {
-    protected providerInstance: web3.Connection;
+    declare protected providerInstance: web3.Connection;
     minConfirm = 1;
 
     constructor(config: CurrencyConfig) {

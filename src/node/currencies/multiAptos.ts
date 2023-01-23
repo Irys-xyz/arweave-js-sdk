@@ -3,15 +3,16 @@ import BigNumber from "bignumber.js";
 import { CurrencyConfig } from "../../common/types";
 import Aptos from "./aptos";
 import { Signer, MultiSignatureAptosSigner } from "arbundles";
-import { UserTransaction } from "aptos/src/generated";
+// import { UserTransaction } from "aptos/src/generated";
 // import Utils from "../../common/utils";
 
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export type HexString = string;
 export default class MultiSignatureAptos extends Aptos {
 
     declare wallet: { participants: Buffer[], threshold: number; };
-    //@ts-ignore
+    // @ts-expect-error inhereted interface violation
     declare protected signerInstance: MultiSignatureAptosSigner;
     protected collectSignatures: (message: Uint8Array) => Promise<{ signatures: Buffer[], bitmap: number[]; }>;
 
@@ -40,7 +41,7 @@ export default class MultiSignatureAptos extends Aptos {
         const keys = [] as /* Ed25519PublicKey */any[];
         const nullBuf = Buffer.alloc(32, 0);
         for (let i = 0; i < 32; i++) {
-            let key = pubKey.subarray(i * 32, (i + 1) * 32);
+            const key = pubKey.subarray(i * 32, (i + 1) * 32);
             if (!key.equals(nullBuf)) keys.push(new TxnBuilderTypes.Ed25519PublicKey(key));
         }
         // reconstruct key
@@ -75,7 +76,6 @@ export default class MultiSignatureAptos extends Aptos {
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {
-            // @ts-ignore
             const invalidSigBytes = new Uint8Array(64);
             return new TxnBuilderTypes.Ed25519Signature(invalidSigBytes);
         }, new Uint8Array(32));
@@ -87,7 +87,7 @@ export default class MultiSignatureAptos extends Aptos {
             estimate_max_gas_amount: true,
         };
 
-        const simulationResult = await client.client.request.request<UserTransaction[]>({
+        const simulationResult = await client.client.request.request</* UserTransaction */any[]>({
             url: "/transactions/simulate",
             query: queryParams,
             method: "POST",
@@ -167,11 +167,9 @@ export default class MultiSignatureAptos extends Aptos {
             );
 
             return muliEd25519Sig;
-            //@ts-ignore
-        }, this.deserialisePubKey(this.getPublicKey()));
 
+        }, this.deserialisePubKey(<Buffer>this.getPublicKey()));
 
-        //@ts-ignore
         const bcsTxn = txnBuilder.sign(data);
         const txRes = await client.submitSignedBCSTransaction(bcsTxn);
         return txRes.hash;

@@ -1,6 +1,6 @@
 // eslint-disable-file @typescript-eslint/no-unused-vars
 import Bundlr from "../src";
-import { promises, readFileSync, writeFileSync } from 'fs';
+import { promises, readFileSync } from 'fs';
 import Crypto from "crypto";
 import { checkPath } from "../src/node/upload";
 import { genData } from "./genData";
@@ -13,15 +13,15 @@ async function main() {
         if (profiling) console.profile();
         const keys = JSON.parse(readFileSync("wallet.json").toString());
 
-        const nodeUrl = "http://node1.bundlr.network";
+        const nodeUrl = "http://172.17.0.3:10000";
         const testFolder = "testFolder";
 
-        const { key, providerUrl } = keys.testnet.solana;
+        const { key, providerUrl } = keys.testnet.ethereum;
 
         // let bundlr = await Bundlr.init({ url: nodeUrl, currency: "aptos", publicKey: account.pubKey().toString(), signingFunction });
         // let bundlr = Bundlr.init({ url: nodeUrl, currency: "aptos", privateKey: key })
 
-        let bundlr = new Bundlr(nodeUrl, "solana", key, { providerUrl });
+        let bundlr = new Bundlr(nodeUrl, "ethereum", key, { providerUrl });
         await bundlr.ready();
         console.log(bundlr.address);
 
@@ -34,6 +34,7 @@ async function main() {
 
         tx = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
         await tx.sign();
+        console.log(await tx.verify());
 
         tx = bundlr.transaction.fromRaw(tx.getRaw());
 
@@ -46,6 +47,7 @@ async function main() {
         const r3 = await res.verify();
 
         console.log(r3);
+        console.log(res);
 
         const transaction = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
         await transaction.sign();

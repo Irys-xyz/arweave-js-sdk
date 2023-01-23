@@ -4,12 +4,13 @@ import { CurrencyConfig, Tx } from "../../common/types";
 import BaseWebCurrency from "../currency";
 import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
-import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
+// import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
+// const { MessageSignerWalletAdapter } = await import("@solana/wallet-adapter-base");
 import retry from "async-retry";
 
 export default class SolanaConfig extends BaseWebCurrency {
     private signer: HexInjectedSolanaSigner;
-    protected wallet: MessageSignerWalletAdapter;
+    declare protected wallet: any;
     minConfirm = 1;
 
     constructor(config: CurrencyConfig) {
@@ -140,7 +141,7 @@ export default class SolanaConfig extends BaseWebCurrency {
     }
 
     async getPublicKey(): Promise<string | Buffer> {
-        if (!this.wallet.publicKey) throw new Error(`Wallet.publicKet is undefined`);
+        if (!this.wallet.publicKey) throw new Error("Wallet.publicKey is undefined!");
         return this.wallet.publicKey.toBuffer();
     }
 

@@ -8,7 +8,7 @@ import BaseNodeCurrency from "../currency";
 
 
 export default class ArweaveConfig extends BaseNodeCurrency {
-    protected providerInstance: Arweave;
+    declare protected providerInstance: Arweave;
 
     constructor(config: CurrencyConfig) {
         super(config);

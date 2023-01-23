@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import * as SHA3 from "js-sha3";
-import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
+// import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
 
 export default class AptosConfig extends BaseNodeCurrency {
 
@@ -18,7 +18,7 @@ export default class AptosConfig extends BaseNodeCurrency {
     constructor(config: CurrencyConfig) {
         if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
         if (!config?.opts?.signingFunction && Buffer.isBuffer(config?.wallet)) {
-            // @ts-ignore
+            // @ts-expect-error TODO: figure out why this is done
             config.accountInstance = new AptosAccount(config.wallet);
         }
         super(config);
@@ -35,8 +35,8 @@ export default class AptosConfig extends BaseNodeCurrency {
     async getTx(txId: string): Promise<Tx> {
 
         const client = await this.getProvider();
-        const tx = await client.waitForTransactionWithResult(txId/* , { checkSuccess: true } */) as Transaction_UserTransaction;
-        const payload = tx?.payload as TransactionPayload_EntryFunctionPayload;
+        const tx = await client.waitForTransactionWithResult(txId/* , { checkSuccess: true } */) as any; // Transaction_UserTransaction;
+        const payload = tx?.payload as any; // TransactionPayload_EntryFunctionPayload;
 
         if (!tx.success) {
             throw new Error(tx?.vm_status ?? "Unknown Aptos error");
@@ -74,7 +74,7 @@ export default class AptosConfig extends BaseNodeCurrency {
         if (this.signerInstance) return this.signerInstance;
         if (this.signingFn) {
             const signer = new AptosSigner("", "0x" + this.getPublicKey().toString("hex"));
-            signer.sign = this.signingFn; //override signer fn
+            signer.sign = this.signingFn; // override signer fn
             return this.signerInstance = signer;
         } else {
             return this.signerInstance = new AptosSigner(this.accountInstance.toPrivateKeyObject().privateKeyHex, this.accountInstance.toPrivateKeyObject().publicKeyHex as string);
@@ -86,6 +86,7 @@ export default class AptosConfig extends BaseNodeCurrency {
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         return new BigNumber((await (await this.getProvider()).client.blocks.httpRequest.request({ method: "GET", url: "/" }) as { block_height: string; }).block_height);
 
     }
@@ -103,7 +104,6 @@ export default class AptosConfig extends BaseNodeCurrency {
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {
-            // @ts-ignore
             const invalidSigBytes = new Uint8Array(64);
             return new TxnBuilderTypes.Ed25519Signature(invalidSigBytes);
         }, this.getPublicKey() as Buffer);
@@ -115,7 +115,7 @@ export default class AptosConfig extends BaseNodeCurrency {
             estimate_max_gas_amount: true,
         };
 
-        const simulationResult = await client.client.request.request<UserTransaction[]>({
+        const simulationResult = await client.client.request.request</* UserTransaction */any[]>({
             url: "/transactions/simulate",
             query: queryParams,
             method: "POST",
@@ -125,7 +125,7 @@ export default class AptosConfig extends BaseNodeCurrency {
 
         return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: +simulationResult[0].max_gas_amount };
 
-        //const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
+        // const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
         // return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
         // const est = await provider.client.transactions.estimateGasPrice();
         // return new BigNumber(est.gas_estimate/* (await (await this.getProvider()).client.transactions.estimateGasPrice()).gas_estimate */); // * by gas limit (for upper limit)
@@ -151,7 +151,6 @@ export default class AptosConfig extends BaseNodeCurrency {
         const sig = await this.sign(signingMessage);
 
         const txnBuilder = new TransactionBuilderEd25519((_) => {
-            // @ts-ignore
             return new TxnBuilderTypes.Ed25519Signature(sig);
         }, this.getPublicKey() as Buffer);
 
@@ -165,7 +164,7 @@ export default class AptosConfig extends BaseNodeCurrency {
         return Buffer.from(this.accountInstance.pubKey().toString().slice(2), "hex");
     }
 
-    async ready() {
+    async ready(): Promise<void> {
         const client = await this.getProvider();
         this._address = await client.lookupOriginalAddress(this.address ?? "")
             .then(hs => hs.toString())
