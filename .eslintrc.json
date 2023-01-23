@@ -36,7 +36,7 @@
     "@typescript-eslint/naming-convention": [
       "error", 
       {"selector": "class","format":["PascalCase"]},
-      {"selector": "interface","format":["PascalCase"]},
+      {"selector": "typeLike","format":["PascalCase"]},
       {"selector": "classProperty","format":["camelCase"], "leadingUnderscore":"allow"},
       {"selector": "objectLiteralProperty", "format":null},
       {"selector": "default","format": ["strictCamelCase"], "leadingUnderscore": "allow" } //this must be the last rule

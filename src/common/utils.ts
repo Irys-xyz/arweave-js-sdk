@@ -5,7 +5,7 @@ import { AxiosResponse } from "axios";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
 import Api from "./api";
-import { Currency } from "./types";
+import { Currency, UploadReceipt } from "./types";
 BigNumber.set({ DECIMAL_PLACES: 50 });
 
 export const sleep = (ms): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
@@ -103,13 +103,13 @@ export default class Utils {
         return new BigNumber(baseUnits).dividedBy(this.currencyConfig.base[1]);
     }
 
-    static async verifyReceipt(receipt: { id: string, block: number, timestamp: number; public: string; signature: string; }): Promise<boolean> {
-        const { id, block, timestamp, public: pubKey, signature } = receipt;
+    static async verifyReceipt(receipt: UploadReceipt): Promise<boolean> {
+        const { id, deadlineHeight, timestamp, public: pubKey, signature, version } = receipt;
         const dh = await deepHash([
             Arweave.utils.stringToBuffer("Bundlr"),
-            Arweave.utils.stringToBuffer("1"),
+            Arweave.utils.stringToBuffer(version),
             Arweave.utils.stringToBuffer(id),
-            Arweave.utils.stringToBuffer(block.toString()),
+            Arweave.utils.stringToBuffer(deadlineHeight.toString()),
             Arweave.utils.stringToBuffer(timestamp.toString())
         ]);
         return await Arweave.crypto.verify(pubKey, dh, base64url.toBuffer(signature));
