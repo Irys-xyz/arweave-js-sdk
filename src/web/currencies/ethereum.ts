@@ -1,14 +1,14 @@
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
-import { InjectedEthereumSigner, Signer } from "arbundles";
+import { InjectedTypedEthereumSigner, } from "arbundles";
 import { Tx, CurrencyConfig } from "../../common/types";
 import BaseWebCurrency from "../currency";
 
 const ethBigNumber = ethers.BigNumber; // required for hexString conversions (w/ 0x padding)
-const ethereumSigner = InjectedEthereumSigner;
+
 
 export default class EthereumConfig extends BaseWebCurrency {
-    protected signer: InjectedEthereumSigner;
+    protected signer: InjectedTypedEthereumSigner;
     declare protected wallet: ethers.providers.Web3Provider;
     protected w3signer: ethers.providers.JsonRpcSigner;
     declare protected providerInstance: ethers.providers.JsonRpcProvider;
@@ -45,16 +45,16 @@ export default class EthereumConfig extends BaseWebCurrency {
         return signer.sign(data);
     }
 
-    getSigner(): Signer {
+    getSigner(): InjectedTypedEthereumSigner {
         if (!this.signer) {
-            this.signer = new InjectedEthereumSigner(this.wallet);
+            this.signer = new InjectedTypedEthereumSigner(this.wallet);
         }
         return this.signer;
     }
 
 
     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-        return ethereumSigner.verify(pub, data, signature);
+        return InjectedTypedEthereumSigner.verify(pub, data, signature);
     }
 
     async getCurrentHeight(): Promise<BigNumber> {
@@ -97,9 +97,12 @@ export default class EthereumConfig extends BaseWebCurrency {
     }
 
     public async getPublicKey(): Promise<string | Buffer> {
-        const signer = await this.getSigner() as InjectedEthereumSigner;
-        await signer.setPublicKey();
-        return signer.publicKey;
+        // const signer = await this.getSigner() as InjectedTypedEthereumSigner;
+        // await signer.setPublicKey();
+        // return signer.publicKey;
+        // const accounts = this.wallet.listAccounts;
+        // return accounts[0];
+        return this.address as string;
     }
 
     pruneBalanceTransactions(_txIds: string[]): Promise<void> {
@@ -108,7 +111,8 @@ export default class EthereumConfig extends BaseWebCurrency {
 
     public async ready(): Promise<void> {
         this.w3signer = await this.wallet.getSigner();
-        this._address = this.ownerToAddress(await this.getPublicKey());
+        this._address = await this.w3signer.getAddress();
+        await this.getSigner().ready();
         this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
         await this.providerInstance?._ready();
     }
