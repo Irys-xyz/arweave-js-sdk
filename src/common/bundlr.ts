@@ -6,7 +6,7 @@ import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
-import { CreateAndUploadOptions, Currency, FundResponse, UploadResponse, WithdrawalResponse } from "./types";
+import { CreateAndUploadOptions, Currency, FundResponse, UploadReceipt, UploadResponse, WithdrawalResponse } from "./types";
 import { Signer } from "arbundles/src/signing";
 import { Readable } from "stream";
 
@@ -65,7 +65,7 @@ export default abstract class Bundlr {
         return this.utils.getPrice(this.currency, bytes);
     }
 
-    public async verifyReceipt(receipt: Required<UploadResponse>) {
+    public async verifyReceipt(receipt: UploadReceipt): Promise<boolean> {
         return Utils.verifyReceipt(receipt);
     }
 

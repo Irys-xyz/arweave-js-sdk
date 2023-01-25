@@ -2,7 +2,7 @@ import { createData, DataItem } from "arbundles";
 import { AxiosResponse } from "axios";
 import Utils from "./utils";
 import Api from "./api";
-import { CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadResponse } from "./types";
+import { CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
 import PromisePool from "@supercharge/promise-pool/dist";
 import retry from "async-retry";
 import { ChunkingUploader } from "./chunkingUploader";
@@ -48,7 +48,7 @@ export default class Uploader {
             });
             if (res.status == 201) {
                 if (opts?.getReceiptSignature === true) { throw new Error(res.data as any as string); }
-                res.data = { id: transaction.id };
+                res.data = { id: transaction.id, timestamp: Date.now() };
             }
         }
         switch (res.status) {
@@ -60,7 +60,7 @@ export default class Uploader {
                 }
         }
         if (opts?.getReceiptSignature) {
-            res.data.verify = Utils.verifyReceipt.bind({}, res.data);
+            (res.data as UploadReceipt).verify = Utils.verifyReceipt.bind({}, res.data);
         }
         return res;
     }
