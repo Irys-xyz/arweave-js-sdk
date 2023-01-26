@@ -31,8 +31,8 @@ export default class Uploader {
      * Uploads a given transaction to the bundler
      * @param transaction
      */
-    public async uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>> {
-        let res: AxiosResponse<UploadResponse>;
+    public async uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse | UploadReceipt>> {
+        let res: AxiosResponse<UploadResponse | UploadReceipt>;
         const isDataItem = DataItem.isDataItem(transaction);
         if (this.forceUseChunking || (isDataItem && transaction.getRaw().length >= CHUNKING_THRESHOLD) || !isDataItem) {
             res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction, opts);
@@ -65,7 +65,7 @@ export default class Uploader {
         return res;
     }
 
-    public async uploadData(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+    public async uploadData(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse | UploadReceipt> {
         if (typeof data === "string") {
             data = Buffer.from(data);
         }

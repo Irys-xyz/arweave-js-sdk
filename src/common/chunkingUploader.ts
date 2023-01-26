@@ -2,7 +2,7 @@ import { createData, DataItem, DataItemCreateOptions, deepHash } from "arbundles
 import { PassThrough, Readable } from "stream";
 import { EventEmitter } from "events";
 import Api from "./api";
-import { Currency, UploadOptions, UploadResponse } from "./types";
+import { Currency, UploadOptions, UploadReceipt, UploadResponse } from "./types";
 import Utils from "./utils";
 import Crypto from "crypto";
 import { stringToBuffer } from "arweave/web/lib/utils";
@@ -11,11 +11,11 @@ import { AxiosResponse } from "axios";
 import StreamToAsyncIterator from "./s2ai";
 
 interface ChunkingUploaderEvents {
-    'chunkUpload': ({ id, offset, size, totalUploaded }: { id: number, offset: number, size: number; totalUploaded: number; }) => void;
-    'chunkError': ({ id, offset, size, res }: { id: number, offset: number, size: number; res: AxiosResponse<any>; }) => void;
-    'resume': () => void;
-    'pause': () => void;
-    'done': (finishedUpload: any) => void;
+    "chunkUpload": ({ id, offset, size, totalUploaded }: { id: number, offset: number, size: number; totalUploaded: number; }) => void;
+    "chunkError": ({ id, offset, size, res }: { id: number, offset: number, size: number; res: AxiosResponse<any>; }) => void;
+    "resume": () => void;
+    "pause": () => void;
+    "done": (finishedUpload: any) => void;
 }
 
 export declare interface ChunkingUploader {
@@ -35,8 +35,8 @@ export class ChunkingUploader extends EventEmitter {
     protected currency: string;
     protected chunkSize: number;
     protected batchSize: number;
-    protected paused: Boolean = false;
-    protected isResume: Boolean = false;
+    protected paused = false;
+    protected isResume = false;
     protected uploadOptions: UploadOptions | undefined;
 
     constructor(
@@ -114,7 +114,7 @@ export class ChunkingUploader extends EventEmitter {
     async runUpload(
         dataStream: Readable | Buffer,
         transactionOpts?: DataItemCreateOptions
-    ): Promise<AxiosResponse<UploadResponse>> {
+    ): Promise<AxiosResponse<UploadResponse | UploadReceipt>> {
         let id = this.uploadID;
 
         const isTransaction = (transactionOpts === undefined);
@@ -129,7 +129,7 @@ export class ChunkingUploader extends EventEmitter {
 
         } else {
             getres = await this.api.get(`/chunks/${this.currency}/${id}/-1`, { headers });
-            if (getres.status === 404) throw new Error(`Upload ID not found - your upload has probably expired.`);
+            if (getres.status === 404) throw new Error("Upload ID not found - your upload has probably expired.");
             Utils.checkAndThrow(getres, "Getting upload info");
             if (this.chunkSize != +getres.data.size) {
                 throw new Error(`Chunk size not equal to that of a previous upload (${+getres.data.size}).`);
@@ -141,7 +141,7 @@ export class ChunkingUploader extends EventEmitter {
             throw new Error(`Chunk size out of allowed range: ${min} - ${max}`);
         }
         let totalUploaded = 0;
-        const promiseFactory = (d: Buffer, o: number, c: number): Promise<{ o: number, d: AxiosResponse<UploadResponse>; }> => {
+        const promiseFactory = (d: Buffer, o: number, c: number): Promise<{ o: number, d: AxiosResponse<UploadResponse | UploadReceipt>; }> => {
             return new Promise((r) => {
                 retry(
                     async (bail) => {
@@ -180,7 +180,7 @@ export class ChunkingUploader extends EventEmitter {
         const readBytes = async (size: number) => {
             while (!ended) {
                 if (cache.length >= size) {
-                    data = Buffer.from(cache.slice(0, size)); //force a copy
+                    data = Buffer.from(cache.slice(0, size)); // force a copy
                     cache = cache.slice(size);
                     return data;
                 }
@@ -195,7 +195,7 @@ export class ChunkingUploader extends EventEmitter {
             }
             // flush
             while (cache.length >= size) {
-                data = Buffer.from(cache.slice(0, size)); //force a copy
+                data = Buffer.from(cache.slice(0, size)); // force a copy
                 cache = cache.slice(size);
                 return data;
             }
@@ -325,7 +325,7 @@ export class ChunkingUploader extends EventEmitter {
         return finishUpload;
     }
 
-    get completionPromise(): Promise<AxiosResponse<UploadResponse>> {
+    get completionPromise(): Promise<AxiosResponse<UploadResponse | UploadReceipt>> {
         return new Promise(r => this.on("done", r));
     }
 

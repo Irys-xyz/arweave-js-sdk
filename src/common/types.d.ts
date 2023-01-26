@@ -71,10 +71,7 @@ export interface Manifest {
 }
 
 
-export type UploadResponse = UploadResponseBase | UploadReceipt;
-
-
-export type UploadResponseBase = {
+export type UploadResponse = {
     // The ID of the transaction
     id: string;
     // The UNIX (MS precision) timestamp of when the node received the Tx. Only optional if the upload receives a `201` error in response to a duplicate transaction upload.
@@ -97,7 +94,7 @@ export type UploadReceipt = {
     version: "1.0.0";
     // Injected verification function (same as Utils/Bundlr.verifyReceipt) - only present if getReceiptSignature is set.
     verify: () => Promise<boolean>;
-} & UploadResponseBase;
+} & UploadResponse;
 
 export interface FundResponse {
     reward: string,

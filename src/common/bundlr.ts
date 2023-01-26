@@ -86,7 +86,7 @@ export default abstract class Bundlr {
         return this.currencyConfig.getSigner();
     }
 
-    async upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+    async upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse | UploadReceipt> {
         return this.uploader.uploadData(data, opts);
     }
 

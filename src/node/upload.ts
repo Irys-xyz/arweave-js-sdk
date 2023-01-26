@@ -1,5 +1,5 @@
 import { promises, PathLike, createReadStream, createWriteStream } from "fs";
-import { CreateAndUploadOptions, Currency, UploadResponse } from "../common/types";
+import { CreateAndUploadOptions, Currency, UploadReceipt, UploadResponse } from "../common/types";
 import Uploader from "../common/upload";
 import Api from "../common/api";
 import Utils from "../common/utils";
@@ -22,7 +22,7 @@ export default class NodeUploader extends Uploader {
      * @param path to the file to be uploaded
      * @returns the response from the bundler
      */
-    public async uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+    public async uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadResponse | UploadReceipt> {
         if (!promises.stat(path).then(_ => true).catch(_ => false)) {
             throw new Error(`Unable to access path: ${path}`);
         }

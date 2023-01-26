@@ -1,7 +1,7 @@
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
-import { CreateAndUploadOptions, UploadResponse } from "../common/types";
+import { CreateAndUploadOptions, UploadReceipt, UploadResponse } from "../common/types";
 import Utils from "../common/utils";
 import getCurrency from "./currencies";
 import { NodeCurrency } from "./types";
@@ -36,7 +36,7 @@ export default class NodeBundlr extends Bundlr {
     * @param path path to the file to upload
     * @returns bundler response
     */
-    async uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+    async uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadResponse | UploadReceipt> {
         return this.uploader.uploadFile(path, opts);
     };
 
