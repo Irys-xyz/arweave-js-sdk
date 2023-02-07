@@ -35,16 +35,15 @@ export default class Api {
         return this.config;
     }
 
-    private async requestInterceptor(request: AxiosRequestConfig): Promise<any> {
+    private async requestInterceptor(request: AxiosRequestConfig): Promise<AxiosRequestConfig> {
         const cookies = this.cookieMap.get(new URL(request.baseURL ?? "").host);
         if (cookies) (request.headers as AxiosRequestHeaders).cookie = cookies;
         return request;
     }
 
-    private async responseInterceptor(response: AxiosResponse<any>): Promise<any> {
+    private async responseInterceptor(response: AxiosResponse): Promise<AxiosResponse> {
         const setCookie = response.headers?.["set-cookie"];
-        if (!setCookie) return;
-        this.cookieMap.set(response.request.host, setCookie);
+        if (setCookie) this.cookieMap.set(response.request.host, setCookie);
         return response;
     }
 
