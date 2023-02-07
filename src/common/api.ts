@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import Axios, { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios";
+import Axios, { AxiosResponse, AxiosRequestConfig, AxiosInstance, AxiosRequestHeaders } from "axios";
 
 // taken from the arweave.js lib
 export interface ApiConfig {
@@ -11,12 +11,15 @@ export interface ApiConfig {
     // eslint-disable-next-line @typescript-eslint/ban-types
     logger?: Function;
     headers?: { [key: string]: string; };
+    withCredentials?: boolean;
 }
 
 // TODO: overhaul this
 export default class Api {
     public readonly METHOD_GET = "GET";
     public readonly METHOD_POST = "POST";
+    protected instance?: AxiosInstance;
+    public cookieMap = new Map();
 
     public config!: ApiConfig;
 
@@ -32,6 +35,20 @@ export default class Api {
         return this.config;
     }
 
+    private async requestInterceptor(request: AxiosRequestConfig): Promise<any> {
+        const cookies = this.cookieMap.get(new URL(request.baseURL ?? "").host);
+        if (cookies) (request.headers as AxiosRequestHeaders).cookie = cookies;
+        return request;
+    }
+
+    private async responseInterceptor(response: AxiosResponse<any>): Promise<any> {
+        const setCookie = response.headers?.["set-cookie"];
+        if (!setCookie) return;
+        this.cookieMap.set(response.request.host, setCookie);
+        return response;
+    }
+
+
     private mergeDefaults(config: ApiConfig): ApiConfig {
         const protocol = config.protocol || "http";
         const port = config.port || (protocol === "https" ? 443 : 80);
@@ -43,7 +60,8 @@ export default class Api {
             timeout: config.timeout || 20000,
             logging: config.logging || false,
             logger: config.logger || console.log,
-            headers: config.headers || {}
+            headers: config.headers || {},
+            withCredentials: true
         };
     }
 
@@ -79,12 +97,20 @@ export default class Api {
     }
 
     public request(): AxiosInstance {
+        if (this.instance) return this.instance;
+
         const instance = Axios.create({
             baseURL: `${this.config.protocol}://${this.config.host}:${this.config.port}`,
             timeout: this.config.timeout,
             maxContentLength: 1024 * 1024 * 512,
-            headers: this.config.headers
+            headers: this.config.headers,
+            withCredentials: this.config.withCredentials
         });
+
+        if (this.config.withCredentials) {
+            instance.interceptors.request.use(this.requestInterceptor.bind(this));
+            instance.interceptors.response.use(this.responseInterceptor.bind(this));
+        }
 
         if (this.config.logging) {
             instance.interceptors.request.use((request) => {
@@ -100,6 +126,6 @@ export default class Api {
             });
         }
 
-        return instance;
+        return (this.instance = instance);
     }
 }
