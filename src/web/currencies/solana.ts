@@ -140,7 +140,7 @@ export default class SolanaConfig extends BaseWebCurrency {
     }
 
     async getPublicKey(): Promise<string | Buffer> {
-        if (!this.wallet.publicKey) throw new Error(`Wallet.publicKet is undefined`);
+        if (!this.wallet.publicKey) throw new Error("Wallet.publicKey is undefined");
         return this.wallet.publicKey.toBuffer();
     }
 
