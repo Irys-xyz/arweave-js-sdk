@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import * as SHA3 from "js-sha3";
 // import { Ed25519PublicKey } from "aptos/src/aptos_types/ed25519";
-import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
+// import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
 import BaseWebCurrency from "../currency";
 
 
@@ -33,9 +33,9 @@ export interface AptosWallet {
     disconnect: () => Promise<void>;
     isConnected: () => Promise<boolean>;
     network: () => Promise<"Testnet" | "Mainnet">;
-    signAndSubmitTransaction: (transaction: TransactionPayload) => Promise<PendingTransaction>;
+    signAndSubmitTransaction: (transaction: any) => Promise<any>;
     signMessage: (payload: SignMessagePayload) => Promise<SignMessageResponse>;
-    signTransaction: (transaction: TransactionPayload) => Promise<Uint8Array>;
+    signTransaction: (transaction: any) => Promise<Uint8Array>;
 }
 
 export default class AptosConfig extends BaseWebCurrency {
@@ -61,8 +61,8 @@ export default class AptosConfig extends BaseWebCurrency {
     async getTx(txId: string): Promise<Tx> {
 
         const client = await this.getProvider();
-        const tx = await client.waitForTransactionWithResult(txId, /* { checkSuccess: true } */ { timeoutSecs: 1, checkSuccess: true }) as Transaction_UserTransaction;
-        const payload = tx?.payload as TransactionPayload_EntryFunctionPayload;
+        const tx = await client.waitForTransactionWithResult(txId, /* { checkSuccess: true } */ { timeoutSecs: 1, checkSuccess: true }) as any;
+        const payload = tx?.payload as any;
 
         if (!tx.success) {
             throw new Error(tx?.vm_status ?? "Unknown Aptos error");
@@ -133,7 +133,7 @@ export default class AptosConfig extends BaseWebCurrency {
             estimate_max_gas_amount: true,
         };
 
-        const simulationResult = await client.client.request.request<UserTransaction[]>({
+        const simulationResult = await client.client.request.request<any[]>({
             url: "/transactions/simulate",
             query: queryParams,
             method: "POST",

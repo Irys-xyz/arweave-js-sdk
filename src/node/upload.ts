@@ -7,6 +7,7 @@ import * as p from "path";
 import mime from "mime-types";
 import inquirer from "inquirer";
 import { Readable } from "stream";
+//@ts-ignore
 import * as csv from "csv";
 import { DataItem } from "arbundles";
 

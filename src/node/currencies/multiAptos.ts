@@ -3,7 +3,7 @@ import BigNumber from "bignumber.js";
 import { CurrencyConfig } from "../../common/types";
 import Aptos from "./aptos";
 import { Signer, MultiSignatureAptosSigner } from "arbundles/src/signing";
-import { UserTransaction } from "aptos/src/generated";
+// import { UserTransaction } from "aptos/src/generated";
 // import Utils from "../../common/utils";
 
 
@@ -87,7 +87,7 @@ export default class MultiSignatureAptos extends Aptos {
             estimate_max_gas_amount: true,
         };
 
-        const simulationResult = await client.client.request.request<UserTransaction[]>({
+        const simulationResult = await client.client.request.request<any[]>({
             url: "/transactions/simulate",
             query: queryParams,
             method: "POST",

@@ -4,6 +4,7 @@ import { CurrencyConfig, Tx } from "../../common/types";
 import BaseWebCurrency from "../currency";
 import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
+//@ts-ignore
 import { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
 

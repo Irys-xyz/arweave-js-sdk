@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 import { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import * as SHA3 from "js-sha3";
-import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
+// import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
 
 export default class AptosConfig extends BaseNodeCurrency {
 
@@ -35,8 +35,8 @@ export default class AptosConfig extends BaseNodeCurrency {
     async getTx(txId: string): Promise<Tx> {
 
         const client = await this.getProvider();
-        const tx = await client.waitForTransactionWithResult(txId/* , { checkSuccess: true } */) as Transaction_UserTransaction;
-        const payload = tx?.payload as TransactionPayload_EntryFunctionPayload;
+        const tx = await client.waitForTransactionWithResult(txId/* , { checkSuccess: true } */) as any;
+        const payload = tx?.payload as any
 
         if (!tx.success) {
             throw new Error(tx?.vm_status ?? "Unknown Aptos error");
@@ -115,7 +115,7 @@ export default class AptosConfig extends BaseNodeCurrency {
             estimate_max_gas_amount: true,
         };
 
-        const simulationResult = await client.client.request.request<UserTransaction[]>({
+        const simulationResult = await client.client.request.request<any[]>({
             url: "/transactions/simulate",
             query: queryParams,
             method: "POST",
