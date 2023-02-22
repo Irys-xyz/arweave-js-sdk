@@ -1,7 +1,5 @@
-import { Currency } from "../common/types";
+import type { Currency } from "../common/types";
 
 export interface NodeCurrency extends Currency {
-    getPublicKey(): string | Buffer
+  getPublicKey(): string | Buffer;
 }
-
-

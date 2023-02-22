@@ -1,7 +1,11 @@
 {
-  "singleQuote": true,
+  "singleQuote": false,
+  "useTabs": false,
+  "tabWidth": 2,
+  "parser": "typescript",
+  "endOfLine": "lf",
   "trailingComma": "all",
-  "": "",
+  "printWidth": 150,
   "overrides": [
     {
       "files": "*.ts",
