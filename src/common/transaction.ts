@@ -1,8 +1,8 @@
-import { createData, DataItem, DataItemCreateOptions } from "arbundles";
+import { createData, DataItem } from "arbundles";
 import { Signer } from "arbundles/src/signing";
 import Bundlr from "./bundlr";
 import Crypto from "crypto";
-import { UploadOptions, UploadResponse } from "./types";
+import { BundlrTransactionCreateOptions, UploadOptions, UploadResponse } from "./types";
 
 /**
  * Extended DataItem that allows for seamless bundlr operations, such as signing and uploading.
@@ -12,7 +12,7 @@ export default class BundlrTransaction extends DataItem {
     private bundlr: Bundlr;
     private signer: Signer;
 
-    constructor(data: string | Uint8Array, bundlr: Bundlr, opts?: DataItemCreateOptions & { dataIsRawTransaction?: boolean; }) {
+    constructor(data: string | Uint8Array, bundlr: Bundlr, opts?: BundlrTransactionCreateOptions) {
         super(opts?.dataIsRawTransaction === true ? Buffer.from(data) : createData(data, bundlr.currencyConfig.getSigner(), {
             ...opts, anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32)
         }).getRaw());

@@ -123,3 +123,5 @@ export interface UploadOptions {
 // export enum manifestVersion {
 //     "0.1.0" = "0.1.0"
 // }
+
+export type BundlrTransactionCreateOptions = DataItemCreateOptions & { dataIsRawTransaction?: boolean; };

@@ -6,7 +6,7 @@ import { DataItemCreateOptions } from "arbundles";
 import BundlrTransaction from "./transaction";
 import Api from "./api";
 import BigNumber from "bignumber.js";
-import { CreateAndUploadOptions, Currency, FundResponse, UploadResponse, WithdrawalResponse } from "./types";
+import { BundlrTransactionCreateOptions, CreateAndUploadOptions, Currency, FundResponse, UploadReceipt, UploadResponse, WithdrawalResponse } from "./types";
 import { Signer } from "arbundles/src/signing";
 import { Readable } from "stream";
 
@@ -65,7 +65,7 @@ export default abstract class Bundlr {
         return this.utils.getPrice(this.currency, bytes);
     }
 
-    public async verifyReceipt(receipt: Required<UploadResponse>) {
+    public async verifyReceipt(receipt: Required<UploadResponse>): Promise<boolean> {
         return Utils.verifyReceipt(receipt);
     }
 
@@ -75,7 +75,7 @@ export default abstract class Bundlr {
      * @param opts - dataItemCreateOptions
      * @returns - a new BundlrTransaction instance
      */
-    createTransaction(data: string | Buffer, opts?: DataItemCreateOptions): BundlrTransaction {
+    createTransaction(data: string | Buffer, opts?: BundlrTransactionCreateOptions): BundlrTransaction {
         return new BundlrTransaction(data, this, opts);
     }
 
@@ -86,8 +86,12 @@ export default abstract class Bundlr {
         return this.currencyConfig.getSigner();
     }
 
-    async upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+    async upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse | UploadReceipt> {
         return this.uploader.uploadData(data, opts);
+    }
+
+    async uploadWithReceipt(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<UploadReceipt> {
+        return this.uploader.uploadData(data, { ...opts, upload: { getReceiptSignature: true } }) as Promise<UploadReceipt>;
     }
 
     async ready(): Promise<void> {
