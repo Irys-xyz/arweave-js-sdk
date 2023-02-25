@@ -4,13 +4,12 @@ import type { CreateAndUploadOptions, Currency, UploadResponse } from "../common
 import Uploader from "../common/upload";
 import type Api from "../common/api";
 import type Utils from "../common/utils";
-import * as p from "path";
 import mime from "mime-types";
 import inquirer from "inquirer";
 import { Readable } from "stream";
-
-import * as csv from "csv";
 import { DataItem } from "arbundles";
+import { basename, join, relative, resolve, sep } from "path";
+import { parse, stringify } from "csv";
 
 export const checkPath = async (path: PathLike): Promise<boolean> => {
   return promises
@@ -48,7 +47,7 @@ export default class NodeUploader extends Uploader {
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   private async *walk(dir: string) {
     for await (const d of await promises.opendir(dir)) {
-      const entry = p.join(dir, d.name);
+      const entry = join(dir, d.name);
       if (d.isDirectory()) yield* await this.walk(entry);
       else if (d.isFile()) yield entry;
     }
@@ -81,7 +80,7 @@ export default class NodeUploader extends Uploader {
       logFunction?: (log: string) => Promise<void>;
     } = { batchSize: 10, keepDeleted: true },
   ): Promise<UploadResponse | undefined> {
-    path = p.resolve(path);
+    path = resolve(path);
     const alreadyProcessed = new Map();
 
     if (!(await checkPath(path))) {
@@ -101,7 +100,7 @@ export default class NodeUploader extends Uploader {
     }
 
     // manifest with folder name placed in parent directory of said folder - keeps contamination down.
-    const manifestPath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.csv`);
+    const manifestPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.csv`);
     const csvHeader = "path,id\n";
     if (await checkPath(manifestPath)) {
       const rstrm = createReadStream(manifestPath);
@@ -119,7 +118,7 @@ export default class NodeUploader extends Uploader {
           res(d);
         });
       });
-      const csvStream = Readable.from(rstrm.pipe(csv.parse({ delimiter: ",", columns: true })));
+      const csvStream = Readable.from(rstrm.pipe(parse({ delimiter: ",", columns: true })));
 
       for await (const record of csvStream) {
         record as { path: string; id: string };
@@ -135,7 +134,7 @@ export default class NodeUploader extends Uploader {
     let total = 0;
     let i = 0;
     for await (const f of this.walk(path)) {
-      const relPath = p.relative(path, f);
+      const relPath = relative(path, f);
       if (!alreadyProcessed.has(relPath)) {
         files.push(f);
         total += (await promises.stat(f)).size;
@@ -155,7 +154,7 @@ export default class NodeUploader extends Uploader {
     if (files.length == 0 && alreadyProcessed.size === 0) {
       logFunction("No items to process");
       // return the txID of the upload
-      const idpath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`);
+      const idpath = join(join(path, `${sep}..`), `${basename(path)}-id.txt`);
       if (await checkPath(idpath)) {
         return JSON.parse(await promises.readFile(idpath, "utf-8")) as UploadResponse;
       }
@@ -178,7 +177,7 @@ export default class NodeUploader extends Uploader {
       }
     }
 
-    const stringifier = csv.stringify({
+    const stringifier = stringify({
       header: false,
       columns: {
         path: "path",
@@ -190,7 +189,7 @@ export default class NodeUploader extends Uploader {
 
     const processor = async (data): Promise<void> => {
       if (data?.res?.id) {
-        stringifier.write([p.relative(path, data.item), data.res.id]);
+        stringifier.write([relative(path, data.item), data.res.id]);
       }
     };
 
@@ -198,11 +197,11 @@ export default class NodeUploader extends Uploader {
 
     if (processingResults.errors.length > 0) {
       await logFunction(`${processingResults.errors.length} Errors detected, skipping manifest upload...`);
-      const ewstrm = createWriteStream(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-errors.txt`), { flags: "a+" });
+      const ewstrm = createWriteStream(join(join(path, `${sep}..`), `${basename(path)}-errors.txt`), { flags: "a+" });
       ewstrm.write(`Errors from upload at ${new Date().toString()}:\n`);
       processingResults.errors.forEach((e) => ewstrm.write(`${e?.stack ?? JSON.stringify(e)}\n`));
       await new Promise((res) => ewstrm.close(res));
-      throw new Error(`${processingResults.errors.length} Errors detected - check ${p.basename(path)}-errors.txt for more information.`);
+      throw new Error(`${processingResults.errors.length} Errors detected - check ${basename(path)}-errors.txt for more information.`);
     }
     await logFunction(`Finished processing ${files.length} Items`);
 
@@ -221,7 +220,7 @@ export default class NodeUploader extends Uploader {
     });
     await logFunction("Done!");
     if (mres?.id) {
-      await promises.writeFile(p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-id.txt`), JSON.stringify(mres));
+      await promises.writeFile(join(join(path, `${sep}..`), `${basename(path)}-id.txt`), JSON.stringify(mres));
     }
     return mres;
   }
@@ -260,9 +259,9 @@ export default class NodeUploader extends Uploader {
    * @returns the path to the generated manifest
    */
   private async generateManifestFromCsv(path: string, nowRemoved?: Map<string, true>, indexFile?: string): Promise<string> {
-    const csvstrm = csv.parse({ delimiter: ",", columns: true });
-    const csvPath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.csv`);
-    const manifestPath = p.join(p.join(path, `${p.sep}..`), `${p.basename(path)}-manifest.json`);
+    const csvstrm = parse({ delimiter: ",", columns: true });
+    const csvPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.csv`);
+    const manifestPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.json`);
     const wstrm = createWriteStream(manifestPath, { flags: "w+" });
     createReadStream(csvPath).pipe(csvstrm); // pipe csv
     /* eslint-disable quotes */
