@@ -1,4 +1,5 @@
 import AsyncRetry from "async-retry";
+import type { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
 import type { FundResponse } from "./types";
 import Utils from "./utils";
@@ -46,11 +47,24 @@ export default class Fund {
 
     Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
     let confirmError = await this.utils.confirmationPoll(tx.txId);
+    const bres = await this.submitTransaction(tx.txId).catch((e) => {
+      confirmError = e;
+      return undefined;
+    });
+    if (!bres) {
+      throw new Error(
+        `failed to post funding tx - ${tx.txId} - keep this id! \n ${confirmError ? ` - ${confirmError?.message ?? confirmError}` : ""}`,
+      );
+    }
 
-    const bres = await AsyncRetry(
+    return { reward: BigNumber.isBigNumber(fee) ? fee.toString() : JSON.stringify(fee), target: to, quantity: _amount.toString(), id: tx.txId };
+  }
+
+  public async submitTransaction(transactionId: string): Promise<AxiosResponse> {
+    return await AsyncRetry(
       async () => {
-        const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: tx.txId });
-        Utils.checkAndThrow(bres, `Posting transaction ${tx.txId} information to the bundler`, [202]);
+        const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: transactionId });
+        Utils.checkAndThrow(bres, `Posting transaction ${transactionId} information to the bundler`, [202]);
         return bres;
       },
       {
@@ -59,17 +73,6 @@ export default class Fund {
         minTimeout: 100,
         randomize: true,
       },
-    ).catch((e) => {
-      confirmError = e;
-      return undefined;
-    });
-
-    if (!bres) {
-      throw new Error(
-        `failed to post funding tx - ${tx.txId} - keep this id! \n ${confirmError ? ` - ${confirmError?.message ?? confirmError}` : ""}`,
-      );
-    }
-
-    return { reward: BigNumber.isBigNumber(fee) ? fee.toString() : JSON.stringify(fee), target: to, quantity: _amount.toString(), id: tx.txId };
+    );
   }
 }
