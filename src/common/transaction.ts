@@ -2,7 +2,7 @@ import { createData, DataItem } from "arbundles";
 import type { Signer } from "arbundles/src/signing";
 import type Bundlr from "./bundlr";
 import Crypto from "crypto";
-import type { BundlrTransactionCreateOptions, UploadOptions, UploadResponse } from "./types";
+import type { BundlrTransactionCreateOptions, UploadOptions, UploadReceipt, UploadResponse } from "./types";
 
 /**
  * Extended DataItem that allows for seamless bundlr operations, such as signing and uploading.
@@ -33,7 +33,10 @@ export default class BundlrTransaction extends DataItem {
     return this.getRaw().length;
   }
 
-  async upload(opts?: UploadOptions): Promise<UploadResponse> {
+  // parent type union not strictly required, but might be if this type gets extended
+  upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
+  upload(opts?: UploadOptions): Promise<UploadResponse>;
+  public async upload(opts?: UploadOptions): Promise<UploadResponse> {
     return (await this.bundlr.uploader.uploadTransaction(this, opts)).data;
   }
 
