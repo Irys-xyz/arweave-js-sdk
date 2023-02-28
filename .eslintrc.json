@@ -2,12 +2,14 @@
   "env": {
     "browser": false,
     "es6": true,
-    "node": true
+    "node": true,
+    "jest": true
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "tsconfig.json",
-    "sourceType": "module"
+    "sourceType": "module",
+    "createDefaultProgram": true
   },
   "overrides": [
     {
@@ -19,10 +21,14 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-    "prettier"
+    "prettier",
+    "plugin:prettier/recommended",
+    "plugin:@typescript-eslint/strict"
   ],
   "rules": {
-    "quotes": ["error", "double"],
+    "@typescript-eslint/no-unnecessary-condition": "off",
+    "@typescript-eslint/consistent-type-imports": ["error", {"prefer": "type-imports", "fixStyle": "separate-type-imports"}],
+    // "quotes": ["error", "double"],
     "object-curly-spacing": ["error", "always"],
     "@typescript-eslint/explicit-function-return-type": "error",
     "no-var": "error",
@@ -30,15 +36,30 @@
       "error",
       {"blankLine": "always", "prev": "block-like","next": "function"}
     ],
+    "no-empty": "warn",
+    "@typescript-eslint/no-misused-promises": ["error",  {
+      "checksVoidReturn": {
+        "arguments": false
+      }
+    }],
+    "semi": ["error","always"],
     "space-infix-ops": "error",
     "spaced-comment":"error",
     "arrow-spacing":"error",
+    "eqeqeq": ["warn", "always"],
+    "@typescript-eslint/no-unused-vars": ["error",{"argsIgnorePattern": "^_"}],
     "@typescript-eslint/naming-convention": [
-      "error", 
+      "warn", 
+      {"selector": "enum", "format":["PascalCase"]},
+      {"selector": "enumMember", "format":["UPPER_CASE"]},
       {"selector": "class","format":["PascalCase"]},
-      {"selector": "typeLike","format":["PascalCase"]},
+      {"selector": "interface","format":["PascalCase"]},
+      {"selector": "typeAlias","format":["PascalCase"]},
       {"selector": "classProperty","format":["camelCase"], "leadingUnderscore":"allow"},
       {"selector": "objectLiteralProperty", "format":null},
+      {"selector": "typeLike", "format":["PascalCase", "camelCase"]},
+      {"selector": "variable", "modifiers": [ "const"], "format":["UPPER_CASE","camelCase"] , "filter": {"regex":"^_.*","match":false}},
+      {"selector": "variable", "modifiers": ["exported", "const"], "format":["UPPER_CASE", "camelCase"]},
       {"selector": "default","format": ["strictCamelCase"], "leadingUnderscore": "allow" } //this must be the last rule
     ]
   }
