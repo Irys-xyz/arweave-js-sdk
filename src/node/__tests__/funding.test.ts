@@ -1,6 +1,5 @@
 import Bundlr from "../bundlr";
-import clientKeys from "./../../../../testKeys.json";
-
+import {clientKeys} from "../../keys";
 
 jest.setTimeout(40000);
 // for each currency to test, include here the precalculated public key

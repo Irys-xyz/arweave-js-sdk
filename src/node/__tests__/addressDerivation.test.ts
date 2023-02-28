@@ -1,5 +1,5 @@
 import Bundlr from "../bundlr";
-import keys from "../../../../keys"; // change this to your keyfile
+import keys from "../../keys"; // change this to your keyfile
 
 const BUNDLR_DEVNET_URL = "https://devnet.bundlr.network/";
 
@@ -14,6 +14,8 @@ const publicKeys = {
     "near": keys.near.address,
     "aptos": keys.aptos.address
 };
+
+
 
 const hexEncodedCurrencies = ["ethereum", "aptos"];
 

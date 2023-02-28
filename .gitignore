@@ -10,8 +10,10 @@ yarn.lock
 yarn-error.log
 .idea
 solwallet.json
+/coverage
 a.txt
 testFolder
+keys.ts
 testFolder-id.txt
 testFolder-manifest.json
 testFolder-manifest.csv
