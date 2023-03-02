@@ -12,6 +12,7 @@ import type {
   Currency,
   FundResponse,
   UploadReceipt,
+  UploadReceiptData,
   UploadResponse,
   WithdrawalResponse,
 } from "./types";
@@ -76,7 +77,7 @@ export default abstract class Bundlr {
     return this.utils.getPrice(this.currency, bytes);
   }
 
-  public async verifyReceipt(receipt: Required<UploadResponse>): Promise<boolean> {
+  public async verifyReceipt(receipt: UploadReceiptData): Promise<boolean> {
     return Utils.verifyReceipt(receipt);
   }
 

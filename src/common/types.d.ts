@@ -105,6 +105,7 @@ export interface UploadResponse {
 }
 
 export type UploadReceipt = Required<UploadResponse>;
+export type UploadReceiptData = Omit<UploadReceipt, "verify">;
 
 export interface FundResponse {
   reward: string;
