@@ -1,17 +1,17 @@
 import type { Signer } from "arbundles/src/signing";
 import BigNumber from "bignumber.js";
-import * as web3 from "@solana/web3.js";
 import { signers } from "arbundles";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import retry from "async-retry";
+import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
 
 const solanaSigner = signers.SolanaSigner;
 
 export default class SolanaConfig extends BaseNodeCurrency {
-  protected providerInstance!: web3.Connection;
+  protected providerInstance!: Connection;
   minConfirm = 1;
 
   constructor(config: CurrencyConfig) {
@@ -19,9 +19,9 @@ export default class SolanaConfig extends BaseNodeCurrency {
     this.base = ["lamports", 1e9];
   }
 
-  private async getProvider(): Promise<web3.Connection> {
+  private async getProvider(): Promise<Connection> {
     if (!this.providerInstance) {
-      this.providerInstance = new web3.Connection(this.providerUrl, {
+      this.providerInstance = new Connection(this.providerUrl, {
         confirmTransactionInitialTimeout: 60_000,
         commitment: "confirmed",
       });
@@ -29,12 +29,12 @@ export default class SolanaConfig extends BaseNodeCurrency {
     return this.providerInstance;
   }
 
-  private getKeyPair(): web3.Keypair {
+  private getKeyPair(): Keypair {
     let key = this.wallet;
     if (typeof key !== "string") {
       key = bs58.encode(Buffer.from(key));
     }
-    return web3.Keypair.fromSecretKey(bs58.decode(key));
+    return Keypair.fromSecretKey(bs58.decode(key));
   }
 
   async getTx(txId: string): Promise<Tx> {
@@ -93,7 +93,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
   async sendTx(data: any): Promise<string | undefined> {
     const connection = await this.getProvider();
     try {
-      return await web3.sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: "confirmed" });
+      return await sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: "confirmed" });
     } catch (e: any) {
       if (e.message.includes("30.")) {
         const txId = (e.message as string).match(/[A-Za-z0-9]{87,88}/g);
@@ -121,10 +121,10 @@ export default class SolanaConfig extends BaseNodeCurrency {
 
     const keys = this.getKeyPair();
 
-    const hash = await retry(
+    const blockHashInfo = await retry(
       async (bail) => {
         try {
-          return (await (await this.getProvider()).getRecentBlockhash()).blockhash;
+          return await (await this.getProvider()).getLatestBlockhash();
         } catch (e: any) {
           if (e.message?.includes("blockhash")) throw e;
           else bail(e);
@@ -134,15 +134,16 @@ export default class SolanaConfig extends BaseNodeCurrency {
       { retries: 3, minTimeout: 1000 },
     );
 
-    const transaction = new web3.Transaction({
-      recentBlockhash: hash,
+    const transaction = new Transaction({
+      blockhash: blockHashInfo.blockhash,
       feePayer: keys.publicKey,
+      lastValidBlockHeight: blockHashInfo.lastValidBlockHeight,
     });
 
     transaction.add(
-      web3.SystemProgram.transfer({
+      SystemProgram.transfer({
         fromPubkey: keys.publicKey,
-        toPubkey: new web3.PublicKey(to),
+        toPubkey: new PublicKey(to),
         lamports: +new BigNumber(amount).toNumber(),
       }),
     );

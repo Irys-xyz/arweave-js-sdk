@@ -131,6 +131,7 @@ export class ChunkingUploader extends EventEmitter {
     if (this.chunkSize < +min || this.chunkSize > +max) {
       throw new Error(`Chunk size out of allowed range: ${min} - ${max}`);
     }
+
     let totalUploaded = 0;
     const promiseFactory = (d: Buffer, o: number, c: number): Promise<{ o: number; d: AxiosResponse<UploadResponse> }> => {
       return new Promise((r) => {
@@ -196,15 +197,17 @@ export class ChunkingUploader extends EventEmitter {
     };
 
     let tx!: DataItem;
-
+    let txHeaderLength!: number;
     // doesn't matter if we randomise ID (anchor) between resumes, as the tx header/signing info is always uploaded last.
     if (!isTransaction) {
       tx = createData("", this.currencyConfig.getSigner(), {
         ...transactionOpts,
         anchor: transactionOpts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32),
       });
-      stream.write(tx.getRaw());
-      totalUploaded -= tx.getRaw().length;
+      const raw = tx.getRaw();
+      txHeaderLength = raw.length;
+      stream.write(raw);
+      totalUploaded -= raw.length;
     }
 
     if (Buffer.isBuffer(dataStream)) {
@@ -215,17 +218,18 @@ export class ChunkingUploader extends EventEmitter {
     }
 
     let offset = 0;
-    let processing = [] as Promise<any>[];
+    const processing = new Set<Promise<any>>();
     let chunkID = 0;
     let heldChunk!: Buffer;
     let teeStream!: PassThrough;
-    let deephash!: Promise<any>;
+    let deephash!: Promise<Uint8Array>;
 
     if (!isTransaction) {
       teeStream = new PassThrough();
 
       const txLength = tx.getRaw().length;
-
+      if (this.chunkSize < txHeaderLength)
+        throw new Error(`Configured chunk size is too small for transaction header! (${this.chunkSize} < ${txHeaderLength})`);
       heldChunk = await readBytes(this.chunkSize);
       chunkID++;
       offset += heldChunk.length;
@@ -265,15 +269,20 @@ export class ChunkingUploader extends EventEmitter {
           continue;
         }
       }
+
       const chunk = await readBytes(this.chunkSize);
+
       if (!isTransaction) teeStream.write(chunk);
 
-      if (processing.length == this.batchSize) {
-        await Promise.all(processing);
-        processing = [];
+      if (processing.size >= this.batchSize) {
+        // get & then remove resolved promise from processing set
+        const [p] = await Promise.race(processing);
+        processing.delete(p);
       }
 
-      processing.push(promiseFactory(chunk, offset, ++chunkID));
+      // self-referencing promise
+      const promise = (async (): Promise<any> => await promiseFactory(chunk, offset, ++chunkID))().then((value) => [promise, value]);
+      processing.add(promise);
 
       offset += chunk.length;
     }
@@ -293,10 +302,12 @@ export class ChunkingUploader extends EventEmitter {
 
     if (this?.uploadOptions?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
 
+    // potential improvement: write chunks into a file at offsets, instead of individual chunks + doing a concatenating copy
     const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
       headers: { "Content-Type": "application/octet-stream", ...headers },
       timeout: this.api.config?.timeout ?? 40_000 * 10, // server side reconstruction can take a while
     });
+
     if (finishUpload.status === 402) {
       throw new Error("Not enough funds to send data");
     }
