@@ -1,5 +1,5 @@
 
-import keys from "../../keys";
+import { clientKeys } from "../../../tests/utils";
 import Bundlr from "../bundlr";
 
 const transactionIds = {
@@ -15,7 +15,7 @@ describe("bundlr.currencyConfig.getTx", () => {
     describe.each(currencies)("given we use %s", (keyName) => {
         let bundlr: Bundlr;
         beforeAll(async () => {
-            const { key, providerUrl } = keys[keyName];
+            const { key, providerUrl } = clientKeys[keyName];
             bundlr = new Bundlr(BUNDLR_URL, keyName, key, { providerUrl });
             await bundlr.ready();
         });

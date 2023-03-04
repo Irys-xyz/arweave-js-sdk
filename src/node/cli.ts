@@ -9,17 +9,15 @@ import BigNumber from "bignumber.js";
 import { checkPath } from "./upload";
 import type NodeBundlr from "./bundlr";
 
-// check if script
-const isScript = require.main === module;
 
-if (isScript) {
 
-  const program = new Command();
 
-  let balpad, walpad; // padding state variables
+export const program = new Command();
+
+let balpad, walpad; // padding state variables
 
   // Define the CLI flags for the program
-  program
+program
     .option("-h, --host <string>", "Bundlr node hostname/URL (eg http://node1.bundlr.network)")
     .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "default")
     .option("-c, --currency <string>", "The currency to use")
@@ -152,8 +150,8 @@ if (isScript) {
     .description("Funds your account with the specified amount of atomic units")
     .argument("<amount>", "Amount to add in atomic units")
     .action(async (amount: string) => {
-      if (isNaN(+amount)) throw new Error("Amount must be an integer");
       try {
+        if (isNaN(+amount)) throw new Error("Amount must be an integer");
         const bundlr = await init(options, "fund");
         const confirmed = await confirmation(
           `Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(amount).toFixed()} ${bundlr.currency}) to ${bundlr.api.config.host
@@ -176,8 +174,8 @@ if (isScript) {
     .description("Check how much of a specific currency is required for an upload of <amount> bytes")
     .argument("<bytes>", "The number of bytes to get the price for")
     .action(async (bytes: string) => {
-      if (isNaN(+bytes)) throw new Error("Amount must be an integer");
       try {
+        if (isNaN(+bytes)) throw new Error("Amount must be an integer");
         const bundlr = await init(options, "price");
         await bundlr.utils.getBundlerAddress(options.currency); // will throw if the bundler doesn't support the currency
         const cost = await bundlr.utils.getPrice(options.currency, +bytes);
@@ -280,6 +278,8 @@ if (isScript) {
 
   const options = program.opts();
 
+  const isScript = require.main === module;
+  if (isScript) {
   // to debug CLI: log process argv, load into var, and run in debugger.
 
   // console.log(JSON.stringify(process.argv));
@@ -307,9 +307,8 @@ if (isScript) {
   }
   // pass the CLI our argv
   program.parse(argv);
+
 }
-
-
 
 export const exportForTesting = {
   path: __filename
