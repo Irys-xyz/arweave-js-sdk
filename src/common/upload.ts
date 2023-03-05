@@ -31,6 +31,13 @@ export default class Uploader {
    * Uploads a given transaction to the bundler
    * @param transaction
    */
+
+  uploadTransaction(
+    transaction: DataItem | Readable | Buffer,
+    opts: UploadOptions & { getReceiptSignature: true },
+  ): Promise<AxiosResponse<UploadReceipt>>;
+  uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>>;
+
   public async uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>> {
     let res: AxiosResponse<UploadResponse>;
     const isDataItem = DataItem.isDataItem(transaction);

@@ -33,10 +33,15 @@ export default class BundlrTransaction extends DataItem {
     return this.getRaw().length;
   }
 
+
+  async uploadWithReceipt(opts?: UploadOptions): Promise<UploadReceipt> {
+    return (await this.bundlr.uploader.uploadTransaction(this, { ...opts, getReceiptSignature: true })).data;
+  }
+
   // parent type union not strictly required, but might be if this type gets extended
   upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
   upload(opts?: UploadOptions): Promise<UploadResponse>;
-  public async upload(opts?: UploadOptions): Promise<UploadResponse> {
+  async upload(opts?: UploadOptions): Promise<UploadResponse> {
     return (await this.bundlr.uploader.uploadTransaction(this, opts)).data;
   }
 
