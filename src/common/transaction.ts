@@ -33,6 +33,7 @@ export default class BundlrTransaction extends DataItem {
     return this.getRaw().length;
   }
 
+
   async uploadWithReceipt(opts?: UploadOptions): Promise<UploadReceipt> {
     return (await this.bundlr.uploader.uploadTransaction(this, { ...opts, getReceiptSignature: true })).data;
   }
