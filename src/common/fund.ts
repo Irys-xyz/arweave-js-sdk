@@ -75,4 +75,8 @@ export default class Fund {
       },
     );
   }
+
+  public async submitFundTransaction(transactionId: string): Promise<AxiosResponse> {
+    return this.submitTransaction(transactionId);
+  }
 }
