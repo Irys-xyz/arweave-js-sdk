@@ -60,7 +60,7 @@ export default class Fund {
     return { reward: BigNumber.isBigNumber(fee) ? fee.toString() : JSON.stringify(fee), target: to, quantity: _amount.toString(), id: tx.txId };
   }
 
-  public async submitTransaction(transactionId: string): Promise<AxiosResponse> {
+  private async submitTransaction(transactionId: string): Promise<AxiosResponse> {
     return await AsyncRetry(
       async () => {
         const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: transactionId });
