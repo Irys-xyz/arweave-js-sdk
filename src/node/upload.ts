@@ -72,14 +72,14 @@ export default class NodeUploader extends Uploader {
       indexFile,
       interactivePreflight,
       logFunction,
-      userTags,
+      manifestTags,
     }: {
       batchSize: number;
       keepDeleted: boolean;
       indexFile?: string;
       interactivePreflight?: boolean;
       logFunction?: (log: string) => Promise<void>;
-      userTags?: { name: string, value: string}[];
+      manifestTags?: { name: string, value: string}[];
     } = { batchSize: 10, keepDeleted: true },
   ): Promise<UploadResponse | undefined> {
     path = resolve(path);
@@ -217,7 +217,7 @@ export default class NodeUploader extends Uploader {
       { name: "Type", value: "manifest" },
       { name: "Content-Type", value: "application/x.arweave-manifest+json" },
     ];
-    userTags?.forEach(t => tags.push(t))
+    manifestTags?.forEach(t => tags.push(t))
     const mres = await this.uploadData(createReadStream(jsonManifestPath), { tags }).catch((e) => {
       throw new Error(`Failed to upload manifest: ${e.message}`);
     });
