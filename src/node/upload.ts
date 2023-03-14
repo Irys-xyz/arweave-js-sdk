@@ -216,8 +216,8 @@ export default class NodeUploader extends Uploader {
     const tags = [
       { name: "Type", value: "manifest" },
       { name: "Content-Type", value: "application/x.arweave-manifest+json" },
+      ...manifestTags || [] // Added the || [] because I was getting a type error
     ];
-    manifestTags?.forEach(t => tags.push(t))
     const mres = await this.uploadData(createReadStream(jsonManifestPath), { tags }).catch((e) => {
       throw new Error(`Failed to upload manifest: ${e.message}`);
     });
