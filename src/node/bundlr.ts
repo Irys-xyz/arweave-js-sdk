@@ -73,15 +73,17 @@ export default class NodeBundlr extends Bundlr {
       indexFile,
       interactivePreflight,
       logFunction,
+      userTags,
     }: {
       batchSize?: number;
       keepDeleted?: boolean;
       indexFile?: string;
       interactivePreflight?: boolean;
       logFunction?: (log: string) => Promise<void>;
+      userTags?: { name: string, value: string }[]
     } = {},
   ): Promise<UploadResponse | undefined> {
-    return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction });
+    return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction, userTags });
   }
   public static async init(opts: {
     url: string;
