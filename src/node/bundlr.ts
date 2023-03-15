@@ -63,6 +63,7 @@ export default class NodeBundlr extends Bundlr {
    * @param interactivePreflight - whether to interactively prompt the user for confirmation of upload (CLI ONLY)
    * @param keepDeleted - Whether to keep previously uploaded (but now deleted) files in the manifest
    * @param logFunction - for handling logging from the uploader for UX
+   * @param manifestTags - For allowing the caller to pass tags that will be added to the manifest transaction.
    * @returns
    */
   public async uploadFolder(
@@ -80,7 +81,7 @@ export default class NodeBundlr extends Bundlr {
       indexFile?: string;
       interactivePreflight?: boolean;
       logFunction?: (log: string) => Promise<void>;
-      manifestTags?: { name: string, value: string }[]
+      manifestTags?: { name: string; value: string }[];
     } = {},
   ): Promise<UploadResponse | undefined> {
     return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction, manifestTags });
