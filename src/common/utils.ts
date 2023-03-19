@@ -85,12 +85,13 @@ export default class Utils {
    * @param txid
    * @returns
    */
-  public async confirmationPoll(txid: string): Promise<any> {
+  public async confirmationPoll(txid: string, seconds = 30): Promise<any> {
     if (this.currencyConfig.isSlow) {
       return;
     }
+    if (seconds < 0) seconds = 0;
     let lastError;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < seconds; i++) {
       await sleep(1000);
       if (
         await this.currencyConfig

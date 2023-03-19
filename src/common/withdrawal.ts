@@ -50,6 +50,15 @@ export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.
   }
 
   const res = await api.post("/account/withdraw", data);
-  Utils.checkAndThrow(res, "Withdrawing balance");
+
+  if (res.status === 202) {
+    // node has timed/erroed out confirming the withdrawal
+    const txId = res.data.tx_id;
+    const withdrawalConfirmed = await utils.confirmationPoll(txId);
+    if (!(withdrawalConfirmed === true))
+      throw new Error(`Unable to confirm withdrawal tx ${txId} ${withdrawalConfirmed ? withdrawalConfirmed?.toString() : ""}`);
+  } else {
+    Utils.checkAndThrow(res, "Withdrawing balance");
+  }
   return res.data;
 }
