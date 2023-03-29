@@ -19,7 +19,9 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": true,
-    "outDir": "build",
+    "outDir": "build/cjs",
+    "baseUrl": "./src",
+    "rootDir": "./src",
     "experimentalDecorators": true
   },
   "include": ["src/**/*"],

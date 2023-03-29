@@ -25,18 +25,17 @@ module.exports = {
         alias: {
             process: "process/browser",
             crypto: "crypto-browserify",
-            stream: "stream-browserify",
+            stream: "stream-browserify"
         },
         fallback: {
             "crypto": require.resolve("crypto-browserify"),
-            "assert": require.resolve("assert/"),
+            // "assert": require.resolve("assert/"),
             "stream": require.resolve("stream-browserify"),
             "process": require.resolve("process/browser"),
-            "util": require.resolve("util"),
+            // "util": require.resolve("util"),
             "events": require.resolve("events/"),
             "buffer": require.resolve('buffer/'),
-            "zlib": require.resolve("browserify-zlib"),
-            "path": require.resolve("path-browserify")
+            // "path": require.resolve("path-browserify")
         }
     },
     plugins: [
@@ -46,12 +45,12 @@ module.exports = {
         }),
         new DuplicatesPlugin({
             emitErrors: false,
-            verbose: false
+            verbose: true
         })
     ],
     output: {
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'build/web'),
+        path: path.resolve(__dirname, 'build'),
         libraryTarget: 'umd',
         library: 'Bundlr'
     },
