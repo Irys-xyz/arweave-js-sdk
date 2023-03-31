@@ -8,13 +8,11 @@
 
 // import MyAlgoConnect from "@randlabs/myalgo-connect";
 
-
 // export default class AlgorandConfig extends BaseWebCurrency {
 //     private signer: InjectedAlgorandSigner;
 
 //     protected apiURL? = "https://node.testnet.algoexplorerapi.io";
 //     protected indexerURL? = "https://algoindexer.testnet.algoexplorerapi.io";
-
 
 //     constructor(config: CurrencyConfig) {
 //         super(config);
@@ -46,16 +44,16 @@
 //     async sign(data: Uint8Array): Promise<Uint8Array> {
 //         const s = this.getSigner();
 //         const signed = await s.sign(data);
-//         return signed;    
+//         return signed;
 //     }
 
 //     getSigner(): Signer {
 //         if (!this.signer) {
 //             this.signer = new InjectedAlgorandSigner();
 //         }
-//         return this.signer    
+//         return this.signer
 //     }
-    
+
 //     async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
 //         return InjectedAlgorandSigner.verify(pub, data, signature)
 //     }
@@ -86,10 +84,10 @@
 //         const params = await response.data;
 //         console.log(params);
 //         const unsigned = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-//             from: this._address, 
-//             to: to, 
-//             amount: new BigNumber(amount).toNumber(), 
-//             note: undefined, 
+//             from: this._address,
+//             to: to,
+//             amount: new BigNumber(amount).toNumber(),
+//             note: undefined,
 //             suggestedParams: {
 //                 fee: params["fee"],
 //                 firstRound: params["last-round"],
@@ -103,7 +101,7 @@
 //         const s = this.getSigner();
 //         const signed = await s.sign(unsigned.toByte());
 
-//         return { tx: signed, txId: undefined }      
+//         return { tx: signed, txId: undefined }
 //     }
 
 //     public async getPublicKey(): Promise<string | Buffer> {
