@@ -122,7 +122,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
     const blockHashInfo = await retry(
       async (bail) => {
         try {
-          return await (await this.getProvider()).getLatestBlockhash();
+          return await (await this.getProvider()).getRecentBlockhash();
         } catch (e: any) {
           if (e.message?.includes("blockhash")) throw e;
           else bail(e);
@@ -132,11 +132,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
       { retries: 3, minTimeout: 1000 },
     );
 
-    const transaction = new Transaction({
-      blockhash: blockHashInfo.blockhash,
-      feePayer: keys.publicKey,
-      lastValidBlockHeight: blockHashInfo.lastValidBlockHeight,
-    });
+    const transaction = new Transaction({ recentBlockhash: blockHashInfo.blockhash, feePayer: keys.publicKey });
 
     transaction.add(
       SystemProgram.transfer({
