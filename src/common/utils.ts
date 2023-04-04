@@ -5,7 +5,8 @@ import type { AxiosResponse } from "axios";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
 import type Api from "./api";
-import type { Currency, UploadReceiptData } from "./types";
+import type { Currency, UploadReceipt, UploadReceiptData } from "./types";
+import AsyncRetry from "async-retry";
 BigNumber.set({ DECIMAL_PLACES: 50 });
 
 export const sleep = (ms): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -125,5 +126,55 @@ export default class Utils {
       Arweave.utils.stringToBuffer(timestamp.toString()),
     ]);
     return await Arweave.crypto.verify(pubKey, dh, base64url.toBuffer(signature));
+  }
+  public async getReceipt(txId: string): Promise<UploadReceipt> {
+    // get receipt information from GQL
+    const query = `query {
+      transactions(ids: ["${txId}"]) {
+        edges {
+          node {
+            receipt {
+              signature
+              timestamp
+              version
+              deadlineHeight
+            }
+          }
+        }
+      }
+    }`;
+
+    const queryRes = await AsyncRetry(async () => {
+      return await this.api.post(
+        "/graphql",
+        { query },
+        {
+          headers: { "content-type": "application/json" },
+          validateStatus: (s) => s === 200,
+        },
+      );
+    });
+
+    const receiptData: { version: string; timestamp: number; signature: string; deadlineHeight: number } =
+      queryRes?.data?.data?.transactions?.edges?.at(0)?.node?.receipt;
+    if (!receiptData) throw new Error(`Missing required receipt data from node for tx: ${txId}`);
+    // get public key from node
+    const pubKey = (await this.api.get("/public")).data;
+    const receipt = {
+      public: pubKey,
+      version: receiptData.version as "1.0.0",
+      id: txId,
+      timestamp: receiptData.timestamp,
+      validatorSignatures: [],
+      signature: receiptData.signature,
+      deadlineHeight: receiptData.deadlineHeight,
+      // use stub to conform to type
+      verify: async (): Promise<boolean> => {
+        return false;
+      },
+    };
+    // inject bound method
+    receipt.verify = Utils.verifyReceipt.bind({}, receipt as UploadReceipt);
+    return receipt;
   }
 }
