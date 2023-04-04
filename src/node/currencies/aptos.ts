@@ -7,8 +7,8 @@ import {
   TransactionBuilderEd25519,
   TxnBuilderTypes /* BCS, TxnBuilderTypes */,
 } from "aptos";
-import type { Signer } from "arbundles/src/signing";
-import { AptosSigner } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { AptosSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";

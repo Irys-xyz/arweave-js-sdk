@@ -1,5 +1,5 @@
 import type BigNumber from "bignumber.js";
-import type { Signer } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
 import type { FileDataItem } from "arbundles/file";
 import type { DataItemCreateOptions } from "arbundles";
 // common types shared between web and node versions

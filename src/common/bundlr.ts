@@ -16,7 +16,7 @@ import type {
   UploadResponse,
   WithdrawalResponse,
 } from "./types";
-import type { Signer } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
 import type { Readable } from "stream";
 
 export default abstract class Bundlr {

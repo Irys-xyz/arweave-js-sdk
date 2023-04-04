@@ -120,7 +120,7 @@ export default class NodeUploader extends Uploader {
           res(d);
         });
       });
-      const csvStream = Readable.from(rstrm.pipe(parse({ delimiter: ",", columns: true })));
+      const csvStream = Readable.from(rstrm.pipe(parse.default({ delimiter: ",", columns: true })));
 
       for await (const record of csvStream) {
         record as { path: string; id: string };
@@ -179,7 +179,7 @@ export default class NodeUploader extends Uploader {
       }
     }
 
-    const stringifier = stringify({
+    const stringifier = stringify.default({
       header: false,
       columns: {
         path: "path",
@@ -262,7 +262,7 @@ export default class NodeUploader extends Uploader {
    * @returns the path to the generated manifest
    */
   private async generateManifestFromCsv(path: string, nowRemoved?: Map<string, true>, indexFile?: string): Promise<string> {
-    const csvstrm = parse({ delimiter: ",", columns: true });
+    const csvstrm = parse.default({ delimiter: ",", columns: true });
     const csvPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.csv`);
     const manifestPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.json`);
     const wstrm = createWriteStream(manifestPath, { flags: "w+" });

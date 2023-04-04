@@ -1,5 +1,5 @@
 import { createData, DataItem } from "arbundles";
-import type { Signer } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
 import type Bundlr from "./bundlr";
 import Crypto from "crypto";
 import type { BundlrTransactionCreateOptions, UploadOptions, UploadReceipt, UploadResponse } from "./types";
@@ -32,7 +32,6 @@ export default class BundlrTransaction extends DataItem {
   get size(): number {
     return this.getRaw().length;
   }
-
 
   async uploadWithReceipt(opts?: UploadOptions): Promise<UploadReceipt> {
     return (await this.bundlr.uploader.uploadTransaction(this, { ...opts, getReceiptSignature: true })).data;

@@ -1,5 +1,5 @@
-import type { Signer } from "arbundles/src/signing";
-import { NearSigner } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { NearSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import type { providers, WalletConnection, Near } from "near-api-js";
@@ -12,9 +12,9 @@ import BaseWebCurrency from "../currency";
 export default class NearConfig extends BaseWebCurrency {
   // protected keyStore: KeyPair
   protected keyPair!: KeyPair;
-  protected wallet!: WalletConnection;
+  protected declare wallet: WalletConnection;
   protected near: Near;
-  protected providerInstance!: providers.Provider;
+  protected declare providerInstance: providers.Provider;
 
   constructor(config: CurrencyConfig) {
     super(config);

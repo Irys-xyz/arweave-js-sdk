@@ -1,5 +1,5 @@
-import type { Signer } from "arbundles/src/signing";
-import { AlgorandSigner } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { AlgorandSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";

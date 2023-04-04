@@ -1,17 +1,16 @@
-import keccak256 from "arbundles/src/signing/keccak256";
 import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet } from "ethers";
 import BigNumber from "bignumber.js";
-import { signers } from "arbundles";
-import type { Signer } from "arbundles/src/signing";
+import { EthereumSigner, keccak256 } from "arbundles";
+import type { Signer } from "arbundles";
 import type { JsonRpcProvider } from "@ethersproject/providers";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 
-const ethereumSigner = signers.EthereumSigner;
+const ethereumSigner = EthereumSigner;
 
 export default class EthereumConfig extends BaseNodeCurrency {
-  protected providerInstance!: JsonRpcProvider;
+  protected declare providerInstance: JsonRpcProvider;
 
   constructor(config: CurrencyConfig) {
     super(config);

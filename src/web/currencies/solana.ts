@@ -1,16 +1,17 @@
-import type { Signer } from "arbundles/src/signing";
-import { HexInjectedSolanaSigner } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { HexInjectedSolanaSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseWebCurrency from "../currency";
 import bs58 from "bs58";
+// @ts-expect-error only importing as type
 import type { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
 import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 
 export default class SolanaConfig extends BaseWebCurrency {
   private signer!: HexInjectedSolanaSigner;
-  protected wallet!: MessageSignerWalletAdapter;
+  protected declare wallet: MessageSignerWalletAdapter;
   minConfirm = 1;
 
   constructor(config: CurrencyConfig) {
@@ -104,7 +105,7 @@ export default class SolanaConfig extends BaseWebCurrency {
     const blockHashInfo = await retry(
       async (bail) => {
         try {
-          return await (await this.getProvider()).getLatestBlockhash();
+          return await (await this.getProvider()).getRecentBlockhash();
         } catch (e: any) {
           if (e.message?.includes("blockhash")) throw e;
           else bail(e);
@@ -114,11 +115,7 @@ export default class SolanaConfig extends BaseWebCurrency {
       { retries: 3, minTimeout: 1000 },
     );
 
-    const transaction = new Transaction({
-      blockhash: blockHashInfo.blockhash,
-      feePayer: pubkey,
-      lastValidBlockHeight: blockHashInfo.lastValidBlockHeight,
-    });
+    const transaction = new Transaction({ recentBlockhash: blockHashInfo.blockhash, feePayer: pubkey });
 
     transaction.add(
       SystemProgram.transfer({

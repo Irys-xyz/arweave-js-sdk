@@ -1,4 +1,4 @@
-// import { InjectedAlgorandSigner, Signer } from "arbundles/src/signing";
+// import { InjectedAlgorandSigner, Signer } from "arbundles";
 // import BigNumber from "bignumber.js";
 // import { CurrencyConfig, Tx } from "../../common/types"
 // import BaseWebCurrency from "../currency"

@@ -1,6 +1,6 @@
-import type { Signer } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { SolanaSigner } from "arbundles";
 import BigNumber from "bignumber.js";
-import { signers } from "arbundles";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import type { CurrencyConfig, Tx } from "../../common/types";
@@ -8,10 +8,8 @@ import BaseNodeCurrency from "../currency";
 import retry from "async-retry";
 import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
 
-const solanaSigner = signers.SolanaSigner;
-
 export default class SolanaConfig extends BaseNodeCurrency {
-  protected providerInstance!: Connection;
+  protected declare providerInstance: Connection;
   minConfirm = 1;
 
   constructor(config: CurrencyConfig) {
@@ -69,11 +67,11 @@ export default class SolanaConfig extends BaseNodeCurrency {
   getSigner(): Signer {
     const keyp = this.getKeyPair();
     const keypb = bs58.encode(Buffer.concat([Buffer.from(keyp.secretKey), keyp.publicKey.toBuffer()]));
-    return new solanaSigner(keypb);
+    return new SolanaSigner(keypb);
   }
 
   verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-    return solanaSigner.verify(pub, data, signature);
+    return SolanaSigner.verify(pub, data, signature);
   }
 
   async getCurrentHeight(): Promise<BigNumber> {
@@ -124,7 +122,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
     const blockHashInfo = await retry(
       async (bail) => {
         try {
-          return await (await this.getProvider()).getLatestBlockhash();
+          return await (await this.getProvider()).getRecentBlockhash();
         } catch (e: any) {
           if (e.message?.includes("blockhash")) throw e;
           else bail(e);
@@ -134,11 +132,7 @@ export default class SolanaConfig extends BaseNodeCurrency {
       { retries: 3, minTimeout: 1000 },
     );
 
-    const transaction = new Transaction({
-      blockhash: blockHashInfo.blockhash,
-      feePayer: keys.publicKey,
-      lastValidBlockHeight: blockHashInfo.lastValidBlockHeight,
-    });
+    const transaction = new Transaction({ recentBlockhash: blockHashInfo.blockhash, feePayer: keys.publicKey });
 
     transaction.add(
       SystemProgram.transfer({

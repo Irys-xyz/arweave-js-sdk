@@ -11,8 +11,8 @@ import {
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig } from "../../common/types";
 import Aptos from "./aptos";
-import type { Signer } from "arbundles/src/signing";
-import { MultiSignatureAptosSigner } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { MultiSignatureAptosSigner } from "arbundles";
 // import { UserTransaction } from "aptos/src/generated";
 // import Utils from "../../common/utils";
 

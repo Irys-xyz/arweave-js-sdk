@@ -1,5 +1,5 @@
-import type { Signer } from "arbundles/src/signing";
-import { NearSigner } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { NearSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
@@ -15,7 +15,7 @@ import axios from "axios";
 export default class NearConfig extends BaseNodeCurrency {
   protected keyPair: KeyPair;
 
-  protected providerInstance?: JsonRpcProvider;
+  protected declare providerInstance?: JsonRpcProvider;
   protected declare bundlrUrl: string;
 
   constructor(config: CurrencyConfig & { bundlrUrl: string }) {

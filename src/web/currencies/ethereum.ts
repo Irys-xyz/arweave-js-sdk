@@ -1,19 +1,17 @@
-import keccak256 from "arbundles/src/signing/keccak256";
 import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
-import type { Signer } from "arbundles/src/signing";
-import { InjectedEthereumSigner } from "arbundles/src/signing";
 import type { Tx, CurrencyConfig } from "../../common/types";
 import BaseWebCurrency from "../currency";
+import { InjectedTypedEthereumSigner } from "arbundles";
 
 const ethBigNumber = ethers.BigNumber; // required for hexString conversions (w/ 0x padding)
-const ethereumSigner = InjectedEthereumSigner;
+const ethereumSigner = InjectedTypedEthereumSigner;
 
 export default class EthereumConfig extends BaseWebCurrency {
-  protected signer!: InjectedEthereumSigner;
-  protected wallet!: ethers.providers.Web3Provider;
+  protected signer!: InjectedTypedEthereumSigner;
+  protected declare wallet: ethers.providers.Web3Provider;
   protected w3signer!: ethers.providers.JsonRpcSigner;
-  protected providerInstance!: ethers.providers.JsonRpcProvider;
+  protected declare providerInstance: ethers.providers.JsonRpcProvider;
 
   constructor(config: CurrencyConfig) {
     super(config);
@@ -38,12 +36,13 @@ export default class EthereumConfig extends BaseWebCurrency {
   }
 
   ownerToAddress(owner: any): string {
-    return (
-      "0x" +
-      keccak256(Buffer.from(owner.slice(1)))
-        .slice(-20)
-        .toString("hex")
-    );
+    // return (
+    //   "0x" +
+    //   keccak256(Buffer.from(owner.slice(1)))
+    //     .slice(-20)
+    //     .toString("hex")
+    // );
+    return owner;
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
@@ -51,9 +50,9 @@ export default class EthereumConfig extends BaseWebCurrency {
     return signer.sign(data);
   }
 
-  getSigner(): Signer {
+  getSigner(): InjectedTypedEthereumSigner {
     if (!this.signer) {
-      this.signer = new InjectedEthereumSigner(this.wallet);
+      this.signer = new InjectedTypedEthereumSigner(this.wallet);
     }
     return this.signer;
   }
@@ -102,18 +101,13 @@ export default class EthereumConfig extends BaseWebCurrency {
   }
 
   public async getPublicKey(): Promise<string | Buffer> {
-    const signer = (await this.getSigner()) as InjectedEthereumSigner;
-    await signer.setPublicKey();
-    return signer.publicKey;
-  }
-
-  pruneBalanceTransactions(_txIds: string[]): Promise<void> {
-    throw new Error("Method not implemented.");
+    return this.address as string;
   }
 
   public async ready(): Promise<void> {
     this.w3signer = await this.wallet.getSigner();
-    this._address = this.ownerToAddress(await this.getPublicKey());
+    this._address = await this.w3signer.getAddress();
+    await this.getSigner().ready();
     this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
     await this.providerInstance?._ready();
   }
