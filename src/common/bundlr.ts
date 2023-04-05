@@ -29,7 +29,7 @@ export default abstract class Bundlr {
   public currencyConfig!: Currency;
   protected _readyPromise: Promise<void> | undefined;
   public url: URL;
-
+  static VERSION = "REPLACEMEBUNDLRVERSION";
   constructor(url) {
     this.url = url;
   }
