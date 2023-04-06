@@ -1,2 +1,2 @@
-export { default } from "./bundlr";
-export { default as WebBundlr } from "./bundlr";
+import WebBundlr from "./bundlr";
+export = WebBundlr;
