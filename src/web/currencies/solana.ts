@@ -1,5 +1,5 @@
 import type { Signer } from "arbundles";
-import { HexInjectedSolanaSigner } from "arbundles";
+import { HexInjectedSolanaSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseWebCurrency from "../currency";

@@ -1,5 +1,4 @@
-import { deepHash } from "arbundles";
-import { stringToBuffer } from "arweave/node/lib/utils";
+import { deepHash, stringToBuffer } from "$/utils";
 import Utils from "./utils";
 import BigNumber from "bignumber.js";
 import type Api from "./api";

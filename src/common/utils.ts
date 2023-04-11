@@ -1,6 +1,4 @@
-// import Api from "arweave/node/lib/api";
-import { deepHash } from "arbundles";
-import Arweave from "arweave";
+import { deepHash, stringToBuffer, getCryptoDriver } from "$/utils";
 import type { AxiosResponse } from "axios";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
@@ -119,13 +117,13 @@ export default class Utils {
   static async verifyReceipt(receipt: UploadReceiptData): Promise<boolean> {
     const { id, deadlineHeight, timestamp, public: pubKey, signature, version } = receipt;
     const dh = await deepHash([
-      Arweave.utils.stringToBuffer("Bundlr"),
-      Arweave.utils.stringToBuffer(version),
-      Arweave.utils.stringToBuffer(id),
-      Arweave.utils.stringToBuffer(deadlineHeight.toString()),
-      Arweave.utils.stringToBuffer(timestamp.toString()),
+      stringToBuffer("Bundlr"),
+      stringToBuffer(version),
+      stringToBuffer(id),
+      stringToBuffer(deadlineHeight.toString()),
+      stringToBuffer(timestamp.toString()),
     ]);
-    return await Arweave.crypto.verify(pubKey, dh, base64url.toBuffer(signature));
+    return await getCryptoDriver().verify(pubKey, dh, base64url.toBuffer(signature));
   }
   public async getReceipt(txId: string): Promise<UploadReceipt> {
     // get receipt information from GQL

@@ -1,6 +1,6 @@
 import type { FileDataItem } from "arbundles/file";
 import type { Signer } from "arbundles";
-import Arweave from "arweave";
+import { getCryptoDriver } from "$/utils";
 import base64url from "base64url";
 import type BigNumber from "bignumber.js";
 import type { Tx, CurrencyConfig } from "../common/types";
@@ -36,7 +36,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
   }
 
   async getId(item: FileDataItem): Promise<string> {
-    return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
+    return base64url.encode(Buffer.from(await getCryptoDriver().hash(await item.rawSignature())));
   }
   async price(): Promise<number> {
     return getRedstonePrice(this.ticker);
