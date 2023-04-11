@@ -6,7 +6,7 @@
   "author": "Bundlr Network",
   "license": "Apache-2.0",
   "main": "./build/rootIndex.js",
-  "browser": "./build/rootIndex.d.ts",
+  "browser": "./build/esm/web/webIndex.js",
   "types": "./build/cjs/node/index.d.ts",
   "exports": {
     "./node": {
