@@ -28,6 +28,14 @@ export interface CurrencyConfig {
   opts?: any;
 }
 
+export interface BundlrConfig {
+  timeout?: number;
+  providerUrl?: string;
+  contractAddress?: string;
+  currencyOpts?: object;
+  headers?: Record<string, string>;
+}
+
 export interface Currency {
   isSlow: boolean;
   needsFee: boolean;

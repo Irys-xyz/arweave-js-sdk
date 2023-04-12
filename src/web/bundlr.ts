@@ -1,3 +1,4 @@
+import type { BundlrConfig } from "common/types";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
@@ -10,12 +11,21 @@ import type { WebCurrency } from "./types";
 export default class WebBundlr extends Bundlr {
   public currencyConfig: WebCurrency;
 
-  constructor(url: string, currency: string, provider?: any, config?: { timeout?: number; providerUrl?: string; contractAddress?: string }) {
+  constructor(url: string, currency: string, provider?: any, config?: BundlrConfig) {
     const parsed = new URL(url);
     super(parsed);
-    this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
+
+    this.api = new Api({
+      protocol: parsed.protocol.slice(0, -1),
+      port: parsed.port,
+      host: parsed.hostname,
+      timeout: config?.timeout ?? 100000,
+      headers: config?.headers,
+    });
     this.currencyConfig = getCurrency(currency.toLowerCase(), provider, config?.providerUrl, config?.contractAddress);
     this.currency = this.currencyConfig.name;
+    if (parsed.host === "devnet.bundlr.network" && (!config?.providerUrl || this.currencyConfig.inheritsRPC))
+      throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.bundlr.network/sdk/using-devnet`);
     this.utils = new Utils(this.api, this.currency, this.currencyConfig);
     this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);
     this.funder = new Fund(this.utils);

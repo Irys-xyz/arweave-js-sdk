@@ -30,7 +30,7 @@ export default abstract class Bundlr {
   protected _readyPromise: Promise<void> | undefined;
   public url: URL;
 
-  constructor(url) {
+  constructor(url: URL) {
     this.url = url;
   }
 
