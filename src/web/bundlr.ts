@@ -24,7 +24,7 @@ export default class WebBundlr extends Bundlr {
     });
     this.currencyConfig = getCurrency(currency.toLowerCase(), provider, config?.providerUrl, config?.contractAddress);
     this.currency = this.currencyConfig.name;
-    if (parsed.host === "devnet.bundlr.network" && (!config?.providerUrl || this.currencyConfig.inheritsRPC))
+    if (parsed.host === "devnet.bundlr.network" && !(config?.providerUrl || this.currencyConfig.inheritsRPC))
       throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.bundlr.network/sdk/using-devnet`);
     this.utils = new Utils(this.api, this.currency, this.currencyConfig);
     this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);
