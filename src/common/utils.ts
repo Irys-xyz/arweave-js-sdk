@@ -79,6 +79,34 @@ export default class Utils {
   }
 
   /**
+   * Returns the decimal values' equivalent in atomic units
+   * @example
+   * 0.1 ETH -> 100,000,000,000,000,000 wei
+   * ```
+   * toAtomic(100_000_000_000_000_000) -> 0.1
+   * ```
+   * @param decimalAmount - amount in decimal
+   * @returns amount in atomic units
+   */
+  public toAtomic(decimalAmount: BigNumber.Value): BigNumber {
+    return new BigNumber(decimalAmount).multipliedBy(this.currencyConfig.base[1]);
+  }
+
+  /**
+   * Returns the atomic amounts' equivalent in decimal units
+   * @example
+   * 100,000,000,000,000,000 wei -> 0.1 ETH
+   * ```
+   * fromAtomic(0.1) -> 100_000_000_000_000_000
+   * ```
+   * @param atomicAmount
+   * @returns
+   */
+  public fromAtomic(atomicAmount: BigNumber.Value): BigNumber {
+    return new BigNumber(atomicAmount).dividedBy(this.currencyConfig.base[1]);
+  }
+
+  /**
    * Polls for transaction confirmation (or at least pending status) - used for fast currencies (i.e not arweave)
    * before posting the fund request to the server (so the server doesn't have to poll)
    * @param txid
@@ -110,6 +138,9 @@ export default class Utils {
     return lastError;
   }
 
+  /**
+   * @deprecated this method is deprecated in favour of fromAtomic - removal slated for 0.12.0
+   */
   public unitConverter(baseUnits: BigNumber.Value): BigNumber {
     return new BigNumber(baseUnits).dividedBy(this.currencyConfig.base[1]);
   }
