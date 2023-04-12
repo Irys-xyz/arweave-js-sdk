@@ -1,4 +1,4 @@
-import { createData, DataItem } from "arbundles";
+import { createData, DataItem } from "$/utils";
 import type { AxiosResponse } from "axios";
 import Utils from "./utils";
 import type Api from "./api";

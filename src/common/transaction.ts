@@ -1,4 +1,4 @@
-import { createData, DataItem } from "arbundles";
+import { createData, DataItem } from "$/utils";
 import type { Signer } from "arbundles";
 import type Bundlr from "./bundlr";
 import Crypto from "crypto";

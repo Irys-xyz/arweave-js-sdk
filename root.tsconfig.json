@@ -1,0 +1,11 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "UMD",
+        "target": "esnext",
+        "outDir": "./build"
+    },
+    "include": [
+        "src/rootIndex.ts"
+    ]
+}

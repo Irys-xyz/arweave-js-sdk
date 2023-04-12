@@ -1,5 +1,5 @@
 import type { DataItemCreateOptions } from "arbundles";
-import { createData, DataItem, deepHash } from "arbundles";
+import { createData, DataItem, deepHash, stringToBuffer } from "$/utils";
 import type { Readable } from "stream";
 import { PassThrough } from "stream";
 import { EventEmitter } from "events";
@@ -7,7 +7,6 @@ import type Api from "./api";
 import type { Currency, UploadOptions, UploadResponse } from "./types";
 import Utils from "./utils";
 import Crypto from "crypto";
-import { stringToBuffer } from "arweave/web/lib/utils";
 import retry from "async-retry";
 import type { AxiosResponse } from "axios";
 import StreamToAsyncIterator from "./s2ai";
