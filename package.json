@@ -5,9 +5,9 @@
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
   "license": "Apache-2.0",
-  "main": "./build/rootIndex.js",
-  "browser": "./build/esm/web/webIndex.js",
-  "types": "./build/cjs/node/index.d.ts",
+  "main": "./build/cjs/index.js",
+  "browser": "./build/esm/webIndex.js",
+  "types": "./build/cjs/index.d.ts",
   "exports": {
     "./node": {
       "types": "./build/cjs/node/index.d.ts",
@@ -16,20 +16,20 @@
       "default": "./build/cjs/node/index.js"
     },
     "./web": {
-      "types": "./build/esm/web/webIndex.d.ts",
-      "import": "./build/esm/web/webIndex.js",
-      "default": "./build/esm/web/webIndex.js"
+      "types": "./build/esm/web/index.d.ts",
+      "import": "./build/esm/web/index.js",
+      "default": "./build/esm/web/index.js"
     },
     "./bundle": {
       "types": "./build/esm/index.d.ts",
       "default": "./build/bundle.js"
     },
     ".": {
-      "types": "./build/rootIndex.d.ts",
-      "import": "./build/rootIndex.js",
-      "require": "./build/rootIndex.js",
-      "node": "./build/cjs/node/index.js",
-      "browser": "./build/esm/web/webIndex.js"
+      "types": "./build/esm/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js",
+      "node": "./build/cjs/index.js",
+      "browser": "./build/esm/web/index.js"
     },
     "./*": {
       "types": "./*.d.ts",
@@ -42,11 +42,12 @@
     "build/**/*.ts"
   ],
   "scripts": {
-    "dev:build": "rm -rf build && concurrently \"tsc -p node.tsconfig.json && resolve-tspaths -p node.tsconfig.json\" \"tsc -p esm.tsconfig.json && resolve-tspaths -p esm.tsconfig.json\" \"tsc -p web.tsconfig.json && resolve-tspaths -p web.tsconfig.json\" &&  tsc -p root.tsconfig.json && chmod +x ./build/cjs/node/node/cli.js && chmod +x ./build/esm/node/node/cli.js ",
+    "dev:build": "rm -rf build && concurrently \"tsc -p cjs.tsconfig.json && chmod +x ./build/cjs/node/cli.js\"  \"tsc -p esm.tsconfig.json && chmod +x ./build/esm/node/cli.js \"  ",
     "prod:build": "yarn run dev:build && webpack",
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
-    "watch": "tsc --watch -p tsconfig.json & webpack --watch",
+    "watch": "tsc --watch -p cjs.tsconfig.json",
+    "watch:webpack": "yarn watch & webpack --watch",
     "webpack:analyze": "webpack --profile --json /tmp/wp.json && webpack-bundle-analyzer /tmp/wp.json"
   },
   "bin": {

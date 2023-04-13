@@ -1,4 +1,3 @@
-import { deepHash, stringToBuffer } from "$/utils";
 import Utils from "./utils";
 import BigNumber from "bignumber.js";
 import type Api from "./api";
@@ -15,6 +14,7 @@ import type { WithdrawalResponse } from "./types";
  */
 export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.Value): Promise<WithdrawalResponse> {
   const c = utils.currencyConfig;
+  const { deepHash, stringToBuffer } = c.bundlr.arbundles;
   const pkey = await c.getPublicKey();
   const data = {
     publicKey: pkey,

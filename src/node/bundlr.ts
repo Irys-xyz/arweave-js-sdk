@@ -6,6 +6,7 @@ import Utils from "../common/utils";
 import getCurrency from "./currencies";
 import type { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
+import * as arbundles from "./utils";
 
 export default class NodeBundlr extends Bundlr {
   public uploader: NodeUploader; // re-define type
@@ -18,7 +19,7 @@ export default class NodeBundlr extends Bundlr {
    */
   constructor(url: string, currency: string, wallet?: any, config?: BundlrConfig) {
     const parsed = new URL(url);
-    super(parsed);
+    super(parsed, arbundles);
     if (parsed.host === "devnet.bundlr.network" && !config?.providerUrl)
       throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.bundlr.network/sdk/using-devnet`);
     this.api = new Api({
@@ -29,6 +30,7 @@ export default class NodeBundlr extends Bundlr {
       headers: config?.headers,
     });
     this.currencyConfig = getCurrency(
+      this,
       currency.toLowerCase(),
       wallet,
       parsed.toString(),

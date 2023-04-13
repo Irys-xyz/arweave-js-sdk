@@ -5,7 +5,7 @@ const { DuplicatesPlugin } = require("inspectpack/plugin");
 // const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 
 module.exports = {
-  entry: "./build/esm/web/web/bundlr.js",
+  entry: "./build/esm/web/bundlr.js",
   devtool: "source-map",
   mode: "production",
   // module: {
