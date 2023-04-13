@@ -1,35 +1,35 @@
 {
   "name": "@bundlr-network/client",
-  "version": "0.11.0-a1",
+  "version": "0.11.0-a6",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
   "license": "Apache-2.0",
   "main": "./build/cjs/index.js",
-  "browser": "./build/esm/web/index.js",
+  "browser": "./build/esm/webIndex.js",
   "types": "./build/cjs/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./build/cjs/index.d.ts",
-      "import": "./build/cjs/index.js",
-      "require": "./build/esm/index.js",
-      "node": "./build/cjs/index.js"
-    },
     "./node": {
       "types": "./build/cjs/node/index.d.ts",
       "import": "./build/esm/node/index.js",
       "require": "./build/cjs/node/index.js",
-      "default": "./build/cjs/node/index.d.ts"
+      "default": "./build/cjs/node/index.js"
     },
     "./web": {
       "types": "./build/esm/web/index.d.ts",
       "import": "./build/esm/web/index.js",
-      "require": "./build/cjs/web/index.js",
-      "default": "./build/esm/web/index.d.ts"
+      "default": "./build/esm/web/index.js"
     },
     "./bundle": {
       "types": "./build/esm/index.d.ts",
       "default": "./build/bundle.js"
+    },
+    ".": {
+      "types": "./build/esm/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js",
+      "node": "./build/cjs/index.js",
+      "browser": "./build/esm/web/index.js"
     },
     "./*": {
       "types": "./*.d.ts",
@@ -42,13 +42,15 @@
     "build/**/*.ts"
   ],
   "scripts": {
-    "dev:build": "rm -rf build && (tsc -p tsconfig.json && chmod +x ./build/cjs/node/cli.js) & (tsc -p esm.tsconfig.json && chmod +x ./build/esm/node/cli.js)",
+    "dev:build": "rm -rf build && concurrently \"tsc -p cjs.tsconfig.json && chmod +x ./build/cjs/node/cli.js\"  \"tsc -p esm.tsconfig.json && chmod +x ./build/esm/node/cli.js \"  ",
     "prod:build": "yarn run dev:build && webpack",
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
-    "watch": "tsc --watch -p tsconfig.json & webpack --watch",
+    "watch": "tsc --watch -p cjs.tsconfig.json",
+    "watch:webpack": "yarn watch & webpack --watch",
     "webpack:analyze": "webpack --profile --json /tmp/wp.json && webpack-bundle-analyzer /tmp/wp.json",
     "prepack": "yarn ts-node ./scripts/embedVersion.ts"
+
   },
   "bin": {
     "bundlr": "./build/cjs/node/cli.js",
@@ -62,7 +64,7 @@
     "@supercharge/promise-pool": "^2.1.0",
     "algosdk": "^1.13.1",
     "aptos": "=1.3.14",
-    "arbundles": "^0.9.0-a1",
+    "arbundles": "^0.9.0-a3",
     "arweave": "=1.11.8",
     "async-retry": "^1.3.3",
     "axios": "^0.25.0",
@@ -95,6 +97,7 @@
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
     "clean-webpack-plugin": "^4.0.0",
+    "concurrently": "^8.0.1",
     "crypto-browserify": "^3.12.0",
     "eslint": "^8.34.0",
     "eslint-config-prettier": "^8.3.0",
@@ -106,11 +109,13 @@
     "path-browserify": "^1.0.1",
     "prettier": "^2.8.4",
     "process": "^0.11.10",
+    "resolve-tspaths": "^0.8.8",
     "serve": "^13.0.2",
     "stream-browserify": "^3.0.0",
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
     "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
     "tslib": "^2.3.1",
     "typescript": "^4.9.5",
     "webpack": "^5.65.0",

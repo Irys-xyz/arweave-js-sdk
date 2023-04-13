@@ -3,11 +3,13 @@ import { withdrawBalance } from "./withdrawal";
 import type Uploader from "./upload";
 import type Fund from "./fund";
 import type { DataItemCreateOptions } from "arbundles";
-import BundlrTransaction from "./transaction";
 import type Api from "./api";
 import type BigNumber from "bignumber.js";
+import type { BundlrTransaction } from "./types";
 import type {
+  Arbundles,
   BundlrTransactionCreateOptions,
+  BundlrTransactonCtor,
   CreateAndUploadOptions,
   Currency,
   FundResponse,
@@ -18,6 +20,7 @@ import type {
 } from "./types";
 import type { Signer } from "arbundles";
 import type { Readable } from "stream";
+import buildBundlrTransaction from "./transaction";
 
 export default abstract class Bundlr {
   public api!: Api;
@@ -29,9 +32,16 @@ export default abstract class Bundlr {
   public currencyConfig!: Currency;
   protected _readyPromise: Promise<void> | undefined;
   public url: URL;
+  public arbundles: Arbundles;
+  public bundlrTransaction: BundlrTransactonCtor;
+  
   static VERSION = "REPLACEMEBUNDLRVERSION";
-  constructor(url) {
+
+  constructor(url: URL, arbundles: Arbundles) {
+
     this.url = url;
+    this.arbundles = arbundles;
+    this.bundlrTransaction = buildBundlrTransaction(this);
   }
 
   get signer(): Signer {
@@ -78,7 +88,7 @@ export default abstract class Bundlr {
   }
 
   public async verifyReceipt(receipt: UploadReceiptData): Promise<boolean> {
-    return Utils.verifyReceipt(receipt);
+    return Utils.verifyReceipt(this.arbundles, receipt);
   }
 
   /**
@@ -88,7 +98,7 @@ export default abstract class Bundlr {
    * @returns - a new BundlrTransaction instance
    */
   createTransaction(data: string | Buffer, opts?: BundlrTransactionCreateOptions): BundlrTransaction {
-    return new BundlrTransaction(data, this, opts);
+    return new this.bundlrTransaction(data, this, opts);
   }
 
   /**
@@ -117,7 +127,7 @@ export default abstract class Bundlr {
     const oThis = this;
     return {
       fromRaw(rawTransaction: Uint8Array): BundlrTransaction {
-        return new BundlrTransaction(rawTransaction, oThis, { dataIsRawTransaction: true });
+        return new oThis.bundlrTransaction(rawTransaction, oThis, { dataIsRawTransaction: true });
       },
     };
   }

@@ -1,20 +1,22 @@
 const path = require("path");
 const webpack = require("webpack");
 const { DuplicatesPlugin } = require("inspectpack/plugin");
+// const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin");
+// const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 
 module.exports = {
-  entry: "./src/web/bundlr.ts",
+  entry: "./build/esm/web/bundlr.js",
   devtool: "source-map",
   mode: "production",
-  module: {
-    rules: [
-      {
-        test: /\.ts$/,
-        use: "ts-loader",
-        exclude: [/node_modules/, path.resolve(__dirname, "src/node/"), path.resolve(__dirname, "build/")],
-      },
-    ],
-  },
+  // module: {
+  //   rules: [
+  //     {
+  //       test: /\.ts$/,
+  //       use: { loader: "ts-loader", options: { configFile: "web.tsconfig.json" } },
+  //       exclude: [/node_modules/, path.resolve(__dirname, "src/node/"), path.resolve(__dirname, "build/")],
+  //     },
+  //   ],
+  // },
   resolve: {
     symlinks: false,
     extensions: [".ts", ".js"],
@@ -22,16 +24,14 @@ module.exports = {
       process: "process/browser",
       crypto: "crypto-browserify",
       stream: "stream-browserify",
+      // "$/utils": path.resolve(__dirname, "./src/web/utils.ts"),
     },
     fallback: {
       crypto: require.resolve("crypto-browserify"),
-      // "assert": require.resolve("assert/"),
       stream: require.resolve("stream-browserify"),
       process: require.resolve("process/browser"),
-      // "util": require.resolve("util"),
       events: require.resolve("events/"),
       buffer: require.resolve("buffer/"),
-      // "path": require.resolve("path-browserify")
     },
   },
   plugins: [
@@ -43,6 +43,11 @@ module.exports = {
       emitErrors: false,
       verbose: true,
     }),
+    // new ForkTsCheckerWebpackPlugin(),
+    // new ForkTsCheckerNotifierWebpackPlugin({
+    //   title: "TypeScript",
+    //   excludeWarnings: false,
+    // }),
   ],
   output: {
     filename: "bundle.js",

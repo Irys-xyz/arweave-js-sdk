@@ -1,12 +1,13 @@
 import type { FileDataItem } from "arbundles/file";
 import type { Signer } from "arbundles";
-import Arweave from "arweave";
+import { getCryptoDriver } from "./utils";
 import base64url from "base64url";
 import type BigNumber from "bignumber.js";
 import type { Tx, CurrencyConfig } from "../common/types";
 import axios from "axios";
 import type { WebCurrency } from "./types";
 import utils from "../common/utils";
+import type WebBundlr from "./bundlr";
 
 export default abstract class BaseWebCurrency implements WebCurrency {
   public base!: [string, number];
@@ -16,10 +17,12 @@ export default abstract class BaseWebCurrency implements WebCurrency {
   protected providerInstance?: any;
   public ticker!: string;
   public name!: string;
+  public bundlr!: WebBundlr;
 
   protected minConfirm = 5;
   public isSlow = false;
   public needsFee = true;
+  public inheritsRPC = false;
 
   constructor(config: CurrencyConfig) {
     Object.assign(this, config);
@@ -36,7 +39,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
   }
 
   async getId(item: FileDataItem): Promise<string> {
-    return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
+    return base64url.encode(Buffer.from(await getCryptoDriver().hash(await item.rawSignature())));
   }
   async price(): Promise<number> {
     return getRedstonePrice(this.ticker);

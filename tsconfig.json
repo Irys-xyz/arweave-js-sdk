@@ -22,8 +22,17 @@
     "outDir": "build/cjs",
     "baseUrl": "./src",
     "rootDir": "./src",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "paths": {
+      "$/utils": [
+        "node/utils.ts"
+      ]
+    },
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/__tests__/**"]
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  },
+  "include": ["src/**/*", "scripts/**/*"],
+  "exclude": ["src/__tests__/**"],
+
 }

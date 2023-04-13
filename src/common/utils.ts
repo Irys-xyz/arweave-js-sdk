@@ -1,11 +1,9 @@
-// import Api from "arweave/node/lib/api";
-import { deepHash } from "arbundles";
-import Arweave from "arweave";
 import type { AxiosResponse } from "axios";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
 import type Api from "./api";
-import type { Currency, UploadReceiptData } from "./types";
+import type { Arbundles, Currency, UploadReceipt, UploadReceiptData } from "./types";
+import AsyncRetry from "async-retry";
 BigNumber.set({ DECIMAL_PLACES: 50 });
 
 export const sleep = (ms): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -14,10 +12,12 @@ export default class Utils {
   public api: Api;
   public currency: string;
   public currencyConfig: Currency;
+  protected arbundles: Arbundles;
   constructor(api: Api, currency: string, currencyConfig: Currency) {
     this.api = api;
     this.currency = currency;
     this.currencyConfig = currencyConfig;
+    this.arbundles = this.currencyConfig.bundlr.arbundles;
   }
 
   /**
@@ -80,6 +80,34 @@ export default class Utils {
   }
 
   /**
+   * Returns the decimal values' equivalent in atomic units
+   * @example
+   * 0.1 ETH -> 100,000,000,000,000,000 wei
+   * ```
+   * toAtomic(100_000_000_000_000_000) -> 0.1
+   * ```
+   * @param decimalAmount - amount in decimal
+   * @returns amount in atomic units
+   */
+  public toAtomic(decimalAmount: BigNumber.Value): BigNumber {
+    return new BigNumber(decimalAmount).multipliedBy(this.currencyConfig.base[1]);
+  }
+
+  /**
+   * Returns the atomic amounts' equivalent in decimal units
+   * @example
+   * 100,000,000,000,000,000 wei -> 0.1 ETH
+   * ```
+   * fromAtomic(0.1) -> 100_000_000_000_000_000
+   * ```
+   * @param atomicAmount
+   * @returns
+   */
+  public fromAtomic(atomicAmount: BigNumber.Value): BigNumber {
+    return new BigNumber(atomicAmount).dividedBy(this.currencyConfig.base[1]);
+  }
+
+  /**
    * Polls for transaction confirmation (or at least pending status) - used for fast currencies (i.e not arweave)
    * before posting the fund request to the server (so the server doesn't have to poll)
    * @param txid
@@ -111,19 +139,80 @@ export default class Utils {
     return lastError;
   }
 
+  /**
+   * @deprecated this method is deprecated in favour of fromAtomic - removal slated for 0.12.0
+   */
   public unitConverter(baseUnits: BigNumber.Value): BigNumber {
     return new BigNumber(baseUnits).dividedBy(this.currencyConfig.base[1]);
   }
 
-  static async verifyReceipt(receipt: UploadReceiptData): Promise<boolean> {
+  async verifyReceipt(receipt: UploadReceiptData): Promise<boolean> {
+    return Utils.verifyReceipt(this.arbundles, receipt);
+  }
+
+  static async verifyReceipt(
+    dependencies: Pick<Arbundles, "stringToBuffer" | "getCryptoDriver" | "deepHash">,
+    receipt: UploadReceiptData,
+  ): Promise<boolean> {
     const { id, deadlineHeight, timestamp, public: pubKey, signature, version } = receipt;
-    const dh = await deepHash([
-      Arweave.utils.stringToBuffer("Bundlr"),
-      Arweave.utils.stringToBuffer(version),
-      Arweave.utils.stringToBuffer(id),
-      Arweave.utils.stringToBuffer(deadlineHeight.toString()),
-      Arweave.utils.stringToBuffer(timestamp.toString()),
+    const dh = await dependencies.deepHash([
+      dependencies.stringToBuffer("Bundlr"),
+      dependencies.stringToBuffer(version),
+      dependencies.stringToBuffer(id),
+      dependencies.stringToBuffer(deadlineHeight.toString()),
+      dependencies.stringToBuffer(timestamp.toString()),
     ]);
-    return await Arweave.crypto.verify(pubKey, dh, base64url.toBuffer(signature));
+    return await dependencies.getCryptoDriver().verify(pubKey, dh, base64url.toBuffer(signature));
+  }
+
+  public async getReceipt(txId: string): Promise<UploadReceipt> {
+    // get receipt information from GQL
+    const query = `query {
+      transactions(ids: ["${txId}"]) {
+        edges {
+          node {
+            receipt {
+              signature
+              timestamp
+              version
+              deadlineHeight
+            }
+          }
+        }
+      }
+    }`;
+
+    const queryRes = await AsyncRetry(async () => {
+      return await this.api.post(
+        "/graphql",
+        { query },
+        {
+          headers: { "content-type": "application/json" },
+          validateStatus: (s) => s === 200,
+        },
+      );
+    });
+
+    const receiptData: { version: string; timestamp: number; signature: string; deadlineHeight: number } =
+      queryRes?.data?.data?.transactions?.edges?.at(0)?.node?.receipt;
+    if (!receiptData) throw new Error(`Missing required receipt data from node for tx: ${txId}`);
+    // get public key from node
+    const pubKey = (await this.api.get("/public")).data;
+    const receipt = {
+      public: pubKey,
+      version: receiptData.version as "1.0.0",
+      id: txId,
+      timestamp: receiptData.timestamp,
+      validatorSignatures: [],
+      signature: receiptData.signature,
+      deadlineHeight: receiptData.deadlineHeight,
+      // use stub to conform to type
+      verify: async (): Promise<boolean> => {
+        return false;
+      },
+    };
+    // inject bound method
+    receipt.verify = this.verifyReceipt.bind({}, receipt as UploadReceipt);
+    return receipt;
   }
 }

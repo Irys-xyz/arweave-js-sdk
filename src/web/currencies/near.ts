@@ -1,5 +1,5 @@
 import type { Signer } from "arbundles";
-import { NearSigner } from "arbundles";
+import { NearSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import type { providers, WalletConnection, Near } from "near-api-js";

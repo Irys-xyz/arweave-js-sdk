@@ -7,7 +7,7 @@ import type Utils from "../common/utils";
 import mime from "mime-types";
 import inquirer from "inquirer";
 import { Readable } from "stream";
-import { DataItem } from "arbundles";
+import { DataItem } from "./utils";
 import { basename, join, relative, resolve, sep } from "path";
 import { parse, stringify } from "csv";
 
