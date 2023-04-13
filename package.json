@@ -48,7 +48,9 @@
     "lint:fix": "eslint src/** --fix",
     "watch": "tsc --watch -p cjs.tsconfig.json",
     "watch:webpack": "yarn watch & webpack --watch",
-    "webpack:analyze": "webpack --profile --json /tmp/wp.json && webpack-bundle-analyzer /tmp/wp.json"
+    "webpack:analyze": "webpack --profile --json /tmp/wp.json && webpack-bundle-analyzer /tmp/wp.json",
+    "prepack": "yarn ts-node ./scripts/embedVersion.ts"
+
   },
   "bin": {
     "bundlr": "./build/cjs/node/cli.js",
