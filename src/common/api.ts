@@ -60,7 +60,7 @@ export default class Api {
       timeout: config.timeout ?? 20000,
       logging: config.logging ?? false,
       logger: config.logger ?? console.log,
-      headers: { ...config.headers, "bundlr-js-sdk-version": Bundlr.VERSION },
+      headers: { ...config.headers, "x-bundlr-js-sdk-version": Bundlr.VERSION },
       withCredentials: true,
     };
   }
