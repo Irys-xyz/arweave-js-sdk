@@ -213,8 +213,10 @@ export class ChunkingUploader extends EventEmitter {
     if (Buffer.isBuffer(dataStream)) {
       stream.write(dataStream);
       stream.end();
-    } else {
+    } else if ("pipe" in dataStream) {
       dataStream.pipe(stream);
+    } else {
+      throw new Error("Input data is not a buffer or a compatible stream (no .pipe method)");
     }
 
     let offset = 0;

@@ -12,7 +12,7 @@ import { AptosSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types.js";
 import BaseNodeCurrency from "../currency.js";
-import { sha3_256 } from "js-sha3";
+import sha3 from "js-sha3";
 // import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
 
 export default class AptosConfig extends BaseNodeCurrency {
@@ -67,7 +67,7 @@ export default class AptosConfig extends BaseNodeCurrency {
   }
 
   ownerToAddress(owner: any): string {
-    const hash = sha3_256.create();
+    const hash = sha3.sha3_256.create();
     hash.update(Buffer.from(owner));
     hash.update("\x00");
     return `0x${hash.hex()}`;

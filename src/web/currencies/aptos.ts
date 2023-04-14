@@ -3,7 +3,8 @@ import type { Signer } from "arbundles";
 import { InjectedAptosSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types.js";
-import { sha3_256 } from "js-sha3";
+import sha3 from "js-sha3";
+
 // import { Ed25519PublicKey } from "aptos/src/aptos_types/ed25519";
 // import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
 import BaseWebCurrency from "../currency.js";
@@ -85,7 +86,7 @@ export default class AptosConfig extends BaseWebCurrency {
   }
 
   ownerToAddress(owner: any): string {
-    const hash = sha3_256.create();
+    const hash = sha3.sha3_256.create();
     hash.update(Buffer.from(owner));
     hash.update("\x00");
     return `0x${hash.hex()}`;
