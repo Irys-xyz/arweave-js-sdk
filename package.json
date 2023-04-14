@@ -12,27 +12,39 @@
   "sideEffects": false,
   "exports": {
     "./node": {
-      "types": "./build/esm/node/index.d.ts",
-      "import": "./build/esm/node/index.js",
-      "require": "./build/cjs/node/index.js",
-      "default": "./build/cjs/node/index.js"
+      "require": {
+        "types": "./build/cjs/node/index.d.ts",
+        "default": "./build/cjs/node/index.js"
+      },
+      "import": {
+        "types": "./build/esm/node/index.d.ts",
+        "default": "./build/esm/node/index.js"
+      }
     },
     "./web": {
-      "types": "./build/esm/web/index.d.ts",
-      "browser": "./build/esm/web/index.js",
-      "import": "./build/esm/web/index.js",
-      "require": "./build/cjs/web/index.js",
-      "default": "./build/esm/web/index.js"
+      "require": {
+        "types": "./build/cjs/web/index.d.ts",
+        "default": "./build/cjs/web/index.js"
+      },
+      "import": {
+        "types": "./build/esm/web/index.d.ts",
+        "default": "./build/esm/web/index.js"
+      }
     },
     "./bundle": {
       "types": "./build/esm/index.d.ts",
       "default": "./build/bundle.js"
     },
     ".": {
-      "types": "./build/esm/index.d.ts",
-      "browser": "./build/esm/web/index.js",
-      "import": "./build/esm/index.js",
-      "require": "./build/cjs/index.js"
+      "require": {
+        "types": "./build/cjs/index.d.ts",
+        "default": "./build/cjs/index.js"
+      },
+      "import": {
+        "types": "./build/esm/index.d.ts",
+        "default": "./build/esm/index.js"
+      },
+      "browser": "./build/esm/web/index.js"
     },
     "./*": {
       "types": "./*.d.ts",
@@ -45,7 +57,7 @@
     "build/**/*.ts"
   ],
   "scripts": {
-    "dev:build": "rm -rf build && concurrently \" tsc -p cjs.tsconfig.json && chmod +x ./build/cjs/node/cli.js \"  \" tsc -p esm.tsconfig.json && chmod +x ./build/esm/node/cli.js \" ",
+    "dev:build": "rm -rf build && concurrently \" tsc -p cjs.tsconfig.json && chmod +x ./build/cjs/node/cli.js && sh ./scripts/fix-pkg.sh cjs commonjs \"  \" tsc -p esm.tsconfig.json && chmod +x ./build/esm/node/cli.js && sh ./scripts/fix-pkg.sh esm module \" ",
     "prod:build": "yarn run dev:build && webpack",
     "lint:check": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
@@ -93,6 +105,7 @@
     "@types/bn.js": "^5.1.1",
     "@types/jest": "^27.0.2",
     "@types/node": "^17.0.0",
+    "@types/secp256k1": "^4.0.3",
     "@typescript-eslint/eslint-plugin": "^5.53.0",
     "@typescript-eslint/parser": "^5.53.0",
     "assert": "^2.0.0",
@@ -119,7 +132,7 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.3.1",
-    "typescript": "^4.9.5",
+    "typescript": "^5.0.4",
     "webpack": "^5.65.0",
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.1",

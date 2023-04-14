@@ -1,7 +1,7 @@
 import type BigNumber from "bignumber.js";
 import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions } from "arbundles";
 import type { FileDataItem } from "arbundles/file";
-import type Bundlr from "./bundlr";
+import type Bundlr from "./bundlr.js";
 
 // common types shared between web and node versions
 export interface CreateTxData {

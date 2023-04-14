@@ -9,12 +9,12 @@ import {
   HexString as HString,
 } from "aptos";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig } from "../../common/types";
-import Aptos from "./aptos";
+import type { CurrencyConfig } from "../../common/types.js";
+import Aptos from "./aptos.js";
 import type { Signer } from "arbundles";
 import { MultiSignatureAptosSigner } from "arbundles";
 // import { UserTransaction } from "aptos/src/generated";
-// import Utils from "../../common/utils";
+// import Utils from "../../common/utils.js";
 
 export type HexString = string;
 export default class MultiSignatureAptos extends Aptos {

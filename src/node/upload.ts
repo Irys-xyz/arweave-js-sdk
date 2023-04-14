@@ -1,13 +1,13 @@
 import type { PathLike } from "fs";
 import { promises, createReadStream, createWriteStream } from "fs";
-import type { CreateAndUploadOptions, Currency, UploadResponse } from "../common/types";
-import Uploader from "../common/upload";
-import type Api from "../common/api";
-import type Utils from "../common/utils";
+import type { CreateAndUploadOptions, Currency, UploadResponse } from "../common/types.js";
+import Uploader from "../common/upload.js";
+import type Api from "../common/api.js";
+import type Utils from "../common/utils.js";
 import mime from "mime-types";
 import inquirer from "inquirer";
 import { Readable } from "stream";
-import { DataItem } from "./utils";
+import type { DataItem } from "arbundles";
 import { basename, join, relative, resolve, sep } from "path";
 import { parse, stringify } from "csv";
 
@@ -234,7 +234,7 @@ export default class NodeUploader extends Uploader {
    * @returns A dataItem
    */
   protected async processItem(item: string | Buffer | Readable | DataItem): Promise<any> {
-    if (DataItem.isDataItem(item)) {
+    if (this.arbundles.DataItem.isDataItem(item)) {
       return this.uploadTransaction(item);
     }
 

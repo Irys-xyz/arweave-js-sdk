@@ -1,9 +1,9 @@
 import BigNumber from "bignumber.js";
 import { ethers, Wallet } from "ethers";
 import { keccak256 } from "arbundles";
-import { getRedstonePrice } from "../currency";
-import EthereumConfig from "./ethereum";
-import type { CurrencyConfig, Tx } from "../../common/types";
+import { getRedstonePrice } from "../currency.js";
+import EthereumConfig from "./ethereum.js";
+import type { CurrencyConfig, Tx } from "../../common/types.js";
 
 export interface ERC20CurrencyConfig extends CurrencyConfig {
   contractAddress: string;

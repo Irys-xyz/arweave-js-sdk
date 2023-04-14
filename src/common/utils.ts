@@ -1,8 +1,8 @@
 import type { AxiosResponse } from "axios";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
-import type Api from "./api";
-import type { Arbundles, Currency, UploadReceipt, UploadReceiptData } from "./types";
+import type Api from "./api.js";
+import type { Arbundles, Currency, UploadReceipt, UploadReceiptData } from "./types.js";
 import AsyncRetry from "async-retry";
 BigNumber.set({ DECIMAL_PLACES: 50 });
 

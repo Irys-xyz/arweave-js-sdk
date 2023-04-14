@@ -1,5 +1,5 @@
 import type { Signer } from "arbundles";
-import type Bundlr from "./bundlr";
+import type Bundlr from "./bundlr.js";
 import Crypto from "crypto";
 import type {
   BundlrTransaction as IBundlrTransaction,
@@ -8,7 +8,7 @@ import type {
   UploadReceipt,
   UploadResponse,
   BundlrTransactonCtor,
-} from "./types";
+} from "./types.js";
 
 /**
  * Extended DataItem that allows for seamless bundlr operations, such as signing and uploading.

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios";
 import Axios from "axios";
-import Bundlr from "./bundlr";
+import Bundlr from "./bundlr.js";
 
 // taken from the arweave.js lib
 export interface ApiConfig {

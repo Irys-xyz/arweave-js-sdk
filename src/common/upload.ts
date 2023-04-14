@@ -1,10 +1,10 @@
 import type { AxiosResponse } from "axios";
-import Utils from "./utils";
-import type Api from "./api";
-import type { Arbundles, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
-import PromisePool from "@supercharge/promise-pool/dist";
+import Utils from "./utils.js";
+import type Api from "./api.js";
+import type { Arbundles, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types.js";
+import PromisePool from "@supercharge/promise-pool";
 import retry from "async-retry";
-import { ChunkingUploader } from "./chunkingUploader";
+import { ChunkingUploader } from "./chunkingUploader.js";
 import type { Readable } from "stream";
 import Crypto from "crypto";
 import type { DataItem } from "arbundles";

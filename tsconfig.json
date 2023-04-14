@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "module": "CommonJS",
+    "module": "ES2022",
     "moduleResolution": "nodenext",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
@@ -19,15 +19,14 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": true,
-    "outDir": "build/cjs",
     "baseUrl": "./src",
-    "rootDir": "./src",
+    "rootDir": ".",
     "experimentalDecorators": true,
     "paths": {
       "$/utils": [
         "node/utils.ts"
       ]
-    },
+    }
   },
   "ts-node": {
     "require": ["tsconfig-paths/register"]

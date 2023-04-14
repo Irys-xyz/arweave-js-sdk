@@ -1,13 +1,13 @@
 import type { FileDataItem } from "arbundles/file";
 import type { Signer } from "arbundles";
-import { getCryptoDriver } from "./utils";
+import { getCryptoDriver } from "./utils.js";
 import base64url from "base64url";
 import type BigNumber from "bignumber.js";
-import type { Tx, CurrencyConfig } from "../common/types";
+import type { Tx, CurrencyConfig } from "../common/types.js";
 import axios from "axios";
-import type { WebCurrency } from "./types";
-import utils from "../common/utils";
-import type WebBundlr from "./bundlr";
+import type { WebCurrency } from "./types.js";
+import utils from "../common/utils.js";
+import type WebBundlr from "./bundlr.js";
 
 export default abstract class BaseWebCurrency implements WebCurrency {
   public base!: [string, number];

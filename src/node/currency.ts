@@ -1,14 +1,14 @@
 import type { FileDataItem } from "arbundles/file";
 import type { Signer } from "arbundles";
-import { getCryptoDriver } from "./utils";
+import { getCryptoDriver } from "./utils.js";
 import base64url from "base64url";
 import type BigNumber from "bignumber.js";
-import type { Tx, CurrencyConfig } from "../common/types";
+import type { Tx, CurrencyConfig } from "../common/types.js";
 import axios from "axios";
-import type { NodeCurrency } from "./types";
-import utils from "../common/utils";
-import type Utils from "../common/utils";
-import type NodeBundlr from "./bundlr";
+import type { NodeCurrency } from "./types.js";
+import utils from "../common/utils.js";
+import type Utils from "../common/utils.js";
+import type NodeBundlr from "./bundlr.js";
 export default abstract class BaseNodeCurrency implements NodeCurrency {
   public base!: [string, number];
   protected wallet: any;

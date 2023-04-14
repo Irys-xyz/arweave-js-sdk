@@ -2,13 +2,13 @@ import type { DataItem, DataItemCreateOptions } from "arbundles";
 import type { Readable } from "stream";
 import { PassThrough } from "stream";
 import { EventEmitter } from "events";
-import type Api from "./api";
-import type { Arbundles, Currency, UploadOptions, UploadResponse } from "./types";
-import Utils from "./utils";
+import type Api from "./api.js";
+import type { Arbundles, Currency, UploadOptions, UploadResponse } from "./types.js";
+import Utils from "./utils.js";
 import Crypto from "crypto";
 import retry from "async-retry";
 import type { AxiosResponse } from "axios";
-import StreamToAsyncIterator from "./s2ai";
+import StreamToAsyncIterator from "./s2ai.js";
 
 interface ChunkingUploaderEvents {
   chunkUpload: ({ id, offset, size, totalUploaded }: { id: number; offset: number; size: number; totalUploaded: number }) => void;
