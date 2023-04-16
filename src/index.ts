@@ -1,5 +1,5 @@
-import NB from "./node/index.js";
-import WB from "./web/index.js";
+import NB from "./node/index";
+import WB from "./web/index";
 
 // this class allows for CJS imports without .default, as well as still allowing for destructured Node/WebBundlr imports.
 export default class IndexBundlr extends NB {

@@ -1,12 +1,12 @@
-import type BaseCurrency from "../currency.js";
-// import AlgorandConfig from "./algorand.js";
-import EthereumConfig from "./ethereum.js";
-import NearConfig from "./near.js";
-import SolanaConfig from "./solana.js";
-import ERC20Config from "./erc20.js";
+import type BaseCurrency from "../currency";
+// import AlgorandConfig from "./algorand";
+import EthereumConfig from "./ethereum";
+import NearConfig from "./near";
+import SolanaConfig from "./solana";
+import ERC20Config from "./erc20";
 import axios from "axios";
-import utils from "../../common/utils.js";
-import AptosConfig from "./aptos.js";
+import utils from "../../common/utils";
+import AptosConfig from "./aptos";
 import type WebBundlr from "web";
 
 export default function getCurrency(bundlr: WebBundlr, currency: string, wallet: any, providerUrl?: string, contractAddress?: string): BaseCurrency {

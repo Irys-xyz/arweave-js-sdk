@@ -10,8 +10,8 @@ import {
 import type { Signer } from "arbundles";
 import { AptosSigner } from "arbundles";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types.js";
-import BaseNodeCurrency from "../currency.js";
+import type { CurrencyConfig, Tx } from "../../common/types";
+import BaseNodeCurrency from "../currency";
 import sha3 from "js-sha3";
 // import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
 

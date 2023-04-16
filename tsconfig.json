@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2022",
+    "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "nodenext",
     "skipLibCheck": true,
@@ -29,7 +29,12 @@
     }
   },
   "ts-node": {
-    "require": ["tsconfig-paths/register"]
+    "require": ["tsconfig-paths/register"],
+    "esm": false,
+    "transpileOnly": true, // speeeed
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
   },
   "include": ["src/**/*", "scripts/**/*"],
   "exclude": ["src/__tests__/**"],

@@ -1,2 +1,2 @@
-export { default } from "./bundlr.js";
-export { default as NodeBundlr } from "./bundlr.js";
+export { default } from "./bundlr";
+export { default as NodeBundlr } from "./bundlr";

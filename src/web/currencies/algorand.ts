@@ -1,7 +1,7 @@
 // import { InjectedAlgorandSigner, Signer } from "arbundles";
 // import BigNumber from "bignumber.js";
-// import { CurrencyConfig, Tx } from "../../common/types.js"
-// import BaseWebCurrency from "../currency.js"
+// import { CurrencyConfig, Tx } from "../../common/types"
+// import BaseWebCurrency from "../currency"
 
 // import * as algosdk from "algosdk";
 // import axios from "axios";

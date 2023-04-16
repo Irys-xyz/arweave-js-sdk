@@ -1,8 +1,8 @@
 import BigNumber from "bignumber.js";
 import { ethers } from "ethers";
-import type { CurrencyConfig, Tx } from "../../common/types.js";
-import { getRedstonePrice } from "../currency.js";
-import EthereumConfig from "./ethereum.js";
+import type { CurrencyConfig, Tx } from "../../common/types";
+import { getRedstonePrice } from "../currency";
+import EthereumConfig from "./ethereum";
 
 export interface ERC20CurrencyConfig extends CurrencyConfig {
   contractAddress: string;

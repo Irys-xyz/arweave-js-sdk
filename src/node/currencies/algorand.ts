@@ -1,8 +1,8 @@
 import type { Signer } from "arbundles";
 import { AlgorandSigner } from "arbundles";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types.js";
-import BaseNodeCurrency from "../currency.js";
+import type { CurrencyConfig, Tx } from "../../common/types";
+import BaseNodeCurrency from "../currency";
 
 import axios from "axios";
 import type { Account } from "algosdk";

@@ -1,8 +1,8 @@
 import type { Signer } from "arbundles";
 import { NearSigner } from "arbundles";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types.js";
-import BaseNodeCurrency from "../currency.js";
+import type { CurrencyConfig, Tx } from "../../common/types";
+import BaseNodeCurrency from "../currency";
 import { KeyPair, utils, transactions, providers } from "near-api-js";
 import bs58 from "bs58";
 import BN from "bn.js";

@@ -1,4 +1,4 @@
-import type { Currency } from "../common/types.js";
+import type { Currency } from "../common/types";
 
 export interface WebCurrency extends Currency {
   getPublicKey(): Promise<string | Buffer>;

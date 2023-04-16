@@ -3,8 +3,8 @@ import { SolanaSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
-import type { CurrencyConfig, Tx } from "../../common/types.js";
-import BaseNodeCurrency from "../currency.js";
+import type { CurrencyConfig, Tx } from "../../common/types";
+import BaseNodeCurrency from "../currency";
 import retry from "async-retry";
 import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
 

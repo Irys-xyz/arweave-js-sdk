@@ -20,7 +20,7 @@ async function main() {
     // let bundlr = await Bundlr.init({ url: nodeUrl, currency: "aptos", publicKey: account.pubKey().toString(), signingFunction });
     // let bundlr = Bundlr.init({ url: nodeUrl, currency: "aptos", privateKey: key })
 
-    const bundlr = new Bundlr(nodeUrl, "ethereum", key);
+    const bundlr = new Bundlr(nodeUrl, "ethereum", key, { providerUrl });
     await bundlr.ready();
     console.log(bundlr.address);
 
@@ -33,7 +33,7 @@ async function main() {
 
     tx = bundlr.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
     await tx.sign();
-    console.log(await tx.verify());
+    console.log(await tx.isValid());
 
     tx = bundlr.transaction.fromRaw(tx.getRaw());
 

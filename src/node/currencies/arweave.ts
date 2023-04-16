@@ -3,9 +3,9 @@ import type { Signer } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import crypto from "crypto";
-import type { CurrencyConfig, Tx } from "../../common/types.js";
+import type { CurrencyConfig, Tx } from "../../common/types";
 import base64url from "base64url";
-import BaseNodeCurrency from "../currency.js";
+import BaseNodeCurrency from "../currency";
 
 export default class ArweaveConfig extends BaseNodeCurrency {
   protected declare providerInstance: Arweave;

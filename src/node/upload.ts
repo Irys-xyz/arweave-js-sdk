@@ -1,9 +1,9 @@
 import type { PathLike } from "fs";
 import { promises, createReadStream, createWriteStream } from "fs";
-import type { CreateAndUploadOptions, Currency, UploadResponse } from "../common/types.js";
-import Uploader from "../common/upload.js";
-import type Api from "../common/api.js";
-import type Utils from "../common/utils.js";
+import type { CreateAndUploadOptions, Currency, UploadResponse } from "../common/types";
+import Uploader from "../common/upload";
+import type Api from "../common/api";
+import type Utils from "../common/utils";
 import mime from "mime-types";
 import inquirer from "inquirer";
 import { Readable } from "stream";

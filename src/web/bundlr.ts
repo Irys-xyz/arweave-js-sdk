@@ -1,13 +1,13 @@
 import type { BundlrConfig } from "common/types";
-import Api from "../common/api.js";
-import Bundlr from "../common/bundlr.js";
-import Fund from "../common/fund.js";
-import Uploader from "../common/upload.js";
-import Utils from "../common/utils.js";
-import getCurrency from "./currencies/index.js";
-// import WebFund from "./fund.js";
-import type { WebCurrency } from "./types.js";
-import * as arbundles from "./utils.js";
+import Api from "../common/api";
+import Bundlr from "../common/bundlr";
+import Fund from "../common/fund";
+import Uploader from "../common/upload";
+import Utils from "../common/utils";
+import getCurrency from "./currencies/index";
+// import WebFund from "./fund";
+import type { WebCurrency } from "./types";
+import * as arbundles from "./utils";
 
 export default class WebBundlr extends Bundlr {
   public currencyConfig: WebCurrency;

@@ -1,8 +1,8 @@
 import type { Signer } from "arbundles";
 import { HexInjectedSolanaSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types.js";
-import BaseWebCurrency from "../currency.js";
+import type { CurrencyConfig, Tx } from "../../common/types";
+import BaseWebCurrency from "../currency";
 import bs58 from "bs58";
 // @ts-expect-error only importing as type
 import type { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";

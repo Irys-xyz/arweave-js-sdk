@@ -1,12 +1,12 @@
-import Api from "../common/api.js";
-import Bundlr from "../common/bundlr.js";
-import Fund from "../common/fund.js";
-import type { BundlrConfig, CreateAndUploadOptions, UploadResponse } from "../common/types.js";
-import Utils from "../common/utils.js";
-import getCurrency from "./currencies/index.js";
-import type { NodeCurrency } from "./types.js";
-import NodeUploader from "./upload.js";
-import * as arbundles from "./utils.js";
+import Api from "../common/api";
+import Bundlr from "../common/bundlr";
+import Fund from "../common/fund";
+import type { BundlrConfig, CreateAndUploadOptions, UploadResponse } from "../common/types";
+import Utils from "../common/utils";
+import getCurrency from "./currencies/index";
+import type { NodeCurrency } from "./types";
+import NodeUploader from "./upload";
+import * as arbundles from "./utils";
 
 export default class NodeBundlr extends Bundlr {
   public uploader: NodeUploader; // re-define type
@@ -19,7 +19,6 @@ export default class NodeBundlr extends Bundlr {
    */
   constructor(url: string, currency: string, wallet?: any, config?: BundlrConfig) {
     const parsed = new URL(url);
-    // @ts-expect-error private type issue
     super(parsed, arbundles);
     if (parsed.host === "devnet.bundlr.network" && !config?.providerUrl)
       throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.bundlr.network/sdk/using-devnet`);

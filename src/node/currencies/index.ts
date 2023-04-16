@@ -1,16 +1,16 @@
 import BigNumber from "bignumber.js";
-import type { NodeCurrency } from "../types.js";
-import ArweaveConfig from "./arweave.js";
-import ERC20Config from "./erc20.js";
-import EthereumConfig from "./ethereum.js";
-import NearConfig from "./near.js";
-import SolanaConfig from "./solana.js";
-import AlgorandConfig from "./algorand.js";
+import type { NodeCurrency } from "../types";
+import ArweaveConfig from "./arweave";
+import ERC20Config from "./erc20";
+import EthereumConfig from "./ethereum";
+import NearConfig from "./near";
+import SolanaConfig from "./solana";
+import AlgorandConfig from "./algorand";
 import axios from "axios";
-import utils from "../../common/utils.js";
-import AptosConfig from "./aptos.js";
-import MultiSignatureAptos from "./multiAptos.js";
-import type NodeBundlr from "../bundlr.js";
+import utils from "../../common/utils";
+import AptosConfig from "./aptos";
+import MultiSignatureAptos from "./multiAptos";
+import type NodeBundlr from "../bundlr";
 
 export default function getCurrency(
   bundlr: NodeBundlr,

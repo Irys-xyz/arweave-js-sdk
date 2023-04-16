@@ -2,12 +2,12 @@ import { AptosClient, CoinClient, HexString, TransactionBuilderEd25519, TxnBuild
 import type { Signer } from "arbundles";
 import { InjectedAptosSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types.js";
+import type { CurrencyConfig, Tx } from "../../common/types";
 import sha3 from "js-sha3";
 
 // import { Ed25519PublicKey } from "aptos/src/aptos_types/ed25519";
 // import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
-import BaseWebCurrency from "../currency.js";
+import BaseWebCurrency from "../currency";
 
 export interface SignMessagePayload {
   address?: boolean; // Should we include the address of the account in the message

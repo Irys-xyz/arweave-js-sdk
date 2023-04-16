@@ -2,11 +2,11 @@
 // Note: DO NOT REMOVE/ALTER THE ABOVE LINE - it is called a 'shebang' and is vital for CLI execution.
 import { Command } from "commander";
 import { readFileSync } from "fs";
-import Bundlr from "./bundlr.js";
+import Bundlr from "./bundlr";
 import inquirer from "inquirer";
 import BigNumber from "bignumber.js";
-import { checkPath } from "./upload.js";
-import type NodeBundlr from "./bundlr.js";
+import { checkPath } from "./upload";
+import type NodeBundlr from "./bundlr";
 
 const program = new Command();
 

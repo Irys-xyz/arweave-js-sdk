@@ -4,8 +4,8 @@ import BigNumber from "bignumber.js";
 import { EthereumSigner, keccak256 } from "arbundles";
 import type { Signer } from "arbundles";
 import type { JsonRpcProvider } from "@ethersproject/providers";
-import type { CurrencyConfig, Tx } from "../../common/types.js";
-import BaseNodeCurrency from "../currency.js";
+import type { CurrencyConfig, Tx } from "../../common/types";
+import BaseNodeCurrency from "../currency";
 
 const ethereumSigner = EthereumSigner;
 

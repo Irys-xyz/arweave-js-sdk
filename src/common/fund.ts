@@ -1,8 +1,8 @@
 import AsyncRetry from "async-retry";
 import type { AxiosResponse } from "axios";
 import BigNumber from "bignumber.js";
-import type { FundResponse } from "./types.js";
-import Utils from "./utils.js";
+import type { FundResponse } from "./types";
+import Utils from "./utils";
 
 export default class Fund {
   protected utils: Utils;

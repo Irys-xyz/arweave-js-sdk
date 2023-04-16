@@ -1,11 +1,11 @@
-import Utils from "./utils.js";
-import { withdrawBalance } from "./withdrawal.js";
-import type Uploader from "./upload.js";
-import type Fund from "./fund.js";
+import Utils from "./utils";
+import { withdrawBalance } from "./withdrawal";
+import type Uploader from "./upload";
+import type Fund from "./fund";
 import type { DataItemCreateOptions } from "arbundles";
-import type Api from "./api.js";
+import type Api from "./api";
 import type BigNumber from "bignumber.js";
-import type { BundlrTransaction } from "./types.js";
+import type { BundlrTransaction } from "./types";
 import type {
   Arbundles,
   BundlrTransactionCreateOptions,
@@ -17,10 +17,10 @@ import type {
   UploadReceiptData,
   UploadResponse,
   WithdrawalResponse,
-} from "./types.js";
+} from "./types";
 import type { Signer } from "arbundles";
 import type { Readable } from "stream";
-import buildBundlrTransaction from "./transaction.js";
+import buildBundlrTransaction from "./transaction";
 
 export default abstract class Bundlr {
   public api!: Api;

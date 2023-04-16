@@ -1,8 +1,8 @@
-import Utils from "./utils.js";
+import Utils from "./utils";
 import BigNumber from "bignumber.js";
-import type Api from "./api.js";
+import type Api from "./api";
 import base64url from "base64url";
-import type { WithdrawalResponse } from "./types.js";
+import type { WithdrawalResponse } from "./types";
 
 /**
  * Create and send a withdrawal request
