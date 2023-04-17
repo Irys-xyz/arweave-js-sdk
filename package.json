@@ -1,6 +1,6 @@
 {
   "name": "@bundlr-network/client",
-  "version": "0.11.0-rc1",
+  "version": "0.11.0-rc2",
   "description": "JS client for Bundlr nodes",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
@@ -53,7 +53,8 @@
   "files": [
     "build/**/*.js",
     "build/**/*.js.map",
-    "build/**/*.ts"
+    "build/**/*.ts",
+    "build/**/package.json"
   ],
   "scripts": {
     "dev:build": "rm -rf build && concurrently \" yarn tsc -p cjs.tsconfig.json && chmod +x ./build/cjs/node/cli.js && sh ./scripts/fix-pkg.sh cjs commonjs \"  \" yarn tsc -p esm.tsconfig.json && chmod +x ./build/esm/node/cli.js && sh ./scripts/fix-pkg.sh esm module && yarn tsc-esm-fix --tsconfig esm.tsconfig.json  \" ",
