@@ -1,4 +1,4 @@
-import type { BundlrConfig } from "common/types";
+import type { BundlrConfig } from "../common/types";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
