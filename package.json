@@ -5,20 +5,20 @@
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Bundlr Network",
   "license": "Apache-2.0",
-  "main": "./build/cjs/index.js",
+  "main": "./build/cjs/cjsIndex.js",
   "browser": "./build/esm/web/index.js",
-  "module": "./build/esm/index.js",
+  "module": "./build/esm/esmIndex.js",
   "sideEffects": false,
   "exports": {
     ".": {
       "browser": "./build/esm/web/index.js",
       "require": {
-        "types": "./build/cjs/index.d.ts",
-        "default": "./build/cjs/index.js"
+        "types": "./build/cjs/cjsIndex.d.ts",
+        "default": "./build/cjs/cjsIndex.js"
       },
       "import": {
-        "types": "./build/esm/index.d.ts",
-        "default": "./build/esm/index.js"
+        "types": "./build/esm/esmIndex.d.ts",
+        "default": "./build/esm/esmIndex.js"
       }
     },
     "./node": {
@@ -42,7 +42,7 @@
       }
     },
     "./bundle": {
-      "types": "./build/esm/index.d.ts",
+      "types": "./build/esm/esmIndex.d.ts",
       "default": "./build/bundle.js"
     },
     "./*": {
@@ -51,10 +51,7 @@
     }
   },
   "files": [
-    "build/**/*.js",
-    "build/**/*.js.map",
-    "build/**/*.ts",
-    "build/**/package.json"
+    "build/**/*"
   ],
   "scripts": {
     "dev:build": "rm -rf build && concurrently \" yarn tsc -p cjs.tsconfig.json && chmod +x ./build/cjs/node/cli.js && sh ./scripts/fix-pkg.sh cjs commonjs \"  \" yarn tsc -p esm.tsconfig.json && chmod +x ./build/esm/node/cli.js && sh ./scripts/fix-pkg.sh esm module && yarn tsc-esm-fix --tsconfig esm.tsconfig.json  \" ",

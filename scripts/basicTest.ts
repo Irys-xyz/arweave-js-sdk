@@ -1,5 +1,5 @@
 // eslint-disable-file @typescript-eslint/no-unused-vars
-import Bundlr from "../src";
+import Bundlr from "../src/cjsIndex";
 import { promises, readFileSync } from "fs";
 import Crypto from "crypto";
 import { checkPath } from "../src/node/upload";

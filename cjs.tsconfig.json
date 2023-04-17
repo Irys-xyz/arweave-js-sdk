@@ -9,5 +9,8 @@
     },
     "include": [
         "src/**/*"
+    ],
+    "exclude": [
+        "./src/esmIndex.ts"
     ]
 }
