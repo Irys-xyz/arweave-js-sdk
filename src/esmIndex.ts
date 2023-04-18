@@ -1,5 +1,4 @@
-import NodeBundlr from "./node/index";
-// import WebBundlr from "./web/index";
+import NB from "./node/bundlr";
+export { default as WebBundlr } from "./web/bundlr";
+export const NodeBundlr = NB;
 export default NodeBundlr;
-export { default as WebBundlr } from "./web/index";
-export { default as NodeBundlr } from "./node/index";

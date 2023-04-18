@@ -8,19 +8,9 @@
   "main": "./build/cjs/cjsIndex.js",
   "browser": "./build/esm/web/index.js",
   "module": "./build/esm/esmIndex.js",
+  "types": "./build/cjs/esmIndex.d.ts",
   "sideEffects": false,
   "exports": {
-    ".": {
-      "browser": "./build/esm/web/index.js",
-      "require": {
-        "types": "./build/cjs/cjsIndex.d.ts",
-        "default": "./build/cjs/cjsIndex.js"
-      },
-      "import": {
-        "types": "./build/esm/esmIndex.d.ts",
-        "default": "./build/esm/esmIndex.js"
-      }
-    },
     "./node": {
       "require": {
         "types": "./build/cjs/node/index.d.ts",
@@ -44,6 +34,17 @@
     "./bundle": {
       "types": "./build/esm/esmIndex.d.ts",
       "default": "./build/bundle.js"
+    },
+    ".": {
+      "browser": "./build/esm/web/index.js",
+      "require": {
+        "types": "./build/cjs/cjsIndex.d.ts",
+        "default": "./build/cjs/cjsIndex.js"
+      },
+      "import": {
+        "types": "./build/esm/esmIndex.d.ts",
+        "default": "./build/esm/esmIndex.js"
+      }
     },
     "./*": {
       "types": "./*.d.ts",
@@ -97,6 +98,7 @@
     "@babel/preset-env": "^7.16.7",
     "@digitak/tsc-esm": "^3.1.4",
     "@manahippo/aptos-wallet-adapter": "^0.3.6",
+    "@microsoft/api-extractor": "^7.34.4",
     "@solana/wallet-adapter-base": "^0.9.2",
     "@types/async-retry": "^1.4.3",
     "@types/base64url": "^2.0.0",
