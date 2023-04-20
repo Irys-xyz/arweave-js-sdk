@@ -276,7 +276,7 @@ export class ChunkingUploader extends EventEmitter {
 
       if (!isTransaction) teeStream.write(chunk);
 
-      if (processing.size >= this.batchSize) {
+      while (processing.size >= this.batchSize) {
         // get & then remove resolved promise from processing set
         const [p] = await Promise.race(processing);
         processing.delete(p);

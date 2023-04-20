@@ -9,7 +9,8 @@ import inquirer from "inquirer";
 import { Readable } from "stream";
 import type { DataItem } from "arbundles";
 import { basename, join, relative, resolve, sep } from "path";
-import csv from "csv";
+import parse from "csv-parse";
+import stringify from "csv-stringify";
 
 export const checkPath = async (path: PathLike): Promise<boolean> => {
   return promises
@@ -120,7 +121,7 @@ export default class NodeUploader extends Uploader {
           res(d);
         });
       });
-      const csvStream = Readable.from(rstrm.pipe(csv.parse.default({ delimiter: ",", columns: true })));
+      const csvStream = Readable.from(rstrm.pipe(parse({ delimiter: ",", columns: true })));
 
       for await (const record of csvStream) {
         record as { path: string; id: string };
@@ -179,7 +180,7 @@ export default class NodeUploader extends Uploader {
       }
     }
 
-    const stringifier = csv.stringify.default({
+    const stringifier = stringify({
       header: false,
       columns: {
         path: "path",
@@ -262,7 +263,7 @@ export default class NodeUploader extends Uploader {
    * @returns the path to the generated manifest
    */
   private async generateManifestFromCsv(path: string, nowRemoved?: Map<string, true>, indexFile?: string): Promise<string> {
-    const csvstrm = csv.parse.default({ delimiter: ",", columns: true });
+    const csvstrm = parse({ delimiter: ",", columns: true });
     const csvPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.csv`);
     const manifestPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.json`);
     const wstrm = createWriteStream(manifestPath, { flags: "w+" });
