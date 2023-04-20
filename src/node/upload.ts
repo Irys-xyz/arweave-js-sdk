@@ -7,9 +7,10 @@ import type Utils from "../common/utils";
 import mime from "mime-types";
 import inquirer from "inquirer";
 import { Readable } from "stream";
-import { DataItem } from "arbundles";
+import type { DataItem } from "arbundles";
 import { basename, join, relative, resolve, sep } from "path";
-import { parse, stringify } from "csv";
+import parse from "csv-parse";
+import stringify from "csv-stringify";
 
 export const checkPath = async (path: PathLike): Promise<boolean> => {
   return promises
@@ -120,7 +121,7 @@ export default class NodeUploader extends Uploader {
           res(d);
         });
       });
-      const csvStream = Readable.from(rstrm.pipe(parse.default({ delimiter: ",", columns: true })));
+      const csvStream = Readable.from(rstrm.pipe(parse({ delimiter: ",", columns: true })));
 
       for await (const record of csvStream) {
         record as { path: string; id: string };
@@ -179,7 +180,7 @@ export default class NodeUploader extends Uploader {
       }
     }
 
-    const stringifier = stringify.default({
+    const stringifier = stringify({
       header: false,
       columns: {
         path: "path",
@@ -234,7 +235,7 @@ export default class NodeUploader extends Uploader {
    * @returns A dataItem
    */
   protected async processItem(item: string | Buffer | Readable | DataItem): Promise<any> {
-    if (DataItem.isDataItem(item)) {
+    if (this.arbundles.DataItem.isDataItem(item)) {
       return this.uploadTransaction(item);
     }
 
@@ -262,7 +263,7 @@ export default class NodeUploader extends Uploader {
    * @returns the path to the generated manifest
    */
   private async generateManifestFromCsv(path: string, nowRemoved?: Map<string, true>, indexFile?: string): Promise<string> {
-    const csvstrm = parse.default({ delimiter: ",", columns: true });
+    const csvstrm = parse({ delimiter: ",", columns: true });
     const csvPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.csv`);
     const manifestPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.json`);
     const wstrm = createWriteStream(manifestPath, { flags: "w+" });

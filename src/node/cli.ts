@@ -4,7 +4,6 @@ import { Command } from "commander";
 import { readFileSync } from "fs";
 import Bundlr from "./bundlr";
 import inquirer from "inquirer";
-import { execSync } from "child_process";
 import BigNumber from "bignumber.js";
 import { checkPath } from "./upload";
 import type NodeBundlr from "./bundlr";
@@ -39,11 +38,7 @@ program
   .option("--force-chunking", "Forces usage of chunking for all files regardless of size");
 // Define commands
 // uses NPM view to query the package's version.
-program.version(
-  execSync("npm view @bundlr-network/client version").toString().replace("\n", ""),
-  "-v, --version",
-  "Gets the current package version of the bundlr client",
-);
+program.version(Bundlr.VERSION, "-v, --version", "Gets the current package version of the bundlr client");
 
 // Balance command - gets the provided address' balance on the specified bundler
 program

@@ -1,4 +1,4 @@
-import { publicKeyCreate } from "secp256k1";
+import secp256k1 from "secp256k1";
 import { ethers, Wallet } from "ethers";
 import BigNumber from "bignumber.js";
 import { EthereumSigner, keccak256 } from "arbundles";
@@ -131,6 +131,6 @@ export default class EthereumConfig extends BaseNodeCurrency {
   }
 
   getPublicKey(): string | Buffer {
-    return Buffer.from(publicKeyCreate(Buffer.from(this.wallet, "hex"), false));
+    return Buffer.from(secp256k1.publicKeyCreate(Buffer.from(this.wallet, "hex"), false));
   }
 }

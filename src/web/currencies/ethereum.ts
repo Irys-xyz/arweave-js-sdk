@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import BigNumber from "bignumber.js";
 import type { Tx, CurrencyConfig } from "../../common/types";
 import BaseWebCurrency from "../currency";
-import { InjectedTypedEthereumSigner } from "arbundles";
+import { InjectedTypedEthereumSigner } from "arbundles/web";
 
 const ethBigNumber = ethers.BigNumber; // required for hexString conversions (w/ 0x padding)
 const ethereumSigner = InjectedTypedEthereumSigner;
@@ -11,7 +11,8 @@ export default class EthereumConfig extends BaseWebCurrency {
   protected signer!: InjectedTypedEthereumSigner;
   protected declare wallet: ethers.providers.Web3Provider;
   protected w3signer!: ethers.providers.JsonRpcSigner;
-  protected declare providerInstance: ethers.providers.JsonRpcProvider;
+  protected declare providerInstance: ethers.providers.Web3Provider;
+  public readonly inheritsRPC = true;
 
   constructor(config: CurrencyConfig) {
     super(config);
@@ -108,7 +109,8 @@ export default class EthereumConfig extends BaseWebCurrency {
     this.w3signer = await this.wallet.getSigner();
     this._address = await this.w3signer.getAddress();
     await this.getSigner().ready();
-    this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
+    // this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
+    this.providerInstance = this.wallet;
     await this.providerInstance?._ready();
   }
 }

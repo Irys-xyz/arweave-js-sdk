@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import { KeyPair, utils, transactions, providers } from "near-api-js";
-import { decode, encode } from "bs58";
+import bs58 from "bs58";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";
 import type { JsonRpcProvider } from "near-api-js/lib/providers";
@@ -44,7 +44,7 @@ export default class NearConfig extends BaseNodeCurrency {
     // NOTE: their type defs are out of date with their actual API (23-01-2022)... beware the expect-error when debugging!
     const provider = await this.getProvider();
     const [id, hash] = txId.split(":");
-    const status = await provider.txStatusReceipts(decode(hash), id);
+    const status = await provider.txStatusReceipts(bs58.decode(hash), id);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
 
@@ -73,7 +73,7 @@ export default class NearConfig extends BaseNodeCurrency {
    * @param owner // assumed to be the "ed25519:" header + b58 encoded key
    */
   ownerToAddress(owner: any): string {
-    return Buffer.from(typeof owner === "string" ? decode(owner.replace("ed25519:", "")) : decode(encode(owner))).toString("hex");
+    return Buffer.from(typeof owner === "string" ? bs58.decode(owner.replace("ed25519:", "")) : bs58.decode(bs58.encode(owner))).toString("hex");
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {

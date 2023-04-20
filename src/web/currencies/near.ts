@@ -1,10 +1,10 @@
 import type { Signer } from "arbundles";
-import { NearSigner } from "arbundles";
+import { NearSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import type { providers, WalletConnection, Near } from "near-api-js";
 import { KeyPair, utils, transactions, keyStores } from "near-api-js";
-import { decode, encode } from "bs58";
+import bs58 from "bs58";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";
 import BaseWebCurrency from "../currency";
@@ -60,7 +60,7 @@ export default class NearConfig extends BaseWebCurrency {
     // NOTE: their type defs are out of date with their actual API (23-01-2022)... beware the expect-error when debugging!
     const provider = await this.providerInstance;
     const [id, hash] = txId.split(":");
-    const status = await provider.txStatusReceipts(decode(hash), id);
+    const status = await provider.txStatusReceipts(bs58.decode(hash), id);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
 
@@ -95,8 +95,8 @@ export default class NearConfig extends BaseWebCurrency {
    */
   ownerToAddress(owner: any): string {
     // should just return the loaded address?
-    const pubkey = typeof owner === "string" ? owner : encode(owner);
-    return Buffer.from(decode(pubkey.replace("ed25519:", ""))).toString("hex");
+    const pubkey = typeof owner === "string" ? owner : bs58.encode(owner);
+    return Buffer.from(bs58.decode(pubkey.replace("ed25519:", ""))).toString("hex");
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {

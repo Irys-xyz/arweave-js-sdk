@@ -221,3 +221,25 @@ export default class StreamToAsyncIterator<T = unknown> implements AsyncIterable
     return this._state;
   }
 }
+
+// export const addAsyncIterator = (body: ReadableStream) => {
+//   const bodyWithIter = body as ReadableStream<Uint8Array> & AsyncIterable<Uint8Array>;
+//   if (typeof bodyWithIter[Symbol.asyncIterator] === "undefined") {
+//     bodyWithIter[Symbol.asyncIterator] = webIiterator<Uint8Array>(body);
+//     return bodyWithIter;
+//   }
+//   return body;
+// };
+
+// export const webIiterator = function <T>(stream: ReadableStream) {
+//   return async function* iteratorGenerator<T>() {
+//     const reader = stream.getReader(); //lock
+//     try {
+//       const { done, value } = await reader.read();
+//       if (done) return;
+//       yield value as T;
+//     } finally {
+//       reader.releaseLock(); //unlock
+//     }
+//   };
+// };

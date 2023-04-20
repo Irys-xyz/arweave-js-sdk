@@ -3,6 +3,13 @@
     "compilerOptions": {
         "module": "esnext",
         "target": "esnext",
-        "outDir": "./build/esm"
-    }
+        "outDir": "./build/esm",
+        "rootDir": "./src"
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "./src/cjsIndex.ts"
+    ]
 }

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios";
 import Axios from "axios";
+import Bundlr from "./bundlr";
 
 // taken from the arweave.js lib
 export interface ApiConfig {
@@ -59,7 +60,7 @@ export default class Api {
       timeout: config.timeout ?? 20000,
       logging: config.logging ?? false,
       logger: config.logger ?? console.log,
-      headers: config.headers ?? {},
+      headers: { ...config.headers, "x-bundlr-js-sdk-version": Bundlr.VERSION },
       withCredentials: true,
     };
   }

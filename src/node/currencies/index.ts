@@ -10,8 +10,10 @@ import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
 import MultiSignatureAptos from "./multiAptos";
+import type NodeBundlr from "../bundlr";
 
 export default function getCurrency(
+  bundlr: NodeBundlr,
   currency: string,
   wallet: any,
   url: string,
@@ -22,6 +24,7 @@ export default function getCurrency(
   switch (currency) {
     case "arweave":
       return new ArweaveConfig({
+        bundlr,
         name: "arweave",
         ticker: "AR",
         minConfirm: 10,
@@ -31,9 +34,10 @@ export default function getCurrency(
         opts,
       });
     case "ethereum":
-      return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet, opts });
+      return new EthereumConfig({ bundlr, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet, opts });
     case "matic":
       return new EthereumConfig({
+        bundlr,
         name: "matic",
         ticker: "MATIC",
         minConfirm: 1,
@@ -42,13 +46,28 @@ export default function getCurrency(
         opts,
       });
     case "bnb":
-      return new EthereumConfig({ name: "bnb", ticker: "BNB", providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org/", wallet, opts });
+      return new EthereumConfig({
+        bundlr,
+        name: "bnb",
+        ticker: "BNB",
+        providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org/",
+        wallet,
+        opts,
+      });
     case "fantom":
-      return new EthereumConfig({ name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet, opts });
+      return new EthereumConfig({ bundlr, name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet, opts });
     case "solana":
-      return new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet, opts });
+      return new SolanaConfig({
+        bundlr,
+        name: "solana",
+        ticker: "SOL",
+        providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/",
+        wallet,
+        opts,
+      });
     case "avalanche":
       return new EthereumConfig({
+        bundlr,
         name: "avalanche",
         ticker: "AVAX",
         providerUrl: providerUrl ?? "https://api.avax-test.network/ext/bc/C/rpc/",
@@ -57,6 +76,7 @@ export default function getCurrency(
       });
     case "boba-eth":
       return new EthereumConfig({
+        bundlr,
         name: "boba-eth",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -66,6 +86,7 @@ export default function getCurrency(
       });
     case "boba": {
       const k = new ERC20Config({
+        bundlr,
         name: "boba",
         ticker: "BOBA",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -88,9 +109,17 @@ export default function getCurrency(
       return k;
     }
     case "arbitrum":
-      return new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc/", wallet, opts });
+      return new EthereumConfig({
+        bundlr,
+        name: "arbitrum",
+        ticker: "ETH",
+        providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc/",
+        wallet,
+        opts,
+      });
     case "chainlink":
       return new ERC20Config({
+        bundlr,
         name: "chainlink",
         ticker: "LINK",
         providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/",
@@ -100,6 +129,7 @@ export default function getCurrency(
       });
     case "kyve": {
       const k = new ERC20Config({
+        bundlr,
         name: "kyve",
         ticker: "KYVE",
         minConfirm: 0,
@@ -119,6 +149,7 @@ export default function getCurrency(
     }
     case "near": {
       return new NearConfig({
+        bundlr,
         name: "near",
         ticker: "NEAR",
         providerUrl: providerUrl ?? "https://rpc.mainnet.near.org",
@@ -128,13 +159,21 @@ export default function getCurrency(
       });
     }
     case "algorand": {
-      return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", wallet, opts });
+      return new AlgorandConfig({ bundlr, name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", wallet, opts });
     }
     case "aptos": {
-      return new AptosConfig({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com", wallet, opts });
+      return new AptosConfig({
+        bundlr,
+        name: "aptos",
+        ticker: "APTOS",
+        providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com",
+        wallet,
+        opts,
+      });
     }
     case "multiaptos": {
       return new MultiSignatureAptos({
+        bundlr,
         name: "aptos",
         ticker: "APTOS",
         providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",

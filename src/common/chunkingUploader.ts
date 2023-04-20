@@ -1,13 +1,11 @@
-import type { DataItemCreateOptions } from "arbundles";
-import { createData, DataItem, deepHash } from "arbundles";
+import type { DataItem, DataItemCreateOptions } from "arbundles";
 import type { Readable } from "stream";
 import { PassThrough } from "stream";
 import { EventEmitter } from "events";
 import type Api from "./api";
-import type { Currency, UploadOptions, UploadResponse } from "./types";
+import type { Arbundles, Currency, UploadOptions, UploadResponse } from "./types";
 import Utils from "./utils";
 import Crypto from "crypto";
-import { stringToBuffer } from "arweave/web/lib/utils";
 import retry from "async-retry";
 import type { AxiosResponse } from "axios";
 import StreamToAsyncIterator from "./s2ai";
@@ -36,10 +34,12 @@ export class ChunkingUploader extends EventEmitter {
   protected paused = false;
   protected isResume = false;
   protected uploadOptions: UploadOptions | undefined;
+  protected arbundles: Arbundles;
 
   constructor(currencyConfig: Currency, api: Api) {
     super({ captureRejections: true });
     this.currencyConfig = currencyConfig;
+    this.arbundles = this.currencyConfig.bundlr.arbundles;
     this.api = api;
     this.currency = this.currencyConfig.name;
     this.chunkSize = 25_000_000;
@@ -91,7 +91,7 @@ export class ChunkingUploader extends EventEmitter {
 
   public async uploadTransaction(data: Readable | Buffer | DataItem, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse, any>> {
     this.uploadOptions = opts;
-    if (DataItem.isDataItem(data)) {
+    if (this.arbundles.DataItem.isDataItem(data)) {
       return this.runUpload(data.getRaw());
     } else {
       return this.runUpload(data);
@@ -200,7 +200,7 @@ export class ChunkingUploader extends EventEmitter {
     let txHeaderLength!: number;
     // doesn't matter if we randomise ID (anchor) between resumes, as the tx header/signing info is always uploaded last.
     if (!isTransaction) {
-      tx = createData("", this.currencyConfig.getSigner(), {
+      tx = this.arbundles.createData("", this.currencyConfig.getSigner(), {
         ...transactionOpts,
         anchor: transactionOpts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32),
       });
@@ -213,8 +213,10 @@ export class ChunkingUploader extends EventEmitter {
     if (Buffer.isBuffer(dataStream)) {
       stream.write(dataStream);
       stream.end();
-    } else {
+    } else if ("pipe" in dataStream) {
       dataStream.pipe(stream);
+    } else {
+      throw new Error("Input data is not a buffer or a compatible stream (no .pipe method)");
     }
 
     let offset = 0;
@@ -235,9 +237,9 @@ export class ChunkingUploader extends EventEmitter {
       offset += heldChunk.length;
       teeStream.write(heldChunk.slice(txLength));
       const sigComponents = [
-        stringToBuffer("dataitem"),
-        stringToBuffer("1"),
-        stringToBuffer(tx.signatureType.toString()),
+        this.arbundles.stringToBuffer("dataitem"),
+        this.arbundles.stringToBuffer("1"),
+        this.arbundles.stringToBuffer(tx.signatureType.toString()),
         tx.rawOwner,
         tx.rawTarget,
         tx.rawAnchor,
@@ -245,7 +247,7 @@ export class ChunkingUploader extends EventEmitter {
         new StreamToAsyncIterator<Buffer>(teeStream),
       ];
       // do *not* await, this needs to process in parallel to the upload process.
-      deephash = deepHash(sigComponents);
+      deephash = this.arbundles.deepHash(sigComponents);
     }
 
     let nextPresent = present.pop();
@@ -274,7 +276,7 @@ export class ChunkingUploader extends EventEmitter {
 
       if (!isTransaction) teeStream.write(chunk);
 
-      if (processing.size >= this.batchSize) {
+      while (processing.size >= this.batchSize) {
         // get & then remove resolved promise from processing set
         const [p] = await Promise.race(processing);
         processing.delete(p);
@@ -321,7 +323,7 @@ export class ChunkingUploader extends EventEmitter {
       finishUpload.data = { id: finishUpload.statusText.split(" ")?.[1] };
     }
     if (this?.uploadOptions?.getReceiptSignature) {
-      finishUpload.data.verify = Utils.verifyReceipt.bind({}, finishUpload.data.data);
+      finishUpload.data.verify = Utils.verifyReceipt.bind({}, this.arbundles, finishUpload.data.data);
     }
     this.emit("done", finishUpload);
     return finishUpload;
