@@ -1,4 +1,3 @@
-import secp256k1 from "secp256k1";
 import { ethers, Wallet } from "ethers";
 import BigNumber from "bignumber.js";
 import { EthereumSigner, keccak256 } from "arbundles";
@@ -50,7 +49,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
-    const signer = new ethereumSigner(this.wallet);
+    const signer = this.getSigner();
     return signer.sign(data);
   }
 
@@ -130,7 +129,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
     return { txId, tx: signedTx };
   }
 
-  getPublicKey(): string | Buffer {
-    return Buffer.from(secp256k1.publicKeyCreate(Buffer.from(this.wallet, "hex"), false));
+  getPublicKey(): Buffer {
+    return this.getSigner().publicKey;
   }
 }
