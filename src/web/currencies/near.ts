@@ -2,19 +2,22 @@ import type { Signer } from "arbundles";
 import { NearSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
-import type { providers, WalletConnection, Near } from "near-api-js";
-import { KeyPair, utils, transactions, keyStores } from "near-api-js";
+import { KeyPair } from "@near-js/crypto";
+import { BrowserLocalStorageKeyStore } from "@near-js/keystores-browser";
+import { SCHEMA, Signature, SignedTransaction, actionCreators, createTransaction } from "@near-js/transactions";
 import bs58 from "bs58";
+import { serialize } from "borsh";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";
 import BaseWebCurrency from "../currency";
-
+import type { Provider } from "@near-js/providers";
+import type { WalletConnection, Near } from "@near-js/wallet-account";
 export default class NearConfig extends BaseWebCurrency {
   // protected keyStore: KeyPair
   protected keyPair!: KeyPair;
   protected declare wallet: WalletConnection;
   protected near: Near;
-  protected declare providerInstance: providers.Provider;
+  protected declare providerInstance: Provider;
 
   constructor(config: CurrencyConfig) {
     super(config);
@@ -27,7 +30,7 @@ export default class NearConfig extends BaseWebCurrency {
     if (!this.wallet.isSignedIn()) {
       throw new Error("Wallet has not been signed in!");
     }
-    const keystore = new keyStores.BrowserLocalStorageKeyStore();
+    const keystore = new BrowserLocalStorageKeyStore();
     const account = this.wallet.account();
     // console.log(this.address)
     // console.log(await account.getAccessKeys())
@@ -132,7 +135,7 @@ export default class NearConfig extends BaseWebCurrency {
   }
 
   async sendTx(data: any): Promise<any> {
-    data as transactions.SignedTransaction;
+    data as SignedTransaction;
     const res = await this.providerInstance.sendTransaction(data);
     return `${this.address}:${res.transaction.hash}`; // encode into compound format
   }
@@ -149,15 +152,15 @@ export default class NearConfig extends BaseWebCurrency {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     const nonce = ++accessKey.nonce;
-    const recentBlockHash = utils.serialize.base_decode(accessKey.block_hash);
-    const actions = [transactions.transfer(new BN(new BigNumber(amount).toString()))];
-    const tx = transactions.createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash);
-    const serialTx = utils.serialize.serialize(transactions.SCHEMA, tx);
+    const recentBlockHash = Buffer.from(bs58.decode(accessKey.block_hash));
+    const actions = [actionCreators.transfer(new BN(new BigNumber(amount).toString()))];
+    const tx = createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash);
+    const serialTx = serialize(SCHEMA, tx);
     const serialTxHash = new Uint8Array(sha256.array(serialTx));
     const signature = this.keyPair.sign(serialTxHash);
-    const signedTx = new transactions.SignedTransaction({
+    const signedTx = new SignedTransaction({
       transaction: tx,
-      signature: new transactions.Signature({
+      signature: new Signature({
         keyType: tx.publicKey.keyType,
         data: signature.signature,
       }),
