@@ -1,4 +1,4 @@
-import { AptosClient, CoinClient, HexString, TransactionBuilderEd25519, TxnBuilderTypes } from "aptos";
+import { AptosClient, TransactionBuilderEd25519, TransactionBuilderRemoteABI, TxnBuilderTypes } from "aptos";
 import type { Signer } from "arbundles";
 import { InjectedAptosSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
@@ -112,13 +112,16 @@ export default class AptosConfig extends BaseWebCurrency {
 
   async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number }> {
     const client = await this.getProvider();
-    const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
+
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+
+    const builder = new TransactionBuilderRemoteABI(client, { sender: this.address });
+
+    const rawTransaction = await builder.build(
       "0x1::coin::transfer",
       ["0x1::aptos_coin::AptosCoin"],
       [to ?? "0x149f7dc9c8e43c14ab46d3a6b62cfe84d67668f764277411f98732bf6718acf9", new BigNumber(amount).toNumber()],
     );
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
-    const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {
