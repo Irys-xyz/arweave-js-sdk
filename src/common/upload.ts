@@ -2,7 +2,7 @@ import type { AxiosResponse } from "axios";
 import Utils from "./utils";
 import type Api from "./api";
 import type { Arbundles, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
-import PromisePool from "@supercharge/promise-pool";
+import { PromisePool } from "@supercharge/promise-pool";
 import retry from "async-retry";
 import { ChunkingUploader } from "./chunkingUploader";
 import type { Readable } from "stream";
