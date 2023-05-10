@@ -21,7 +21,9 @@ export default class NodeBundlr extends Bundlr {
     const parsed = new URL(url);
     super(parsed, arbundles);
     if (parsed.host === "devnet.bundlr.network" && !config?.providerUrl)
-      throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.bundlr.network/sdk/using-devnet`);
+      throw new Error(
+        `Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.bundlr.network/developer-docs/using-devnet`,
+      );
     this.api = new Api({
       protocol: parsed.protocol.slice(0, -1),
       port: parsed.port,
