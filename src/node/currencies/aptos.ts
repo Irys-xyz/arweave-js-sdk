@@ -28,6 +28,8 @@ export default class AptosConfig extends BaseNodeCurrency {
       config.accountInstance = new AptosAccount(config.wallet);
     }
     super(config);
+    // @ts-expect-error assignment doesn't carry through for some reason
+    this.accountInstance = config.accountInstance;
     this.signingFn = config?.opts?.signingFunction;
     this.needsFee = true;
     this.base = ["aptom", 1e8];
