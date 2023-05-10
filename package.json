@@ -79,7 +79,7 @@
     "@solana/web3.js": "^1.36.0",
     "@supercharge/promise-pool": "^2.1.0",
     "algosdk": "^1.13.1",
-    "aptos": "=1.3.14",
+    "aptos": "^1.8.5",
     "arbundles": "^0.9.5",
     "arweave": "=1.11.8",
     "async-retry": "^1.3.3",

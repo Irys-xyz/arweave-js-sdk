@@ -1,10 +1,9 @@
 import {
   AptosAccount,
   AptosClient,
-  CoinClient,
-  HexString,
   TransactionBuilder,
   TransactionBuilderEd25519,
+  TransactionBuilderRemoteABI,
   TxnBuilderTypes /* BCS, TxnBuilderTypes */,
 } from "aptos";
 import type { Signer } from "arbundles";
@@ -29,6 +28,8 @@ export default class AptosConfig extends BaseNodeCurrency {
       config.accountInstance = new AptosAccount(config.wallet);
     }
     super(config);
+    // @ts-expect-error assignment doesn't carry through for some reason
+    this.accountInstance = config.accountInstance;
     this.signingFn = config?.opts?.signingFunction;
     this.needsFee = true;
     this.base = ["aptom", 1e8];
@@ -104,13 +105,14 @@ export default class AptosConfig extends BaseNodeCurrency {
   async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number }> {
     if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
     const client = await this.getProvider();
-    const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
+
+    const builder = new TransactionBuilderRemoteABI(client, { sender: this.address });
+
+    const rawTransaction = await builder.build(
       "0x1::coin::transfer",
       ["0x1::aptos_coin::AptosCoin"],
       [to ?? "0x149f7dc9c8e43c14ab46d3a6b62cfe84d67668f764277411f98732bf6718acf9", new BigNumber(amount).toNumber()],
     );
-
-    const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {
@@ -152,16 +154,24 @@ export default class AptosConfig extends BaseNodeCurrency {
   ): Promise<{ txId: string | undefined; tx: any }> {
     if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
     const client = await this.getProvider();
-    const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
-      "0x1::coin::transfer",
-      ["0x1::aptos_coin::AptosCoin"],
-      [to, new BigNumber(amount).toNumber()],
-    );
+    // const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
+    //   "0x1::coin::transfer",
+    //   ["0x1::aptos_coin::AptosCoin"],
+    //   [to, new BigNumber(amount).toNumber()],
+    // );
 
-    const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload, {
+    // const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload, {
+    //   gasUnitPrice: BigInt(fee?.gasUnitPrice ?? 100),
+    //   maxGasAmount: BigInt(fee?.maxGasAmount ?? 100_000),
+    // });
+    const builder = new TransactionBuilderRemoteABI(client, {
+      sender: this.address,
       gasUnitPrice: BigInt(fee?.gasUnitPrice ?? 100),
       maxGasAmount: BigInt(fee?.maxGasAmount ?? 100_000),
     });
+
+    const rawTransaction = await builder.build("0x1::coin::transfer", ["0x1::aptos_coin::AptosCoin"], [to, new BigNumber(amount).toNumber()]);
+
     // const bcsTxn = AptosClient.generateBCSTransaction(this.accountInstance, rawTransaction);
 
     const signingMessage = TransactionBuilder.getSigningMessage(rawTransaction);
