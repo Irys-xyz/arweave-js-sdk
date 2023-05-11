@@ -37,6 +37,6 @@
     }
   },
   "include": ["src/**/*", "scripts/**/*"],
-  "exclude": ["src/__tests__/**", "tests/**"],
+  "exclude": ["**/__tests__/**/*", "tests/**"],
 
 }
