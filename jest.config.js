@@ -1,17 +1,9 @@
+/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
+  preset: "ts-jest",
   testEnvironment: "node",
-  transform: {
-    "^.+\\.tsx?$": "ts-jest"
-  },
-  moduleFileExtensions: [
-    "ts",
-    "js",
-    "json",
-  ],
-  testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.(ts|js)x?$",
-  coverageDirectory: "coverage",
-  collectCoverageFrom: [
-    "src/**/*.{ts,js}",
-    "!src/**/*.d.ts",
-  ],
+  testMatch: ["/**/src/**/__test?(s)__/**/*.[jt]s?(x)", "/**/scripts/**/__test?(s)__/**/*.[jt]s?(x)", "/**/tests/**/?(*.)+(spec|test).[tj]s?(x)"],
+
+  // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
+  testPathIgnorePatterns: ["/node_modules/", "build"],
 };

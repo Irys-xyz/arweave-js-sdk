@@ -131,7 +131,7 @@
     "resolve-tspaths": "^0.8.8",
     "serve": "^13.0.2",
     "stream-browserify": "^3.0.0",
-    "ts-jest": "^27.0.7",
+    "ts-jest": "^27.1.5",
     "ts-loader": "^9.2.6",
     "ts-node": "^10.9.1",
     "tsc-esm-fix": "^2.20.12",

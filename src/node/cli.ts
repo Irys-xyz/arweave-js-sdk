@@ -8,7 +8,7 @@ import BigNumber from "bignumber.js";
 import { checkPath } from "./upload";
 import type NodeBundlr from "./bundlr";
 
-const program = new Command();
+export const program = new Command();
 
 let balpad, walpad; // padding state variables
 
@@ -142,8 +142,8 @@ program
   .description("Funds your account with the specified amount of atomic units")
   .argument("<amount>", "Amount to add in atomic units")
   .action(async (amount: string) => {
-    if (isNaN(+amount)) throw new Error("Amount must be an integer");
     try {
+      if (isNaN(+amount)) throw new Error("Amount must be an integer");
       const bundlr = await init(options, "fund");
       const confirmed = await confirmation(
         `Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(amount).toFixed()} ${bundlr.currency}) to ${
@@ -167,8 +167,8 @@ program
   .description("Check how much of a specific currency is required for an upload of <amount> bytes")
   .argument("<bytes>", "The number of bytes to get the price for")
   .action(async (bytes: string) => {
-    if (isNaN(+bytes)) throw new Error("Amount must be an integer");
     try {
+      if (isNaN(+bytes)) throw new Error("Amount must be an integer");
       const bundlr = await init(options, "price");
       await bundlr.utils.getBundlerAddress(options.currency); // will throw if the bundler doesn't support the currency
       const cost = await bundlr.utils.getPrice(options.currency, +bytes);
@@ -271,29 +271,36 @@ async function loadWallet(path: string): Promise<any> {
 
 const options = program.opts();
 
-// to debug CLI: log process argv, load into var, and run in debugger.
+const isScript = require.main === module;
+if (isScript) {
+  // to debug CLI: log process argv, load into var, and run in debugger.
 
-// console.log(JSON.stringify(process.argv));
-// process.exit(1);
+  // console.log(JSON.stringify(process.argv));
+  // process.exit(1);
 
-// replace this with dumped array. (make sure to append/include --no-confirmation)
-const argv = process.argv;
+  // replace this with dumped array. (make sure to append/include --no-confirmation)
+  const argv = process.argv;
 
-// padding hack
-// this is because B64URL strings can start with a "-" which makes commander think it's a flag
-// so we pad it with a char that is not part of the B64 char set to prevent wrongful detection
-// and then remove it later.
+  // padding hack
+  // this is because B64URL strings can start with a "-" which makes commander think it's a flag
+  // so we pad it with a char that is not part of the B64 char set to prevent wrongful detection
+  // and then remove it later.
 
-const bal = argv.indexOf("balance") + 1;
-if (bal != 0 && argv[bal] && /-{1}[a-z0-9_-]{42}/i.test(argv[bal])) {
-  balpad = true;
-  argv[bal] = "[" + argv[bal];
+  const bal = argv.indexOf("balance") + 1;
+  if (bal != 0 && argv[bal] && /-{1}[a-z0-9_-]{42}/i.test(argv[bal])) {
+    balpad = true;
+    argv[bal] = "[" + argv[bal];
+  }
+  // padding hack to wallet addresses as well
+  const wal = (!argv.includes("-w") ? argv.indexOf("--wallet") : argv.indexOf("-w")) + 1;
+  if (wal != 0 && argv[wal] && /-{1}.*/i.test(argv[wal])) {
+    walpad = true;
+    argv[wal] = "[" + argv[wal];
+  }
+  // pass the CLI our argv
+  program.parse(argv);
 }
-// padding hack to wallet addresses as well
-const wal = (!argv.includes("-w") ? argv.indexOf("--wallet") : argv.indexOf("-w")) + 1;
-if (wal != 0 && argv[wal] && /-{1}.*/i.test(argv[wal])) {
-  walpad = true;
-  argv[wal] = "[" + argv[wal];
-}
-// pass the CLI our argv
-program.parse(argv);
+
+export const exportForTesting = {
+  path: __filename,
+};

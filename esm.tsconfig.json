@@ -10,6 +10,8 @@
         "src/**/*"
     ],
     "exclude": [
-        "./src/cjsIndex.ts"
+        "./src/cjsIndex.ts",
+        "**/__tests__/**/*",
+        "tests/**/*"
     ]
 }
