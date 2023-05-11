@@ -1,17 +1,15 @@
-import keccak256 from "arbundles/src/signing/keccak256";
-import { publicKeyCreate } from "secp256k1";
 import { ethers, Wallet } from "ethers";
 import BigNumber from "bignumber.js";
-import { signers } from "arbundles";
-import type { Signer } from "arbundles/src/signing";
+import { EthereumSigner, keccak256 } from "arbundles";
+import type { Signer } from "arbundles";
 import type { JsonRpcProvider } from "@ethersproject/providers";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 
-const ethereumSigner = signers.EthereumSigner;
+const ethereumSigner = EthereumSigner;
 
 export default class EthereumConfig extends BaseNodeCurrency {
-  protected providerInstance!: JsonRpcProvider;
+  protected declare providerInstance: JsonRpcProvider;
 
   constructor(config: CurrencyConfig) {
     super(config);
@@ -51,7 +49,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
-    const signer = new ethereumSigner(this.wallet);
+    const signer = this.getSigner();
     return signer.sign(data);
   }
 
@@ -131,7 +129,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
     return { txId, tx: signedTx };
   }
 
-  getPublicKey(): string | Buffer {
-    return Buffer.from(publicKeyCreate(Buffer.from(this.wallet, "hex"), false));
+  getPublicKey(): Buffer {
+    return this.getSigner().publicKey;
   }
 }

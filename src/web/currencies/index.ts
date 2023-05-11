@@ -7,21 +7,36 @@ import ERC20Config from "./erc20";
 import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
+import type WebBundlr from "web";
 
-export default function getCurrency(currency: string, wallet: any, providerUrl?: string, contractAddress?: string): BaseCurrency {
+export default function getCurrency(bundlr: WebBundlr, currency: string, wallet: any, providerUrl?: string, contractAddress?: string): BaseCurrency {
   switch (currency) {
     case "ethereum":
-      return new EthereumConfig({ name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet });
+      return new EthereumConfig({ bundlr, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet });
     case "matic":
-      return new EthereumConfig({ name: "matic", ticker: "MATIC", providerUrl: providerUrl ?? "https://polygon-rpc.com", wallet, minConfirm: 1 });
+      return new EthereumConfig({
+        bundlr,
+        name: "matic",
+        ticker: "MATIC",
+        providerUrl: providerUrl ?? "https://polygon-rpc.com",
+        wallet,
+        minConfirm: 1,
+      });
     case "arbitrum":
-      return new EthereumConfig({ name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet });
+      return new EthereumConfig({ bundlr, name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet });
     case "bnb":
-      return new EthereumConfig({ name: "bnb", ticker: "BNB", providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet });
+      return new EthereumConfig({ bundlr, name: "bnb", ticker: "BNB", providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet });
     case "avalanche":
-      return new EthereumConfig({ name: "avalanche", ticker: "AVAX", providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc", wallet });
+      return new EthereumConfig({
+        bundlr,
+        name: "avalanche",
+        ticker: "AVAX",
+        providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc",
+        wallet,
+      });
     case "boba-eth":
       return new EthereumConfig({
+        bundlr,
         name: "boba-eth",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -30,6 +45,7 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
       });
     case "boba": {
       const k = new ERC20Config({
+        bundlr,
         name: "boba",
         ticker: "BOBA",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -52,13 +68,19 @@ export default function getCurrency(currency: string, wallet: any, providerUrl?:
     }
 
     case "solana":
-      return new SolanaConfig({ name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet });
+      return new SolanaConfig({ bundlr, name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet });
     // case "algorand":
     //     return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet })
     case "near":
-      return new NearConfig({ name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet });
+      return new NearConfig({ bundlr, name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet });
     case "aptos":
-      return new AptosConfig({ name: "aptos", ticker: "APTOS", providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1", wallet });
+      return new AptosConfig({
+        bundlr,
+        name: "aptos",
+        ticker: "APTOS",
+        providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",
+        wallet,
+      });
     default:
       throw new Error(`Unknown/Unsupported currency ${currency}`);
   }

@@ -4,15 +4,14 @@ import {
   TxnBuilderTypes,
   BCS,
   AptosAccount,
-  CoinClient,
   TransactionBuilderEd25519,
-  HexString as HString,
+  TransactionBuilderRemoteABI,
 } from "aptos";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig } from "../../common/types";
 import Aptos from "./aptos";
-import type { Signer } from "arbundles/src/signing";
-import { MultiSignatureAptosSigner } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { MultiSignatureAptosSigner } from "arbundles";
 // import { UserTransaction } from "aptos/src/generated";
 // import Utils from "../../common/utils";
 
@@ -68,13 +67,15 @@ export default class MultiSignatureAptos extends Aptos {
   async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number }> {
     const client = await this.getProvider();
 
-    const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+
+    const builder = new TransactionBuilderRemoteABI(client, { sender: this.address });
+
+    const rawTransaction = await builder.build(
       "0x1::coin::transfer",
       ["0x1::aptos_coin::AptosCoin"],
       [to ?? "0x149f7dc9c8e43c14ab46d3a6b62cfe84d67668f764277411f98732bf6718acf9", new BigNumber(amount).toNumber()],
     );
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
-    const rawTransaction = await client.generateRawTransaction(new HString(this.address), payload);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {

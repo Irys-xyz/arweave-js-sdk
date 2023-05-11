@@ -1,16 +1,17 @@
-import type { Signer } from "arbundles/src/signing";
-import { HexInjectedSolanaSigner } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { HexInjectedSolanaSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseWebCurrency from "../currency";
-import * as web3 from "@solana/web3.js";
 import bs58 from "bs58";
+// @ts-expect-error only importing as type
 import type { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
+import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 
 export default class SolanaConfig extends BaseWebCurrency {
   private signer!: HexInjectedSolanaSigner;
-  protected wallet!: MessageSignerWalletAdapter;
+  protected declare wallet: MessageSignerWalletAdapter;
   minConfirm = 1;
 
   constructor(config: CurrencyConfig) {
@@ -18,9 +19,9 @@ export default class SolanaConfig extends BaseWebCurrency {
     this.base = ["lamports", 1e9];
   }
 
-  private async getProvider(): Promise<web3.Connection> {
+  private async getProvider(): Promise<Connection> {
     if (!this.providerInstance) {
-      this.providerInstance = new web3.Connection(this.providerUrl, {
+      this.providerInstance = new Connection(this.providerUrl, {
         confirmTransactionInitialTimeout: 60_000,
         commitment: "confirmed",
       });
@@ -100,11 +101,11 @@ export default class SolanaConfig extends BaseWebCurrency {
 
   async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any }> {
     // TODO: figure out how to manually set fees
-    const pubkey = new web3.PublicKey(await this.getPublicKey());
-    const hash = await retry(
+    const pubkey = new PublicKey(await this.getPublicKey());
+    const blockHashInfo = await retry(
       async (bail) => {
         try {
-          return (await (await this.getProvider()).getRecentBlockhash()).blockhash;
+          return await (await this.getProvider()).getRecentBlockhash();
         } catch (e: any) {
           if (e.message?.includes("blockhash")) throw e;
           else bail(e);
@@ -114,15 +115,12 @@ export default class SolanaConfig extends BaseWebCurrency {
       { retries: 3, minTimeout: 1000 },
     );
 
-    const transaction = new web3.Transaction({
-      recentBlockhash: hash,
-      feePayer: pubkey,
-    });
+    const transaction = new Transaction({ recentBlockhash: blockHashInfo.blockhash, feePayer: pubkey });
 
     transaction.add(
-      web3.SystemProgram.transfer({
+      SystemProgram.transfer({
         fromPubkey: pubkey,
-        toPubkey: new web3.PublicKey(to),
+        toPubkey: new PublicKey(to),
         lamports: +new BigNumber(amount).toNumber(),
       }),
     );

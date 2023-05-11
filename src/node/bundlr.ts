@@ -1,11 +1,12 @@
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
-import type { CreateAndUploadOptions, UploadResponse } from "../common/types";
+import type { BundlrConfig, CreateAndUploadOptions, UploadResponse } from "../common/types";
 import Utils from "../common/utils";
-import getCurrency from "./currencies";
+import getCurrency from "./currencies/index";
 import type { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
+import * as arbundles from "./utils";
 
 export default class NodeBundlr extends Bundlr {
   public uploader: NodeUploader; // re-define type
@@ -16,14 +17,13 @@ export default class NodeBundlr extends Bundlr {
    * @param url - URL to the bundler
    * @param wallet - private key (in whatever form required)
    */
-  constructor(
-    url: string,
-    currency: string,
-    wallet?: any,
-    config?: { timeout?: number; providerUrl?: string; contractAddress?: string; currencyOpts?: any; headers?: Record<string, string> },
-  ) {
+  constructor(url: string, currency: string, wallet?: any, config?: BundlrConfig) {
     const parsed = new URL(url);
-    super(parsed);
+    super(parsed, arbundles);
+    if (parsed.host === "devnet.bundlr.network" && !config?.providerUrl)
+      throw new Error(
+        `Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.bundlr.network/developer-docs/using-devnet`,
+      );
     this.api = new Api({
       protocol: parsed.protocol.slice(0, -1),
       port: parsed.port,
@@ -32,6 +32,7 @@ export default class NodeBundlr extends Bundlr {
       headers: config?.headers,
     });
     this.currencyConfig = getCurrency(
+      this,
       currency.toLowerCase(),
       wallet,
       parsed.toString(),
@@ -63,6 +64,7 @@ export default class NodeBundlr extends Bundlr {
    * @param interactivePreflight - whether to interactively prompt the user for confirmation of upload (CLI ONLY)
    * @param keepDeleted - Whether to keep previously uploaded (but now deleted) files in the manifest
    * @param logFunction - for handling logging from the uploader for UX
+   * @param manifestTags - For allowing the caller to pass tags that will be added to the manifest transaction.
    * @returns
    */
   public async uploadFolder(
@@ -73,15 +75,17 @@ export default class NodeBundlr extends Bundlr {
       indexFile,
       interactivePreflight,
       logFunction,
+      manifestTags,
     }: {
       batchSize?: number;
       keepDeleted?: boolean;
       indexFile?: string;
       interactivePreflight?: boolean;
       logFunction?: (log: string) => Promise<void>;
+      manifestTags?: { name: string; value: string }[];
     } = {},
   ): Promise<UploadResponse | undefined> {
-    return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction });
+    return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction, manifestTags });
   }
   public static async init(opts: {
     url: string;

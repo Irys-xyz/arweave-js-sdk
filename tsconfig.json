@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2019",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "nodenext",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "declaration": true,
-    "lib": ["es2021", "dom"],
+    "lib": ["es2022", "dom"],
     "esModuleInterop": true,
     "alwaysStrict": true,
     "sourceMap": true,
@@ -18,10 +18,25 @@
     "noUnusedParameters": true,
     "noImplicitAny": false,
     "noImplicitThis": false,
-    "strict": true,
-    "outDir": "build",
-    "experimentalDecorators": true
+    "strictNullChecks": true,
+    "baseUrl": "./src",
+    "rootDir": ".",
+    "experimentalDecorators": true,
+    "paths": {
+      "$/utils": [
+        "node/utils.ts"
+      ]
+    }
   },
-  "include": ["src/**/*"],
-  "exclude": ["**/__tests__/**", "tests/**"]
+  "ts-node": {
+    "require": ["tsconfig-paths/register"],
+    "esm": false,
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  },
+  "include": ["src/**/*", "scripts/**/*"],
+  "exclude": ["src/__tests__/**", "tests/**"],
+
 }

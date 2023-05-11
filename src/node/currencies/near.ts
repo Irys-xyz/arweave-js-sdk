@@ -1,13 +1,16 @@
-import type { Signer } from "arbundles/src/signing";
-import { NearSigner } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { NearSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
-import { KeyPair, utils, transactions, providers } from "near-api-js";
-import { decode, encode } from "bs58";
+import { SCHEMA, Signature, SignedTransaction } from "@near-js/transactions";
+import { actionCreators, createTransaction } from "@near-js/transactions";
+import bs58 from "bs58";
+import { serialize } from "borsh";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";
-import type { JsonRpcProvider } from "near-api-js/lib/providers";
+import { JsonRpcProvider } from "@near-js/providers";
+import { KeyPair } from "@near-js/crypto";
 
 import { parseSeedPhrase, KEY_DERIVATION_PATH } from "near-seed-phrase";
 import base64url from "base64url";
@@ -15,7 +18,7 @@ import axios from "axios";
 export default class NearConfig extends BaseNodeCurrency {
   protected keyPair: KeyPair;
 
-  protected providerInstance?: JsonRpcProvider;
+  protected declare providerInstance?: JsonRpcProvider;
   protected declare bundlrUrl: string;
 
   constructor(config: CurrencyConfig & { bundlrUrl: string }) {
@@ -31,7 +34,7 @@ export default class NearConfig extends BaseNodeCurrency {
 
   protected async getProvider(): Promise<JsonRpcProvider> {
     if (!this.providerInstance) {
-      this.providerInstance = new providers.JsonRpcProvider({ url: this.providerUrl });
+      this.providerInstance = new JsonRpcProvider({ url: this.providerUrl });
     }
     return this.providerInstance;
   }
@@ -44,7 +47,7 @@ export default class NearConfig extends BaseNodeCurrency {
     // NOTE: their type defs are out of date with their actual API (23-01-2022)... beware the expect-error when debugging!
     const provider = await this.getProvider();
     const [id, hash] = txId.split(":");
-    const status = await provider.txStatusReceipts(decode(hash), id);
+    const status = await provider.txStatusReceipts(bs58.decode(hash), id);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
 
@@ -73,7 +76,7 @@ export default class NearConfig extends BaseNodeCurrency {
    * @param owner // assumed to be the "ed25519:" header + b58 encoded key
    */
   ownerToAddress(owner: any): string {
-    return Buffer.from(typeof owner === "string" ? decode(owner.replace("ed25519:", "")) : decode(encode(owner))).toString("hex");
+    return Buffer.from(typeof owner === "string" ? bs58.decode(owner.replace("ed25519:", "")) : bs58.decode(bs58.encode(owner))).toString("hex");
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
@@ -110,7 +113,7 @@ export default class NearConfig extends BaseNodeCurrency {
   }
 
   async sendTx(data: any): Promise<any> {
-    data as transactions.SignedTransaction;
+    data as SignedTransaction;
     const res = await (await this.getProvider()).sendTransaction(data);
     return `${this.address}:${res.transaction.hash}`; // encode into compound format
   }
@@ -120,7 +123,7 @@ export default class NearConfig extends BaseNodeCurrency {
     to: string,
     _fee?: string,
   ): Promise<{
-    tx: transactions.SignedTransaction;
+    tx: SignedTransaction;
     txId: undefined;
   }> {
     const provider = await this.getProvider();
@@ -133,16 +136,16 @@ export default class NearConfig extends BaseNodeCurrency {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     const nonce = ++accessKey.nonce;
-    const recentBlockHash = utils.serialize.base_decode(accessKey.block_hash);
-    const actions = [transactions.transfer(new BN(new BigNumber(amount).toFixed().toString()))];
+    const recentBlockHash = Buffer.from(bs58.decode(accessKey.block_hash));
+    const actions = [actionCreators.transfer(new BN(new BigNumber(amount).toFixed().toString()))];
     if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
-    const tx = transactions.createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash);
-    const serialTx = utils.serialize.serialize(transactions.SCHEMA, tx);
+    const tx = createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash);
+    const serialTx = serialize(SCHEMA, tx);
     const serialTxHash = new Uint8Array(sha256.array(serialTx));
     const signature = this.keyPair.sign(serialTxHash);
-    const signedTx = new transactions.SignedTransaction({
+    const signedTx = new SignedTransaction({
       transaction: tx,
-      signature: new transactions.Signature({
+      signature: new Signature({
         keyType: tx.publicKey.keyType,
         data: signature.signature,
       }),

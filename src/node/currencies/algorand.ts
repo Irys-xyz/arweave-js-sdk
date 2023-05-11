@@ -1,14 +1,15 @@
-import type { Signer } from "arbundles/src/signing";
-import { AlgorandSigner } from "arbundles/src/signing";
+import type { Signer } from "arbundles";
+import { AlgorandSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 
-import * as algosdk from "algosdk";
 import axios from "axios";
+import type { Account } from "algosdk";
+import { decodeAddress, encodeAddress, makePaymentTxnWithSuggestedParamsFromObject, signTransaction, mnemonicToSecretKey } from "algosdk";
 
 export default class AlgorandConfig extends BaseNodeCurrency {
-  protected keyPair: algosdk.Account;
+  protected keyPair: Account;
 
   protected apiURL?;
   protected indexerURL?;
@@ -16,7 +17,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
   constructor(config: CurrencyConfig) {
     super(config);
     this.base = ["microAlgos", 1e6];
-    this.keyPair = algosdk.mnemonicToSecretKey(this.wallet);
+    this.keyPair = mnemonicToSecretKey(this.wallet);
     this.apiURL = this.providerUrl.slice(0, 8) + "node." + this.providerUrl.slice(8);
     this.indexerURL = this.providerUrl.slice(0, 8) + "algoindexer." + this.providerUrl.slice(8);
   }
@@ -40,7 +41,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
   }
 
   ownerToAddress(owner: any): string {
-    return algosdk.encodeAddress(owner);
+    return encodeAddress(owner);
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
@@ -78,7 +79,7 @@ export default class AlgorandConfig extends BaseNodeCurrency {
     const endpoint = `${this.apiURL}/v2/transactions/params`;
     const response = await axios.get(endpoint);
     const params = await response.data;
-    const unsigned = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+    const unsigned = makePaymentTxnWithSuggestedParamsFromObject({
       from: this.keyPair.addr,
       to: to,
       amount: new BigNumber(amount).toNumber(),
@@ -92,14 +93,14 @@ export default class AlgorandConfig extends BaseNodeCurrency {
         lastRound: params["last-round"] + 1000,
       },
     });
-    const signed = algosdk.signTransaction(unsigned, this.keyPair.sk);
+    const signed = signTransaction(unsigned, this.keyPair.sk);
 
     return { tx: signed.blob, txId: signed.txID };
   }
 
   getPublicKey(): string | Buffer {
-    this.keyPair = algosdk.mnemonicToSecretKey(this.wallet);
-    const pub = algosdk.decodeAddress(this.keyPair.addr).publicKey;
+    this.keyPair = mnemonicToSecretKey(this.wallet);
+    const pub = decodeAddress(this.keyPair.addr).publicKey;
     return Buffer.from(pub);
   }
 }

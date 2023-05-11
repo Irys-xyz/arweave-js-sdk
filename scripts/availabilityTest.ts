@@ -1,4 +1,4 @@
-import Bundlr from "../src/index";
+import Bundlr from "../src/cjsIndex";
 import { readFileSync } from "fs";
 import axios from "axios";
 import Crypto from "crypto";

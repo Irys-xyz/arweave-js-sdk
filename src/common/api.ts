@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios";
 import Axios from "axios";
+import Bundlr from "./bundlr";
 
 // taken from the arweave.js lib
 export interface ApiConfig {
@@ -49,17 +50,17 @@ export default class Api {
   }
 
   private mergeDefaults(config: ApiConfig): ApiConfig {
-    const protocol = config.protocol || "http";
-    const port = config.port || (protocol === "https" ? 443 : 80);
+    const protocol = config.protocol ?? "http";
+    const port = config.port ?? (protocol === "https" ? 443 : 80);
 
     return {
-      host: config.host || "127.0.0.1",
+      host: config.host ?? "127.0.0.1",
       protocol,
       port,
-      timeout: config.timeout || 20000,
-      logging: config.logging || false,
-      logger: config.logger || console.log,
-      headers: config.headers || {},
+      timeout: config.timeout ?? 20000,
+      logging: config.logging ?? false,
+      logger: config.logger ?? console.log,
+      headers: { ...config.headers, "x-bundlr-js-sdk-version": Bundlr.VERSION },
       withCredentials: true,
     };
   }
@@ -68,7 +69,7 @@ export default class Api {
     try {
       return await this.request().get<T>(endpoint, { ...config, headers: { ...config?.headers, ...this.config?.headers } });
     } catch (error: any) {
-      if (error.response && error.response.status) {
+      if (error.response?.status) {
         return error.response;
       }
 
@@ -80,7 +81,7 @@ export default class Api {
     try {
       return await this.request().post(endpoint, body, { ...config, headers: { ...config?.headers, ...this.config?.headers } });
     } catch (error: any) {
-      if (error.response && error.response.status) {
+      if (error.response?.status) {
         return error.response;
       }
 

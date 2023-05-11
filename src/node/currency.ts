@@ -1,6 +1,6 @@
 import type { FileDataItem } from "arbundles/file";
-import type { Signer } from "arbundles/src/signing";
-import Arweave from "arweave";
+import type { Signer } from "arbundles";
+import { getCryptoDriver } from "./utils";
 import base64url from "base64url";
 import type BigNumber from "bignumber.js";
 import type { Tx, CurrencyConfig } from "../common/types";
@@ -8,6 +8,7 @@ import axios from "axios";
 import type { NodeCurrency } from "./types";
 import utils from "../common/utils";
 import type Utils from "../common/utils";
+import type NodeBundlr from "./bundlr";
 export default abstract class BaseNodeCurrency implements NodeCurrency {
   public base!: [string, number];
   protected wallet: any;
@@ -21,6 +22,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
   public needsFee = true;
   protected opts?: any;
   protected utils!: Utils;
+  public bundlr!: NodeBundlr;
 
   constructor(config: CurrencyConfig) {
     Object.assign(this, config);
@@ -34,7 +36,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
   }
 
   async getId(item: FileDataItem): Promise<string> {
-    return base64url.encode(Buffer.from(await Arweave.crypto.hash(await item.rawSignature())));
+    return base64url.encode(Buffer.from(await getCryptoDriver().hash(await item.rawSignature())));
   }
   async price(): Promise<number> {
     return getRedstonePrice(this.ticker);

@@ -1,13 +1,13 @@
-import { createData, DataItem } from "arbundles";
 import type { AxiosResponse } from "axios";
 import Utils from "./utils";
 import type Api from "./api";
-import type { CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
-import PromisePool from "@supercharge/promise-pool/dist";
+import type { Arbundles, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
+import { PromisePool } from "@supercharge/promise-pool";
 import retry from "async-retry";
 import { ChunkingUploader } from "./chunkingUploader";
 import type { Readable } from "stream";
 import Crypto from "crypto";
+import type { DataItem } from "arbundles";
 
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 export const CHUNKING_THRESHOLD = 50_000_000;
@@ -19,11 +19,13 @@ export default class Uploader {
   protected utils: Utils;
   protected contentTypeOverride: string | undefined;
   protected forceUseChunking: boolean | undefined;
+  protected arbundles: Arbundles;
 
   constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency) {
     this.api = api;
     this.currency = currency;
     this.currencyConfig = currencyConfig;
+    this.arbundles = this.currencyConfig.bundlr.arbundles;
     this.utils = utils;
   }
 
@@ -31,9 +33,16 @@ export default class Uploader {
    * Uploads a given transaction to the bundler
    * @param transaction
    */
+
+  uploadTransaction(
+    transaction: DataItem | Readable | Buffer,
+    opts: UploadOptions & { getReceiptSignature: true },
+  ): Promise<AxiosResponse<UploadReceipt>>;
+  uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>>;
+
   public async uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>> {
     let res: AxiosResponse<UploadResponse>;
-    const isDataItem = DataItem.isDataItem(transaction);
+    const isDataItem = this.arbundles.DataItem.isDataItem(transaction);
     if (this.forceUseChunking || (isDataItem && transaction.getRaw().length >= CHUNKING_THRESHOLD) || !isDataItem) {
       res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction, opts);
     } else {
@@ -45,7 +54,7 @@ export default class Uploader {
         timeout,
         maxBodyLength: Infinity,
       });
-      if (res.status == 201) {
+      if (res.status === 201) {
         if (opts?.getReceiptSignature === true) {
           throw new Error(res.data as any as string);
         }
@@ -61,7 +70,7 @@ export default class Uploader {
         }
     }
     if (opts?.getReceiptSignature) {
-      res.data.verify = Utils.verifyReceipt.bind({}, res.data as UploadReceipt);
+      res.data.verify = Utils.verifyReceipt.bind({}, this.arbundles, res.data as UploadReceipt);
     }
     return res;
   }
@@ -72,7 +81,7 @@ export default class Uploader {
     }
     if (Buffer.isBuffer(data)) {
       if (data.length <= CHUNKING_THRESHOLD) {
-        const dataItem = createData(data, this.currencyConfig.getSigner(), {
+        const dataItem = this.arbundles.createData(data, this.currencyConfig.getSigner(), {
           ...opts,
           anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32),
         });
@@ -131,7 +140,7 @@ export default class Uploader {
   }
 
   protected async processItem(data: string | Buffer | Readable | DataItem, opts?: CreateAndUploadOptions): Promise<any> {
-    if (DataItem.isDataItem(data)) {
+    if (this.arbundles.DataItem.isDataItem(data)) {
       return this.uploadTransaction(data, { ...opts?.upload });
     }
     return this.uploadData(data, opts);

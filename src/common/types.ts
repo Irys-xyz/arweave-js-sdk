@@ -1,14 +1,33 @@
 import type BigNumber from "bignumber.js";
-import type { Signer } from "arbundles/src/signing";
+import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions } from "arbundles";
 import type { FileDataItem } from "arbundles/file";
-import type { DataItemCreateOptions } from "arbundles";
-// common types shared between web and node versions
+import type Bundlr from "./bundlr";
 
+// common types shared between web and node versions
 export interface CreateTxData {
   amount: BigNumber.Value;
   to: string;
   fee?: string;
 }
+
+// export type Arbundles = typeof arbundles | typeof webArbundles;
+export interface Arbundles {
+  createData: typeof createData;
+  DataItem: typeof DataItem;
+  deepHash: typeof deepHash;
+  stringToBuffer: typeof stringToBuffer;
+  getCryptoDriver: typeof getCryptoDriver;
+}
+
+export interface BundlrTransaction extends DataItem {
+  sign: () => Promise<Buffer>;
+  size: number;
+  uploadWithReceipt: (opts?: UploadOptions) => Promise<UploadReceipt>;
+  upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
+  upload(opts?: UploadOptions): Promise<UploadResponse>;
+  // fromRaw(rawTransaction: Buffer, bundlrInstance: Bundlr): BundlrTransaction;
+}
+export type BundlrTransactonCtor = new (data: string | Uint8Array, bundlr: Bundlr, opts?: BundlrTransactionCreateOptions) => BundlrTransaction;
 
 export interface Tx {
   from: string;
@@ -19,6 +38,7 @@ export interface Tx {
   confirmed: boolean;
 }
 export interface CurrencyConfig {
+  bundlr: Bundlr;
   name: string;
   ticker: string;
   minConfirm?: number;
@@ -26,6 +46,14 @@ export interface CurrencyConfig {
   providerUrl: string;
   isSlow?: boolean;
   opts?: any;
+}
+
+export interface BundlrConfig {
+  timeout?: number;
+  providerUrl?: string;
+  contractAddress?: string;
+  currencyOpts?: object;
+  headers?: Record<string, string>;
 }
 
 export interface Currency {
@@ -39,6 +67,8 @@ export interface Currency {
   get address(): string | undefined;
 
   ticker: string;
+
+  bundlr: Bundlr;
 
   getTx(txId: string): Promise<Tx>;
 
@@ -105,6 +135,7 @@ export interface UploadResponse {
 }
 
 export type UploadReceipt = Required<UploadResponse>;
+export type UploadReceiptData = Omit<UploadReceipt, "verify">;
 
 export interface FundResponse {
   reward: string;
