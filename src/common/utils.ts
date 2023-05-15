@@ -211,8 +211,8 @@ export default class Utils {
         return false;
       },
     };
-    // inject bound method
-    receipt.verify = this.verifyReceipt.bind({}, receipt as UploadReceipt);
+    // inject method
+    receipt.verify = async (): Promise<boolean> => this.verifyReceipt(receipt);
     return receipt;
   }
 }

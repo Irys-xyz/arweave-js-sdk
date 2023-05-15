@@ -1,5 +1,5 @@
 import type { AxiosResponse } from "axios";
-import Utils from "./utils";
+import type Utils from "./utils";
 import type Api from "./api";
 import type { Arbundles, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
 import { PromisePool } from "@supercharge/promise-pool";
@@ -70,7 +70,7 @@ export default class Uploader {
         }
     }
     if (opts?.getReceiptSignature) {
-      res.data.verify = Utils.verifyReceipt.bind({}, this.arbundles, res.data as UploadReceipt);
+      res.data.verify = async (): Promise<boolean> => this.utils.verifyReceipt(res.data as UploadReceipt);
     }
     return res;
   }
