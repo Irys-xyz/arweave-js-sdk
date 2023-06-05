@@ -1,4 +1,4 @@
-import NB from "./node/bundlr";
-export { default as WebBundlr } from "./web/bundlr";
-export const NodeBundlr = NB;
-export default NodeBundlr;
+import NB from "./node/irys";
+export { default as WebIrys } from "./web/irys";
+export const NodeIrys = NB;
+export default NodeIrys;

@@ -1,8 +1,8 @@
 import { AptosAccount, FaucetClient } from "aptos";
-import Bundlr from "../src";
+import Irys from "../src/cjsIndex";
 
 /**
- * This Example is for signing transactions (for bundlr uploads & Aptos transfers) using multiple participants
+ * This Example is for signing transactions (for irys uploads & Aptos transfers) using multiple participants
  * it assumes you are familiar with Aptos' MultiSignature terminology/example
  */
 (async function () {
@@ -26,45 +26,50 @@ import Bundlr from "../src";
     return { signatures: signatures, bitmap: [0, 2] };
   };
 
-  // Create bundlr instance
-  const bundlr = new Bundlr("https://devnet.bundlr.network", "multiAptos", wallet, {
-    providerUrl: "https://fullnode.devnet.aptoslabs.com",
-    currencyOpts: { collectSignatures },
+  // Create irys instance
+  const irys = new Irys({
+    url: "https://devnet.irys.network",
+    currency: "multiAptos",
+    wallet,
+    config: {
+      providerUrl: "https://fullnode.devnet.aptoslabs.com",
+      currencyOpts: { collectSignatures },
+    },
   });
   // Ready the instance
-  await bundlr.ready();
+  await irys.ready();
 
-  //check the address
-  console.log("Account address", bundlr.address);
+  // check the address
+  console.log("Account address", irys.address);
 
-  //check your Bundlr balance
-  console.log("Bundlr balance", bundlr.utils.unitConverter(await bundlr.getLoadedBalance()).toString());
+  // check your irys balance
+  console.log("irys balance", irys.utils.unitConverter(await irys.getLoadedBalance()).toString());
 
   const data = "Hello, world!";
   // create a transaction for this data
-  const tx = bundlr.createTransaction(data, { tags: [{ name: "Content-type", value: "text/plain" }] });
-  //sign the transaction (this will call `collectSignatures`)
+  const tx = irys.createTransaction(data, { tags: [{ name: "Content-type", value: "text/plain" }] });
+  // sign the transaction (this will call `collectSignatures`)
   await tx.sign();
 
   // fund the account using the Aptos faucet
-  await new FaucetClient("https://fullnode.devnet.aptoslabs.com", "https://faucet.devnet.aptoslabs.com").fundAccount(bundlr.address, 5_000_000);
+  await new FaucetClient("https://fullnode.devnet.aptoslabs.com", "https://faucet.devnet.aptoslabs.com").fundAccount(irys.address, 5_000_000);
 
   // check the cost for uploading the tx
-  const cost = await bundlr.getPrice(tx.size);
-  console.log("Upload costs", bundlr.utils.unitConverter(cost).toString());
+  const cost = await irys.getPrice(tx.size);
+  console.log("Upload costs", irys.utils.unitConverter(cost).toString());
 
-  //fund bundlr cost * 1.1, as prices can change between funding & upload completion (especially for larger files)
-  await bundlr.fund(cost.multipliedBy(1.1).integerValue());
+  // fund irys cost * 1.1, as prices can change between funding & upload completion (especially for larger files)
+  await irys.fund(cost.multipliedBy(1.1).integerValue());
 
-  //check your Bundlr balance
-  console.log("Bundlr balance", bundlr.utils.unitConverter(await bundlr.getLoadedBalance()).toString());
+  // check your irys balance
+  console.log("irys balance", irys.utils.unitConverter(await irys.getLoadedBalance()).toString());
 
-  //upload the data
+  // upload the data
   const res = await tx.upload();
 
-  //check your Bundlr balance after the upload
-  console.log("Bundlr balance", bundlr.utils.unitConverter(await bundlr.getLoadedBalance()).toString());
+  // check your irys balance after the upload
+  console.log("irys balance", irys.utils.unitConverter(await irys.getLoadedBalance()).toString());
 
-  console.log(`Data uploaded to https://arweave.net/${res.data.id}`);
+  console.log(`Data uploaded to https://arweave.net/${res.id}`);
   // done!
 })();

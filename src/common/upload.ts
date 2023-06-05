@@ -25,7 +25,7 @@ export default class Uploader {
     this.api = api;
     this.currency = currency;
     this.currencyConfig = currencyConfig;
-    this.arbundles = this.currencyConfig.bundlr.arbundles;
+    this.arbundles = this.currencyConfig.Irys.arbundles;
     this.utils = utils;
   }
 
@@ -66,7 +66,7 @@ export default class Uploader {
         throw new Error("Not enough funds to send data");
       default:
         if (res.status >= 400) {
-          throw new Error(`whilst uploading Bundlr transaction: ${res.status} ${res.statusText}`);
+          throw new Error(`whilst uploading Irys transaction: ${res.status} ${res.statusText}`);
         }
     }
     if (opts?.getReceiptSignature) {

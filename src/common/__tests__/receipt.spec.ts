@@ -1,4 +1,4 @@
-import Bundlr from "../../node";
+import Irys from "../../node";
 
 const receipt = {
   id: "DQQbx79jsgI4rGlhO0arqwEMWhqWUMFTdLbO1i8M-PA",
@@ -13,19 +13,19 @@ const receipt = {
   validatorSignatures: [],
 };
 
-const bundlr = new Bundlr("https://node1.bundlr.network", "ethereum", "8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f");
+const Irys = new Irys("https://node1.Irys.network", "ethereum", "8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f");
 
 describe("With a constant receipt", () => {
   it("should succeed", async () => {
-    await expect(bundlr.verifyReceipt(receipt)).resolves.toBe(true);
+    await expect(Irys.verifyReceipt(receipt)).resolves.toBe(true);
   });
   it("should fail", async () => {
-    expect(bundlr.utils.verifyReceipt({ ...receipt, signature: "test" })).resolves.toBe(false);
+    expect(Irys.utils.verifyReceipt({ ...receipt, signature: "test" })).resolves.toBe(false);
   });
 });
 describe("With an uploaded receipt", () => {
   it("Should retrieve and verify successfully", async () => {
-    const receipt = await bundlr.utils.getReceipt("DQQbx79jsgI4rGlhO0arqwEMWhqWUMFTdLbO1i8M-PA");
+    const receipt = await Irys.utils.getReceipt("DQQbx79jsgI4rGlhO0arqwEMWhqWUMFTdLbO1i8M-PA");
     await expect(receipt.verify()).resolves.toBe(true);
   });
 });

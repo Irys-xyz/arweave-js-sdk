@@ -1,5 +1,5 @@
 # JS Client
 
-Official JavaScript implementation of the Bundlr client.
+Official JavaScript implementation of the Irys  client.
 
-Full usage documentation [here](https://docs.bundlr.network/developer-docs/sdk)
+Full usage documentation [here](https://docs.irys.network/developer-docs/sdk)

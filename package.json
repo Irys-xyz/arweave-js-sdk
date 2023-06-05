@@ -1,9 +1,9 @@
 {
-  "name": "@bundlr-network/client",
-  "version": "0.11.2",
-  "description": "JS client for Bundlr nodes",
+  "name": "@irys/client",
+  "version": "0.1.0",
+  "description": "JS client for Irys",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
-  "author": "Bundlr Network",
+  "author": "Irys",
   "license": "Apache-2.0",
   "main": "./build/cjs/cjsIndex.js",
   "browser": "./build/esm/web/index.js",
@@ -65,8 +65,8 @@
     "prepack": "yarn ts-node ./scripts/embedVersion.ts"
   },
   "bin": {
-    "bundlr": "./build/cjs/node/cli.js",
-    "bundlr-esm": "./build/esm/node/cli.js"
+    "irys": "./build/cjs/node/cli.js",
+    "irys-esm": "./build/esm/node/cli.js"
   },
   "engines": {
     "node": ">=16.10.0"

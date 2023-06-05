@@ -1,2 +1,2 @@
-export { default } from "./bundlr";
-export { default as NodeBundlr } from "./bundlr";
+export { default } from "./irys";
+export { default as NodeIrys } from "./irys";

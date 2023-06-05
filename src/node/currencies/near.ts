@@ -19,9 +19,9 @@ export default class NearConfig extends BaseNodeCurrency {
   protected keyPair: KeyPair;
 
   protected declare providerInstance?: JsonRpcProvider;
-  protected declare bundlrUrl: string;
+  protected declare IrysUrl: string;
 
-  constructor(config: CurrencyConfig & { bundlrUrl: string }) {
+  constructor(config: CurrencyConfig & { IrysUrl: string }) {
     let wallet = config.wallet;
     if (typeof wallet === "string" && wallet?.split(":")?.[0] !== "ed25519") {
       wallet = parseSeedPhrase(wallet, KEY_DERIVATION_PATH).secretKey;
@@ -138,7 +138,7 @@ export default class NearConfig extends BaseNodeCurrency {
     const nonce = ++accessKey.nonce;
     const recentBlockHash = Buffer.from(bs58.decode(accessKey.block_hash));
     const actions = [actionCreators.transfer(new BN(new BigNumber(amount).toFixed().toString()))];
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
     const tx = createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash);
     const serialTx = serialize(SCHEMA, tx);
     const serialTxHash = new Uint8Array(sha256.array(serialTx));
@@ -161,7 +161,7 @@ export default class NearConfig extends BaseNodeCurrency {
     try {
       // resolve loaded pubkey to parent address
       const pubkey = this.keyPair.getPublicKey().toString();
-      const resolved = (await axios.get(`${this.bundlrUrl}account/near/lookup?address=${base64url.encode(pubkey.split(":")[1])}`).catch((e) => {
+      const resolved = (await axios.get(`${this.IrysUrl}account/near/lookup?address=${base64url.encode(pubkey.split(":")[1])}`).catch((e) => {
         return e;
       })) as any;
       this._address = resolved?.data?.address ?? this._address;

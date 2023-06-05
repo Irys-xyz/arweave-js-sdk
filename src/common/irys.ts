@@ -5,11 +5,11 @@ import type Fund from "./fund";
 import type { DataItemCreateOptions } from "arbundles";
 import type Api from "./api";
 import type BigNumber from "bignumber.js";
-import type { BundlrTransaction } from "./types";
+import type { IrysTransaction } from "./types";
 import type {
   Arbundles,
-  BundlrTransactionCreateOptions,
-  BundlrTransactonCtor,
+  IrysTransactionCreateOptions,
+  IrysTransactonCtor,
   CreateAndUploadOptions,
   Currency,
   FundResponse,
@@ -20,9 +20,9 @@ import type {
 } from "./types";
 import type { Signer } from "arbundles";
 import type { Readable } from "stream";
-import buildBundlrTransaction from "./transaction";
+import buildIrysTransaction from "./transaction";
 
-export default abstract class Bundlr {
+export default abstract class Irys {
   public api!: Api;
   public utils!: Utils;
   public uploader!: Uploader;
@@ -33,14 +33,14 @@ export default abstract class Bundlr {
   protected _readyPromise: Promise<void> | undefined;
   public url: URL;
   public arbundles: Arbundles;
-  public bundlrTransaction: BundlrTransactonCtor;
+  public IrysTransaction: IrysTransactonCtor;
 
-  static VERSION = "REPLACEMEBUNDLRVERSION";
+  static VERSION = "REPLACEMEIRYSVERSION";
 
   constructor({ url, arbundles }: { url: URL; arbundles: Arbundles }) {
     this.url = url;
     this.arbundles = arbundles;
-    this.bundlrTransaction = buildBundlrTransaction(this);
+    this.IrysTransaction = buildIrysTransaction(this);
   }
 
   get signer(): Signer {
@@ -78,7 +78,7 @@ export default abstract class Bundlr {
   }
 
   /**
-   * Calculates the price for [bytes] bytes for the loaded currency and Bundlr node.
+   * Calculates the price for [bytes] bytes for the loaded currency and Irys node.
    * @param bytes
    * @returns
    */
@@ -91,13 +91,13 @@ export default abstract class Bundlr {
   }
 
   /**
-   * Create a new BundlrTransactions (flex currency arbundles dataItem)
+   * Create a new IrysTransactions (flex currency arbundles dataItem)
    * @param data
    * @param opts - dataItemCreateOptions
-   * @returns - a new BundlrTransaction instance
+   * @returns - a new IrysTransaction instance
    */
-  createTransaction(data: string | Buffer, opts?: BundlrTransactionCreateOptions): BundlrTransaction {
-    return new this.bundlrTransaction(data, this, opts);
+  createTransaction(data: string | Buffer, opts?: IrysTransactionCreateOptions): IrysTransaction {
+    return new this.IrysTransaction(data, this, opts);
   }
 
   /**
@@ -125,8 +125,8 @@ export default abstract class Bundlr {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const oThis = this;
     return {
-      fromRaw(rawTransaction: Uint8Array): BundlrTransaction {
-        return new oThis.bundlrTransaction(rawTransaction, oThis, { dataIsRawTransaction: true });
+      fromRaw(rawTransaction: Uint8Array): IrysTransaction {
+        return new oThis.IrysTransaction(rawTransaction, oThis, { dataIsRawTransaction: true });
       },
     };
   }

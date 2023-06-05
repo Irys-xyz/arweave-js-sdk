@@ -12,7 +12,7 @@ export default class Fund {
   }
 
   /**
-   * Function to Fund (send funds to) a Bundlr node - inherits instance currency and node
+   * Function to Fund (send funds to) a Irys node - inherits instance currency and node
    * @param amount - amount in base units to send
    * @param multiplier - network tx fee multiplier - only works for specific currencies
    * @returns  - funding receipt

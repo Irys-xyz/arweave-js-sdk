@@ -1,2 +1,2 @@
-export { default } from "./bundlr";
-export { default as WebBundlr } from "./bundlr";
+export { default } from "./irys";
+export { default as WebIrys } from "./irys";

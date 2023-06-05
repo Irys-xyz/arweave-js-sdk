@@ -1,7 +1,7 @@
 import type BigNumber from "bignumber.js";
 import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions } from "arbundles";
 import type { FileDataItem } from "arbundles/file";
-import type Bundlr from "./bundlr";
+import type Irys from "./irys";
 
 // common types shared between web and node versions
 export interface CreateTxData {
@@ -19,15 +19,15 @@ export interface Arbundles {
   getCryptoDriver: typeof getCryptoDriver;
 }
 
-export interface BundlrTransaction extends DataItem {
+export interface IrysTransaction extends DataItem {
   sign: () => Promise<Buffer>;
   size: number;
   uploadWithReceipt: (opts?: UploadOptions) => Promise<UploadReceipt>;
   upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
   upload(opts?: UploadOptions): Promise<UploadResponse>;
-  // fromRaw(rawTransaction: Buffer, bundlrInstance: Bundlr): BundlrTransaction;
+  // fromRaw(rawTransaction: Buffer, IrysInstance: Irys): IrysTransaction;
 }
-export type BundlrTransactonCtor = new (data: string | Uint8Array, bundlr: Bundlr, opts?: BundlrTransactionCreateOptions) => BundlrTransaction;
+export type IrysTransactonCtor = new (data: string | Uint8Array, Irys: Irys, opts?: IrysTransactionCreateOptions) => IrysTransaction;
 
 export interface Tx {
   from: string;
@@ -38,7 +38,7 @@ export interface Tx {
   confirmed: boolean;
 }
 export interface CurrencyConfig {
-  bundlr: Bundlr;
+  Irys: Irys;
   name: string;
   ticker: string;
   minConfirm?: number;
@@ -48,7 +48,7 @@ export interface CurrencyConfig {
   opts?: any;
 }
 
-export interface BundlrConfig {
+export interface IrysConfig {
   timeout?: number;
   providerUrl?: string;
   contractAddress?: string;
@@ -68,7 +68,7 @@ export interface Currency {
 
   ticker: string;
 
-  bundlr: Bundlr;
+  Irys: Irys;
 
   getTx(txId: string): Promise<Tx>;
 
@@ -130,7 +130,7 @@ export interface UploadResponse {
   timestamp?: number;
   // The receipt version
   version?: "1.0.0";
-  // Injected verification function (same as Utils/Bundlr.verifyReceipt) - only present if getReceiptSignature is set.
+  // Injected verification function (same as Utils/Irys.verifyReceipt) - only present if getReceiptSignature is set.
   verify?: () => Promise<boolean>;
 }
 
@@ -164,4 +164,4 @@ export interface UploadOptions {
 //     "0.1.0" = "0.1.0"
 // }
 
-export type BundlrTransactionCreateOptions = DataItemCreateOptions & { dataIsRawTransaction?: boolean };
+export type IrysTransactionCreateOptions = DataItemCreateOptions & { dataIsRawTransaction?: boolean };

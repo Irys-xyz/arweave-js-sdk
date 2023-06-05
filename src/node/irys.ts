@@ -1,29 +1,27 @@
 import Api from "../common/api";
-import Bundlr from "../common/bundlr";
+import Irys from "../common/irys";
 import Fund from "../common/fund";
-import type { BundlrConfig, CreateAndUploadOptions, UploadResponse } from "../common/types";
+import type { IrysConfig, CreateAndUploadOptions, UploadResponse } from "../common/types";
 import Utils from "../common/utils";
 import getCurrency from "./currencies/index";
 import type { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 import * as arbundles from "./utils";
 
-export default class NodeBundlr extends Bundlr {
+export default class NodeIrys extends Irys {
   public uploader: NodeUploader; // re-define type
   public currencyConfig: NodeCurrency;
 
   /**
-   * Constructs a new Bundlr instance, as well as supporting subclasses
+   * Constructs a new Irys instance, as well as supporting subclasses
    * @param url - URL to the bundler
    * @param wallet - private key (in whatever form required)
    */
-  constructor({ url, currency, wallet, config }: { url: string; currency: string; wallet?: any; config?: BundlrConfig }) {
+  constructor({ url, currency, wallet, config }: { url: string; currency: string; wallet?: any; config?: IrysConfig }) {
     const parsed = new URL(url);
     super({ url: parsed, arbundles });
-    if (parsed.host === "devnet.bundlr.network" && !config?.providerUrl)
-      throw new Error(
-        `Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.bundlr.network/developer-docs/using-devnet`,
-      );
+    if (parsed.host === "devnet.irys.network" && !config?.providerUrl)
+      throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.network/developer-docs/using-devnet`);
     this.api = new Api({
       protocol: parsed.protocol.slice(0, -1),
       port: parsed.port,
@@ -97,9 +95,9 @@ export default class NodeBundlr extends Bundlr {
     providerUrl?: string;
     timeout?: number;
     contractAddress?: string;
-  }): Promise<NodeBundlr> {
+  }): Promise<NodeIrys> {
     const { url, currency, privateKey, publicKey, signingFunction, collectSignatures, providerUrl, timeout, contractAddress } = opts;
-    const bundlr = new NodeBundlr({
+    const Irys = new NodeIrys({
       url,
       currency,
       wallet: signingFunction ? publicKey : privateKey,
@@ -110,7 +108,7 @@ export default class NodeBundlr extends Bundlr {
         currencyOpts: { signingFunction, collectSignatures },
       },
     });
-    await bundlr.ready();
-    return bundlr;
+    await Irys.ready();
+    return Irys;
   }
 }

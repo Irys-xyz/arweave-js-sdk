@@ -1,38 +1,38 @@
 import type { Signer } from "arbundles";
-import type Bundlr from "./bundlr";
+import type Irys from "./irys";
 import Crypto from "crypto";
 import type {
-  BundlrTransaction as IBundlrTransaction,
-  BundlrTransactionCreateOptions,
+  IrysTransaction as IIrysTransaction,
+  IrysTransactionCreateOptions,
   UploadOptions,
   UploadReceipt,
   UploadResponse,
-  BundlrTransactonCtor,
+  IrysTransactonCtor,
 } from "./types";
 
 /**
- * Extended DataItem that allows for seamless bundlr operations, such as signing and uploading.
+ * Extended DataItem that allows for seamless Irys operations, such as signing and uploading.
  * Takes the same parameters as a regular DataItem.
  */
 
-export default function buildBundlrTransaction(bundlr: Bundlr): BundlrTransactonCtor {
-  class BundlrTransaction extends bundlr.arbundles.DataItem implements IBundlrTransaction {
-    public bundlr: Bundlr;
+export default function buildIrysTransaction(Irys: Irys): IrysTransactonCtor {
+  class IrysTransaction extends Irys.arbundles.DataItem implements IIrysTransaction {
+    public Irys: Irys;
     public signer: Signer;
 
-    constructor(data: string | Uint8Array, bundlr: Bundlr, opts?: BundlrTransactionCreateOptions) {
+    constructor(data: string | Uint8Array, Irys: Irys, opts?: IrysTransactionCreateOptions) {
       super(
         opts?.dataIsRawTransaction === true
           ? Buffer.from(data)
-          : bundlr.arbundles
-              .createData(data, bundlr.currencyConfig.getSigner(), {
+          : Irys.arbundles
+              .createData(data, Irys.currencyConfig.getSigner(), {
                 ...opts,
                 anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32),
               })
               .getRaw(),
       );
-      this.bundlr = bundlr;
-      this.signer = bundlr.currencyConfig.getSigner();
+      this.Irys = Irys;
+      this.signer = Irys.currencyConfig.getSigner();
     }
 
     public sign(): Promise<Buffer> {
@@ -44,26 +44,26 @@ export default function buildBundlrTransaction(bundlr: Bundlr): BundlrTransacton
     }
 
     async uploadWithReceipt(opts?: UploadOptions): Promise<UploadReceipt> {
-      return (await this.bundlr.uploader.uploadTransaction(this, { ...opts, getReceiptSignature: true })).data;
+      return (await this.Irys.uploader.uploadTransaction(this, { ...opts, getReceiptSignature: true })).data;
     }
 
     // parent type union not strictly required, but might be if this type gets extended
     upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
     upload(opts?: UploadOptions): Promise<UploadResponse>;
     async upload(opts?: UploadOptions): Promise<UploadResponse> {
-      return (await this.bundlr.uploader.uploadTransaction(this, opts)).data;
+      return (await this.Irys.uploader.uploadTransaction(this, opts)).data;
     }
 
-    // static fromRaw(rawTransaction: Buffer, bundlrInstance: Bundlr): BundlrTransaction {
-    //   return new BundlrTransaction(rawTransaction, bundlrInstance, { dataIsRawTransaction: true });
+    // static fromRaw(rawTransaction: Buffer, IrysInstance: Irys): IrysTransaction {
+    //   return new IrysTransaction(rawTransaction, IrysInstance, { dataIsRawTransaction: true });
     // }
   }
-  return BundlrTransaction;
+  return IrysTransaction;
 }
 
-// export abstract class BundlrTransaction extends DataItem {}
+// export abstract class IrysTransaction extends DataItem {}
 
-// export interface BundlrTransaction extends DataItem {
+// export interface IrysTransaction extends DataItem {
 //   size: number;
 //   uploadWithReceipt(opts?: UploadOptions): Promise<UploadReceipt>;
 //   upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
