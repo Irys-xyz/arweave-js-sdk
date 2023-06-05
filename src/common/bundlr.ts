@@ -37,7 +37,7 @@ export default abstract class Bundlr {
 
   static VERSION = "REPLACEMEBUNDLRVERSION";
 
-  constructor(url: URL, arbundles: Arbundles) {
+  constructor({ url, arbundles }: { url: URL; arbundles: Arbundles }) {
     this.url = url;
     this.arbundles = arbundles;
     this.bundlrTransaction = buildBundlrTransaction(this);

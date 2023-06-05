@@ -12,7 +12,7 @@ import * as arbundles from "./utils";
 export default class WebBundlr extends Bundlr {
   public currencyConfig: WebCurrency;
 
-  constructor(url: string, currency: string, provider?: any, config?: BundlrConfig) {
+  constructor({ url, currency, provider, config }: { url: string; currency: string; provider?: any; config?: BundlrConfig }) {
     const parsed = new URL(url);
     // @ts-expect-error private type issue
     super(parsed, arbundles);

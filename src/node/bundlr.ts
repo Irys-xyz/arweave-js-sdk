@@ -17,9 +17,9 @@ export default class NodeBundlr extends Bundlr {
    * @param url - URL to the bundler
    * @param wallet - private key (in whatever form required)
    */
-  constructor(url: string, currency: string, wallet?: any, config?: BundlrConfig) {
+  constructor({ url, currency, wallet, config }: { url: string; currency: string; wallet?: any; config?: BundlrConfig }) {
     const parsed = new URL(url);
-    super(parsed, arbundles);
+    super({ url: parsed, arbundles });
     if (parsed.host === "devnet.bundlr.network" && !config?.providerUrl)
       throw new Error(
         `Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.bundlr.network/developer-docs/using-devnet`,
@@ -99,11 +99,16 @@ export default class NodeBundlr extends Bundlr {
     contractAddress?: string;
   }): Promise<NodeBundlr> {
     const { url, currency, privateKey, publicKey, signingFunction, collectSignatures, providerUrl, timeout, contractAddress } = opts;
-    const bundlr = new NodeBundlr(url, currency, signingFunction ? publicKey : privateKey, {
-      providerUrl,
-      timeout,
-      contractAddress,
-      currencyOpts: { signingFunction, collectSignatures },
+    const bundlr = new NodeBundlr({
+      url,
+      currency,
+      wallet: signingFunction ? publicKey : privateKey,
+      config: {
+        providerUrl,
+        timeout,
+        contractAddress,
+        currencyOpts: { signingFunction, collectSignatures },
+      },
     });
     await bundlr.ready();
     return bundlr;

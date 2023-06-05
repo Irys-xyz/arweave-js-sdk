@@ -227,9 +227,14 @@ async function init(opts, operation): Promise<Bundlr> {
   }
   try {
     // create and ready the bundlr instance
-    bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet ?? "", {
-      providerUrl: opts.providerUrl,
-      contractAddress: opts.contractAddress,
+    bundler = new Bundlr({
+      url: opts.host,
+      currency: opts.currency.toLowerCase(),
+      wallet: wallet ?? "",
+      config: {
+        providerUrl: opts.providerUrl,
+        contractAddress: opts.contractAddress,
+      },
     });
     await bundler.ready();
   } catch (err: any) {
