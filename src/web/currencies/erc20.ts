@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { ethers } from "ethers";
+import { Contract } from "@ethersproject/contracts";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import { getRedstonePrice } from "../currency";
 import EthereumConfig from "./ethereum";
@@ -9,7 +9,7 @@ export interface ERC20CurrencyConfig extends CurrencyConfig {
 }
 
 export default class ERC20Config extends EthereumConfig {
-  private contractInstance!: ethers.Contract;
+  private contractInstance!: Contract;
   private contractAddress: string;
 
   constructor(config: ERC20CurrencyConfig) {
@@ -17,9 +17,9 @@ export default class ERC20Config extends EthereumConfig {
     this.contractAddress = config.contractAddress;
   }
 
-  async getContract(): Promise<ethers.Contract> {
+  async getContract(): Promise<Contract> {
     if (!this.contractInstance) {
-      this.contractInstance = new ethers.Contract(this.contractAddress, erc20abi, this.w3signer);
+      this.contractInstance = new Contract(this.contractAddress, erc20abi, this.w3signer);
       this.base = ["wei", Math.pow(10, await this.contractInstance.decimals())];
     }
     return this.contractInstance;

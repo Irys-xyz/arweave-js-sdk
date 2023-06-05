@@ -1,17 +1,17 @@
-import { ethers } from "ethers";
+import type { JsonRpcSigner, TransactionRequest, Web3Provider } from "@ethersproject/providers";
+import { BigNumber as EthBigNumber } from "@ethersproject/bignumber";
 import BigNumber from "bignumber.js";
 import type { Tx, CurrencyConfig } from "../../common/types";
 import BaseWebCurrency from "../currency";
 import { InjectedTypedEthereumSigner } from "arbundles/web";
 
-const ethBigNumber = ethers.BigNumber; // required for hexString conversions (w/ 0x padding)
 const ethereumSigner = InjectedTypedEthereumSigner;
 
 export default class EthereumConfig extends BaseWebCurrency {
   protected signer!: InjectedTypedEthereumSigner;
-  protected declare wallet: ethers.providers.Web3Provider;
-  protected w3signer!: ethers.providers.JsonRpcSigner;
-  protected declare providerInstance: ethers.providers.Web3Provider;
+  protected declare wallet: Web3Provider;
+  protected w3signer!: JsonRpcSigner;
+  protected declare providerInstance: Web3Provider;
   public readonly inheritsRPC = true;
 
   constructor(config: CurrencyConfig) {
@@ -83,33 +83,33 @@ export default class EthereumConfig extends BaseWebCurrency {
     return new BigNumber(estimatedGas.mul(gasPrice).toString());
   }
 
-  async sendTx(data: ethers.providers.TransactionRequest): Promise<string | undefined> {
+  async sendTx(data: TransactionRequest): Promise<string | undefined> {
     const signer = this.w3signer;
     const receipt = await signer.sendTransaction(data); // .catch((e) => { console.error(`Sending tx: ${e}`) })
     return receipt ? receipt.hash : undefined;
   }
 
   async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any }> {
-    const amountc = ethBigNumber.from(new BigNumber(amount).toFixed());
+    const amountc = EthBigNumber.from(new BigNumber(amount).toFixed());
     const signer = this.w3signer;
     const estimatedGas = await signer.estimateGas({ to, from: this.address, value: amountc.toHexString() });
     let gasPrice = await signer.getGasPrice();
     if (this.name === "matic") {
-      gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(10).decimalPlaces(0).toString());
+      gasPrice = EthBigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(10).decimalPlaces(0).toString());
     }
     const txr = await signer.populateTransaction({ to, from: this.address, value: amountc.toHexString(), gasPrice, gasLimit: estimatedGas });
     return { txId: undefined, tx: txr };
   }
 
   public async getPublicKey(): Promise<string | Buffer> {
-    return this.address as string;
+    return this.address!;
   }
 
   public async ready(): Promise<void> {
     this.w3signer = await this.wallet.getSigner();
     this._address = await this.w3signer.getAddress();
     await this.getSigner().ready();
-    // this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
+    // this.providerInstance = new .JsonRpcProvider(this.providerUrl);
     this.providerInstance = this.wallet;
     await this.providerInstance?._ready?.();
   }

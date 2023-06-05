@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js";
-import { ethers, Wallet } from "ethers";
+import { Contract } from "@ethersproject/contracts";
+import { Wallet } from "@ethersproject/wallet";
 import { keccak256 } from "arbundles";
 import { getRedstonePrice } from "../currency";
 import EthereumConfig from "./ethereum";
@@ -10,7 +11,7 @@ export interface ERC20CurrencyConfig extends CurrencyConfig {
 }
 
 export default class ERC20Config extends EthereumConfig {
-  private contractInstance!: ethers.Contract;
+  private contractInstance!: Contract;
   private contractAddress: string;
 
   constructor(config: ERC20CurrencyConfig) {
@@ -18,9 +19,9 @@ export default class ERC20Config extends EthereumConfig {
     this.contractAddress = config.contractAddress;
   }
 
-  async getContract(): Promise<ethers.Contract> {
+  async getContract(): Promise<Contract> {
     if (!this.contractInstance) {
-      this.contractInstance = new ethers.Contract(this.contractAddress, erc20abi, new Wallet(this.wallet, await this.getProvider()));
+      this.contractInstance = new Contract(this.contractAddress, erc20abi, new Wallet(this.wallet, await this.getProvider()));
       this.base = ["wei", Math.pow(10, await this.contractInstance.decimals())];
     }
     return this.contractInstance;

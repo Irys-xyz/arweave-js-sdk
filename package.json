@@ -72,6 +72,10 @@
     "node": ">=16.10.0"
   },
   "dependencies": {
+    "@ethersproject/bignumber": "^5.7.0",
+    "@ethersproject/contracts": "^5.7.0",
+    "@ethersproject/providers": "^5.7.2",
+    "@ethersproject/wallet": "^5.7.0",
     "@near-js/crypto": "^0.0.3",
     "@near-js/keystores-browser": "^0.0.3",
     "@near-js/providers": "^0.0.4",
@@ -86,11 +90,9 @@
     "axios": "^0.25.0",
     "base64url": "^3.0.1",
     "bignumber.js": "^9.0.1",
-    "bn.js": "^5.2.1",
-    "bs58": "^5.0.0",
+    "bs58": "5.0.0",
     "commander": "^8.2.0",
     "csv": "5.5.3",
-    "ethers": "=5.7.2",
     "inquirer": "^8.2.0",
     "js-sha256": "^0.9.0",
     "mime-types": "^2.1.34",

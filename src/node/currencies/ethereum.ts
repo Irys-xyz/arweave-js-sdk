@@ -1,8 +1,9 @@
-import { ethers, Wallet } from "ethers";
+import { BigNumber as EthBigNumber } from "@ethersproject/bignumber";
+import { JsonRpcProvider } from "@ethersproject/providers";
+import { Wallet } from "@ethersproject/wallet";
 import BigNumber from "bignumber.js";
 import { EthereumSigner, keccak256 } from "arbundles";
 import type { Signer } from "arbundles";
-import type { JsonRpcProvider } from "@ethersproject/providers";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 
@@ -18,7 +19,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
 
   protected async getProvider(): Promise<JsonRpcProvider> {
     if (!this.providerInstance) {
-      this.providerInstance = new ethers.providers.JsonRpcProvider(this.providerUrl);
+      this.providerInstance = new JsonRpcProvider(this.providerUrl);
       await this.providerInstance.ready;
     }
     return this.providerInstance;
@@ -97,7 +98,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
     const _amount = "0x" + new BigNumber(amount).toString(16);
 
     let gasPrice = await provider.getGasPrice();
-    const gasEstimate = fee ? ethers.BigNumber.from(new BigNumber(fee).dividedToIntegerBy(gasPrice.toString()).toFixed()) : undefined;
+    const gasEstimate = fee ? EthBigNumber.from(new BigNumber(fee).dividedToIntegerBy(gasPrice.toString()).toFixed()) : undefined;
 
     // const estimatedGas = await provider.estimateGas({ from: this.address, to, value: _amount });
 
@@ -108,7 +109,7 @@ export default class EthereumConfig extends BaseNodeCurrency {
     // }
 
     if (this.name === "matic") {
-      gasPrice = ethers.BigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(10).decimalPlaces(0).toString());
+      gasPrice = EthBigNumber.from(new BigNumber(gasPrice.toString()).multipliedBy(10).decimalPlaces(0).toString());
     }
 
     const tx = await wallet.populateTransaction({
