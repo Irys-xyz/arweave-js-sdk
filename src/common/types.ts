@@ -1,5 +1,5 @@
 import type BigNumber from "bignumber.js";
-import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions } from "arbundles";
+import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions, bundleAndSignData } from "arbundles";
 import type { FileDataItem } from "arbundles/file";
 import type Irys from "./irys";
 
@@ -17,6 +17,7 @@ export interface Arbundles {
   deepHash: typeof deepHash;
   stringToBuffer: typeof stringToBuffer;
   getCryptoDriver: typeof getCryptoDriver;
+  bundleAndSignData: typeof bundleAndSignData;
 }
 
 export interface IrysTransaction extends DataItem {
@@ -27,7 +28,11 @@ export interface IrysTransaction extends DataItem {
   upload(opts?: UploadOptions): Promise<UploadResponse>;
   // fromRaw(rawTransaction: Buffer, IrysInstance: Irys): IrysTransaction;
 }
-export type IrysTransactonCtor = new (data: string | Uint8Array, Irys: Irys, opts?: IrysTransactionCreateOptions) => IrysTransaction;
+export type IrysTransactonCtor = new (
+  data: string | Uint8Array,
+  Irys: Pick<Irys, "uploader" | "currencyConfig" | "arbundles">,
+  opts?: IrysTransactionCreateOptions,
+) => IrysTransaction;
 
 export interface Tx {
   from: string;

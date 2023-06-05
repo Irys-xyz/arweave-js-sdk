@@ -1,6 +1,6 @@
 import type { PathLike } from "fs";
 import { promises, createReadStream, createWriteStream } from "fs";
-import type { CreateAndUploadOptions, Currency, UploadResponse } from "../common/types";
+import type { CreateAndUploadOptions, Currency, IrysTransactonCtor, UploadResponse } from "../common/types";
 import Uploader from "../common/upload";
 import type Api from "../common/api";
 import type Utils from "../common/utils";
@@ -20,8 +20,8 @@ export const checkPath = async (path: PathLike): Promise<boolean> => {
 };
 
 export default class NodeUploader extends Uploader {
-  constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency) {
-    super(api, utils, currency, currencyConfig);
+  constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency, irysTx: IrysTransactonCtor) {
+    super(api, utils, currency, currencyConfig, irysTx);
   }
   /**
    * Uploads a file to the bundler

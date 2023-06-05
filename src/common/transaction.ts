@@ -15,24 +15,24 @@ import type {
  * Takes the same parameters as a regular DataItem.
  */
 
-export default function buildIrysTransaction(Irys: Irys): IrysTransactonCtor {
-  class IrysTransaction extends Irys.arbundles.DataItem implements IIrysTransaction {
-    public Irys: Irys;
+export default function buildIrysTransaction(irys: Pick<Irys, "uploader" | "currencyConfig" | "arbundles">): IrysTransactonCtor {
+  class IrysTransaction extends irys.arbundles.DataItem implements IIrysTransaction {
+    public Irys: Pick<Irys, "uploader" | "currencyConfig" | "arbundles">;
     public signer: Signer;
 
-    constructor(data: string | Uint8Array, Irys: Irys, opts?: IrysTransactionCreateOptions) {
+    constructor(data: string | Uint8Array, irys: Pick<Irys, "uploader" | "currencyConfig" | "arbundles">, opts?: IrysTransactionCreateOptions) {
       super(
         opts?.dataIsRawTransaction === true
           ? Buffer.from(data)
-          : Irys.arbundles
-              .createData(data, Irys.currencyConfig.getSigner(), {
+          : irys.arbundles
+              .createData(data, irys.currencyConfig.getSigner(), {
                 ...opts,
                 anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32),
               })
               .getRaw(),
       );
-      this.Irys = Irys;
-      this.signer = Irys.currencyConfig.getSigner();
+      this.Irys = irys;
+      this.signer = irys.currencyConfig.getSigner();
     }
 
     public sign(): Promise<Buffer> {

@@ -1,13 +1,24 @@
-import type { AxiosResponse } from "axios";
-import type Utils from "./utils";
-import type Api from "./api";
-import type { Arbundles, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
 import { PromisePool } from "@supercharge/promise-pool";
+import { DataItem, JWKInterface, createData } from "arbundles";
+import { ArweaveSigner } from "arbundles";
 import retry from "async-retry";
-import { ChunkingUploader } from "./chunkingUploader";
-import type { Readable } from "stream";
+import type { AxiosResponse } from "axios";
+import base64url from "base64url";
 import Crypto from "crypto";
-import type { DataItem } from "arbundles";
+import type { Readable } from "stream";
+import type Api from "./api";
+import { ChunkingUploader } from "./chunkingUploader";
+import type {
+  Arbundles,
+  CreateAndUploadOptions,
+  Currency,
+  IrysTransactonCtor,
+  Manifest,
+  UploadOptions,
+  UploadReceipt,
+  UploadResponse,
+} from "./types";
+import type Utils from "./utils";
 
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 export const CHUNKING_THRESHOLD = 50_000_000;
@@ -20,13 +31,15 @@ export default class Uploader {
   protected contentTypeOverride: string | undefined;
   protected forceUseChunking: boolean | undefined;
   protected arbundles: Arbundles;
+  protected irysTransaction: IrysTransactonCtor;
 
-  constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency) {
+  constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency, irysTransaction: IrysTransactonCtor) {
     this.api = api;
     this.currency = currency;
     this.currencyConfig = currencyConfig;
     this.arbundles = this.currencyConfig.Irys.arbundles;
     this.utils = utils;
+    this.irysTransaction = irysTransaction;
   }
 
   /**
@@ -188,5 +201,45 @@ export default class Uploader {
     //     throw new Error("Invali")
     // }
     this.contentTypeOverride = type;
+  }
+  // uploadTransaction(
+  //   transaction: DataItem | Readable | Buffer,
+  //   opts: UploadOptions & { getReceiptSignature: true },
+  // ): Promise<AxiosResponse<UploadReceipt>>;
+  // uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>>;
+
+  uploadMany(
+    transactions: (DataItem | Buffer)[],
+    opts: UploadOptions & { getReceiptSignature: true },
+  ): Promise<AxiosResponse<UploadReceipt> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
+  uploadMany(
+    transactions: (DataItem | Buffer)[],
+    opts?: UploadOptions,
+  ): Promise<AxiosResponse<UploadResponse> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
+
+  public async uploadMany(
+    transactions: (DataItem | Buffer)[],
+    opts?: UploadOptions,
+  ): Promise<AxiosResponse<UploadResponse> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }> {
+    const ephemeralKey = await this.arbundles.getCryptoDriver().generateJWK();
+    const ephemeralSigner = new ArweaveSigner(ephemeralKey);
+    const txs = transactions.map((tx) => (this.arbundles.DataItem.isDataItem(tx) ? tx : this.arbundles.createData(tx, ephemeralSigner)));
+    const bundle = await this.arbundles.bundleAndSignData(txs, ephemeralSigner);
+
+    // upload bundle with bundle specific tags, use actual signer for this.
+    const tx = this.arbundles.createData(bundle.getRaw(), this.currencyConfig.getSigner(), {
+      tags: [
+        { name: "Bundle-Format", value: "binary" },
+        { name: "Bundle-Version", value: "2.0.0" },
+      ],
+    });
+    await tx.sign(this.currencyConfig.getSigner());
+
+    const res = await this.uploadTransaction(tx, opts);
+    const ephemeralAddress = base64url(
+      Buffer.from(await this.arbundles.getCryptoDriver().hash(base64url.toBuffer(base64url(ephemeralSigner.publicKey)))),
+    );
+
+    return { ...res, txs: bundle.getIds(), ephemeralKey, ephemeralAddress };
   }
 }

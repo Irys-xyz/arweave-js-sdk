@@ -30,7 +30,7 @@ export default class WebIrys extends Irys {
     if (parsed.host === "devnet.Irys.network" && !(config?.providerUrl || this.currencyConfig.inheritsRPC))
       throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.Irys.network/sdk/using-devnet`);
     this.utils = new Utils(this.api, this.currency, this.currencyConfig);
-    this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig);
+    this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig, this.IrysTransaction);
     this.funder = new Fund(this.utils);
     this.address = "Please run `await Irys.ready()`";
   }
