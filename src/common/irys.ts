@@ -118,9 +118,10 @@ export default abstract class Irys {
     return this.uploader.uploadData(data, { ...opts, upload: { getReceiptSignature: true } }) as Promise<UploadReceipt>;
   }
 
-  async ready(): Promise<void> {
+  async ready(): Promise<Irys> {
     this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
     this.address = this.currencyConfig.address;
+    return this;
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
