@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { AxiosResponse, AxiosRequestConfig, AxiosInstance } from "axios";
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import Axios from "axios";
 import Irys from "./irys";
 

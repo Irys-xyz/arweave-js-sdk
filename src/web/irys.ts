@@ -8,6 +8,8 @@ import getCurrency from "./currencies/index";
 // import WebFund from "./fund";
 import type { WebCurrency } from "./types";
 import * as arbundles from "./utils";
+import { Provenance } from "common/provenance";
+import { Transaction } from "common/transactions";
 
 export default class WebIrys extends Irys {
   public currencyConfig: WebCurrency;
@@ -32,6 +34,8 @@ export default class WebIrys extends Irys {
     this.utils = new Utils(this.api, this.currency, this.currencyConfig);
     this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig, this.IrysTransaction);
     this.funder = new Fund(this.utils);
+    this.provenance = new Provenance(this);
+    this.transactions = new Transaction(this);
     this.address = "Please run `await Irys.ready()`";
   }
 }

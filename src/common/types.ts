@@ -4,11 +4,11 @@ import type { FileDataItem } from "arbundles/file";
 import type Irys from "./irys";
 
 // common types shared between web and node versions
-export interface CreateTxData {
+export type CreateTxData = {
   amount: BigNumber.Value;
   to: string;
   fee?: string;
-}
+};
 
 // export type Arbundles = typeof arbundles | typeof webArbundles;
 export interface Arbundles {
@@ -170,3 +170,41 @@ export interface UploadOptions {
 // }
 
 export type IrysTransactionCreateOptions = DataItemCreateOptions & { dataIsRawTransaction?: boolean };
+
+export type HashingAlgo = "sha256" | "sha384";
+
+export type ProvenanceProof = {
+  dataProtocol: "Provenance-Confirmation" | string;
+  hashingAlgo?: HashingAlgo | string;
+  dataHash: string;
+  uploadedFor?: string;
+  prompt?: string;
+  promptHash?: string;
+  model?: string;
+};
+
+export type TxGqlNode = {
+  id: string;
+  receipt: {
+    deadlineHeight: number;
+    signature: string;
+    timestamp: number;
+    version: string;
+  };
+  tags: { name: string; value: string }[];
+  address: string;
+  currency: string;
+  signature: string;
+  timetamp: number;
+};
+
+export type TxGqlResponse = {
+  data: {
+    transactions: {
+      edges: {
+        node: TxGqlNode;
+      }[];
+      pageInfo?: { endCursor: string | null; hasNextPage: boolean };
+    };
+  };
+};

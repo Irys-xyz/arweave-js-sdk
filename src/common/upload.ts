@@ -209,7 +209,7 @@ export default class Uploader {
   // uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>>;
 
   uploadMany(
-    transactions: (DataItem | Buffer)[],
+    transactions: (DataItem | Buffer | string)[],
     opts: UploadOptions & { getReceiptSignature: true },
   ): Promise<AxiosResponse<UploadReceipt> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
   uploadMany(

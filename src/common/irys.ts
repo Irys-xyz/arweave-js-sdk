@@ -1,26 +1,27 @@
-import Utils from "./utils";
-import { withdrawBalance } from "./withdrawal";
-import type Uploader from "./upload";
-import type Fund from "./fund";
-import type { DataItemCreateOptions } from "arbundles";
-import type Api from "./api";
+import type { DataItemCreateOptions, Signer } from "arbundles";
 import type BigNumber from "bignumber.js";
-import type { IrysTransaction } from "./types";
+import type { Readable } from "stream";
+import type Api from "./api";
+import type Fund from "./fund";
+import type { Provenance } from "./provenance";
+import buildIrysTransaction from "./transaction";
+import type { Transaction } from "./transactions";
 import type {
   Arbundles,
-  IrysTransactionCreateOptions,
-  IrysTransactonCtor,
   CreateAndUploadOptions,
   Currency,
   FundResponse,
+  IrysTransaction,
+  IrysTransactionCreateOptions,
+  IrysTransactonCtor,
   UploadReceipt,
   UploadReceiptData,
   UploadResponse,
   WithdrawalResponse,
 } from "./types";
-import type { Signer } from "arbundles";
-import type { Readable } from "stream";
-import buildIrysTransaction from "./transaction";
+import type Uploader from "./upload";
+import Utils from "./utils";
+import { withdrawBalance } from "./withdrawal";
 
 export default abstract class Irys {
   public api!: Api;
@@ -30,6 +31,8 @@ export default abstract class Irys {
   public address!: string | undefined;
   public currency!: string;
   public currencyConfig!: Currency;
+  public provenance!: Provenance;
+  public transactions!: Transaction;
   protected _readyPromise: Promise<void> | undefined;
   public url: URL;
   public arbundles: Arbundles;

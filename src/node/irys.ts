@@ -7,6 +7,8 @@ import getCurrency from "./currencies/index";
 import type { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 import * as arbundles from "./utils";
+import { Provenance } from "common/provenance";
+import { Transaction } from "common/transactions";
 
 export default class NodeIrys extends Irys {
   public uploader: NodeUploader; // re-define type
@@ -43,6 +45,8 @@ export default class NodeIrys extends Irys {
     this.utils = new Utils(this.api, this.currency, this.currencyConfig);
     this.funder = new Fund(this.utils);
     this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig, this.IrysTransaction);
+    this.provenance = new Provenance(this);
+    this.transactions = new Transaction(this);
     this._readyPromise = this.currencyConfig.ready ? this.currencyConfig.ready() : new Promise((r) => r());
   }
 
