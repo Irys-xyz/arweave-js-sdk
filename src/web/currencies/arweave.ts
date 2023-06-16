@@ -109,9 +109,9 @@ export default class ArweaveConfig extends BaseNodeCurrency {
     return { txId: tx.id, tx };
   }
 
-  async getPublicKey(): Promise<Buffer> {
+  async getPublicKey(): Promise<string> {
     const signer = this.getSigner();
     await signer.setPublicKey();
-    return signer.publicKey;
+    return Arweave.utils.bufferTob64Url(signer.publicKey);
   }
 }
