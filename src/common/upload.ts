@@ -1,5 +1,5 @@
 import { PromisePool } from "@supercharge/promise-pool";
-import { DataItem, JWKInterface, createData } from "arbundles";
+import type { DataItem, JWKInterface } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 import retry from "async-retry";
 import type { AxiosResponse } from "axios";

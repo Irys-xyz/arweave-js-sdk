@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Note: DO NOT REMOVE/ALTER THE ABOVE LINE - it is called a 'shebang' and is vital for CLI execution.
+import BigNumber from "bignumber.js";
 import { Command } from "commander";
 import { readFileSync } from "fs";
-import Irys from "./irys";
 import inquirer from "inquirer";
-import BigNumber from "bignumber.js";
-import { checkPath } from "./upload";
 import type NodeIrys from "./irys";
+import Irys from "./irys";
+import { checkPath } from "./upload";
 
 export const program = new Command();
 
@@ -14,7 +14,7 @@ let balpad, walpad; // padding state variables
 
 // Define the CLI flags for the program
 program
-  .option("-h, --host <string>", "Irys node hostname/URL (eg http://node1.Irys.network)")
+  .option("-h, --host <string>", "Irys node hostname/URL (eg http://node1.irys.network)")
   .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "default")
   .option("-c, --currency <string>", "The currency to use")
   .option("--timeout <number>", "The timeout (in ms) for API HTTP requests - increase if you get timeouts for upload")
@@ -230,7 +230,7 @@ async function init(opts, operation): Promise<Irys> {
     bundler = new Irys({
       url: opts.host,
       currency: opts.currency.toLowerCase(),
-      wallet: wallet ?? "",
+      key: wallet ?? "",
       config: {
         providerUrl: opts.providerUrl,
         contractAddress: opts.contractAddress,

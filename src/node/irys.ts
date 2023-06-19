@@ -1,14 +1,14 @@
+import { Provenance } from "common/provenance";
+import { Transaction } from "common/transactions";
 import Api from "../common/api";
-import Irys from "../common/irys";
 import Fund from "../common/fund";
-import type { IrysConfig, CreateAndUploadOptions, UploadResponse } from "../common/types";
+import Irys from "../common/irys";
+import type { CreateAndUploadOptions, IrysConfig, UploadResponse } from "../common/types";
 import Utils from "../common/utils";
 import getCurrency from "./currencies/index";
 import type { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 import * as arbundles from "./utils";
-import { Provenance } from "common/provenance";
-import { Transaction } from "common/transactions";
 
 export default class NodeIrys extends Irys {
   public uploader: NodeUploader; // re-define type
@@ -17,13 +17,26 @@ export default class NodeIrys extends Irys {
   /**
    * Constructs a new Irys instance, as well as supporting subclasses
    * @param url - URL to the bundler
-   * @param wallet - private key (in whatever form required)
+   * @param key - private key (in whatever form required)
    */
-  constructor({ url, currency, wallet, config }: { url: string; currency: string; wallet?: any; config?: IrysConfig }) {
+  constructor({ url, currency, key, config }: { url: "node1" | "node2" | "devnet" | string; currency: string; key?: any; config?: IrysConfig }) {
+    switch (url) {
+      case undefined:
+      case "node1":
+        url = "https://node1.irys.xyz";
+        break;
+      case "node2":
+        url = "https://node2.irys.xyz";
+        break;
+      case "devnet":
+        url = "https://devnet.irys.xyz";
+        break;
+    }
+
     const parsed = new URL(url);
     super({ url: parsed, arbundles });
-    if (parsed.host === "devnet.irys.network" && !config?.providerUrl)
-      throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.network/developer-docs/using-devnet`);
+    if (parsed.host === "devnet.irys.xyz" && !config?.providerUrl)
+      throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
     this.api = new Api({
       protocol: parsed.protocol.slice(0, -1),
       port: parsed.port,
@@ -34,7 +47,7 @@ export default class NodeIrys extends Irys {
     this.currencyConfig = getCurrency(
       this,
       currency.toLowerCase(),
-      wallet,
+      key,
       parsed.toString(),
       config?.providerUrl,
       config?.contractAddress,
@@ -104,7 +117,7 @@ export default class NodeIrys extends Irys {
     const Irys = new NodeIrys({
       url,
       currency,
-      wallet: signingFunction ? publicKey : privateKey,
+      key: signingFunction ? publicKey : privateKey,
       config: {
         providerUrl,
         timeout,
