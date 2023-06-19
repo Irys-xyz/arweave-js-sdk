@@ -1,16 +1,15 @@
+import { KeyPair } from "@near-js/crypto";
+import { JsonRpcProvider } from "@near-js/providers";
+import { serialize } from "borsh";
 import type { Signer } from "arbundles";
 import { NearSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
-import { SCHEMA, Signature, SignedTransaction } from "@near-js/transactions";
-import { actionCreators, createTransaction } from "@near-js/transactions";
 import bs58 from "bs58";
-import { serialize } from "borsh";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";
-import { JsonRpcProvider } from "@near-js/providers";
-import { KeyPair } from "@near-js/crypto";
+import { Signature, SignedTransaction, actionCreators, createTransaction, SCHEMA, encodeTransaction } from "@near-js/transactions";
 
 import { parseSeedPhrase, KEY_DERIVATION_PATH } from "near-seed-phrase";
 import base64url from "base64url";
@@ -112,9 +111,18 @@ export default class NearConfig extends BaseNodeCurrency {
     return new BigNumber(res.gas_price).multipliedBy(450_000_000_000);
   }
 
-  async sendTx(data: any): Promise<any> {
-    data as SignedTransaction;
-    const res = await (await this.getProvider()).sendTransaction(data);
+  async sendTx(data: SignedTransaction): Promise<string> {
+    const provider = await this.getProvider();
+    // // hack to fix near SDK issue
+
+    // we manually encode as due to a lack of node_module flattening, two classes (who are otherwise identical)
+    // are imported from two different locations, meaning JS's equivalency is broken (not the same internal object)
+    // this bypasses this issue by ensuring the class is imported from the "flat" version
+    // const res = await provider.sendTransaction(data);
+    const expectedSignedTransactionClass = [...SCHEMA.keys()].find((c) => c.name === "SignedTransaction");
+    data.constructor = expectedSignedTransactionClass;
+    const encodedTransaction = encodeTransaction(data);
+    const res = (await provider.sendJsonRpc("broadcast_tx_commit", [Buffer.from(encodedTransaction).toString("base64")])) as any;
     return `${this.address}:${res.transaction.hash}`; // encode into compound format
   }
 
@@ -140,6 +148,9 @@ export default class NearConfig extends BaseNodeCurrency {
     const actions = [actionCreators.transfer(new BN(new BigNumber(amount).toFixed().toString()))];
     if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
     const tx = createTransaction(this.address, this.keyPair.getPublicKey(), to, nonce, actions, recentBlockHash);
+    // hack to fix near SDK issue
+    const expectedPublicKeyClass = [...SCHEMA.keys()].find((c) => c.name === "PublicKey");
+    tx.publicKey.constructor = expectedPublicKeyClass;
     const serialTx = serialize(SCHEMA, tx);
     const serialTxHash = new Uint8Array(sha256.array(serialTx));
     const signature = this.keyPair.sign(serialTxHash);

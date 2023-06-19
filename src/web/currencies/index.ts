@@ -8,14 +8,33 @@ import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
 import type WebIrys from "web";
+import ArweaveConfig from "./arweave";
 
-export default function getCurrency(Irys: WebIrys, currency: string, wallet: any, providerUrl?: string, contractAddress?: string): BaseCurrency {
+export default function getCurrency(
+  irys: WebIrys,
+  currency: string,
+  wallet: any,
+  providerUrl?: string,
+  contractAddress?: string,
+  opts?: any,
+): BaseCurrency {
   switch (currency) {
+    case "arweave":
+      return new ArweaveConfig({
+        irys: irys,
+        name: "arweave",
+        ticker: "AR",
+        minConfirm: 10,
+        providerUrl: providerUrl ?? "https://arweave.net",
+        wallet,
+        isSlow: true,
+        opts,
+      });
     case "ethereum":
-      return new EthereumConfig({ Irys, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet });
+      return new EthereumConfig({ irys: irys, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet });
     case "matic":
       return new EthereumConfig({
-        Irys,
+        irys: irys,
         name: "matic",
         ticker: "MATIC",
         providerUrl: providerUrl ?? "https://polygon-rpc.com",
@@ -23,12 +42,12 @@ export default function getCurrency(Irys: WebIrys, currency: string, wallet: any
         minConfirm: 1,
       });
     case "arbitrum":
-      return new EthereumConfig({ Irys, name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet });
+      return new EthereumConfig({ irys: irys, name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet });
     case "bnb":
-      return new EthereumConfig({ Irys, name: "bnb", ticker: "BNB", providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet });
+      return new EthereumConfig({ irys: irys, name: "bnb", ticker: "BNB", providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet });
     case "avalanche":
       return new EthereumConfig({
-        Irys,
+        irys: irys,
         name: "avalanche",
         ticker: "AVAX",
         providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc",
@@ -36,7 +55,7 @@ export default function getCurrency(Irys: WebIrys, currency: string, wallet: any
       });
     case "boba-eth":
       return new EthereumConfig({
-        Irys,
+        irys: irys,
         name: "boba-eth",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -45,7 +64,7 @@ export default function getCurrency(Irys: WebIrys, currency: string, wallet: any
       });
     case "boba": {
       const k = new ERC20Config({
-        Irys,
+        irys: irys,
         name: "boba",
         ticker: "BOBA",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -68,14 +87,20 @@ export default function getCurrency(Irys: WebIrys, currency: string, wallet: any
     }
 
     case "solana":
-      return new SolanaConfig({ Irys, name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet });
+      return new SolanaConfig({
+        irys: irys,
+        name: "solana",
+        ticker: "SOL",
+        providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/",
+        wallet,
+      });
     // case "algorand":
     //     return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet })
     case "near":
-      return new NearConfig({ Irys, name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet });
+      return new NearConfig({ irys: irys, name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet });
     case "aptos":
       return new AptosConfig({
-        Irys,
+        irys: irys,
         name: "aptos",
         ticker: "APTOS",
         providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",

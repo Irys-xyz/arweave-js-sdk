@@ -24,7 +24,7 @@ export default function getCurrency(
   switch (currency) {
     case "arweave":
       return new ArweaveConfig({
-        Irys,
+        irys: Irys,
         name: "arweave",
         ticker: "AR",
         minConfirm: 10,
@@ -34,10 +34,17 @@ export default function getCurrency(
         opts,
       });
     case "ethereum":
-      return new EthereumConfig({ Irys, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet, opts });
+      return new EthereumConfig({
+        irys: Irys,
+        name: "ethereum",
+        ticker: "ETH",
+        providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
+        wallet,
+        opts,
+      });
     case "matic":
       return new EthereumConfig({
-        Irys,
+        irys: Irys,
         name: "matic",
         ticker: "MATIC",
         minConfirm: 1,
@@ -47,7 +54,7 @@ export default function getCurrency(
       });
     case "bnb":
       return new EthereumConfig({
-        Irys,
+        irys: Irys,
         name: "bnb",
         ticker: "BNB",
         providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org/",
@@ -55,10 +62,10 @@ export default function getCurrency(
         opts,
       });
     case "fantom":
-      return new EthereumConfig({ Irys, name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet, opts });
+      return new EthereumConfig({ irys: Irys, name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet, opts });
     case "solana":
       return new SolanaConfig({
-        Irys,
+        irys: Irys,
         name: "solana",
         ticker: "SOL",
         providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/",
@@ -67,7 +74,7 @@ export default function getCurrency(
       });
     case "avalanche":
       return new EthereumConfig({
-        Irys,
+        irys: Irys,
         name: "avalanche",
         ticker: "AVAX",
         providerUrl: providerUrl ?? "https://api.avax-test.network/ext/bc/C/rpc/",
@@ -76,7 +83,7 @@ export default function getCurrency(
       });
     case "boba-eth":
       return new EthereumConfig({
-        Irys,
+        irys: Irys,
         name: "boba-eth",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -86,7 +93,7 @@ export default function getCurrency(
       });
     case "boba": {
       const k = new ERC20Config({
-        Irys,
+        irys: Irys,
         name: "boba",
         ticker: "BOBA",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -110,7 +117,7 @@ export default function getCurrency(
     }
     case "arbitrum":
       return new EthereumConfig({
-        Irys,
+        irys: Irys,
         name: "arbitrum",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc/",
@@ -119,7 +126,7 @@ export default function getCurrency(
       });
     case "chainlink":
       return new ERC20Config({
-        Irys,
+        irys: Irys,
         name: "chainlink",
         ticker: "LINK",
         providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/",
@@ -129,7 +136,7 @@ export default function getCurrency(
       });
     case "kyve": {
       const k = new ERC20Config({
-        Irys,
+        irys: Irys,
         name: "kyve",
         ticker: "KYVE",
         minConfirm: 0,
@@ -149,7 +156,7 @@ export default function getCurrency(
     }
     case "near": {
       return new NearConfig({
-        Irys,
+        irys: Irys,
         name: "near",
         ticker: "NEAR",
         providerUrl: providerUrl ?? "https://rpc.mainnet.near.org",
@@ -159,11 +166,18 @@ export default function getCurrency(
       });
     }
     case "algorand": {
-      return new AlgorandConfig({ Irys, name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", wallet, opts });
+      return new AlgorandConfig({
+        irys: Irys,
+        name: "algorand",
+        ticker: "ALGO",
+        providerUrl: providerUrl ?? "https://algoexplorerapi.io",
+        wallet,
+        opts,
+      });
     }
     case "aptos": {
       return new AptosConfig({
-        Irys,
+        irys: Irys,
         name: "aptos",
         ticker: "APTOS",
         providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com",
@@ -173,7 +187,7 @@ export default function getCurrency(
     }
     case "multiaptos": {
       return new MultiSignatureAptos({
-        Irys,
+        irys: Irys,
         name: "aptos",
         ticker: "APTOS",
         providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",

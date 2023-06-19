@@ -43,7 +43,7 @@ export interface Tx {
   confirmed: boolean;
 }
 export interface CurrencyConfig {
-  Irys: Irys;
+  irys: Irys;
   name: string;
   ticker: string;
   minConfirm?: number;
