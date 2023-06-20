@@ -17,7 +17,7 @@ export default class Utils {
     this.api = api;
     this.currency = currency;
     this.currencyConfig = currencyConfig;
-    this.arbundles = this.currencyConfig.Irys.arbundles;
+    this.arbundles = this.currencyConfig.irys.arbundles;
   }
 
   /**

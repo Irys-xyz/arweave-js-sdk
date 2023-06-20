@@ -73,7 +73,7 @@ export interface Currency {
 
   ticker: string;
 
-  Irys: Irys;
+  irys: Irys;
 
   getTx(txId: string): Promise<Tx>;
 

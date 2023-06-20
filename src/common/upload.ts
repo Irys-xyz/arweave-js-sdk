@@ -37,7 +37,7 @@ export default class Uploader {
     this.api = api;
     this.currency = currency;
     this.currencyConfig = currencyConfig;
-    this.arbundles = this.currencyConfig.Irys.arbundles;
+    this.arbundles = this.currencyConfig.irys.arbundles;
     this.utils = utils;
     this.irysTransaction = irysTransaction;
   }

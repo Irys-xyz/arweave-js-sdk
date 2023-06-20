@@ -22,7 +22,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
   public needsFee = true;
   protected opts?: any;
   protected utils!: Utils;
-  public Irys!: NodeIrys;
+  public irys!: NodeIrys;
 
   constructor(config: CurrencyConfig) {
     Object.assign(this, config);

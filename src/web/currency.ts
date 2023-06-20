@@ -17,7 +17,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
   protected providerInstance?: any;
   public ticker!: string;
   public name!: string;
-  public Irys!: WebIrys;
+  public irys!: WebIrys;
 
   protected minConfirm = 5;
   public isSlow = false;

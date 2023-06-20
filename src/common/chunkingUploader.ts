@@ -39,7 +39,7 @@ export class ChunkingUploader extends EventEmitter {
   constructor(currencyConfig: Currency, api: Api) {
     super({ captureRejections: true });
     this.currencyConfig = currencyConfig;
-    this.arbundles = this.currencyConfig.Irys.arbundles;
+    this.arbundles = this.currencyConfig.irys.arbundles;
     this.api = api;
     this.currency = this.currencyConfig.name;
     this.chunkSize = 25_000_000;
