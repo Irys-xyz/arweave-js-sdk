@@ -19,6 +19,7 @@ program
   .option("-c, --currency <string>", "The currency to use")
   .option("--timeout <number>", "The timeout (in ms) for API HTTP requests - increase if you get timeouts for upload")
   .option("--no-confirmation", "Disable confirmations for certain actions")
+  .option("-t, --tags [value...]", "Tags to include, format <name> <value>")
   .option(
     "--multiplier <number>",
     "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.",
@@ -92,7 +93,8 @@ program
   .action(async (file: string) => {
     try {
       const bundlr = await init(options, "upload");
-      const res = await bundlr.uploadFile(file);
+      const tags = parseTags(options?.tags);
+      const res = await bundlr.uploadFile(file, { tags: tags ?? [] });
       console.log(`Uploaded to https://arweave.net/${res?.id}`);
     } catch (err: any) {
       console.error(`Error whilst uploading file: ${options.debug ? err.stack : err.message} `);
@@ -121,11 +123,13 @@ program
 async function uploadDir(folder: string): Promise<void> {
   try {
     const bundler = await init(options, "upload");
+    const tags = parseTags(options?.tags);
     const res = await bundler.uploadFolder(folder, {
       indexFile: options.indexFile,
       batchSize: +options.batchSize,
       interactivePreflight: options.confirmation,
       keepDeleted: !options.removeDeleted,
+      manifestTags: tags ?? [],
       logFunction: async (log): Promise<void> => {
         console.log(log);
       },
@@ -136,6 +140,15 @@ async function uploadDir(folder: string): Promise<void> {
     console.error(`Error whilst uploading ${folder} - ${options.debug ? err.stack : err.message}`);
   }
 }
+
+const parseTags = (arr: string[]): { name: string; value: string }[] | undefined => {
+  if (!arr) return;
+  if (arr.length % 2 !== 0) throw new Error(`Tags key is missing a value!`);
+  return arr.reduce<{ name: string; value: string }[]>((a, v, i) => {
+    (i + 1) % 2 === 0 ? (a.at(-1)!.value = v) : a.push({ name: v, value: "" });
+    return a;
+  }, []);
+};
 
 program
   .command("fund")
