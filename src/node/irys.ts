@@ -1,5 +1,5 @@
-import { Provenance } from "common/provenance";
-import { Transaction } from "common/transactions";
+import { Provenance } from "../common/provenance";
+import { Transaction } from "../common/transactions";
 import Api from "../common/api";
 import Fund from "../common/fund";
 import Irys from "../common/irys";

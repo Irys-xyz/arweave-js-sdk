@@ -7,8 +7,8 @@ import ERC20Config from "./erc20";
 import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
-import type WebIrys from "web";
 import ArweaveConfig from "./arweave";
+import type WebIrys from "../irys";
 
 export default function getCurrency(
   irys: WebIrys,

@@ -19,7 +19,7 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": true,
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "rootDir": ".",
     "experimentalDecorators": true,
     "paths": {

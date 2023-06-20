@@ -5,8 +5,8 @@ import type { IrysConfig } from "../common/types";
 import Uploader from "../common/upload";
 import Utils from "../common/utils";
 import getCurrency from "./currencies/index";
-import { Provenance } from "common/provenance";
-import { Transaction } from "common/transactions";
+import { Provenance } from "../common/provenance";
+import { Transaction } from "../common/transactions";
 import type { WebCurrency } from "./types";
 import * as arbundles from "./utils";
 
