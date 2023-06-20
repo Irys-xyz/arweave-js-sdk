@@ -8,7 +8,7 @@ import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
 import type WebBundlr from "web";
-import ArweaveConfig from "./arweave";
+// import ArweaveConfig from "./arweave";
 
 export default function getCurrency(
   bundlr: WebBundlr,
@@ -16,20 +16,20 @@ export default function getCurrency(
   wallet: any,
   providerUrl?: string,
   contractAddress?: string,
-  opts?: any,
+  // opts?: any,
 ): BaseCurrency {
   switch (currency) {
-    case "arweave":
-      return new ArweaveConfig({
-        bundlr,
-        name: "arweave",
-        ticker: "AR",
-        minConfirm: 10,
-        providerUrl: providerUrl ?? "https://arweave.net",
-        wallet,
-        isSlow: true,
-        opts,
-      });
+    // case "arweave":
+    //   return new ArweaveConfig({
+    //     bundlr,
+    //     name: "arweave",
+    //     ticker: "AR",
+    //     minConfirm: 10,
+    //     providerUrl: providerUrl ?? "https://arweave.net",
+    //     wallet,
+    //     isSlow: true,
+    //     opts,
+    //   });
     case "ethereum":
       return new EthereumConfig({ bundlr, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet });
     case "matic":
