@@ -30,7 +30,7 @@ export default class Fund {
       const baseFee = await c.getFee(c.base[0] === "winston" ? 0 : _amount, to);
       fee = BigNumber.isBigNumber(baseFee) ? baseFee.multipliedBy(multiplier).integerValue(BigNumber.ROUND_CEIL) : baseFee;
     }
-    const tx = await c.createTx(_amount, to, fee);
+    const tx = await c.createTx(_amount, to, BigNumber.isBigNumber(fee) ? fee.toString() : JSON.stringify(fee));
     let nres: any;
     // eslint-disable-next-line no-useless-catch
     try {
