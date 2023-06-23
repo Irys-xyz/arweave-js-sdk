@@ -24,7 +24,7 @@ export default class WebBundlr extends Bundlr {
       timeout: config?.timeout ?? 100000,
       headers: config?.headers,
     });
-    this.currencyConfig = getCurrency(this, currency.toLowerCase(), provider, config?.providerUrl, config?.contractAddress);
+    this.currencyConfig = getCurrency(this, currency.toLowerCase(), provider, config?.providerUrl, config?.contractAddress, config?.providerInstance);
     this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
     this.currency = this.currencyConfig.name;
     if (parsed.host === "devnet.bundlr.network" && !(config?.providerUrl || this.currencyConfig.inheritsRPC))

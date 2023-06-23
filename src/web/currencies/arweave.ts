@@ -1,4 +1,5 @@
-import Arweave from "arweave";
+import type ArweaveNode from "arweave";
+import ArweaveWeb from "arweave/web";
 import BigNumber from "bignumber.js";
 import crypto from "crypto";
 import type { CurrencyConfig, Tx } from "../../common/types";
@@ -6,6 +7,7 @@ import base64url from "base64url";
 import BaseWebCurrency from "../currency";
 import { SIG_CONFIG, SignatureConfig } from "arbundles/web";
 import type { Signer } from "arbundles/web";
+import { b64UrlToBuffer, bufferTob64Url } from "arweave/web/lib/utils";
 
 class InjectedArweaveSigner implements Signer {
   private signer: any;
@@ -39,7 +41,7 @@ class InjectedArweaveSigner implements Signer {
   }
 
   static async verify(pk: string, message: Uint8Array, signature: Uint8Array): Promise<boolean> {
-    return await Arweave.crypto.verify(pk, message, signature);
+    return await ArweaveWeb.crypto.verify(pk, message, signature);
   }
 
   async refresh(wallet: any): Promise<void> {
@@ -50,7 +52,7 @@ class InjectedArweaveSigner implements Signer {
 
 export default class ArweaveConfig extends BaseWebCurrency {
   protected signer!: InjectedArweaveSigner;
-  protected declare providerInstance?: Arweave;
+  protected declare providerInstance: ArweaveNode | ArweaveWeb;
   protected declare wallet: Window["arweaveWallet"];
   opts?: { provider?: "arconnect" | "arweave.app"; network?: string };
 
@@ -60,23 +62,7 @@ export default class ArweaveConfig extends BaseWebCurrency {
     this.needsFee = true;
   }
 
-  private async getProvider(): Promise<Arweave> {
-    if (!this.providerInstance) {
-      const purl = new URL(this.providerUrl ?? "https://arweave.net");
-      let config;
-      try {
-        config = this.wallet.getArweaveConfig();
-      } catch (e) {}
-      this.providerInstance = Arweave.init(
-        config ?? {
-          host: purl.hostname,
-          protocol: purl.protocol.replaceAll(":", "").replaceAll("/", ""),
-          port: purl.port,
-          network: this?.opts?.network,
-        },
-      );
-      this.providerInstance = Arweave.init({ host: purl.hostname, protocol: purl.protocol.replaceAll(":", "").replaceAll("/", ""), port: purl.port });
-    }
+  private async getProvider(): Promise<ArweaveNode | ArweaveWeb> {
     return this.providerInstance;
   }
 
@@ -102,16 +88,16 @@ export default class ArweaveConfig extends BaseWebCurrency {
   }
 
   ownerToAddress(owner: any): string {
-    return Arweave.utils.bufferTob64Url(
+    return bufferTob64Url(
       crypto
         .createHash("sha256")
-        .update(Arweave.utils.b64UrlToBuffer(Buffer.isBuffer(owner) ? base64url(owner) : owner))
+        .update(b64UrlToBuffer(Buffer.isBuffer(owner) ? base64url(owner) : owner))
         .digest(),
     );
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
-    return Arweave.crypto.sign(this.wallet as any, data);
+    return ArweaveWeb.crypto.sign(this.wallet as any, data);
   }
 
   getSigner(): Signer {
@@ -125,7 +111,7 @@ export default class ArweaveConfig extends BaseWebCurrency {
     if (Buffer.isBuffer(pub)) {
       pub = pub.toString();
     }
-    return Arweave.crypto.verify(pub, data, signature);
+    return ArweaveWeb.crypto.verify(pub, data, signature);
   }
 
   async getCurrentHeight(): Promise<BigNumber> {

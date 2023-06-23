@@ -9,6 +9,8 @@ import utils from "../../common/utils";
 import AptosConfig from "./aptos";
 import type WebBundlr from "web";
 import ArweaveConfig from "./arweave";
+import ArweaveWeb from "arweave/web";
+import ArweaveNode from "arweave";
 
 export default function getCurrency(
   bundlr: WebBundlr,
@@ -16,10 +18,15 @@ export default function getCurrency(
   wallet: any,
   providerUrl?: string,
   contractAddress?: string,
+  providerInstance?: ArweaveNode | ArweaveWeb,
   // opts?: any,
 ): BaseCurrency {
   switch (currency) {
     case "arweave":
+      if (!providerInstance) throw new Error("Must provide an Arweave instance");
+      if (!(providerInstance instanceof ArweaveNode) || !(providerInstance instanceof ArweaveWeb)) {
+        throw new Error("Invalid Provider instance. Please make sure you are using the correct Arweave SDK version.");
+      }
       return new ArweaveConfig({
         bundlr,
         name: "arweave",
@@ -28,6 +35,7 @@ export default function getCurrency(
         providerUrl: providerUrl ?? "https://arweave.net",
         wallet,
         isSlow: true,
+        providerInstance,
       });
     case "ethereum":
       return new EthereumConfig({ bundlr, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet });

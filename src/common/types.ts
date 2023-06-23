@@ -2,6 +2,8 @@ import type BigNumber from "bignumber.js";
 import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions } from "arbundles";
 import type { FileDataItem } from "arbundles/file";
 import type Bundlr from "./bundlr";
+import type ArweaveWeb from "arweave/web";
+import type ArweaveNode from "arweave";
 
 // common types shared between web and node versions
 export interface CreateTxData {
@@ -46,6 +48,7 @@ export interface CurrencyConfig {
   providerUrl: string;
   isSlow?: boolean;
   opts?: any;
+  providerInstance?: ArweaveWeb | ArweaveNode;
 }
 
 export interface BundlrConfig {
@@ -54,6 +57,7 @@ export interface BundlrConfig {
   contractAddress?: string;
   currencyOpts?: object;
   headers?: Record<string, string>;
+  providerInstance?: ArweaveWeb | ArweaveNode;
 }
 
 export interface Currency {
