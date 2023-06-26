@@ -9,8 +9,8 @@ import utils from "../../common/utils";
 import AptosConfig from "./aptos";
 import type WebBundlr from "web";
 import ArweaveConfig from "./arweave";
-import ArweaveWeb from "arweave/web";
-import ArweaveNode from "arweave";
+import type ArweaveWeb from "arweave/web";
+import type ArweaveNode from "arweave";
 
 export default function getCurrency(
   bundlr: WebBundlr,
@@ -24,9 +24,6 @@ export default function getCurrency(
   switch (currency) {
     case "arweave":
       if (!providerInstance) throw new Error("Must provide an Arweave instance");
-      if (!(providerInstance instanceof ArweaveNode) || !(providerInstance instanceof ArweaveWeb)) {
-        throw new Error("Invalid Provider instance. Please make sure you are using the correct Arweave SDK version.");
-      }
       return new ArweaveConfig({
         bundlr,
         name: "arweave",
