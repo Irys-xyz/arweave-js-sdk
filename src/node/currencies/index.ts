@@ -159,7 +159,14 @@ export default function getCurrency(
       });
     }
     case "algorand": {
-      return new AlgorandConfig({ bundlr, name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://algoexplorerapi.io", wallet, opts });
+      return new AlgorandConfig({
+        bundlr,
+        name: "algorand",
+        ticker: "ALGO",
+        providerUrl: providerUrl ?? "https://mainnet-api.algonode.cloud",
+        wallet,
+        opts: { indexerUrl: "https://mainnet-idx.algonode.cloud", ...opts },
+      });
     }
     case "aptos": {
       return new AptosConfig({
