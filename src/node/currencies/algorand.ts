@@ -18,8 +18,9 @@ export default class AlgorandConfig extends BaseNodeCurrency {
     super(config);
     this.base = ["microAlgos", 1e6];
     this.keyPair = mnemonicToSecretKey(this.wallet);
-    this.apiURL = this.providerUrl.slice(0, 8) + "node." + this.providerUrl.slice(8);
-    this.indexerURL = this.providerUrl.slice(0, 8) + "algoindexer." + this.providerUrl.slice(8);
+    this.apiURL = config.providerUrl;
+    if (!config.opts.indexerUrl) throw new Error(`Algorand: required client constructor option 'opts.indexerUrl' is undefined`);
+    this.indexerURL = config.opts.indexerUrl;
   }
 
   async getTx(txId: string): Promise<Tx> {
