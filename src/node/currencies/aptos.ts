@@ -12,6 +12,7 @@ import BigNumber from "bignumber.js";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import BaseNodeCurrency from "../currency";
 import sha3 from "js-sha3";
+import AsyncRetry from "async-retry";
 // import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
 
 export default class AptosConfig extends BaseNodeCurrency {
@@ -20,6 +21,8 @@ export default class AptosConfig extends BaseNodeCurrency {
   protected signerInstance: AptosSigner | undefined;
   protected declare signingFn: (msg: Uint8Array) => Promise<Uint8Array>;
   declare opts: any;
+  protected txLock: Promise<unknown> = Promise.resolve();
+  protected locked = false;
 
   constructor(config: CurrencyConfig) {
     if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
@@ -126,16 +129,22 @@ export default class AptosConfig extends BaseNodeCurrency {
       estimate_gas_unit_price: true,
       estimate_max_gas_amount: true,
     };
+    const simulationResult = await AsyncRetry(
+      async (_) => {
+        const simulationResult = await client.client.request.request<any[]>({
+          url: "/transactions/simulate",
+          query: queryParams,
+          method: "POST",
+          body: signedSimulation,
+          mediaType: "application/x.aptos.signed_transaction+bcs",
+        });
+        if (!simulationResult[0].success || simulationResult[0].gas_used === "0") throw new Error(`Tx simulation failed`);
+        return simulationResult;
+      },
+      { retries: 10 },
+    ).catch((_) => [{ gas_unit_price: "100", gas_used: "10" }]);
 
-    const simulationResult = await client.client.request.request<any[]>({
-      url: "/transactions/simulate",
-      query: queryParams,
-      method: "POST",
-      body: signedSimulation,
-      mediaType: "application/x.aptos.signed_transaction+bcs",
-    });
-
-    return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: +simulationResult[0].max_gas_amount };
+    return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: Math.ceil(+simulationResult[0].gas_used * 2) };
 
     // const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
     // return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
@@ -143,8 +152,12 @@ export default class AptosConfig extends BaseNodeCurrency {
     // return new BigNumber(est.gas_estimate/* (await (await this.getProvider()).client.transactions.estimateGasPrice()).gas_estimate */); // * by gas limit (for upper limit)
   }
 
-  async sendTx(data: any): Promise<string | undefined> {
-    return (await (await this.getProvider()).submitSignedBCSTransaction(data)).hash;
+  async sendTx(data: { tx: Uint8Array; unlock?: () => void }): Promise<string | undefined> {
+    const provider = await this.getProvider();
+    const s = await provider.submitSignedBCSTransaction(data.tx);
+    await provider.waitForTransactionWithResult(s.hash);
+    data.unlock?.();
+    return s.hash;
   }
 
   async createTx(
@@ -153,23 +166,14 @@ export default class AptosConfig extends BaseNodeCurrency {
     fee?: { gasUnitPrice: number; maxGasAmount: number },
   ): Promise<{ txId: string | undefined; tx: any }> {
     if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    // mutex so multiple aptos txs aren't in flight with the same sequence number
+    const unlock = await this.lock();
     const client = await this.getProvider();
-    // const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
-    //   "0x1::coin::transfer",
-    //   ["0x1::aptos_coin::AptosCoin"],
-    //   [to, new BigNumber(amount).toNumber()],
-    // );
-
-    // const rawTransaction = await client.generateRawTransaction(new HexString(this.address), payload, {
-    //   gasUnitPrice: BigInt(fee?.gasUnitPrice ?? 100),
-    //   maxGasAmount: BigInt(fee?.maxGasAmount ?? 100_000),
-    // });
     const builder = new TransactionBuilderRemoteABI(client, {
       sender: this.address,
       gasUnitPrice: BigInt(fee?.gasUnitPrice ?? 100),
-      maxGasAmount: BigInt(fee?.maxGasAmount ?? 100_000),
+      maxGasAmount: BigInt(fee?.maxGasAmount ?? 10),
     });
-
     const rawTransaction = await builder.build("0x1::coin::transfer", ["0x1::aptos_coin::AptosCoin"], [to, new BigNumber(amount).toNumber()]);
 
     // const bcsTxn = AptosClient.generateBCSTransaction(this.accountInstance, rawTransaction);
@@ -183,7 +187,7 @@ export default class AptosConfig extends BaseNodeCurrency {
 
     const bcsTxn = txnBuilder.sign(rawTransaction);
 
-    return { txId: undefined, tx: bcsTxn };
+    return { txId: undefined, tx: { tx: bcsTxn, unlock } };
   }
 
   getPublicKey(): string | Buffer {
@@ -201,5 +205,15 @@ export default class AptosConfig extends BaseNodeCurrency {
     if (this._address?.length == 66 && this._address.charAt(2) === "0") {
       this._address = this._address.slice(0, 2) + this._address.slice(3);
     }
+  }
+  // basic async mutex for transaction creation - done so sequenceNumbers don't overlap
+  protected async lock(): Promise<any> {
+    this.locked = true;
+    let unlockNext;
+    const willLock = new Promise((r) => (unlockNext = r));
+    willLock.then(() => (this.locked = false));
+    const willUnlock = this.txLock.then(() => unlockNext);
+    this.txLock = this.txLock.then(() => willLock);
+    return willUnlock;
   }
 }
