@@ -118,10 +118,6 @@ export default abstract class Irys {
     return this.uploader.uploadData(data, { ...opts, upload: { getReceiptSignature: true } }) as Promise<UploadReceipt>;
   }
 
-  async strongProvenanceUpload(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<UploadReceipt> {
-    return this.uploadWithReceipt(data, opts);
-  }
-
   async ready(): Promise<Irys> {
     this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
     this.address = this.currencyConfig.address;

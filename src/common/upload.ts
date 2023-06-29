@@ -108,16 +108,20 @@ export default class Uploader {
   // concurrently uploads transactions
   public async concurrentUploader(
     data: (DataItem | Buffer | Readable)[],
-    concurrency = 5,
-    resultProcessor?: (res: any) => Promise<any>,
-    logFunction?: (log: string) => Promise<any>,
+    opts?: {
+      concurrency?: number;
+      resultProcessor?: (res: any) => Promise<any>;
+      logFunction?: (log: string) => Promise<any>;
+      itemOptions?: CreateAndUploadOptions;
+    },
   ): Promise<{ errors: any[]; results: any[] }> {
     const errors = [] as Error[];
-    const logFn = logFunction
-      ? logFunction
+    const logFn = opts?.logFunction
+      ? opts?.logFunction
       : async (_: any): Promise<any> => {
           return;
         };
+    const concurrency = opts?.concurrency ?? 5;
     const results = (await PromisePool.for(data)
       .withConcurrency(concurrency >= 1 ? concurrency : 5)
       .handleError(async (error, _) => {
@@ -130,12 +134,12 @@ export default class Uploader {
         await retry(
           async (bail) => {
             try {
-              const res = await this.processItem(item);
+              const res = await this.processItem(item, opts?.itemOptions);
               if (i % concurrency == 0) {
                 await logFn(`Processed ${i} Items`);
               }
-              if (resultProcessor) {
-                return await resultProcessor({ item, res, i });
+              if (opts?.resultProcessor) {
+                return await opts.resultProcessor({ item, res, i });
               } else {
                 return { item, res, i };
               }

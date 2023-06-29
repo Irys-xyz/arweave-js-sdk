@@ -1,4 +1,3 @@
-import { Provenance } from "../common/provenance";
 import { Transaction } from "../common/transactions";
 import Api from "../common/api";
 import Fund from "../common/fund";
@@ -9,10 +8,12 @@ import getCurrency from "./currencies/index";
 import type { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 import * as arbundles from "./utils";
+import { NodeProvenance } from "./provenance";
 
 export default class NodeIrys extends Irys {
   public uploader: NodeUploader; // re-define type
   public currencyConfig: NodeCurrency;
+  public declare provenance: NodeProvenance;
 
   /**
    * Constructs a new Irys instance, as well as supporting subclasses
@@ -58,7 +59,7 @@ export default class NodeIrys extends Irys {
     this.utils = new Utils(this.api, this.currency, this.currencyConfig);
     this.funder = new Fund(this.utils);
     this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig, this.IrysTransaction);
-    this.provenance = new Provenance(this);
+    this.provenance = new NodeProvenance(this);
     this.transactions = new Transaction(this);
     this._readyPromise = this.currencyConfig.ready ? this.currencyConfig.ready() : new Promise((r) => r());
   }
@@ -91,6 +92,7 @@ export default class NodeIrys extends Irys {
       interactivePreflight,
       logFunction,
       manifestTags,
+      itemOptions,
     }: {
       batchSize?: number;
       keepDeleted?: boolean;
@@ -98,9 +100,10 @@ export default class NodeIrys extends Irys {
       interactivePreflight?: boolean;
       logFunction?: (log: string) => Promise<void>;
       manifestTags?: { name: string; value: string }[];
+      itemOptions?: CreateAndUploadOptions;
     } = {},
   ): Promise<UploadResponse | undefined> {
-    return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction, manifestTags });
+    return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction, manifestTags, itemOptions });
   }
   public static async init(opts: {
     url: string;

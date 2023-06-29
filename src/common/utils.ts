@@ -156,7 +156,7 @@ export default class Utils {
   ): Promise<boolean> {
     const { id, deadlineHeight, timestamp, public: pubKey, signature, version } = receipt;
     const dh = await dependencies.deepHash([
-      dependencies.stringToBuffer("irys"),
+      dependencies.stringToBuffer("bundlr"),
       dependencies.stringToBuffer(version),
       dependencies.stringToBuffer(id),
       dependencies.stringToBuffer(deadlineHeight.toString()),

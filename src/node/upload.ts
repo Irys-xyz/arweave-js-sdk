@@ -1,6 +1,6 @@
 import type { PathLike } from "fs";
 import { promises, createReadStream, createWriteStream } from "fs";
-import type { CreateAndUploadOptions, Currency, IrysTransactonCtor, UploadResponse } from "../common/types";
+import type { CreateAndUploadOptions, Currency, IrysTransactonCtor, UploadReceipt, UploadResponse } from "../common/types";
 import Uploader from "../common/upload";
 import type Api from "../common/api";
 import type Utils from "../common/utils";
@@ -74,6 +74,7 @@ export default class NodeUploader extends Uploader {
       interactivePreflight,
       logFunction,
       manifestTags,
+      itemOptions,
     }: {
       batchSize: number;
       keepDeleted: boolean;
@@ -81,10 +82,13 @@ export default class NodeUploader extends Uploader {
       interactivePreflight?: boolean;
       logFunction?: (log: string) => Promise<void>;
       manifestTags?: { name: string; value: string }[];
+      itemOptions?: CreateAndUploadOptions;
     } = { batchSize: 10, keepDeleted: true },
-  ): Promise<UploadResponse | undefined> {
+  ): Promise<((UploadResponse | UploadReceipt) & { receipts?: Map<string, UploadReceipt> | undefined }) | undefined> {
     path = resolve(path);
     const alreadyProcessed = new Map();
+
+    const receiptTxs = new Map();
 
     if (!(await checkPath(path))) {
       throw new Error(`Unable to access path: ${path}`);
@@ -104,7 +108,7 @@ export default class NodeUploader extends Uploader {
 
     // manifest with folder name placed in parent directory of said folder - keeps contamination down.
     const manifestPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.csv`);
-    const csvHeader = "path,id\n";
+    const csvHeader = "path,id,receipt\n";
     if (await checkPath(manifestPath)) {
       const rstrm = createReadStream(manifestPath);
       // check if empty
@@ -124,9 +128,10 @@ export default class NodeUploader extends Uploader {
       const csvStream = Readable.from(rstrm.pipe(parse({ delimiter: ",", columns: true })));
 
       for await (const record of csvStream) {
-        record as { path: string; id: string };
+        record as { path: string; id: string; receipt: string };
         if (record.path && record.id) {
-          alreadyProcessed.set(record.path, null);
+          alreadyProcessed.set(record.path, record.id);
+          receiptTxs.set(record.path, JSON.parse(record.receipt));
         }
       }
     } else {
@@ -185,6 +190,7 @@ export default class NodeUploader extends Uploader {
       columns: {
         path: "path",
         id: "id",
+        receipt: "receipt",
       },
     });
     const wstrm = createWriteStream(manifestPath, { flags: "a+" });
@@ -192,11 +198,29 @@ export default class NodeUploader extends Uploader {
 
     const processor = async (data): Promise<void> => {
       if (data?.res?.id) {
-        stringifier.write([relative(path, data.item), data.res.id]);
+        const receipt = data.res.signature
+          ? {
+              id: data.res.id,
+              block: data.res.block,
+              deadlineHeight: data.res.deadlineHeight,
+              public: data.res.public,
+              signature: data.res.signature,
+              timestamp: data.res.timestamp,
+              validatorSignatures: data.res.validatorSignatures,
+              version: data.res.version,
+            }
+          : {};
+        receiptTxs.set(relative(path, data.item), receipt);
+        stringifier.write([relative(path, data.item), data.res.id, JSON.stringify(receipt)]);
       }
     };
 
-    const processingResults = await this.concurrentUploader(files, batchSize, processor, logFunction);
+    const processingResults = await this.concurrentUploader(files, {
+      concurrency: batchSize,
+      resultProcessor: processor,
+      logFunction,
+      itemOptions,
+    });
 
     if (processingResults.errors.length > 0) {
       await logFunction(`${processingResults.errors.length} Errors detected, skipping manifest upload...`);
@@ -219,13 +243,18 @@ export default class NodeUploader extends Uploader {
       { name: "Content-Type", value: "application/x.arweave-manifest+json" },
       ...(manifestTags ?? []),
     ];
-    const mres = await this.uploadData(createReadStream(jsonManifestPath), { tags }).catch((e) => {
+    const mres = (await this.uploadData(createReadStream(jsonManifestPath), {
+      tags,
+      upload: { getReceiptSignature: itemOptions?.upload?.getReceiptSignature },
+    }).catch((e) => {
       throw new Error(`Failed to upload manifest: ${e.message}`);
-    });
+    })) as (UploadResponse | UploadReceipt) & { receipts: Map<string, UploadReceipt> | undefined };
+
     await logFunction("Done!");
     if (mres?.id) {
       await promises.writeFile(join(join(path, `${sep}..`), `${basename(path)}-id.txt`), JSON.stringify(mres));
     }
+    mres.receipts = receiptTxs;
     return mres;
   }
 
@@ -234,9 +263,9 @@ export default class NodeUploader extends Uploader {
    * @param item can be a string value, a path to a file, a Buffer of data or a DataItem
    * @returns A dataItem
    */
-  protected async processItem(item: string | Buffer | Readable | DataItem): Promise<any> {
+  protected async processItem(item: string | Buffer | Readable | DataItem, opts?: CreateAndUploadOptions): Promise<any> {
     if (this.arbundles.DataItem.isDataItem(item)) {
-      return this.uploadTransaction(item);
+      return this.uploadTransaction(item, { ...opts?.upload });
     }
 
     let tags;
@@ -253,7 +282,7 @@ export default class NodeUploader extends Uploader {
         }
       }
     }
-    return this.uploadData(item, { tags });
+    return this.uploadData(item, { ...opts, tags: { ...tags, ...opts?.tags } });
   }
 
   /**

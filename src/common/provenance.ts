@@ -1,12 +1,18 @@
 import type { AxiosResponse } from "axios";
 import type Irys from "./irys";
 import type { TxGqlNode, TxGqlResponse, UploadReceipt } from "./types";
+import type { Readable } from "stream";
+import type { DataItemCreateOptions } from "arbundles";
 
 export class Provenance {
   protected irys: Irys;
 
   constructor(irys: Irys) {
     this.irys = irys;
+  }
+
+  async upload(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<UploadReceipt> {
+    return this.irys.uploadWithReceipt(data, opts);
   }
 
   public async uploadProof(proofFields: {
