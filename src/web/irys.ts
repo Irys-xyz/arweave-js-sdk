@@ -42,14 +42,11 @@ export default class WebIrys extends Irys {
     super(parsed, arbundles);
 
     this.api = new Api({
-      protocol: parsed.protocol.slice(0, -1),
-      port: parsed.port,
-      host: parsed.hostname,
+      url: parsed,
       timeout: config?.timeout ?? 100000,
       headers: config?.headers,
     });
     this.currencyConfig = getCurrency(this, currency.toLowerCase(), provider, config?.providerUrl, config?.contractAddress);
-    this.api = new Api({ protocol: parsed.protocol.slice(0, -1), port: parsed.port, host: parsed.hostname, timeout: config?.timeout ?? 100000 });
     this.currency = this.currencyConfig.name;
     if (parsed.host === "devnet.irys.network" && !(config?.providerUrl || this.currencyConfig.inheritsRPC))
       throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.network/sdk/using-devnet`);

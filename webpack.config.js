@@ -55,4 +55,8 @@ module.exports = {
     libraryTarget: "umd",
     library: "WebIrys",
   },
+  stats: {
+    // Display bailout reasons
+    optimizationBailout: true,
+  },
 };

@@ -39,9 +39,7 @@ export default class NodeIrys extends Irys {
     if (parsed.host === "devnet.irys.xyz" && !config?.providerUrl)
       throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
     this.api = new Api({
-      protocol: parsed.protocol.slice(0, -1),
-      port: parsed.port,
-      host: parsed.hostname,
+      url: parsed,
       timeout: config?.timeout ?? 100000,
       headers: config?.headers,
     });

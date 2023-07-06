@@ -66,7 +66,7 @@ program
     try {
       const Irys = await init(options, "withdraw");
       const confirmed = await confirmation(
-        `Confirmation: withdraw ${amount} ${Irys.currencyConfig.base[0]} from ${Irys.api.config.host} (${await Irys.utils.getBundlerAddress(
+        `Confirmation: withdraw ${amount} ${Irys.currencyConfig.base[0]} from ${Irys.api.config.url.host} (${await Irys.utils.getBundlerAddress(
           Irys.currency,
         )})?\n Y / N`,
       );
@@ -147,7 +147,7 @@ program
       const Irys = await init(options, "fund");
       const confirmed = await confirmation(
         `Confirmation: send ${amount} ${Irys.currencyConfig.base[0]} (${Irys.utils.unitConverter(amount).toFixed()} ${Irys.currency}) to ${
-          Irys.api.config.host
+          Irys.api.config.url.host
         } (${await Irys.utils.getBundlerAddress(Irys.currency)})?\n Y / N`,
       );
       if (confirmed) {

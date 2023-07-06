@@ -59,10 +59,10 @@ export default class Uploader {
     if (this.forceUseChunking || (isDataItem && transaction.getRaw().length >= CHUNKING_THRESHOLD) || !isDataItem) {
       res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction, opts);
     } else {
-      const { protocol, host, port, timeout, headers: confHeaders } = this.api.getConfig();
+      const { url, timeout, headers: confHeaders } = this.api.getConfig();
       const headers = { "Content-Type": "application/octet-stream", ...confHeaders };
       if (opts?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
-      res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, transaction.getRaw(), {
+      res = await this.api.post(new URL(`/tx/${this.currency}`, url).toString(), transaction.getRaw(), {
         headers: headers,
         timeout,
         maxBodyLength: Infinity,
