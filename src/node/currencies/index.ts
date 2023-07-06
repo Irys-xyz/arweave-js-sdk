@@ -170,9 +170,10 @@ export default function getCurrency(
         irys: Irys,
         name: "algorand",
         ticker: "ALGO",
-        providerUrl: providerUrl ?? "https://algoexplorerapi.io",
+        providerUrl: providerUrl ?? "https://mainnet-api.algonode.cloud",
         wallet,
-        opts,
+        opts: { indexerUrl: "https://mainnet-idx.algonode.cloud", ...opts },
+
       });
     }
     case "aptos": {

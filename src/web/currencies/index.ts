@@ -7,7 +7,8 @@ import ERC20Config from "./erc20";
 import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
-import ArweaveConfig from "./arweave";
+
+// import ArweaveConfig from "./arweave";
 import type WebIrys from "../irys";
 
 export default function getCurrency(
@@ -16,20 +17,21 @@ export default function getCurrency(
   wallet: any,
   providerUrl?: string,
   contractAddress?: string,
-  opts?: any,
+  // opts?: any,
 ): BaseCurrency {
   switch (currency) {
-    case "arweave":
-      return new ArweaveConfig({
-        irys: irys,
-        name: "arweave",
-        ticker: "AR",
-        minConfirm: 10,
-        providerUrl: providerUrl ?? "https://arweave.net",
-        wallet,
-        isSlow: true,
-        opts,
-      });
+    // case "arweave":
+    //   return new ArweaveConfig({
+    //     irys: irys,
+    //     name: "arweave",
+    //     ticker: "AR",
+    //     minConfirm: 10,
+    //     providerUrl: providerUrl ?? "https://arweave.net",
+    //     wallet,
+    //     isSlow: true,
+    //     opts,
+    //   });
+
     case "ethereum":
       return new EthereumConfig({ irys: irys, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet });
     case "matic":

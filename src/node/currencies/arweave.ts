@@ -6,6 +6,7 @@ import crypto from "crypto";
 import type { CurrencyConfig, Tx } from "../../common/types";
 import base64url from "base64url";
 import BaseNodeCurrency from "../currency";
+import type Transaction from "arweave/node/lib/transaction";
 
 export default class ArweaveConfig extends BaseNodeCurrency {
   protected declare providerInstance: Arweave;
@@ -84,8 +85,18 @@ export default class ArweaveConfig extends BaseNodeCurrency {
     );
   }
 
-  async sendTx(data: any): Promise<any> {
-    return await (await this.getProvider()).transactions.post(data);
+  async sendTx(data: Transaction): Promise<any> {
+    const provider = await this.getProvider();
+    const res = await provider.transactions.post(data);
+    if (res.statusText.includes("Nodes rejected the TX headers")) {
+      // check user balance
+      const balance = new BigNumber(await provider.wallets.getBalance(this.address!));
+      if (balance.isLessThanOrEqualTo(data.quantity))
+        throw new Error(
+          `${this.address} has a balance of ${balance.toString()} winston, less than the required ${new BigNumber(data.reward).plus(data.quantity)}.`,
+        );
+    }
+    return res;
   }
 
   async createTx(amount: BigNumber.Value, to: string, fee?: string): Promise<{ txId: string | undefined; tx: any }> {

@@ -62,7 +62,8 @@
     "watch": "tsc --watch -p cjs.tsconfig.json",
     "watch:webpack": "yarn watch & webpack --watch",
     "webpack:analyze": "webpack --profile --json /tmp/wp.json && webpack-bundle-analyzer /tmp/wp.json",
-    "prepack": "yarn ts-node ./scripts/embedVersion.ts"
+    "prepack": "yarn ts-node ./scripts/embedVersion.ts",
+    "postpublish": "git push --tags"
   },
   "bin": {
     "irys": "./build/cjs/node/cli.js",
