@@ -7,7 +7,7 @@ import type { Tx, CurrencyConfig } from "../common/types";
 import axios from "axios";
 import type { WebCurrency } from "./types";
 import utils from "../common/utils";
-import type WebBundlr from "./bundlr";
+import type WebIrys from "./irys";
 
 export default abstract class BaseWebCurrency implements WebCurrency {
   public base!: [string, number];
@@ -17,7 +17,7 @@ export default abstract class BaseWebCurrency implements WebCurrency {
   protected providerInstance?: any;
   public ticker!: string;
   public name!: string;
-  public bundlr!: WebBundlr;
+  public irys!: WebIrys;
 
   protected minConfirm = 5;
   public isSlow = false;

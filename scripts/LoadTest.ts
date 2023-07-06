@@ -1,4 +1,4 @@
-import Bundlr from "../src/cjsIndex";
+import Irys from "../src/cjsIndex";
 import { readFileSync } from "fs";
 import { performance } from "perf_hooks";
 //const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -8,7 +8,7 @@ import Crypto from "crypto";
 // DO NOT USE THIS ON A NODE YOU DO NOT OWN/OPERATE. EVER.
 export async function slam(host: string, count = 4000, min = 1_000, max = 10_000) {
   let p = [];
-  const bundler = new Bundlr(host, "arweave", JSON.parse(readFileSync("./arweave.json").toString()));
+  const bundler = new Irys({ url: host, currency: "arweave", wallet: JSON.parse(readFileSync("./arweave.json").toString()) });
 
   const start = performance.now();
   for (let i = 0; i < count; i++) {

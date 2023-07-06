@@ -1,28 +1,29 @@
-import Utils from "./utils";
-import { withdrawBalance } from "./withdrawal";
-import type Uploader from "./upload";
-import type Fund from "./fund";
-import type { DataItemCreateOptions } from "arbundles";
-import type Api from "./api";
+import type { DataItemCreateOptions, Signer } from "arbundles";
 import type BigNumber from "bignumber.js";
-import type { BundlrTransaction } from "./types";
+import type { Readable } from "stream";
+import type Api from "./api";
+import type Fund from "./fund";
+import type { Provenance } from "./provenance";
+import buildIrysTransaction from "./transaction";
+import type { Transaction } from "./transactions";
 import type {
   Arbundles,
-  BundlrTransactionCreateOptions,
-  BundlrTransactonCtor,
   CreateAndUploadOptions,
   Currency,
   FundResponse,
+  IrysTransaction,
+  IrysTransactionCreateOptions,
+  IrysTransactonCtor,
   UploadReceipt,
   UploadReceiptData,
   UploadResponse,
   WithdrawalResponse,
 } from "./types";
-import type { Signer } from "arbundles";
-import type { Readable } from "stream";
-import buildBundlrTransaction from "./transaction";
+import type Uploader from "./upload";
+import Utils from "./utils";
+import { withdrawBalance } from "./withdrawal";
 
-export default abstract class Bundlr {
+export default abstract class Irys {
   public api!: Api;
   public utils!: Utils;
   public uploader!: Uploader;
@@ -30,17 +31,19 @@ export default abstract class Bundlr {
   public address!: string | undefined;
   public currency!: string;
   public currencyConfig!: Currency;
+  public provenance!: Provenance;
+  public transactions!: Transaction;
   protected _readyPromise: Promise<void> | undefined;
   public url: URL;
   public arbundles: Arbundles;
-  public bundlrTransaction: BundlrTransactonCtor;
+  public IrysTransaction: IrysTransactonCtor;
 
-  static VERSION = "REPLACEMEBUNDLRVERSION";
+  static VERSION = "REPLACEMEIRYSVERSION";
 
-  constructor(url: URL, arbundles: Arbundles) {
+  constructor({ url, arbundles }: { url: URL; arbundles: Arbundles }) {
     this.url = url;
     this.arbundles = arbundles;
-    this.bundlrTransaction = buildBundlrTransaction(this);
+    this.IrysTransaction = buildIrysTransaction(this);
   }
 
   get signer(): Signer {
@@ -78,7 +81,7 @@ export default abstract class Bundlr {
   }
 
   /**
-   * Calculates the price for [bytes] bytes for the loaded currency and Bundlr node.
+   * Calculates the price for [bytes] bytes for the loaded currency and Irys node.
    * @param bytes
    * @returns
    */
@@ -91,13 +94,13 @@ export default abstract class Bundlr {
   }
 
   /**
-   * Create a new BundlrTransactions (flex currency arbundles dataItem)
+   * Create a new IrysTransactions (flex currency arbundles dataItem)
    * @param data
    * @param opts - dataItemCreateOptions
-   * @returns - a new BundlrTransaction instance
+   * @returns - a new IrysTransaction instance
    */
-  createTransaction(data: string | Buffer, opts?: BundlrTransactionCreateOptions): BundlrTransaction {
-    return new this.bundlrTransaction(data, this, opts);
+  createTransaction(data: string | Buffer, opts?: IrysTransactionCreateOptions): IrysTransaction {
+    return new this.IrysTransaction(data, this, opts);
   }
 
   /**
@@ -115,9 +118,10 @@ export default abstract class Bundlr {
     return this.uploader.uploadData(data, { ...opts, upload: { getReceiptSignature: true } }) as Promise<UploadReceipt>;
   }
 
-  async ready(): Promise<void> {
+  async ready(): Promise<Irys> {
     this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
     this.address = this.currencyConfig.address;
+    return this;
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -125,8 +129,8 @@ export default abstract class Bundlr {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const oThis = this;
     return {
-      fromRaw(rawTransaction: Uint8Array): BundlrTransaction {
-        return new oThis.bundlrTransaction(rawTransaction, oThis, { dataIsRawTransaction: true });
+      fromRaw(rawTransaction: Uint8Array): IrysTransaction {
+        return new oThis.IrysTransaction(rawTransaction, oThis, { dataIsRawTransaction: true });
       },
     };
   }

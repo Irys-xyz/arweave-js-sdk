@@ -1,14 +1,14 @@
 import type BigNumber from "bignumber.js";
-import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions } from "arbundles";
+import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions, bundleAndSignData } from "arbundles";
 import type { FileDataItem } from "arbundles/file";
-import type Bundlr from "./bundlr";
+import type Irys from "./irys";
 
 // common types shared between web and node versions
-export interface CreateTxData {
+export type CreateTxData = {
   amount: BigNumber.Value;
   to: string;
   fee?: string;
-}
+};
 
 // export type Arbundles = typeof arbundles | typeof webArbundles;
 export interface Arbundles {
@@ -17,17 +17,22 @@ export interface Arbundles {
   deepHash: typeof deepHash;
   stringToBuffer: typeof stringToBuffer;
   getCryptoDriver: typeof getCryptoDriver;
+  bundleAndSignData: typeof bundleAndSignData;
 }
 
-export interface BundlrTransaction extends DataItem {
+export interface IrysTransaction extends DataItem {
   sign: () => Promise<Buffer>;
   size: number;
   uploadWithReceipt: (opts?: UploadOptions) => Promise<UploadReceipt>;
   upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
   upload(opts?: UploadOptions): Promise<UploadResponse>;
-  // fromRaw(rawTransaction: Buffer, bundlrInstance: Bundlr): BundlrTransaction;
+  // fromRaw(rawTransaction: Buffer, IrysInstance: Irys): IrysTransaction;
 }
-export type BundlrTransactonCtor = new (data: string | Uint8Array, bundlr: Bundlr, opts?: BundlrTransactionCreateOptions) => BundlrTransaction;
+export type IrysTransactonCtor = new (
+  data: string | Uint8Array,
+  Irys: Pick<Irys, "uploader" | "currencyConfig" | "arbundles">,
+  opts?: IrysTransactionCreateOptions,
+) => IrysTransaction;
 
 export interface Tx {
   from: string;
@@ -38,7 +43,7 @@ export interface Tx {
   confirmed: boolean;
 }
 export interface CurrencyConfig {
-  bundlr: Bundlr;
+  irys: Irys;
   name: string;
   ticker: string;
   minConfirm?: number;
@@ -48,7 +53,7 @@ export interface CurrencyConfig {
   opts?: any;
 }
 
-export interface BundlrConfig {
+export interface IrysConfig {
   timeout?: number;
   providerUrl?: string;
   contractAddress?: string;
@@ -68,7 +73,7 @@ export interface Currency {
 
   ticker: string;
 
-  bundlr: Bundlr;
+  irys: Irys;
 
   getTx(txId: string): Promise<Tx>;
 
@@ -130,7 +135,7 @@ export interface UploadResponse {
   timestamp?: number;
   // The receipt version
   version?: "1.0.0";
-  // Injected verification function (same as Utils/Bundlr.verifyReceipt) - only present if getReceiptSignature is set.
+  // Injected verification function (same as Utils/Irys.verifyReceipt) - only present if getReceiptSignature is set.
   verify?: () => Promise<boolean>;
 }
 
@@ -164,4 +169,42 @@ export interface UploadOptions {
 //     "0.1.0" = "0.1.0"
 // }
 
-export type BundlrTransactionCreateOptions = DataItemCreateOptions & { dataIsRawTransaction?: boolean };
+export type IrysTransactionCreateOptions = DataItemCreateOptions & { dataIsRawTransaction?: boolean };
+
+export type HashingAlgo = "sha256" | "sha384";
+
+export type ProvenanceProof = {
+  dataProtocol: "Provenance-Confirmation" | string;
+  hashingAlgo?: HashingAlgo | string;
+  dataHash: string;
+  uploadedFor?: string;
+  prompt?: string;
+  promptHash?: string;
+  model?: string;
+};
+
+export type TxGqlNode = {
+  id: string;
+  receipt: {
+    deadlineHeight: number;
+    signature: string;
+    timestamp: number;
+    version: string;
+  };
+  tags: { name: string; value: string }[];
+  address: string;
+  currency: string;
+  signature: string;
+  timetamp: number;
+};
+
+export type TxGqlResponse = {
+  data: {
+    transactions: {
+      edges: {
+        node: TxGqlNode;
+      }[];
+      pageInfo?: { endCursor: string | null; hasNextPage: boolean };
+    };
+  };
+};

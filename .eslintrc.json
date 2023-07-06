@@ -30,6 +30,7 @@
     "@typescript-eslint/consistent-type-imports": ["error", {"prefer": "type-imports", "fixStyle": "separate-type-imports"}],
     // "quotes": ["error", "double"],
     "object-curly-spacing": ["error", "always"],
+    "@typescript-eslint/consistent-type-definitions": ["warn", "type"],
     "@typescript-eslint/explicit-function-return-type": "error",
     "no-var": "error",
     "padding-line-between-statements": [

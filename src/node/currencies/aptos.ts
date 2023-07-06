@@ -106,7 +106,7 @@ export default class AptosConfig extends BaseNodeCurrency {
   }
 
   async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number }> {
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
     const client = await this.getProvider();
 
     const builder = new TransactionBuilderRemoteABI(client, { sender: this.address });
@@ -165,9 +165,10 @@ export default class AptosConfig extends BaseNodeCurrency {
     to: string,
     fee?: { gasUnitPrice: number; maxGasAmount: number },
   ): Promise<{ txId: string | undefined; tx: any }> {
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run irys.ready()");
     // mutex so multiple aptos txs aren't in flight with the same sequence number
     const unlock = await this.lock();
+
     const client = await this.getProvider();
     const builder = new TransactionBuilderRemoteABI(client, {
       sender: this.address,

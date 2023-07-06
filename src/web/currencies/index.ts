@@ -7,11 +7,12 @@ import ERC20Config from "./erc20";
 import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
-import type WebBundlr from "web";
+
 // import ArweaveConfig from "./arweave";
+import type WebIrys from "../irys";
 
 export default function getCurrency(
-  bundlr: WebBundlr,
+  irys: WebIrys,
   currency: string,
   wallet: any,
   providerUrl?: string,
@@ -21,7 +22,7 @@ export default function getCurrency(
   switch (currency) {
     // case "arweave":
     //   return new ArweaveConfig({
-    //     bundlr,
+    //     irys: irys,
     //     name: "arweave",
     //     ticker: "AR",
     //     minConfirm: 10,
@@ -30,11 +31,12 @@ export default function getCurrency(
     //     isSlow: true,
     //     opts,
     //   });
+
     case "ethereum":
-      return new EthereumConfig({ bundlr, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet });
+      return new EthereumConfig({ irys: irys, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet });
     case "matic":
       return new EthereumConfig({
-        bundlr,
+        irys: irys,
         name: "matic",
         ticker: "MATIC",
         providerUrl: providerUrl ?? "https://polygon-rpc.com",
@@ -42,12 +44,12 @@ export default function getCurrency(
         minConfirm: 1,
       });
     case "arbitrum":
-      return new EthereumConfig({ bundlr, name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet });
+      return new EthereumConfig({ irys: irys, name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet });
     case "bnb":
-      return new EthereumConfig({ bundlr, name: "bnb", ticker: "BNB", providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet });
+      return new EthereumConfig({ irys: irys, name: "bnb", ticker: "BNB", providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet });
     case "avalanche":
       return new EthereumConfig({
-        bundlr,
+        irys: irys,
         name: "avalanche",
         ticker: "AVAX",
         providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc",
@@ -55,7 +57,7 @@ export default function getCurrency(
       });
     case "boba-eth":
       return new EthereumConfig({
-        bundlr,
+        irys: irys,
         name: "boba-eth",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -64,7 +66,7 @@ export default function getCurrency(
       });
     case "boba": {
       const k = new ERC20Config({
-        bundlr,
+        irys: irys,
         name: "boba",
         ticker: "BOBA",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -87,14 +89,20 @@ export default function getCurrency(
     }
 
     case "solana":
-      return new SolanaConfig({ bundlr, name: "solana", ticker: "SOL", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet });
+      return new SolanaConfig({
+        irys: irys,
+        name: "solana",
+        ticker: "SOL",
+        providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/",
+        wallet,
+      });
     // case "algorand":
     //     return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet })
     case "near":
-      return new NearConfig({ bundlr, name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet });
+      return new NearConfig({ irys: irys, name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet });
     case "aptos":
       return new AptosConfig({
-        bundlr,
+        irys: irys,
         name: "aptos",
         ticker: "APTOS",
         providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",

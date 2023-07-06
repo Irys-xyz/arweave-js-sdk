@@ -17,7 +17,7 @@ export default class Utils {
     this.api = api;
     this.currency = currency;
     this.currencyConfig = currencyConfig;
-    this.arbundles = this.currencyConfig.bundlr.arbundles;
+    this.arbundles = this.currencyConfig.irys.arbundles;
   }
 
   /**
@@ -68,7 +68,7 @@ export default class Utils {
   }
 
   /**
-   * Calculates the price for [bytes] bytes paid for with [currency] for the loaded bundlr node.
+   * Calculates the price for [bytes] bytes paid for with [currency] for the loaded Irys node.
    * @param currency
    * @param bytes
    * @returns

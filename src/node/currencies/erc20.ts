@@ -87,7 +87,7 @@ export default class ERC20Config extends EthereumConfig {
     tx.gasPrice = await provider.getGasPrice();
     tx.gasLimit = await contract.estimateGas.transfer(to, _amount);
     tx.chainId = (await provider.getNetwork()).chainId;
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
     tx.nonce = await provider.getTransactionCount(this.address);
     const signedTx = await wallet.signTransaction(tx);
     const txId = "0x" + keccak256(Buffer.from(signedTx.slice(2), "hex")).toString("hex");

@@ -141,7 +141,7 @@ export default class NearConfig extends BaseWebCurrency {
   }
 
   async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any }> {
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
     const accessKey = await this.providerInstance.query({
       request_type: "view_access_key",
       finality: "final",

@@ -1,40 +1,52 @@
+import { Transaction } from "../common/transactions";
 import Api from "../common/api";
-import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
-import type { BundlrConfig, CreateAndUploadOptions, UploadResponse } from "../common/types";
+import Irys from "../common/irys";
+import type { CreateAndUploadOptions, IrysConfig, UploadResponse } from "../common/types";
 import Utils from "../common/utils";
 import getCurrency from "./currencies/index";
 import type { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 import * as arbundles from "./utils";
+import { NodeProvenance } from "./provenance";
 
-export default class NodeBundlr extends Bundlr {
+export default class NodeIrys extends Irys {
   public uploader: NodeUploader; // re-define type
   public currencyConfig: NodeCurrency;
+  public declare provenance: NodeProvenance;
 
   /**
-   * Constructs a new Bundlr instance, as well as supporting subclasses
+   * Constructs a new Irys instance, as well as supporting subclasses
    * @param url - URL to the bundler
-   * @param wallet - private key (in whatever form required)
+   * @param key - private key (in whatever form required)
    */
-  constructor(url: string, currency: string, wallet?: any, config?: BundlrConfig) {
+  constructor({ url, currency, key, config }: { url: "node1" | "node2" | "devnet" | string; currency: string; key?: any; config?: IrysConfig }) {
+    switch (url) {
+      case undefined:
+      case "node1":
+        url = "https://node1.irys.xyz";
+        break;
+      case "node2":
+        url = "https://node2.irys.xyz";
+        break;
+      case "devnet":
+        url = "https://devnet.irys.xyz";
+        break;
+    }
+
     const parsed = new URL(url);
-    super(parsed, arbundles);
-    if (parsed.host === "devnet.bundlr.network" && !config?.providerUrl)
-      throw new Error(
-        `Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.bundlr.network/developer-docs/using-devnet`,
-      );
+    super({ url: parsed, arbundles });
+    if (parsed.host === "devnet.irys.xyz" && !config?.providerUrl)
+      throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
     this.api = new Api({
-      protocol: parsed.protocol.slice(0, -1),
-      port: parsed.port,
-      host: parsed.hostname,
+      url: parsed,
       timeout: config?.timeout ?? 100000,
       headers: config?.headers,
     });
     this.currencyConfig = getCurrency(
       this,
       currency.toLowerCase(),
-      wallet,
+      key,
       parsed.toString(),
       config?.providerUrl,
       config?.contractAddress,
@@ -44,7 +56,9 @@ export default class NodeBundlr extends Bundlr {
     this.address = this.currencyConfig.address;
     this.utils = new Utils(this.api, this.currency, this.currencyConfig);
     this.funder = new Fund(this.utils);
-    this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig);
+    this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig, this.IrysTransaction);
+    this.provenance = new NodeProvenance(this);
+    this.transactions = new Transaction(this);
     this._readyPromise = this.currencyConfig.ready ? this.currencyConfig.ready() : new Promise((r) => r());
   }
 
@@ -76,6 +90,7 @@ export default class NodeBundlr extends Bundlr {
       interactivePreflight,
       logFunction,
       manifestTags,
+      itemOptions,
     }: {
       batchSize?: number;
       keepDeleted?: boolean;
@@ -83,9 +98,10 @@ export default class NodeBundlr extends Bundlr {
       interactivePreflight?: boolean;
       logFunction?: (log: string) => Promise<void>;
       manifestTags?: { name: string; value: string }[];
+      itemOptions?: CreateAndUploadOptions;
     } = {},
   ): Promise<UploadResponse | undefined> {
-    return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction, manifestTags });
+    return this.uploader.uploadFolder(path, { indexFile, batchSize, interactivePreflight, keepDeleted, logFunction, manifestTags, itemOptions });
   }
   public static async init(opts: {
     url: string;
@@ -97,15 +113,20 @@ export default class NodeBundlr extends Bundlr {
     providerUrl?: string;
     timeout?: number;
     contractAddress?: string;
-  }): Promise<NodeBundlr> {
+  }): Promise<NodeIrys> {
     const { url, currency, privateKey, publicKey, signingFunction, collectSignatures, providerUrl, timeout, contractAddress } = opts;
-    const bundlr = new NodeBundlr(url, currency, signingFunction ? publicKey : privateKey, {
-      providerUrl,
-      timeout,
-      contractAddress,
-      currencyOpts: { signingFunction, collectSignatures },
+    const Irys = new NodeIrys({
+      url,
+      currency,
+      key: signingFunction ? publicKey : privateKey,
+      config: {
+        providerUrl,
+        timeout,
+        contractAddress,
+        currencyOpts: { signingFunction, collectSignatures },
+      },
     });
-    await bundlr.ready();
-    return bundlr;
+    await Irys.ready();
+    return Irys;
   }
 }

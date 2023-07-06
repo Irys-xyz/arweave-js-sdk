@@ -67,7 +67,7 @@ export default class MultiSignatureAptos extends Aptos {
   async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number }> {
     const client = await this.getProvider();
 
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
 
     const builder = new TransactionBuilderRemoteABI(client, { sender: this.address });
 

@@ -8,7 +8,7 @@ import axios from "axios";
 import type { NodeCurrency } from "./types";
 import utils from "../common/utils";
 import type Utils from "../common/utils";
-import type NodeBundlr from "./bundlr";
+import type NodeIrys from "./irys";
 export default abstract class BaseNodeCurrency implements NodeCurrency {
   public base!: [string, number];
   protected wallet: any;
@@ -22,7 +22,7 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
   public needsFee = true;
   protected opts?: any;
   protected utils!: Utils;
-  public bundlr!: NodeBundlr;
+  public irys!: NodeIrys;
 
   constructor(config: CurrencyConfig) {
     Object.assign(this, config);

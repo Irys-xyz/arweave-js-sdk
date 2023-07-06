@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Note: DO NOT REMOVE/ALTER THE ABOVE LINE - it is called a 'shebang' and is vital for CLI execution.
+import BigNumber from "bignumber.js";
 import { Command } from "commander";
 import { readFileSync } from "fs";
-import Bundlr from "./bundlr";
 import inquirer from "inquirer";
-import BigNumber from "bignumber.js";
+import type NodeIrys from "./irys";
+import Irys from "./irys";
 import { checkPath } from "./upload";
-import type NodeBundlr from "./bundlr";
 
 export const program = new Command();
 
@@ -14,7 +14,7 @@ let balpad, walpad; // padding state variables
 
 // Define the CLI flags for the program
 program
-  .option("-h, --host <string>", "Bundlr node hostname/URL (eg http://node1.bundlr.network)")
+  .option("-h, --host <string>", "Irys node hostname/URL (eg http://node1.irys.network)")
   .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "default")
   .option("-c, --currency <string>", "The currency to use")
   .option("--timeout <number>", "The timeout (in ms) for API HTTP requests - increase if you get timeouts for upload")
@@ -39,19 +39,19 @@ program
   .option("--force-chunking", "Forces usage of chunking for all files regardless of size");
 // Define commands
 // uses NPM view to query the package's version.
-program.version(Bundlr.VERSION, "-v, --version", "Gets the current package version of the bundlr client");
+program.version(Irys.VERSION, "-v, --version", "Gets the current package version of the Irys client");
 
 // Balance command - gets the provided address' balance on the specified bundler
 program
   .command("balance")
-  .description("Gets the specified user's balance for the current Bundlr node")
+  .description("Gets the specified user's balance for the current Irys node")
   .argument("<address>", "address")
   .action(async (address: string) => {
     try {
       options.address = balpad ? address.substring(1) : address;
-      const bundlr = await init(options, "balance");
-      const balance = await bundlr.utils.getBalance(options.address);
-      console.log(`Balance: ${balance} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(balance).toFixed()} ${bundlr.currency})`);
+      const Irys = await init(options, "balance");
+      const balance = await Irys.utils.getBalance(options.address);
+      console.log(`Balance: ${balance} ${Irys.currencyConfig.base[0]} (${Irys.utils.unitConverter(balance).toFixed()} ${Irys.currency})`);
     } catch (err: any) {
       console.error(`Error whilst getting balance: ${options.debug ? err.stack : err.message} `);
       return;
@@ -65,16 +65,16 @@ program
   .argument("<amount>", "amount to withdraw in currency base units")
   .action(async (amount: string) => {
     try {
-      const bundlr = await init(options, "withdraw");
+      const Irys = await init(options, "withdraw");
       const confirmed = await confirmation(
-        `Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(
-          bundlr.currency,
+        `Confirmation: withdraw ${amount} ${Irys.currencyConfig.base[0]} from ${Irys.api.config.url.host} (${await Irys.utils.getBundlerAddress(
+          Irys.currency,
         )})?\n Y / N`,
       );
       if (confirmed) {
-        const res = await bundlr.withdrawBalance(new BigNumber(amount));
+        const res = await Irys.withdrawBalance(new BigNumber(amount));
         console.log(
-          `Withdrawal request for ${res?.requested} ${bundlr.currencyConfig.base[0]} successful\nTransaction ID: ${res?.tx_id} with network fee ${res?.fee} for a total cost of ${res?.final} `,
+          `Withdrawal request for ${res?.requested} ${Irys.currencyConfig.base[0]} successful\nTransaction ID: ${res?.tx_id} with network fee ${res?.fee} for a total cost of ${res?.final} `,
         );
       } else {
         console.log("confirmation failed");
@@ -92,9 +92,9 @@ program
   .argument("<file>", "relative path to the file you want to upload")
   .action(async (file: string) => {
     try {
-      const bundlr = await init(options, "upload");
+      const Irys = await init(options, "upload");
       const tags = parseTags(options?.tags);
-      const res = await bundlr.uploadFile(file, { tags: tags ?? [] });
+      const res = await Irys.uploadFile(file, { tags: tags ?? [] });
       console.log(`Uploaded to https://arweave.net/${res?.id}`);
     } catch (err: any) {
       console.error(`Error whilst uploading file: ${options.debug ? err.stack : err.message} `);
@@ -157,14 +157,14 @@ program
   .action(async (amount: string) => {
     try {
       if (isNaN(+amount)) throw new Error("Amount must be an integer");
-      const bundlr = await init(options, "fund");
+      const Irys = await init(options, "fund");
       const confirmed = await confirmation(
-        `Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(amount).toFixed()} ${bundlr.currency}) to ${
-          bundlr.api.config.host
-        } (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`,
+        `Confirmation: send ${amount} ${Irys.currencyConfig.base[0]} (${Irys.utils.unitConverter(amount).toFixed()} ${Irys.currency}) to ${
+          Irys.api.config.url.host
+        } (${await Irys.utils.getBundlerAddress(Irys.currency)})?\n Y / N`,
       );
       if (confirmed) {
-        const tx = await bundlr.fund(new BigNumber(amount), options.multiplier);
+        const tx = await Irys.fund(new BigNumber(amount), options.multiplier);
         console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `);
       } else {
         console.log("confirmation failed");
@@ -182,13 +182,13 @@ program
   .action(async (bytes: string) => {
     try {
       if (isNaN(+bytes)) throw new Error("Amount must be an integer");
-      const bundlr = await init(options, "price");
-      await bundlr.utils.getBundlerAddress(options.currency); // will throw if the bundler doesn't support the currency
-      const cost = await bundlr.utils.getPrice(options.currency, +bytes);
+      const Irys = await init(options, "price");
+      await Irys.utils.getBundlerAddress(options.currency); // will throw if the bundler doesn't support the currency
+      const cost = await Irys.utils.getPrice(options.currency, +bytes);
       console.log(
-        `Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${bundlr.utils
+        `Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${Irys.currencyConfig.base[0]} (${Irys.utils
           .unitConverter(cost)
-          .toFixed()} ${bundlr.currency})`,
+          .toFixed()} ${Irys.currency})`,
       );
     } catch (err: any) {
       console.error(`Error whilst getting price: ${options.debug ? err.stack : err.message} `);
@@ -209,13 +209,13 @@ async function confirmation(message: string): Promise<boolean> {
 }
 
 /**
- * Initialisation routine for the CLI, mainly for initialising a Bundlr instance
+ * Initialisation routine for the CLI, mainly for initialising a Irys instance
  * @param opts the parsed options from the cli
- * @returns a new Bundlr instance
+ * @returns a new Irys instance
  */
-async function init(opts, operation): Promise<Bundlr> {
+async function init(opts, operation): Promise<Irys> {
   let wallet;
-  let bundler: NodeBundlr;
+  let bundler: NodeIrys;
   // every option needs a host and currency so ensure they're present
   if (!opts.host) {
     throw new Error("Host parameter (-h) is required!");
@@ -239,14 +239,19 @@ async function init(opts, operation): Promise<Bundlr> {
     }
   }
   try {
-    // create and ready the bundlr instance
-    bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet ?? "", {
-      providerUrl: opts.providerUrl,
-      contractAddress: opts.contractAddress,
+    // create and ready the Irys instance
+    bundler = new Irys({
+      url: opts.host,
+      currency: opts.currency.toLowerCase(),
+      key: wallet ?? "",
+      config: {
+        providerUrl: opts.providerUrl,
+        contractAddress: opts.contractAddress,
+      },
     });
     await bundler.ready();
   } catch (err: any) {
-    throw new Error(`Error initialising Bundlr client - ${options.debug ? err.stack : err.message}`);
+    throw new Error(`Error initialising Irys client - ${options.debug ? err.stack : err.message}`);
   }
   // log the loaded address
   if (wallet && bundler.address) {
