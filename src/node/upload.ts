@@ -37,8 +37,13 @@ export default class NodeUploader extends Uploader {
     ) {
       throw new Error(`Unable to access path: ${path}`);
     }
+    // don't add Content-type tag if it already exists
+    const hasContentTypeTag = opts?.tags && opts.tags.some((t) => t.name.toLowerCase() === "content-type");
     const mimeType = mime.contentType(mime.lookup(path) || "application/octet-stream");
-    (opts ??= {}).tags = [{ name: "Content-Type", value: this.contentTypeOverride ?? mimeType }, ...(opts?.tags ?? [])];
+
+    (opts ??= {}).tags = hasContentTypeTag
+      ? opts.tags
+      : [{ name: "Content-Type", value: this.contentTypeOverride ?? mimeType }, ...(opts?.tags ?? [])];
 
     const data = createReadStream(path);
 
