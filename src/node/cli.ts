@@ -36,7 +36,8 @@ program
   .option("--contract-address <string>", "Override the contract address")
   .option("--content-type <string>", "Override the content type for *ALL* files uploaded")
   .option("--remove-deleted", "Removes previously uploaded (but now deleted) items from the manifest")
-  .option("--force-chunking", "Forces usage of chunking for all files regardless of size");
+  .option("--force-chunking", "Forces usage of chunking for all files regardless of size")
+  .option("--provenance", "Upload a file/folder with strong provenance");
 // Define commands
 // uses NPM view to query the package's version.
 program.version(Irys.VERSION, "-v, --version", "Gets the current package version of the Irys client");
@@ -94,7 +95,7 @@ program
     try {
       const Irys = await init(options, "upload");
       const tags = parseTags(options?.tags);
-      const res = await Irys.uploadFile(file, { tags: tags ?? [] });
+      const res = await Irys.uploadFile(file, { tags: tags ?? [], upload: { getReceiptSignature: options?.provenance } });
       console.log(`Uploaded to https://arweave.net/${res?.id}`);
     } catch (err: any) {
       console.error(`Error whilst uploading file: ${options.debug ? err.stack : err.message} `);
@@ -132,6 +133,9 @@ async function uploadDir(folder: string): Promise<void> {
       manifestTags: tags ?? [],
       logFunction: async (log): Promise<void> => {
         console.log(log);
+      },
+      itemOptions: {
+        upload: { getReceiptSignature: options?.provenance },
       },
     });
     if (!res) return console.log("Nothing to upload");

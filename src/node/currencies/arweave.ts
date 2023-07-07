@@ -1,4 +1,4 @@
-import Arweave from "arweave";
+import { Arweave } from "../utils";
 import type { Signer } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 import BigNumber from "bignumber.js";
