@@ -38,6 +38,7 @@ export default class WebIrys extends Irys {
     }
 
     const parsed = new URL(url);
+    // @ts-expect-error types
     super({ url: parsed, arbundles });
 
     this.api = new Api({
