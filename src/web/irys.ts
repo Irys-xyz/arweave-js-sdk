@@ -38,8 +38,7 @@ export default class WebIrys extends Irys {
     }
 
     const parsed = new URL(url);
-    // @ts-expect-error private type issue
-    super(parsed, arbundles);
+    super({ url: parsed, arbundles });
 
     this.api = new Api({
       url: parsed,
