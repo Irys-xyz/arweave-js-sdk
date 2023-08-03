@@ -35,6 +35,7 @@ export class ChunkingUploader extends EventEmitter {
   protected isResume = false;
   protected uploadOptions: UploadOptions | undefined;
   protected arbundles: Arbundles;
+  protected largeItem = false;
 
   constructor(currencyConfig: Currency, api: Api) {
     super({ captureRejections: true });
@@ -79,6 +80,15 @@ export class ChunkingUploader extends EventEmitter {
     return this;
   }
 
+  /**
+   * Enables some optimisations for large (multi gigabyte) items \
+   * This WILL adversely affect upload performance for smaller uploads!
+   */
+  public isLargeItem(isLargeItem: boolean): this {
+    this.largeItem = isLargeItem;
+    return this;
+  }
+
   public pause(): void {
     this.emit("pause");
     this.paused = true;
@@ -111,7 +121,7 @@ export class ChunkingUploader extends EventEmitter {
 
     const isTransaction = transactionOpts === undefined;
 
-    const headers = { "x-chunking-version": "2" };
+    const headers = { "x-chunking-version": "2", "x-chunking-flags": [this.largeItem ? ChunkingFlags.IncrementalHashing : ""].join(",") };
 
     let getres;
     if (!id) {
@@ -138,7 +148,11 @@ export class ChunkingUploader extends EventEmitter {
         retry(async (bail) => {
           await this.api
             .post(`/chunks/${this.currency}/${id}/${o}`, d, {
-              headers: { "Content-Type": "application/octet-stream", ...headers },
+              headers: {
+                "Content-Type": "application/octet-stream",
+                ...headers,
+                "x-chunking-flags": headers["x-chunking-flags"] + (c === (isTransaction ? 0 : 1) ? "," + ChunkingFlags.FirstChunk : ""), // add "first" (F) flag
+              },
               maxBodyLength: Infinity,
               maxContentLength: Infinity,
             })
@@ -150,10 +164,12 @@ export class ChunkingUploader extends EventEmitter {
                 throw e;
               }
               this.emit("chunkUpload", { id: c, offset: o, size: d.length, totalUploaded: (totalUploaded += d.length) });
+              // @ts-expect-error manual erase
+              d = undefined;
               r({ o, d: re });
             });
         }),
-          { retries: 3, minTimeout: 1000, maxTimeout: 10_000 };
+          { retries: 3, minTimeout: 1000, maxTimeout: 30_000 };
       });
     };
     const present = getres.data.chunks ?? ([] as [string, number][]);
@@ -198,6 +214,12 @@ export class ChunkingUploader extends EventEmitter {
 
     let tx!: DataItem;
     let txHeaderLength!: number;
+    let chunkID = 0;
+    let heldChunk!: Buffer;
+    let offset = 0;
+    let teeStream!: PassThrough;
+    let deephash!: Promise<Uint8Array>;
+
     // doesn't matter if we randomise ID (anchor) between resumes, as the tx header/signing info is always uploaded last.
     if (!isTransaction) {
       tx = this.arbundles.createData("", this.currencyConfig.getSigner(), {
@@ -206,8 +228,31 @@ export class ChunkingUploader extends EventEmitter {
       });
       const raw = tx.getRaw();
       txHeaderLength = raw.length;
-      stream.write(raw);
-      totalUploaded -= raw.length;
+      // stream.write(raw);
+      heldChunk = raw;
+      chunkID++;
+      offset += heldChunk.length;
+
+      teeStream = new PassThrough();
+
+      // const txLength = tx.getRaw().length;
+      if (this.chunkSize < txHeaderLength)
+        throw new Error(`Configured chunk size is too small for transaction header! (${this.chunkSize} < ${txHeaderLength})`);
+      // heldChunk = await readBytes(/* this.chunkSize */ txHeaderLength);
+
+      // teeStream.write(heldChunk.slice(txLength));
+      const sigComponents = [
+        this.arbundles.stringToBuffer("dataitem"),
+        this.arbundles.stringToBuffer("1"),
+        this.arbundles.stringToBuffer(tx.signatureType.toString()),
+        tx.rawOwner,
+        tx.rawTarget,
+        tx.rawAnchor,
+        tx.rawTags,
+        teeStream?.[Symbol?.asyncIterator] ? teeStream : new StreamToAsyncIterator<Buffer>(teeStream),
+      ];
+      // do *not* await, this needs to process in parallel to the upload process.
+      deephash = this.arbundles.deepHash(sigComponents);
     }
 
     if (Buffer.isBuffer(dataStream)) {
@@ -219,38 +264,38 @@ export class ChunkingUploader extends EventEmitter {
       throw new Error("Input data is not a buffer or a compatible stream (no .pipe method)");
     }
 
-    let offset = 0;
     const processing = new Set<Promise<any>>();
-    let chunkID = 0;
-    let heldChunk!: Buffer;
-    let teeStream!: PassThrough;
-    let deephash!: Promise<Uint8Array>;
 
-    if (!isTransaction) {
-      teeStream = new PassThrough();
+    let nextPresent = present.shift();
+    // stream.pause();
+    // const h = await createSHA384();
+    // let bytesHashed = 0;
+    // stream.on("data", (d) => {
+    //   bytesHashed += d.length;
+    //   h.update(d);
+    // });
 
-      const txLength = tx.getRaw().length;
-      if (this.chunkSize < txHeaderLength)
-        throw new Error(`Configured chunk size is too small for transaction header! (${this.chunkSize} < ${txHeaderLength})`);
-      heldChunk = await readBytes(this.chunkSize);
-      chunkID++;
-      offset += heldChunk.length;
-      teeStream.write(heldChunk.slice(txLength));
-      const sigComponents = [
-        this.arbundles.stringToBuffer("dataitem"),
-        this.arbundles.stringToBuffer("1"),
-        this.arbundles.stringToBuffer(tx.signatureType.toString()),
-        tx.rawOwner,
-        tx.rawTarget,
-        tx.rawAnchor,
-        tx.rawTags,
-        new StreamToAsyncIterator<Buffer>(teeStream),
-      ];
-      // do *not* await, this needs to process in parallel to the upload process.
-      deephash = this.arbundles.deepHash(sigComponents);
-    }
+    // const first = await readBytes(this.chunkSize);
+    // const second = await readBytes(this.chunkSize);
+    // console.log("TWO");
+    // const secondPromise = await promiseFactory(second, txHeaderLength + this.chunkSize, 2);
+    // const fourth = await readBytes(this.chunkSize);
+    // console.log("FOUR");
+    // const fourthPromise = await promiseFactory(fourth, txHeaderLength + this.chunkSize * 3, 4);
+    // console.log("ONE");
+    // const firstPromise = await promiseFactory(first, txHeaderLength, 1);
+    // const third = await readBytes(this.chunkSize);
+    // console.log("THREE");
 
-    let nextPresent = present.pop();
+    // const thirdPromise = await promiseFactory(third, txHeaderLength + this.chunkSize * 2, 3);
+
+    // h.update(first);
+    // h.update(second);
+    // h.update(third);
+    // h.update(fourth);
+    // const dig = h.digest("hex");
+
+    // console.log(secondPromise, firstPromise, thirdPromise, fourthPromise, dig);
 
     // Consume data while there's data to read.
     while (hasData) {
@@ -265,9 +310,9 @@ export class ChunkingUploader extends EventEmitter {
           const data = await readBytes(bytesToSkip);
           if (!isTransaction) teeStream.write(data);
           offset += bytesToSkip;
-          nextPresent = present.pop();
-          chunkID++;
+          nextPresent = present.shift();
           totalUploaded += bytesToSkip;
+          this.emit("chunkUpload", { id: chunkID++, offset, size: bytesToSkip, totalUploaded });
           continue;
         }
       }
@@ -283,7 +328,7 @@ export class ChunkingUploader extends EventEmitter {
       }
 
       // self-referencing promise
-      const promise = (async (): Promise<any> => await promiseFactory(chunk, offset, ++chunkID))().then((value) => [promise, value]);
+      const promise = (async (): Promise<any> => await promiseFactory(chunk, offset, chunkID++))().then((value) => [promise, value]);
       processing.add(promise);
 
       offset += chunk.length;
@@ -303,7 +348,8 @@ export class ChunkingUploader extends EventEmitter {
     }
 
     if (this?.uploadOptions?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
-
+    // const digest = Buffer.from(h.digest("binary"));
+    // console.log(digest);
     // potential improvement: write chunks into a file at offsets, instead of individual chunks + doing a concatenating copy
     const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
       headers: { "Content-Type": "application/octet-stream", ...headers },
@@ -332,4 +378,9 @@ export class ChunkingUploader extends EventEmitter {
   get completionPromise(): Promise<AxiosResponse<UploadResponse>> {
     return new Promise((r) => this.on("done", r));
   }
+}
+
+enum ChunkingFlags {
+  IncrementalHashing = "IH",
+  FirstChunk = "F",
 }

@@ -221,6 +221,7 @@ export default class StreamToAsyncIterator<T = unknown> implements AsyncIterable
     return this._state;
   }
 }
+// look at https://github.com/nodejs/readable-stream/blob/main/lib/internal/streams/readable.js#L945
 
 // export const addAsyncIterator = (body: ReadableStream) => {
 //   const bodyWithIter = body as ReadableStream<Uint8Array> & AsyncIterable<Uint8Array>;
