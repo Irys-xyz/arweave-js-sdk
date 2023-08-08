@@ -1,3 +1,4 @@
+import "./common/hack.js";
 import NodeBundlr from "./node/index";
 import WebBundlr from "./web/index";
 

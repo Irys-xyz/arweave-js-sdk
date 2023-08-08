@@ -1,3 +1,4 @@
+import "../common/hack.js";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
 import Fund from "../common/fund";
