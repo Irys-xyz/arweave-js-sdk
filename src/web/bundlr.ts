@@ -1,3 +1,4 @@
+import "../common/hack.js";
 import type { BundlrConfig } from "../common/types";
 import Api from "../common/api";
 import Bundlr from "../common/bundlr";
