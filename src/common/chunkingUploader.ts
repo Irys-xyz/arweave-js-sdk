@@ -267,35 +267,6 @@ export class ChunkingUploader extends EventEmitter {
     const processing = new Set<Promise<any>>();
 
     let nextPresent = present.shift();
-    // stream.pause();
-    // const h = await createSHA384();
-    // let bytesHashed = 0;
-    // stream.on("data", (d) => {
-    //   bytesHashed += d.length;
-    //   h.update(d);
-    // });
-
-    // const first = await readBytes(this.chunkSize);
-    // const second = await readBytes(this.chunkSize);
-    // console.log("TWO");
-    // const secondPromise = await promiseFactory(second, txHeaderLength + this.chunkSize, 2);
-    // const fourth = await readBytes(this.chunkSize);
-    // console.log("FOUR");
-    // const fourthPromise = await promiseFactory(fourth, txHeaderLength + this.chunkSize * 3, 4);
-    // console.log("ONE");
-    // const firstPromise = await promiseFactory(first, txHeaderLength, 1);
-    // const third = await readBytes(this.chunkSize);
-    // console.log("THREE");
-
-    // const thirdPromise = await promiseFactory(third, txHeaderLength + this.chunkSize * 2, 3);
-
-    // h.update(first);
-    // h.update(second);
-    // h.update(third);
-    // h.update(fourth);
-    // const dig = h.digest("hex");
-
-    // console.log(secondPromise, firstPromise, thirdPromise, fourthPromise, dig);
 
     // Consume data while there's data to read.
     while (hasData) {
@@ -348,9 +319,7 @@ export class ChunkingUploader extends EventEmitter {
     }
 
     if (this?.uploadOptions?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
-    // const digest = Buffer.from(h.digest("binary"));
-    // console.log(digest);
-    // potential improvement: write chunks into a file at offsets, instead of individual chunks + doing a concatenating copy
+
     const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
       headers: { "Content-Type": "application/octet-stream", ...headers },
       timeout: this.api.config?.timeout ?? 40_000 * 10, // server side reconstruction can take a while
