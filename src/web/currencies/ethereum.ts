@@ -43,7 +43,8 @@ export default class EthereumConfig extends BaseWebCurrency {
     //     .slice(-20)
     //     .toString("hex")
     // );
-    return owner;
+    // return owner;
+    return owner.toString().toLowerCase();
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
@@ -107,7 +108,7 @@ export default class EthereumConfig extends BaseWebCurrency {
 
   public async ready(): Promise<void> {
     this.w3signer = await this.wallet.getSigner();
-    this._address = await this.w3signer.getAddress();
+    this._address = (await this.w3signer.getAddress()).toLowerCase();
     await this.getSigner().ready();
     // this.providerInstance = new .JsonRpcProvider(this.providerUrl);
     this.providerInstance = this.wallet;
