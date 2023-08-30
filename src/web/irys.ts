@@ -1,3 +1,4 @@
+// import "../common/hack.js";
 import Api from "../common/api";
 import Fund from "../common/fund";
 import Irys from "../common/irys";

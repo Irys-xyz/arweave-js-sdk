@@ -1,3 +1,4 @@
+// import "./common/hack.js";
 import NodeIrys from "./node/index";
 import WebIrys from "./web/index";
 

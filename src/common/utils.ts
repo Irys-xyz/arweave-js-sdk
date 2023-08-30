@@ -114,29 +114,38 @@ export default class Utils {
    * @returns
    */
   public async confirmationPoll(txid: string, seconds = 30): Promise<any> {
-    if (this.currencyConfig.isSlow) {
-      return;
-    }
+    if (this.currencyConfig.isSlow) return;
     if (seconds < 0) seconds = 0;
     let lastError;
-    for (let i = 0; i < seconds; i++) {
-      await sleep(1000);
-      if (
-        await this.currencyConfig
+    let timedout;
+
+    const internalPoll = async (): Promise<boolean> => {
+      while (!timedout) {
+        const getRes = await this.currencyConfig
           .getTx(txid)
-          .then((v) => {
-            return v?.confirmed;
-          })
+          .then((v) => v?.confirmed)
           .catch((err) => {
             lastError = err;
             return false;
-          })
-      ) {
-        return;
+          });
+        if (getRes) return true;
+        await sleep(1000);
       }
+      return false;
+    };
+
+    const racer = async (): Promise<"RACE"> => {
+      await sleep(seconds * 1_000);
+      timedout = true;
+      return "RACE";
+    };
+
+    const r = await Promise.race([racer(), internalPoll()]);
+    if (r === "RACE") {
+      console.warn(`Tx ${txid} didn't finalize after ${seconds} seconds ${lastError ? ` - ${lastError}` : ""}`);
+      return lastError;
     }
-    console.warn(`Tx ${txid} didn't finalize after 30 seconds ${lastError ? ` - ${lastError}` : ""}`);
-    return lastError;
+    return r;
   }
 
   /**

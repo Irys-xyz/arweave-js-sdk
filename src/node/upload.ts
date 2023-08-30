@@ -162,6 +162,29 @@ export default class NodeUploader extends Uploader {
     if (!keepDeleted) {
       alreadyProcessed.clear();
     }
+    // pass as param otherwise it thinks logFunction can be undef
+    const uploadManifest = async (logFunction: (log: string) => Promise<void>): Promise<UploadResponse> => {
+      // generate JSON
+      await logFunction("Generating JSON manifest...");
+      const jsonManifestPath = await this.generateManifestFromCsv(path, alreadyProcessed, indexFile);
+      // upload the manifest
+      await logFunction("Uploading JSON manifest...");
+      const tags = [
+        { name: "Type", value: "manifest" },
+        { name: "Content-Type", value: "application/x.arweave-manifest+json" },
+        ...(manifestTags ?? []),
+      ];
+      const mres = await this.uploadData(createReadStream(jsonManifestPath), { tags }).catch((e) => {
+        throw new Error(`Failed to upload manifest: ${e.message}`);
+      });
+      await logFunction("Done!");
+      if (mres?.id) {
+        await promises.writeFile(join(join(path, `${sep}..`), `${basename(path)}-id.txt`), JSON.stringify(mres));
+      } else {
+        throw new Error(`Unable to get upload ID! ${JSON.stringify(mres)}`);
+      }
+      return mres;
+    };
 
     // TODO: add logic to detect changes (MD5/other hash)
     if (files.length == 0 && alreadyProcessed.size === 0) {
@@ -171,7 +194,8 @@ export default class NodeUploader extends Uploader {
       if (await checkPath(idpath)) {
         return JSON.parse(await promises.readFile(idpath, "utf-8")) as UploadResponse;
       }
-      return undefined;
+      // assume manifest wasn't uploaded
+      return await uploadManifest(logFunction);
     }
 
     const zprice = (await this.utils.getPrice(this.currency, 0)).multipliedBy(files.length);
@@ -183,7 +207,7 @@ export default class NodeUploader extends Uploader {
         !(await confirmation(
           `Authorize upload?\nTotal amount of data: ${total} bytes over ${files.length} files - cost: ${price} ${
             this.currencyConfig.base[0]
-          } (${this.utils.unitConverter(price).toFixed()} ${this.currency})\n Y / N`,
+          } (${this.utils.fromAtomic(price).toFixed()} ${this.currency})\n Y / N`,
         ))
       ) {
         throw new Error("Confirmation failed");
@@ -238,29 +262,8 @@ export default class NodeUploader extends Uploader {
     await logFunction(`Finished processing ${files.length} Items`);
 
     await new Promise((r) => wstrm.close(r));
-    // generate JSON
-    await logFunction("Generating JSON manifest...");
-    const jsonManifestPath = await this.generateManifestFromCsv(path, alreadyProcessed, indexFile);
-    // upload the manifest
-    await logFunction("Uploading JSON manifest...");
-    const tags = [
-      { name: "Type", value: "manifest" },
-      { name: "Content-Type", value: "application/x.arweave-manifest+json" },
-      ...(manifestTags ?? []),
-    ];
-    const mres = (await this.uploadData(createReadStream(jsonManifestPath), {
-      tags,
-      upload: { getReceiptSignature: itemOptions?.upload?.getReceiptSignature },
-    }).catch((e) => {
-      throw new Error(`Failed to upload manifest: ${e.message}`);
-    })) as (UploadResponse | UploadReceipt) & { receipts: Map<string, UploadReceipt> | undefined };
 
-    await logFunction("Done!");
-    if (mres?.id) {
-      await promises.writeFile(join(join(path, `${sep}..`), `${basename(path)}-id.txt`), JSON.stringify(mres));
-    }
-    mres.receipts = receiptTxs;
-    return mres;
+    return await uploadManifest(logFunction);
   }
 
   /**
