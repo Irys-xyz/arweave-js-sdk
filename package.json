@@ -141,7 +141,7 @@
     "tsc-esm-fix": "^2.20.12",
     "tsconfig-paths": "^4.2.0",
     "tslib": "^2.3.1",
-    "typescript": "^5.0.4",
+    "typescript": "=5.1.5",
     "webpack": "^5.65.0",
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.1",
