@@ -5,7 +5,7 @@
         "target": "es2015",
         "outDir": "./build/cjs",
         "rootDir": "./src",
-        "moduleResolution": "nodeNext"
+        "moduleResolution": "NodeNext"
     },
     "include": [
         "src/**/*"
