@@ -118,28 +118,23 @@ export interface Manifest {
 export interface UploadResponse {
   // The ID of the transaction
   id: string;
-
-  /**
-   * All below (bar timestamp) are optional (requiring the getReceiptSignature option)
-   */
-
   // The Arweave public key of the node that received the transaction
-  public?: string;
+  public: string;
   // The signature of this receipt
-  signature?: string;
+  signature: string;
   // the maximum expected Arweave block height for transaction inclusion
-  deadlineHeight?: number;
+  deadlineHeight: number;
   // List of validator signatures
-  validatorSignatures?: { address: string; signature: string }[];
-  // The UNIX (MS precision) timestamp of when the node received the Tx. Only optional if the upload receives a `201` error in response to a duplicate transaction upload.
-  timestamp?: number;
+  validatorSignatures: { address: string; signature: string }[];
+  // The UNIX (MS precision) timestamp of when the node received the Tx.
+  timestamp: number;
   // The receipt version
-  version?: "1.0.0";
-  // Injected verification function (same as Utils/Irys.verifyReceipt) - only present if getReceiptSignature is set.
-  verify?: () => Promise<boolean>;
+  version: "1.0.0";
+  // Injected verification function (same as Utils/Irys.verifyReceipt)
+  verify: () => Promise<boolean>;
 }
 
-export type UploadReceipt = Required<UploadResponse>;
+export type UploadReceipt = /* Required<UploadResponse>; */ UploadResponse;
 export type UploadReceiptData = Omit<UploadReceipt, "verify">;
 
 export interface FundResponse {

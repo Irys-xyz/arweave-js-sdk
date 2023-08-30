@@ -55,23 +55,24 @@ export default class Uploader {
 
   public async uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>> {
     let res: AxiosResponse<UploadResponse>;
+    const getReceiptSignature = opts?.getReceiptSignature ?? true;
     const isDataItem = this.arbundles.DataItem.isDataItem(transaction);
     if (this.forceUseChunking || (isDataItem && transaction.getRaw().length >= CHUNKING_THRESHOLD) || !isDataItem) {
       res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction, opts);
     } else {
       const { url, timeout, headers: confHeaders } = this.api.getConfig();
       const headers = { "Content-Type": "application/octet-stream", ...confHeaders };
-      if (opts?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
+      if (getReceiptSignature) headers["x-proof-type"] = "receipt";
       res = await this.api.post(new URL(`/tx/${this.currency}`, url).toString(), transaction.getRaw(), {
         headers: headers,
         timeout,
         maxBodyLength: Infinity,
       });
       if (res.status === 201) {
-        if (opts?.getReceiptSignature === true) {
+        if (getReceiptSignature) {
           throw new Error(res.data as any as string);
         }
-        res.data = { id: transaction.id };
+        // res.data = { id: transaction.id };
       }
     }
     switch (res.status) {
