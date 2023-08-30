@@ -188,9 +188,11 @@ export default class NodeUploader extends Uploader {
       return await uploadManifest(logFunction);
     }
 
-    const zprice = (await this.utils.getPrice(this.currency, 0)).multipliedBy(files.length);
+    // const zprice = (await this.utils.getPrice(this.currency, 0)).multipliedBy(files.length);
 
-    const price = (await this.utils.getPrice(this.currency, total)).plus(zprice).toFixed(0);
+    // const price = (await this.utils.getPrice(this.currency, total)).plus(zprice).toFixed(0);
+
+    const price = await this.utils.estimateFolderPrice({ fileCount: files.length, totalBytes: total });
 
     if (interactivePreflight) {
       if (
