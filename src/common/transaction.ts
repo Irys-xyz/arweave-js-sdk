@@ -16,28 +16,28 @@ import type {
  * Takes the same parameters as a regular DataItem.
  */
 
-export default function buildIrysTransaction(irys: Pick<Irys, "uploader" | "currencyConfig" | "arbundles" | "utils">): IrysTransactonCtor {
+export default function buildIrysTransaction(irys: Pick<Irys, "uploader" | "tokenConfig" | "arbundles" | "utils">): IrysTransactonCtor {
   class IrysTransaction extends irys.arbundles.DataItem implements IIrysTransaction {
-    public Irys: Pick<Irys, "uploader" | "currencyConfig" | "arbundles" | "utils">;
+    public Irys: Pick<Irys, "uploader" | "tokenConfig" | "arbundles" | "utils">;
     public signer: Signer;
 
     constructor(
       data: string | Uint8Array,
-      irys: Pick<Irys, "uploader" | "currencyConfig" | "arbundles" | "utils">,
+      irys: Pick<Irys, "uploader" | "tokenConfig" | "arbundles" | "utils">,
       opts?: IrysTransactionCreateOptions,
     ) {
       super(
         opts?.dataIsRawTransaction === true
           ? Buffer.from(data)
           : irys.arbundles
-              .createData(data, irys.currencyConfig.getSigner(), {
+              .createData(data, irys.tokenConfig.getSigner(), {
                 ...opts,
                 anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32),
               })
               .getRaw(),
       );
       this.Irys = irys;
-      this.signer = irys.currencyConfig.getSigner();
+      this.signer = irys.tokenConfig.getSigner();
     }
 
     public sign(): Promise<Buffer> {
@@ -64,7 +64,7 @@ export default function buildIrysTransaction(irys: Pick<Irys, "uploader" | "curr
     // }
 
     async getPrice(): Promise<BigNumber> {
-      return this.Irys.utils.getPrice(this.Irys.currencyConfig.name, this.size);
+      return this.Irys.utils.getPrice(this.Irys.tokenConfig.name, this.size);
     }
   }
   return IrysTransaction;

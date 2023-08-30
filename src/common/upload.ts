@@ -8,16 +8,7 @@ import Crypto from "crypto";
 import type { Readable } from "stream";
 import type Api from "./api";
 import { ChunkingUploader } from "./chunkingUploader";
-import type {
-  Arbundles,
-  CreateAndUploadOptions,
-  Currency,
-  IrysTransactonCtor,
-  Manifest,
-  UploadOptions,
-  UploadReceipt,
-  UploadResponse,
-} from "./types";
+import type { Arbundles, CreateAndUploadOptions, Token, IrysTransactonCtor, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
 import type Utils from "./utils";
 
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
@@ -25,19 +16,19 @@ export const CHUNKING_THRESHOLD = 50_000_000;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export default class Uploader {
   protected readonly api: Api;
-  protected currency: string;
-  protected currencyConfig: Currency;
+  protected token: string;
+  protected tokenConfig: Token;
   protected utils: Utils;
   protected contentTypeOverride: string | undefined;
   protected forceUseChunking: boolean | undefined;
   protected arbundles: Arbundles;
   protected irysTransaction: IrysTransactonCtor;
 
-  constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency, irysTransaction: IrysTransactonCtor) {
+  constructor(api: Api, utils: Utils, token: string, tokenConfig: Token, irysTransaction: IrysTransactonCtor) {
     this.api = api;
-    this.currency = currency;
-    this.currencyConfig = currencyConfig;
-    this.arbundles = this.currencyConfig.irys.arbundles;
+    this.token = token;
+    this.tokenConfig = tokenConfig;
+    this.arbundles = this.tokenConfig.irys.arbundles;
     this.utils = utils;
     this.irysTransaction = irysTransaction;
   }
@@ -63,7 +54,7 @@ export default class Uploader {
       const { url, timeout, headers: confHeaders } = this.api.getConfig();
       const headers = { "Content-Type": "application/octet-stream", ...confHeaders };
       if (getReceiptSignature) headers["x-proof-type"] = "receipt";
-      res = await this.api.post(new URL(`/tx/${this.currency}`, url).toString(), transaction.getRaw(), {
+      res = await this.api.post(new URL(`/tx/${this.token}`, url).toString(), transaction.getRaw(), {
         headers: headers,
         timeout,
         maxBodyLength: Infinity,
@@ -95,11 +86,11 @@ export default class Uploader {
     }
     if (Buffer.isBuffer(data)) {
       if (data.length <= CHUNKING_THRESHOLD) {
-        const dataItem = this.arbundles.createData(data, this.currencyConfig.getSigner(), {
+        const dataItem = this.arbundles.createData(data, this.tokenConfig.getSigner(), {
           ...opts,
           anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32),
         });
-        await dataItem.sign(this.currencyConfig.getSigner());
+        await dataItem.sign(this.tokenConfig.getSigner());
         return (await this.uploadTransaction(dataItem, { ...opts?.upload })).data;
       }
     }
@@ -191,7 +182,7 @@ export default class Uploader {
   }
 
   get chunkedUploader(): ChunkingUploader {
-    return new ChunkingUploader(this.currencyConfig, this.api);
+    return new ChunkingUploader(this.tokenConfig, this.api);
   }
 
   set useChunking(state: boolean) {
@@ -232,13 +223,13 @@ export default class Uploader {
     const bundle = await this.arbundles.bundleAndSignData(txs, ephemeralSigner);
 
     // upload bundle with bundle specific tags, use actual signer for this.
-    const tx = this.arbundles.createData(bundle.getRaw(), this.currencyConfig.getSigner(), {
+    const tx = this.arbundles.createData(bundle.getRaw(), this.tokenConfig.getSigner(), {
       tags: [
         { name: "Bundle-Format", value: "binary" },
         { name: "Bundle-Version", value: "2.0.0" },
       ],
     });
-    await tx.sign(this.currencyConfig.getSigner());
+    await tx.sign(this.tokenConfig.getSigner());
 
     const res = await this.uploadTransaction(tx, opts);
     const ephemeralAddress = base64url(

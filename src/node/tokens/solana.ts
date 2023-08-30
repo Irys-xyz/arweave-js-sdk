@@ -3,16 +3,16 @@ import { SolanaSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
-import type { CurrencyConfig, Tx } from "../../common/types";
-import BaseNodeCurrency from "../currency";
+import type { TokenConfig, Tx } from "../../common/types";
+import { BaseNodeToken } from "../token";
 import retry from "async-retry";
 import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
 
-export default class SolanaConfig extends BaseNodeCurrency {
+export default class SolanaConfig extends BaseNodeToken {
   protected declare providerInstance: Connection;
   minConfirm = 1;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     super(config);
     this.base = ["lamports", 1e9];
   }

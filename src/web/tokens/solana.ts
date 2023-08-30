@@ -1,20 +1,20 @@
 import type { Signer } from "arbundles";
 import { HexInjectedSolanaSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types";
-import BaseWebCurrency from "../currency";
+import type { TokenConfig, Tx } from "../../common/types";
+import BaseWebToken from "../token";
 import bs58 from "bs58";
 // @ts-expect-error only importing as type
 import type { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
 import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 
-export default class SolanaConfig extends BaseWebCurrency {
+export default class SolanaConfig extends BaseWebToken {
   private signer!: HexInjectedSolanaSigner;
   protected declare wallet: MessageSignerWalletAdapter;
   minConfirm = 1;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     super(config);
     this.base = ["lamports", 1e9];
   }

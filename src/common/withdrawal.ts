@@ -13,12 +13,12 @@ import type { WithdrawalResponse } from "./types";
  * @returns the response from the bundler
  */
 export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.Value): Promise<WithdrawalResponse> {
-  const c = utils.currencyConfig;
+  const c = utils.tokenConfig;
   const { deepHash, stringToBuffer } = c.irys.arbundles;
   const pkey = await c.getPublicKey();
   const data = {
     publicKey: pkey,
-    currency: utils.currency,
+    currency: utils.token,
     amount: new BigNumber(amount).toString(),
     nonce: await utils.getNonce(),
     signature: "",

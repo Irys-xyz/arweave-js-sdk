@@ -16,10 +16,10 @@ let balpad, walpad; // padding state variables
 program
   .option("-h, --host <string>", "Irys node hostname/URL (eg http://node1.irys.network)")
   .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "default")
-  .option("-c, --currency <string>", "The currency to use")
+  .option("-t, --token <string>", "The token to use")
   .option("--timeout <number>", "The timeout (in ms) for API HTTP requests - increase if you get timeouts for upload")
   .option("--no-confirmation", "Disable confirmations for certain actions")
-  .option("-t, --tags [value...]", "Tags to include, format <name> <value>")
+  .option("--tags [value...]", "Tags to include, format <name> <value>")
   .option(
     "--multiplier <number>",
     "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.",
@@ -52,7 +52,7 @@ program
       options.address = balpad ? address.substring(1) : address;
       const Irys = await init(options, "balance");
       const balance = await Irys.utils.getBalance(options.address);
-      console.log(`Balance: ${balance} ${Irys.currencyConfig.base[0]} (${Irys.utils.unitConverter(balance).toFixed()} ${Irys.currency})`);
+      console.log(`Balance: ${balance} ${Irys.tokenConfig.base[0]} (${Irys.utils.unitConverter(balance).toFixed()} ${Irys.token})`);
     } catch (err: any) {
       console.error(`Error whilst getting balance: ${options.debug ? err.stack : err.message} `);
       return;
@@ -63,19 +63,19 @@ program
 program
   .command("withdraw")
   .description("Sends a fund withdrawal request")
-  .argument("<amount>", "amount to withdraw in currency base units")
+  .argument("<amount>", "amount to withdraw in token base units")
   .action(async (amount: string) => {
     try {
       const Irys = await init(options, "withdraw");
       const confirmed = await confirmation(
-        `Confirmation: withdraw ${amount} ${Irys.currencyConfig.base[0]} from ${Irys.api.config.url.host} (${await Irys.utils.getBundlerAddress(
-          Irys.currency,
+        `Confirmation: withdraw ${amount} ${Irys.tokenConfig.base[0]} from ${Irys.api.config.url.host} (${await Irys.utils.getBundlerAddress(
+          Irys.token,
         )})?\n Y / N`,
       );
       if (confirmed) {
         const res = await Irys.withdrawBalance(new BigNumber(amount));
         console.log(
-          `Withdrawal request for ${res?.requested} ${Irys.currencyConfig.base[0]} successful\nTransaction ID: ${res?.tx_id} with network fee ${res?.fee} for a total cost of ${res?.final} `,
+          `Withdrawal request for ${res?.requested} ${Irys.tokenConfig.base[0]} successful\nTransaction ID: ${res?.tx_id} with network fee ${res?.fee} for a total cost of ${res?.final} `,
         );
       } else {
         console.log("confirmation failed");
@@ -163,9 +163,9 @@ program
       if (isNaN(+amount)) throw new Error("Amount must be an integer");
       const Irys = await init(options, "fund");
       const confirmed = await confirmation(
-        `Confirmation: send ${amount} ${Irys.currencyConfig.base[0]} (${Irys.utils.unitConverter(amount).toFixed()} ${Irys.currency}) to ${
+        `Confirmation: send ${amount} ${Irys.tokenConfig.base[0]} (${Irys.utils.unitConverter(amount).toFixed()} ${Irys.token}) to ${
           Irys.api.config.url.host
-        } (${await Irys.utils.getBundlerAddress(Irys.currency)})?\n Y / N`,
+        } (${await Irys.utils.getBundlerAddress(Irys.token)})?\n Y / N`,
       );
       if (confirmed) {
         const tx = await Irys.fund(new BigNumber(amount), options.multiplier);
@@ -181,18 +181,18 @@ program
 
 program
   .command("price")
-  .description("Check how much of a specific currency is required for an upload of <amount> bytes")
+  .description("Check how much of a specific token is required for an upload of <amount> bytes")
   .argument("<bytes>", "The number of bytes to get the price for")
   .action(async (bytes: string) => {
     try {
       if (isNaN(+bytes)) throw new Error("Amount must be an integer");
       const Irys = await init(options, "price");
-      await Irys.utils.getBundlerAddress(options.currency); // will throw if the bundler doesn't support the currency
-      const cost = await Irys.utils.getPrice(options.currency, +bytes);
+      await Irys.utils.getBundlerAddress(options.token); // will throw if the bundler doesn't support the token
+      const cost = await Irys.utils.getPrice(options.token, +bytes);
       console.log(
-        `Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${Irys.currencyConfig.base[0]} (${Irys.utils
+        `Price for ${bytes} bytes in ${options.token} is ${cost.toFixed(0)} ${Irys.tokenConfig.base[0]} (${Irys.utils
           .unitConverter(cost)
-          .toFixed()} ${Irys.currency})`,
+          .toFixed()} ${Irys.token})`,
       );
     } catch (err: any) {
       console.error(`Error whilst getting price: ${options.debug ? err.stack : err.message} `);
@@ -220,19 +220,19 @@ async function confirmation(message: string): Promise<boolean> {
 async function init(opts, operation): Promise<Irys> {
   let wallet;
   let bundler: NodeIrys;
-  // every option needs a host and currency so ensure they're present
+  // every option needs a host and token so ensure they're present
   if (!opts.host) {
     throw new Error("Host parameter (-h) is required!");
   }
-  if (!opts.currency) {
-    throw new Error("currency flag (-c) is required!");
+  if (!opts.token) {
+    throw new Error("token flag (-t, --token) is required!");
   }
   // some operations do not require a wallet
   if (!["balance", "price"].includes(operation)) {
     // require a wallet
     if (opts.wallet === "default") {
       // default to wallet.json under the right conditions
-      if (opts.currency === "arweave" && (await checkPath("./wallet.json"))) {
+      if (opts.token === "arweave" && (await checkPath("./wallet.json"))) {
         wallet = await loadWallet("./wallet.json");
       } else {
         throw new Error("Wallet (-w) required for this operation!");
@@ -246,7 +246,7 @@ async function init(opts, operation): Promise<Irys> {
     // create and ready the Irys instance
     bundler = new Irys({
       url: opts.host,
-      currency: opts.currency.toLowerCase(),
+      token: opts.token.toLowerCase(),
       key: wallet ?? "",
       config: {
         providerUrl: opts.providerUrl,

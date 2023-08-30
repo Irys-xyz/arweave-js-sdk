@@ -9,7 +9,7 @@ const Irys_URL = "https://devnet.Irys.network/";
 
 const currencies = Object.keys(transactionIds);
 jest.setTimeout(20000);
-describe("Irys.currencyConfig.getTx", () => {
+describe("Irys.tokenConfig.getTx", () => {
   describe.each(currencies)("given we use %s", (keyName) => {
     let Irys: Irys;
     beforeAll(async () => {
@@ -18,9 +18,9 @@ describe("Irys.currencyConfig.getTx", () => {
       await Irys.ready();
     });
 
-    describe("Irys.currencyConfig.getTx", () => {
+    describe("Irys.tokenConfig.getTx", () => {
       it("should return the transaction", async () => {
-        const tx = await Irys.currencyConfig.getTx(transactionIds[keyName]);
+        const tx = await Irys.tokenConfig.getTx(transactionIds[keyName]);
         expect(tx).toBeDefined();
       });
     });

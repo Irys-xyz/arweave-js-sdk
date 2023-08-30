@@ -2,29 +2,29 @@ import Irys from "../irys";
 import { clientKeys } from "../../../tests/utils";
 
 jest.setTimeout(40000);
-// for each currency to test, include here the precalculated public key
+// for each token to test, include here the precalculated public key
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Irys_DEVNET_URL = "https://devnet.Irys.network/";
 
-async function handleConfirmation(_currency: string): Promise<void> {
+async function handleConfirmation(_token: string): Promise<void> {
   // do some stuff to make sure the transaction is confirmed
-  // this is specific for each currency and needs to be implemented
+  // this is specific for each token and needs to be implemented
 }
 
 describe("given we some devnet wallets", () => {
   const currenciesToTestAgainst = Object.keys(clientKeys["devnet"]);
-  const currencyConfigs = clientKeys["devnet"];
+  const tokenConfigs = clientKeys["devnet"];
 
-  describe.each(currenciesToTestAgainst)("and given we have a %s Irys wallet", (currencyName) => {
+  describe.each(currenciesToTestAgainst)("and given we have a %s Irys wallet", (tokenName) => {
     const testBalance = 13;
-    const currencyConfig: {
+    const tokenConfig: {
       key: string;
       provider: string;
-    } = currencyConfigs[currencyName];
+    } = tokenConfigs[tokenName];
     let Irys: Irys;
 
     beforeEach(async () => {
-      Irys = new Irys(Irys_DEVNET_URL, currencyName, currencyConfig.key, { providerUrl: currencyConfig.provider });
+      Irys = new Irys(Irys_DEVNET_URL, tokenName, tokenConfig.key, { providerUrl: tokenConfig.provider });
       await Irys.ready();
     });
 
@@ -46,7 +46,7 @@ describe("given we some devnet wallets", () => {
         const fundResponse = await Irys.fund(testBalance, 1);
         expect(fundResponse).toBeDefined();
 
-        await handleConfirmation(currencyName);
+        await handleConfirmation(tokenName);
         const balanceAfter = await Irys.getLoadedBalance();
         expect(balanceAfter).toEqual(balanceBefore.plus(testBalance));
       });
@@ -54,8 +54,8 @@ describe("given we some devnet wallets", () => {
         const fundResponse = await Irys.fund(testBalance, 1);
         expect(fundResponse).toBeDefined();
 
-        await handleConfirmation(currencyName);
-        const transactionDetails = await Irys.currencyConfig.getTx(fundResponse.id);
+        await handleConfirmation(tokenName);
+        const transactionDetails = await Irys.tokenConfig.getTx(fundResponse.id);
         expect(transactionDetails).toBeDefined();
         expect(transactionDetails.amount.isEqualTo(testBalance)).toBeTruthy();
       });

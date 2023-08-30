@@ -1,4 +1,4 @@
-import type BaseCurrency from "../currency";
+import type Basetoken from "../token";
 // import AlgorandConfig from "./algorand";
 import EthereumConfig from "./ethereum";
 import NearConfig from "./near";
@@ -11,15 +11,15 @@ import AptosConfig from "./aptos";
 // import ArweaveConfig from "./arweave";
 import type WebIrys from "../irys";
 
-export default function getCurrency(
+export default function getTokenConfig(
   irys: WebIrys,
-  currency: string,
+  token: string,
   wallet: any,
   providerUrl?: string,
   contractAddress?: string,
   // opts?: any,
-): BaseCurrency {
-  switch (currency) {
+): Basetoken {
+  switch (token) {
     // case "arweave":
     //   return new ArweaveConfig({
     //     irys: irys,
@@ -109,6 +109,6 @@ export default function getCurrency(
         wallet,
       });
     default:
-      throw new Error(`Unknown/Unsupported currency ${currency}`);
+      throw new Error(`Unknown/Unsupported token ${token}`);
   }
 }

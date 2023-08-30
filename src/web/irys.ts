@@ -5,26 +5,16 @@ import Irys from "../common/irys";
 import type { IrysConfig } from "../common/types";
 import Uploader from "../common/upload";
 import Utils from "../common/utils";
-import getCurrency from "./currencies/index";
+import getTokenConfig from "./tokens/index";
 import { Provenance } from "../common/provenance";
 import { Transaction } from "../common/transactions";
-import type { WebCurrency } from "./types";
+import type { WebToken } from "./types";
 import * as arbundles from "./utils";
 
 export default class WebIrys extends Irys {
-  public currencyConfig: WebCurrency;
+  public tokenConfig: WebToken;
 
-  constructor({
-    url,
-    currency,
-    provider,
-    config,
-  }: {
-    url: "node1" | "node2" | "devnet" | string;
-    currency: string;
-    provider?: any;
-    config?: IrysConfig;
-  }) {
+  constructor({ url, token, provider, config }: { url: "node1" | "node2" | "devnet" | string; token: string; provider?: any; config?: IrysConfig }) {
     switch (url) {
       case undefined:
       case "node1":
@@ -47,12 +37,12 @@ export default class WebIrys extends Irys {
       timeout: config?.timeout ?? 100000,
       headers: config?.headers,
     });
-    this.currencyConfig = getCurrency(this, currency.toLowerCase(), provider, config?.providerUrl, config?.contractAddress);
-    this.currency = this.currencyConfig.name;
-    if (parsed.host === "devnet.irys.network" && !(config?.providerUrl || this.currencyConfig.inheritsRPC))
+    this.tokenConfig = getTokenConfig(this, token.toLowerCase(), provider, config?.providerUrl, config?.contractAddress);
+    this.token = this.tokenConfig.name;
+    if (parsed.host === "devnet.irys.network" && !(config?.providerUrl || this.tokenConfig.inheritsRPC))
       throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.network/sdk/using-devnet`);
-    this.utils = new Utils(this.api, this.currency, this.currencyConfig);
-    this.uploader = new Uploader(this.api, this.utils, this.currency, this.currencyConfig, this.IrysTransaction);
+    this.utils = new Utils(this.api, this.token, this.tokenConfig);
+    this.uploader = new Uploader(this.api, this.utils, this.token, this.tokenConfig, this.IrysTransaction);
     this.funder = new Fund(this.utils);
     this.provenance = new Provenance(this);
     this.transactions = new Transaction(this);

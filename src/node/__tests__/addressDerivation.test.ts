@@ -5,7 +5,7 @@ const Irys_DEVNET_URL = "https://devnet.Irys.network/";
 
 jest.setTimeout(20000);
 
-// for each currency to test, include here the precalculated public key
+// for each token to test, include here the precalculated public key
 const publicKeys = {
   arweave: clientKeys.arweave.key.n,
   ethereum: "04f446c3897dbf19753b6050c2a06201aa55a59c185d3dd04c0746b32c8992540bd95c9966b07458739248d2919c125f2c1d422cb7743245c58c50ce9b5a03fb0e",
@@ -26,17 +26,17 @@ describe.each(Object.keys(publicKeys))("given we use %s", (keyName) => {
     await Irys.ready();
   });
 
-  describe("Irys.currencyConfig.getPublicKey", () => {
+  describe("Irys.tokenConfig.getPublicKey", () => {
     it("should return the public key", () => {
-      const publicKey = Irys.currencyConfig.getPublicKey();
+      const publicKey = Irys.tokenConfig.getPublicKey();
       expect(publicKey.toString("hex")).toBe(publicKeys[keyName]);
     });
   });
 
-  describe("Irys.currencyConfig.ownerToAddress", () => {
+  describe("Irys.tokenConfig.ownerToAddress", () => {
     it("should return the address", () => {
-      const publicKey = Irys.currencyConfig.getPublicKey();
-      const address = Irys.currencyConfig.ownerToAddress(publicKey);
+      const publicKey = Irys.tokenConfig.getPublicKey();
+      const address = Irys.tokenConfig.ownerToAddress(publicKey);
 
       // aptos and ethereum addresses are hex and thus case insensitive
       if (hexEncodedCurrencies.includes(keyName)) expect(address.toLowerCase()).toBe(clientKeys[keyName].address.toLowerCase());

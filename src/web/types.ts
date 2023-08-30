@@ -1,6 +1,6 @@
-import type { Currency } from "../common/types";
+import type { Token } from "../common/types";
 
-export interface WebCurrency extends Currency {
+export interface WebToken extends Token {
   getPublicKey(): Promise<string | Buffer>;
   ready(): Promise<void>;
   inheritsRPC: boolean;

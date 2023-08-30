@@ -4,8 +4,8 @@ import { serialize } from "borsh";
 import type { Signer } from "arbundles";
 import { NearSigner } from "arbundles";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types";
-import BaseNodeCurrency from "../currency";
+import type { TokenConfig, Tx } from "../../common/types";
+import { BaseNodeToken } from "../token";
 import bs58 from "bs58";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";
@@ -14,13 +14,13 @@ import { Signature, SignedTransaction, actionCreators, createTransaction, SCHEMA
 import { parseSeedPhrase, KEY_DERIVATION_PATH } from "near-seed-phrase";
 import base64url from "base64url";
 import axios from "axios";
-export default class NearConfig extends BaseNodeCurrency {
+export default class NearConfig extends BaseNodeToken {
   protected keyPair: KeyPair;
 
   protected declare providerInstance?: JsonRpcProvider;
   protected declare IrysUrl: string;
 
-  constructor(config: CurrencyConfig & { IrysUrl: string }) {
+  constructor(config: TokenConfig & { IrysUrl: string }) {
     let wallet = config.wallet;
     if (typeof wallet === "string" && wallet?.split(":")?.[0] !== "ed25519") {
       wallet = parseSeedPhrase(wallet, KEY_DERIVATION_PATH).secretKey;

@@ -8,7 +8,7 @@ import {
   TransactionBuilderRemoteABI,
 } from "aptos";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig } from "../../common/types";
+import type { TokenConfig } from "../../common/types";
 import Aptos from "./aptos";
 import type { Signer } from "arbundles";
 import { MultiSignatureAptosSigner } from "arbundles";
@@ -22,7 +22,7 @@ export default class MultiSignatureAptos extends Aptos {
   protected declare signerInstance: MultiSignatureAptosSigner;
   protected collectSignatures: (message: Uint8Array) => Promise<{ signatures: Buffer[]; bitmap: number[] }>;
 
-  constructor(config: CurrencyConfig & { opts: { collectSignatures } }) {
+  constructor(config: TokenConfig & { opts: { collectSignatures } }) {
     super(config);
     this.collectSignatures = this?.opts?.collectSignatures;
     this.needsFee = true;

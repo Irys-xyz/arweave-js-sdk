@@ -3,15 +3,15 @@ import type { Signer } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import crypto from "crypto";
-import type { CurrencyConfig, Tx } from "../../common/types";
+import type { TokenConfig, Tx } from "../../common/types";
 import base64url from "base64url";
-import BaseNodeCurrency from "../currency";
+import { BaseNodeToken } from "../token";
 import type Transaction from "arweave/node/lib/transaction";
 
-export default class ArweaveConfig extends BaseNodeCurrency {
+export default class ArweaveConfig extends BaseNodeToken {
   protected declare providerInstance: Arweave;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     super(config);
     this.base = ["winston", 1e12];
     this.needsFee = true;

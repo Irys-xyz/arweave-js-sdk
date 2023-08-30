@@ -9,7 +9,7 @@ import type { Transaction } from "./transactions";
 import type {
   Arbundles,
   CreateAndUploadOptions,
-  Currency,
+  Token,
   FundResponse,
   IrysTransaction,
   IrysTransactionCreateOptions,
@@ -29,8 +29,8 @@ export default abstract class Irys {
   public uploader!: Uploader;
   public funder!: Fund;
   public address!: string | undefined;
-  public currency!: string;
-  public currencyConfig!: Currency;
+  public token!: string;
+  public tokenConfig!: Token;
   public provenance!: Provenance;
   public transactions!: Transaction;
   protected _readyPromise: Promise<void> | undefined;
@@ -47,7 +47,7 @@ export default abstract class Irys {
   }
 
   get signer(): Signer {
-    return this.currencyConfig.getSigner();
+    return this.tokenConfig.getSigner();
   }
 
   async withdrawBalance(amount: BigNumber.Value): Promise<WithdrawalResponse> {
@@ -81,12 +81,12 @@ export default abstract class Irys {
   }
 
   /**
-   * Calculates the price for [bytes] bytes for the loaded currency and Irys node.
+   * Calculates the price for [bytes] bytes for the loaded token and Irys node.
    * @param bytes
    * @returns
    */
   public async getPrice(bytes: number): Promise<BigNumber> {
-    return this.utils.getPrice(this.currency, bytes);
+    return this.utils.getPrice(this.token, bytes);
   }
 
   public async verifyReceipt(receipt: UploadReceiptData): Promise<boolean> {
@@ -94,7 +94,7 @@ export default abstract class Irys {
   }
 
   /**
-   * Create a new IrysTransactions (flex currency arbundles dataItem)
+   * Create a new IrysTransactions (flex token arbundles dataItem)
    * @param data
    * @param opts - dataItemCreateOptions
    * @returns - a new IrysTransaction instance
@@ -104,10 +104,10 @@ export default abstract class Irys {
   }
 
   /**
-   * Returns the signer for the loaded currency
+   * Returns the signer for the loaded token
    */
   getSigner(): Signer {
-    return this.currencyConfig.getSigner();
+    return this.tokenConfig.getSigner();
   }
 
   async upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
@@ -119,8 +119,8 @@ export default abstract class Irys {
   }
 
   async ready(): Promise<Irys> {
-    this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
-    this.address = this.currencyConfig.address;
+    this.tokenConfig.ready ? await this.tokenConfig.ready() : true;
+    this.address = this.tokenConfig.address;
     return this;
   }
 

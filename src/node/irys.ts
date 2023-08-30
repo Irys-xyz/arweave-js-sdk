@@ -5,15 +5,15 @@ import Fund from "../common/fund";
 import Irys from "../common/irys";
 import type { CreateAndUploadOptions, IrysConfig, UploadResponse } from "../common/types";
 import Utils from "../common/utils";
-import getCurrency from "./currencies/index";
-import type { NodeCurrency } from "./types";
+import getTokenConfig from "./tokens/index";
+import type { NodeToken } from "./types";
 import NodeUploader from "./upload";
 import * as arbundles from "./utils";
 import { NodeProvenance } from "./provenance";
 
 export default class NodeIrys extends Irys {
   public uploader: NodeUploader; // re-define type
-  public currencyConfig: NodeCurrency;
+  public tokenConfig: NodeToken;
   public declare provenance: NodeProvenance;
 
   /**
@@ -21,7 +21,7 @@ export default class NodeIrys extends Irys {
    * @param url - URL to the bundler
    * @param key - private key (in whatever form required)
    */
-  constructor({ url, currency, key, config }: { url: "node1" | "node2" | "devnet" | string; currency: string; key?: any; config?: IrysConfig }) {
+  constructor({ url, token, key, config }: { url: "node1" | "node2" | "devnet" | string; token: string; key?: any; config?: IrysConfig }) {
     switch (url) {
       case undefined:
       case "node1":
@@ -44,23 +44,23 @@ export default class NodeIrys extends Irys {
       timeout: config?.timeout ?? 100000,
       headers: config?.headers,
     });
-    this.currencyConfig = getCurrency(
+    this.tokenConfig = getTokenConfig(
       this,
-      currency.toLowerCase(),
+      token.toLowerCase(),
       key,
       parsed.toString(),
       config?.providerUrl,
       config?.contractAddress,
-      config?.currencyOpts,
+      config?.tokenOpts,
     );
-    this.currency = this.currencyConfig.name;
-    this.address = this.currencyConfig.address;
-    this.utils = new Utils(this.api, this.currency, this.currencyConfig);
+    this.token = this.tokenConfig.name;
+    this.address = this.tokenConfig.address;
+    this.utils = new Utils(this.api, this.token, this.tokenConfig);
     this.funder = new Fund(this.utils);
-    this.uploader = new NodeUploader(this.api, this.utils, this.currency, this.currencyConfig, this.IrysTransaction);
+    this.uploader = new NodeUploader(this.api, this.utils, this.token, this.tokenConfig, this.IrysTransaction);
     this.provenance = new NodeProvenance(this);
     this.transactions = new Transaction(this);
-    this._readyPromise = this.currencyConfig.ready ? this.currencyConfig.ready() : new Promise((r) => r());
+    this._readyPromise = this.tokenConfig.ready ? this.tokenConfig.ready() : new Promise((r) => r());
   }
 
   /**
@@ -106,7 +106,7 @@ export default class NodeIrys extends Irys {
   }
   public static async init(opts: {
     url: string;
-    currency: string;
+    token: string;
     privateKey?: string;
     publicKey?: string;
     signingFunction?: (msg: Uint8Array) => Promise<Uint8Array>;
@@ -115,16 +115,16 @@ export default class NodeIrys extends Irys {
     timeout?: number;
     contractAddress?: string;
   }): Promise<NodeIrys> {
-    const { url, currency, privateKey, publicKey, signingFunction, collectSignatures, providerUrl, timeout, contractAddress } = opts;
+    const { url, token, privateKey, publicKey, signingFunction, collectSignatures, providerUrl, timeout, contractAddress } = opts;
     const Irys = new NodeIrys({
       url,
-      currency,
+      token,
       key: signingFunction ? publicKey : privateKey,
       config: {
         providerUrl,
         timeout,
         contractAddress,
-        currencyOpts: { signingFunction, collectSignatures },
+        tokenOpts: { signingFunction, collectSignatures },
       },
     });
     await Irys.ready();

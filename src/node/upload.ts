@@ -1,6 +1,6 @@
 import type { PathLike } from "fs";
 import { promises, createReadStream, createWriteStream } from "fs";
-import type { CreateAndUploadOptions, Currency, IrysTransactonCtor, UploadReceipt, UploadResponse } from "../common/types";
+import type { CreateAndUploadOptions, Token, IrysTransactonCtor, UploadReceipt, UploadResponse } from "../common/types";
 import Uploader from "../common/upload";
 import type Api from "../common/api";
 import type Utils from "../common/utils";
@@ -20,8 +20,8 @@ export const checkPath = async (path: PathLike): Promise<boolean> => {
 };
 
 export default class NodeUploader extends Uploader {
-  constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency, irysTx: IrysTransactonCtor) {
-    super(api, utils, currency, currencyConfig, irysTx);
+  constructor(api: Api, utils: Utils, token: string, tokenConfig: Token, irysTx: IrysTransactonCtor) {
+    super(api, utils, token, tokenConfig, irysTx);
   }
   /**
    * Uploads a file to the bundler
@@ -198,16 +198,16 @@ export default class NodeUploader extends Uploader {
       return await uploadManifest(logFunction);
     }
 
-    const zprice = (await this.utils.getPrice(this.currency, 0)).multipliedBy(files.length);
+    const zprice = (await this.utils.getPrice(this.token, 0)).multipliedBy(files.length);
 
-    const price = (await this.utils.getPrice(this.currency, total)).plus(zprice).toFixed(0);
+    const price = (await this.utils.getPrice(this.token, total)).plus(zprice).toFixed(0);
 
     if (interactivePreflight) {
       if (
         !(await confirmation(
           `Authorize upload?\nTotal amount of data: ${total} bytes over ${files.length} files - cost: ${price} ${
-            this.currencyConfig.base[0]
-          } (${this.utils.fromAtomic(price).toFixed()} ${this.currency})\n Y / N`,
+            this.tokenConfig.base[0]
+          } (${this.utils.fromAtomic(price).toFixed()} ${this.token})\n Y / N`,
         ))
       ) {
         throw new Error("Confirmation failed");

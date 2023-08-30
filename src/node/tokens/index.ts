@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import type { NodeCurrency } from "../types";
+import type { NodeToken } from "../types";
 import ArweaveConfig from "./arweave";
 import ERC20Config from "./erc20";
 import EthereumConfig from "./ethereum";
@@ -12,16 +12,16 @@ import AptosConfig from "./aptos";
 import MultiSignatureAptos from "./multiAptos";
 import type NodeIrys from "../irys";
 
-export default function getCurrency(
+export default function getTokenConfig(
   Irys: NodeIrys,
-  currency: string,
+  token: string,
   wallet: any,
   url: string,
   providerUrl?: string,
   contractAddress?: string,
   opts?: any,
-): NodeCurrency {
-  switch (currency) {
+): NodeToken {
+  switch (token) {
     case "arweave":
       return new ArweaveConfig({
         irys: Irys,
@@ -173,7 +173,6 @@ export default function getCurrency(
         providerUrl: providerUrl ?? "https://mainnet-api.algonode.cloud",
         wallet,
         opts: { indexerUrl: "https://mainnet-idx.algonode.cloud", ...opts },
-
       });
     }
     case "aptos": {
@@ -197,6 +196,6 @@ export default function getCurrency(
       });
     }
     default:
-      throw new Error(`Unknown/Unsupported currency ${currency}`);
+      throw new Error(`Unknown/Unsupported token ${token}`);
   }
 }

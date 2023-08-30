@@ -30,7 +30,7 @@ export interface IrysTransaction extends DataItem {
 }
 export type IrysTransactonCtor = new (
   data: string | Uint8Array,
-  Irys: Pick<Irys, "uploader" | "currencyConfig" | "arbundles">,
+  Irys: Pick<Irys, "uploader" | "tokenConfig" | "arbundles">,
   opts?: IrysTransactionCreateOptions,
 ) => IrysTransaction;
 
@@ -42,7 +42,7 @@ export interface Tx {
   pending: boolean;
   confirmed: boolean;
 }
-export interface CurrencyConfig {
+export interface TokenConfig {
   irys: Irys;
   name: string;
   ticker: string;
@@ -57,11 +57,11 @@ export interface IrysConfig {
   timeout?: number;
   providerUrl?: string;
   contractAddress?: string;
-  currencyOpts?: object;
+  tokenOpts?: object;
   headers?: Record<string, string>;
 }
 
-export interface Currency {
+export interface Token {
   isSlow: boolean;
   needsFee: boolean;
 

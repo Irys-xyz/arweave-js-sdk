@@ -3,7 +3,7 @@ import type { Readable } from "stream";
 import { PassThrough } from "stream";
 import { EventEmitter } from "events";
 import type Api from "./api";
-import type { Arbundles, Currency, UploadOptions, UploadResponse } from "./types";
+import type { Arbundles, Token, UploadOptions, UploadResponse } from "./types";
 import Utils from "./utils";
 import Crypto from "crypto";
 import retry from "async-retry";
@@ -25,10 +25,10 @@ export declare interface ChunkingUploader {
 }
 
 export class ChunkingUploader extends EventEmitter {
-  protected currencyConfig: Currency;
+  protected tokenConfig: Token;
   protected api: Api;
   public uploadID: string;
-  protected currency: string;
+  protected token: string;
   protected chunkSize: number;
   protected batchSize: number;
   protected paused = false;
@@ -36,12 +36,12 @@ export class ChunkingUploader extends EventEmitter {
   protected uploadOptions: UploadOptions | undefined;
   protected arbundles: Arbundles;
 
-  constructor(currencyConfig: Currency, api: Api) {
+  constructor(tokenConfig: Token, api: Api) {
     super({ captureRejections: true });
-    this.currencyConfig = currencyConfig;
-    this.arbundles = this.currencyConfig.irys.arbundles;
+    this.tokenConfig = tokenConfig;
+    this.arbundles = this.tokenConfig.irys.arbundles;
     this.api = api;
-    this.currency = this.currencyConfig.name;
+    this.token = this.tokenConfig.name;
     this.chunkSize = 25_000_000;
     this.batchSize = 5;
     this.uploadID = "";
@@ -115,11 +115,11 @@ export class ChunkingUploader extends EventEmitter {
 
     let getres;
     if (!id) {
-      getres = await this.api.get(`/chunks/${this.currency}/-1/-1`, { headers });
+      getres = await this.api.get(`/chunks/${this.token}/-1/-1`, { headers });
       Utils.checkAndThrow(getres, "Getting upload token");
       this.uploadID = id = getres.data.id;
     } else {
-      getres = await this.api.get(`/chunks/${this.currency}/${id}/-1`, { headers });
+      getres = await this.api.get(`/chunks/${this.token}/${id}/-1`, { headers });
       if (getres.status === 404) throw new Error(`Upload ID not found - your upload has probably expired.`);
       Utils.checkAndThrow(getres, "Getting upload info");
       if (this.chunkSize != +getres.data.size) {
@@ -137,7 +137,7 @@ export class ChunkingUploader extends EventEmitter {
       return new Promise((r) => {
         retry(async (bail) => {
           await this.api
-            .post(`/chunks/${this.currency}/${id}/${o}`, d, {
+            .post(`/chunks/${this.token}/${id}/${o}`, d, {
               headers: { "Content-Type": "application/octet-stream", ...headers },
               maxBodyLength: Infinity,
               maxContentLength: Infinity,
@@ -200,7 +200,7 @@ export class ChunkingUploader extends EventEmitter {
     let txHeaderLength!: number;
     // doesn't matter if we randomise ID (anchor) between resumes, as the tx header/signing info is always uploaded last.
     if (!isTransaction) {
-      tx = this.arbundles.createData("", this.currencyConfig.getSigner(), {
+      tx = this.arbundles.createData("", this.tokenConfig.getSigner(), {
         ...transactionOpts,
         anchor: transactionOpts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32),
       });
@@ -295,7 +295,7 @@ export class ChunkingUploader extends EventEmitter {
 
     if (!isTransaction) {
       const hash = await deephash;
-      const sigBytes = Buffer.from(await this.currencyConfig.getSigner().sign(hash));
+      const sigBytes = Buffer.from(await this.tokenConfig.getSigner().sign(hash));
 
       heldChunk.set(sigBytes, 2); // tx will be the first part of the held chunk.
 
@@ -305,7 +305,7 @@ export class ChunkingUploader extends EventEmitter {
     if (this?.uploadOptions?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
 
     // potential improvement: write chunks into a file at offsets, instead of individual chunks + doing a concatenating copy
-    const finishUpload = await this.api.post(`/chunks/${this.currency}/${id}/-1`, null, {
+    const finishUpload = await this.api.post(`/chunks/${this.token}/${id}/-1`, null, {
       headers: { "Content-Type": "application/octet-stream", ...headers },
       timeout: this.api.config?.timeout ?? 40_000 * 10, // server side reconstruction can take a while
     });

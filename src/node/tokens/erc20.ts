@@ -2,11 +2,11 @@ import BigNumber from "bignumber.js";
 import { Contract } from "@ethersproject/contracts";
 import { Wallet } from "@ethersproject/wallet";
 import { keccak256 } from "arbundles";
-import { getRedstonePrice } from "../currency";
+import { getRedstonePrice } from "../token";
 import EthereumConfig from "./ethereum";
-import type { CurrencyConfig, Tx } from "../../common/types";
+import type { TokenConfig, Tx } from "../../common/types";
 
-export interface ERC20CurrencyConfig extends CurrencyConfig {
+export interface ERC20TokenConfig extends TokenConfig {
   contractAddress: string;
 }
 
@@ -14,7 +14,7 @@ export default class ERC20Config extends EthereumConfig {
   private contractInstance!: Contract;
   private contractAddress: string;
 
-  constructor(config: ERC20CurrencyConfig) {
+  constructor(config: ERC20TokenConfig) {
     super(config);
     this.contractAddress = config.contractAddress;
   }
@@ -50,7 +50,7 @@ export default class ERC20Config extends EthereumConfig {
   }
 
   /**
-   * Returns the fee in CONTRACT CURRENCY UNITS equivalent to the fee derived via gas currency units, i.e Wei
+   * Returns the fee in CONTRACT TOKEN UNITS equivalent to the fee derived via gas token units, i.e Wei
    * @param amount
    * @param to
    * @returns
@@ -67,7 +67,7 @@ export default class ERC20Config extends EthereumConfig {
     const [fiatGasPrice] = await this.getGas(); // get price of gas units
     const value = fiatGasPrice.multipliedBy(units); // value of the fee
     // convert value
-    const ctPrice = new BigNumber(await this.price()); // price for this currency
+    const ctPrice = new BigNumber(await this.price()); // price for this token
 
     const ctAmount = new BigNumber(value).dividedToIntegerBy(ctPrice);
     // const b = ctAmount.multipliedBy(ctPrice)

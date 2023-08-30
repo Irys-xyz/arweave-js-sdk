@@ -2,7 +2,7 @@ import type { AxiosResponse } from "axios";
 import base64url from "base64url";
 import BigNumber from "bignumber.js";
 import type Api from "./api";
-import type { Arbundles, Currency, UploadReceipt, UploadReceiptData } from "./types";
+import type { Arbundles, Token, UploadReceipt, UploadReceiptData } from "./types";
 import AsyncRetry from "async-retry";
 BigNumber.set({ DECIMAL_PLACES: 50 });
 
@@ -10,14 +10,14 @@ export const sleep = (ms): Promise<void> => new Promise((resolve) => setTimeout(
 
 export default class Utils {
   public api: Api;
-  public currency: string;
-  public currencyConfig: Currency;
+  public token: string;
+  public tokenConfig: Token;
   protected arbundles: Arbundles;
-  constructor(api: Api, currency: string, currencyConfig: Currency) {
+  constructor(api: Api, token: string, tokenConfig: Token) {
     this.api = api;
-    this.currency = currency;
-    this.currencyConfig = currencyConfig;
-    this.arbundles = this.currencyConfig.irys.arbundles;
+    this.token = token;
+    this.tokenConfig = tokenConfig;
+    this.arbundles = this.tokenConfig.irys.arbundles;
   }
 
   /**
@@ -37,7 +37,7 @@ export default class Utils {
    * @returns nonce for the current user
    */
   public async getNonce(): Promise<number> {
-    const res = await this.api.get(`/account/withdrawals/${this.currencyConfig.name}?address=${this.currencyConfig.address}`);
+    const res = await this.api.get(`/account/withdrawals/${this.tokenConfig.name}?address=${this.tokenConfig.address}`);
     Utils.checkAndThrow(res, "Getting withdrawal nonce");
     return res.data;
   }
@@ -48,33 +48,33 @@ export default class Utils {
    * @returns the balance in winston
    */
   public async getBalance(address: string): Promise<BigNumber> {
-    const res = await this.api.get(`/account/balance/${this.currencyConfig.name}?address=${address}`);
+    const res = await this.api.get(`/account/balance/${this.tokenConfig.name}?address=${address}`);
     Utils.checkAndThrow(res, "Getting balance");
     return new BigNumber(res.data.balance);
   }
 
   /**
-   * Queries the bundler to get it's address for a specific currency
+   * Queries the bundler to get it's address for a specific token
    * @returns the bundler's address
    */
-  public async getBundlerAddress(currency: string): Promise<string> {
+  public async getBundlerAddress(token: string): Promise<string> {
     const res = await this.api.get("/info");
     Utils.checkAndThrow(res, "Getting Bundler address");
-    const address = res.data.addresses[currency];
+    const address = res.data.addresses[token];
     if (!address) {
-      throw new Error(`Specified bundler does not support currency ${currency}`);
+      throw new Error(`Specified bundler does not support token ${token}`);
     }
     return address;
   }
 
   /**
-   * Calculates the price for [bytes] bytes paid for with [currency] for the loaded Irys node.
-   * @param currency
+   * Calculates the price for [bytes] bytes paid for with [token] for the loaded Irys node.
+   * @param token
    * @param bytes
    * @returns
    */
-  public async getPrice(currency: string, bytes: number): Promise<BigNumber> {
-    const res = await this.api.get(`/price/${currency}/${bytes}`);
+  public async getPrice(token: string, bytes: number): Promise<BigNumber> {
+    const res = await this.api.get(`/price/${token}/${bytes}`);
     Utils.checkAndThrow(res, "Getting storage cost");
     return new BigNumber(res.data);
   }
@@ -90,7 +90,7 @@ export default class Utils {
    * @returns amount in atomic units
    */
   public toAtomic(decimalAmount: BigNumber.Value): BigNumber {
-    return new BigNumber(decimalAmount).multipliedBy(this.currencyConfig.base[1]);
+    return new BigNumber(decimalAmount).multipliedBy(this.tokenConfig.base[1]);
   }
 
   /**
@@ -104,7 +104,7 @@ export default class Utils {
    * @returns
    */
   public fromAtomic(atomicAmount: BigNumber.Value): BigNumber {
-    return new BigNumber(atomicAmount).dividedBy(this.currencyConfig.base[1]);
+    return new BigNumber(atomicAmount).dividedBy(this.tokenConfig.base[1]);
   }
 
   /**
@@ -114,14 +114,14 @@ export default class Utils {
    * @returns
    */
   public async confirmationPoll(txid: string, seconds = 30): Promise<any> {
-    if (this.currencyConfig.isSlow) return;
+    if (this.tokenConfig.isSlow) return;
     if (seconds < 0) seconds = 0;
     let lastError;
     let timedout;
 
     const internalPoll = async (): Promise<boolean> => {
       while (!timedout) {
-        const getRes = await this.currencyConfig
+        const getRes = await this.tokenConfig
           .getTx(txid)
           .then((v) => v?.confirmed)
           .catch((err) => {
@@ -152,7 +152,7 @@ export default class Utils {
    * @deprecated this method is deprecated in favour of fromAtomic - removal slated for 0.12.0
    */
   public unitConverter(baseUnits: BigNumber.Value): BigNumber {
-    return new BigNumber(baseUnits).dividedBy(this.currencyConfig.base[1]);
+    return new BigNumber(baseUnits).dividedBy(this.tokenConfig.base[1]);
   }
 
   async verifyReceipt(receipt: UploadReceiptData): Promise<boolean> {

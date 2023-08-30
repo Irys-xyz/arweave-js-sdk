@@ -1,20 +1,20 @@
 import type { Signer } from "arbundles";
 import { AlgorandSigner } from "arbundles";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types";
-import BaseNodeCurrency from "../currency";
+import type { TokenConfig, Tx } from "../../common/types";
+import { BaseNodeToken } from "../token";
 
 import axios from "axios";
 import type { Account } from "algosdk";
 import { decodeAddress, encodeAddress, makePaymentTxnWithSuggestedParamsFromObject, signTransaction, mnemonicToSecretKey } from "algosdk";
 
-export default class AlgorandConfig extends BaseNodeCurrency {
+export default class AlgorandConfig extends BaseNodeToken {
   protected keyPair: Account;
 
   protected apiURL?;
   protected indexerURL?;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     super(config);
     this.base = ["microAlgos", 1e6];
     this.keyPair = mnemonicToSecretKey(this.wallet);
