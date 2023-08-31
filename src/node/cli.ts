@@ -17,6 +17,7 @@ program
   .option("-h, --host <string>", "Irys node hostname/URL (eg http://node1.irys.network)")
   .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "default")
   .option("-t, --token <string>", "The token to use")
+  .option("-c --currency <string>", "DEPRECATED: the currency to use (same as token)")
   .option("--timeout <number>", "The timeout (in ms) for API HTTP requests - increase if you get timeouts for upload")
   .option("--no-confirmation", "Disable confirmations for certain actions")
   .option("--tags [value...]", "Tags to include, format <name> <value>")
@@ -292,6 +293,7 @@ async function loadWallet(path: string): Promise<any> {
 }
 
 const options = program.opts();
+if (options.currency) options.token = options.currency;
 
 const isScript = require.main === module;
 if (isScript) {
