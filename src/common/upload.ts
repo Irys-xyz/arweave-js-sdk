@@ -1,13 +1,14 @@
 import type { AxiosResponse } from "axios";
 import type Utils from "./utils";
 import type Api from "./api";
-import type { Arbundles, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
+import type { Arbundles, BundlrTransaction, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
 import { PromisePool } from "@supercharge/promise-pool";
 import retry from "async-retry";
 import { ChunkingUploader } from "./chunkingUploader";
 import type { Readable } from "stream";
 import Crypto from "crypto";
-import type { DataItem } from "arbundles";
+import { ArweaveSigner, type DataItem, type JWKInterface } from "arbundles";
+import base64url from "base64url";
 
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 export const CHUNKING_THRESHOLD = 50_000_000;
@@ -188,5 +189,51 @@ export default class Uploader {
     //     throw new Error("Invali")
     // }
     this.contentTypeOverride = type;
+  }
+
+  /**
+   * Creates & Uploads a [nested bundle](https://docs.bundlr.network/faqs/dev-faq#what-is-a-nested-bundle) from the provided list of transactions. \
+   * NOTE: If a provided transaction is unsigned, the transaction is signed using a temporary (throwaway) Arweave key. \
+   * This means transactions can be associated with a single "random" address. \
+   * NOTE: If a Buffer is provided, it is converted into a transaction and then signed by the throwaway key. \
+   * The throwaway key, address, and all bundled (provided + throwaway signed + generated) transactions are returned by this method.
+   *
+   * @param transactions List of transactions (DataItems/Raw data buffers) to bundle
+   * @param opts Standard upload options, plus the `throwawayKey` paramter, for passing your own throwaway JWK
+   * @returns Standard upload response from the bundler node, plus the throwaway key & address, and the list of bundled transactions
+   */
+  uploadBundle(
+    transactions: (DataItem | Buffer | string)[],
+    opts: UploadOptions & { getReceiptSignature: true; throwawayKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadReceipt> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }>;
+  uploadBundle(
+    transactions: (DataItem | Buffer)[],
+    opts?: UploadOptions & { throwawayKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }>;
+
+  public async uploadBundle(
+    transactions: (BundlrTransaction | DataItem | Buffer)[],
+    opts?: UploadOptions & { throwawayKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }> {
+    const throwawayKey = opts?.throwawayKey ?? (await this.arbundles.getCryptoDriver().generateJWK());
+    const ephemeralSigner = new ArweaveSigner(throwawayKey);
+    const txs = transactions.map((tx) => (this.arbundles.DataItem.isDataItem(tx) ? tx : this.arbundles.createData(tx, ephemeralSigner)));
+    const bundle = await this.arbundles.bundleAndSignData(txs, ephemeralSigner);
+
+    // upload bundle with bundle specific tags, use actual signer for this.
+    const tx = this.arbundles.createData(bundle.getRaw(), this.currencyConfig.getSigner(), {
+      tags: [
+        { name: "Bundle-Format", value: "binary" },
+        { name: "Bundle-Version", value: "2.0.0" },
+      ],
+    });
+    await tx.sign(this.currencyConfig.getSigner());
+
+    const res = await this.uploadTransaction(tx, opts);
+    const throwawayKeyAddress = base64url(
+      Buffer.from(await this.arbundles.getCryptoDriver().hash(base64url.toBuffer(base64url(ephemeralSigner.publicKey)))),
+    );
+
+    return { ...res, txs, throwawayKey, throwawayKeyAddress };
   }
 }

@@ -7,7 +7,7 @@ import ERC20Config from "./erc20";
 import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
-import type WebBundlr from "web";
+import type WebBundlr from "../";
 // import ArweaveConfig from "./arweave";
 
 export default function getCurrency(

@@ -65,7 +65,7 @@ export default class NodeUploader extends Uploader {
    */
   // eslint-disable-next-line @typescript-eslint/ban-types
   public async uploadFolder(
-    path,
+    path: string,
     {
       batchSize = 10,
       keepDeleted = true,
