@@ -194,16 +194,23 @@ export default class Uploader {
   uploadBundle(
     transactions: (DataItem | Buffer | string)[],
     opts: UploadOptions & { getReceiptSignature: true; throwawayKey?: JWKInterface },
-  ): Promise<AxiosResponse<UploadReceipt> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: string[] }>;
+  ): Promise<AxiosResponse<UploadReceipt> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }>;
   uploadBundle(
     transactions: (DataItem | Buffer)[],
     opts?: UploadOptions & { throwawayKey?: JWKInterface },
-  ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: string[] }>;
+  ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }>;
 
+  /**
+   * Uploads a list of transactions as a nested bundle using a temporary (throwaway) key
+   *
+   * @param transactions List of transactions (DataItems/Raw data buffers) to bundle
+   * @param opts Standard upload options, plus the `throwawayKey` paramter, for passing your own throwaway JWK
+   * @returns Standard upload response from the bundler node, plus the throwaway key & address, manifest, and the list of bundled DataItems
+   */
   public async uploadBundle(
     transactions: (DataItem | Buffer)[],
     opts?: UploadOptions & { throwawayKey?: JWKInterface },
-  ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: string[] }> {
+  ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }> {
     const throwawayKey = opts?.throwawayKey ?? (await this.arbundles.getCryptoDriver().generateJWK());
     const ephemeralSigner = new ArweaveSigner(throwawayKey);
     const txs = transactions.map((tx) => (this.arbundles.DataItem.isDataItem(tx) ? tx : this.arbundles.createData(tx, ephemeralSigner)));
@@ -223,6 +230,6 @@ export default class Uploader {
       Buffer.from(await this.arbundles.getCryptoDriver().hash(base64url.toBuffer(base64url(ephemeralSigner.publicKey)))),
     );
 
-    return { ...res, txs: bundle.getIds(), throwawayKey, throwawayKeyAddress };
+    return { ...res, txs, throwawayKey, throwawayKeyAddress };
   }
 }
