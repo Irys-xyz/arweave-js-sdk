@@ -193,19 +193,19 @@ export default class Uploader {
 
   uploadBundle(
     transactions: (DataItem | Buffer | string)[],
-    opts: UploadOptions & { getReceiptSignature: true; ephemeralKey?: JWKInterface },
-  ): Promise<AxiosResponse<UploadReceipt> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
+    opts: UploadOptions & { getReceiptSignature: true; throwawayKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadReceipt> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: string[] }>;
   uploadBundle(
     transactions: (DataItem | Buffer)[],
-    opts?: UploadOptions & { ephemeralKey?: JWKInterface },
-  ): Promise<AxiosResponse<UploadResponse> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
+    opts?: UploadOptions & { throwawayKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: string[] }>;
 
   public async uploadBundle(
     transactions: (DataItem | Buffer)[],
-    opts?: UploadOptions & { ephemeralKey?: JWKInterface },
-  ): Promise<AxiosResponse<UploadResponse> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }> {
-    const ephemeralKey = opts?.ephemeralKey ?? (await this.arbundles.getCryptoDriver().generateJWK());
-    const ephemeralSigner = new ArweaveSigner(ephemeralKey);
+    opts?: UploadOptions & { throwawayKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: string[] }> {
+    const throwawayKey = opts?.throwawayKey ?? (await this.arbundles.getCryptoDriver().generateJWK());
+    const ephemeralSigner = new ArweaveSigner(throwawayKey);
     const txs = transactions.map((tx) => (this.arbundles.DataItem.isDataItem(tx) ? tx : this.arbundles.createData(tx, ephemeralSigner)));
     const bundle = await this.arbundles.bundleAndSignData(txs, ephemeralSigner);
 
@@ -219,10 +219,10 @@ export default class Uploader {
     await tx.sign(this.currencyConfig.getSigner());
 
     const res = await this.uploadTransaction(tx, opts);
-    const ephemeralAddress = base64url(
+    const throwawayKeyAddress = base64url(
       Buffer.from(await this.arbundles.getCryptoDriver().hash(base64url.toBuffer(base64url(ephemeralSigner.publicKey)))),
     );
 
-    return { ...res, txs: bundle.getIds(), ephemeralKey, ephemeralAddress };
+    return { ...res, txs: bundle.getIds(), throwawayKey, throwawayKeyAddress };
   }
 }

@@ -17,11 +17,11 @@ export class WebUploader extends Uploader {
       indexFileRelPath?: string;
       manifestTags?: Tag[];
     },
-  ): Promise<(UploadResponse & { ephemeralKey: JWKInterface; txs: string[]; ephemeralAddress: string; manifest: Manifest }) | undefined> {
+  ): Promise<(UploadResponse & { throwawayKey: JWKInterface; txs: string[]; throwawayKeyAddress: string; manifest: Manifest }) | undefined> {
     const txs: DataItem[] = [];
     const txMap = new Map();
-    const ephemeralKey = await this.bundlr.arbundles.getCryptoDriver().generateJWK();
-    const ephemeralSigner = new ArweaveSigner(ephemeralKey);
+    const throwawayKey = await this.bundlr.arbundles.getCryptoDriver().generateJWK();
+    const ephemeralSigner = new ArweaveSigner(throwawayKey);
     for (const file of files) {
       const path = file.webkitRelativePath;
       const tx = this.bundlr.arbundles.createData(Buffer.from(await file.arrayBuffer()), ephemeralSigner, {
@@ -43,7 +43,7 @@ export class WebUploader extends Uploader {
     await manifestTx.sign(ephemeralSigner);
     txs.push(manifestTx);
     // upload bundle
-    const bundleRes = await this.uploadBundle(txs, { ephemeralKey });
+    const bundleRes = await this.uploadBundle(txs, { throwawayKey });
 
     return { ...bundleRes, id: manifestTx.id, manifest };
   }
