@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as _ from "./common/hack";
+import "./common/hack.js";
 import NodeBundlr from "./node/index";
 import WebBundlr from "./web/index";
 
