@@ -45,8 +45,7 @@ export default class NodeUploader extends Uploader {
     return await this.uploadData(data, opts);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  private async *walk(dir: string) {
+  public async *walk(dir: string): AsyncGenerator<string, void, any> {
     for await (const d of await promises.opendir(dir)) {
       const entry = join(dir, d.name);
       if (d.isDirectory()) yield* await this.walk(entry);
