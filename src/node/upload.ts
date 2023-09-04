@@ -45,8 +45,7 @@ export default class NodeUploader extends Uploader {
     return await this.uploadData(data, opts);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-  private async *walk(dir: string) {
+  public async *walk(dir: string): AsyncGenerator<string, void, any> {
     for await (const d of await promises.opendir(dir)) {
       const entry = join(dir, d.name);
       if (d.isDirectory()) yield* await this.walk(entry);
@@ -188,9 +187,11 @@ export default class NodeUploader extends Uploader {
       return await uploadManifest(logFunction);
     }
 
-    const zprice = (await this.utils.getPrice(this.currency, 0)).multipliedBy(files.length);
+    // const zprice = (await this.utils.getPrice(this.currency, 0)).multipliedBy(files.length);
 
-    const price = (await this.utils.getPrice(this.currency, total)).plus(zprice).toFixed(0);
+    // const price = (await this.utils.getPrice(this.currency, total)).plus(zprice).toFixed(0);
+
+    const price = await this.utils.estimateFolderPrice({ fileCount: files.length, totalBytes: total });
 
     if (interactivePreflight) {
       if (

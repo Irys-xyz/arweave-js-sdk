@@ -80,6 +80,27 @@ export default class Utils {
   }
 
   /**
+   * This function *estimates* the cost in atomic units for uploading a given set of files
+   * note: this function becomes less accurate the smaller your transactions, unless you provide it with an accurate headerSizeAvg
+   * @param folderInfo either an array of file sizes in bytes, or an object containing the total number of files and the sum total size of the files in bytes
+   * note: for a more precise estimate, you can create an empty (dataless) transaction (make sure you still set tags and other metadata!) and then pass `tx.size` as `headerSizeAvg`
+   */
+  public async estimateFolderPrice(folderInfo: number[] | { fileCount: number; totalBytes: number; headerSizeAvg?: number }): Promise<BigNumber> {
+    if (Array.isArray(folderInfo)) {
+      folderInfo = {
+        fileCount: folderInfo.length,
+        totalBytes: folderInfo.reduce((acc, v) => acc + v, 0),
+      };
+    }
+    // create a 0 data byte tx to estimate the per tx header overhead
+    const headerSizeAvg = folderInfo.headerSizeAvg ?? this.arbundles.createData("", this.currencyConfig.getSigner()).getRaw().length;
+    const pricePerTxBase = await this.getPrice(this.currencyConfig.name, headerSizeAvg);
+    const basePriceForTxs = pricePerTxBase.multipliedBy(folderInfo.fileCount);
+    const priceForData = (await this.getPrice(this.currencyConfig.name, folderInfo.totalBytes)).plus(basePriceForTxs).decimalPlaces(0);
+    return priceForData;
+  }
+
+  /**
    * Returns the decimal values' equivalent in atomic units
    * @example
    * 0.1 ETH -> 100,000,000,000,000,000 wei
