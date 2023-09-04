@@ -1,5 +1,5 @@
 import type BigNumber from "bignumber.js";
-import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions } from "arbundles";
+import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions, bundleAndSignData } from "arbundles";
 import type { FileDataItem } from "arbundles/file";
 import type Bundlr from "./bundlr";
 
@@ -17,6 +17,7 @@ export interface Arbundles {
   deepHash: typeof deepHash;
   stringToBuffer: typeof stringToBuffer;
   getCryptoDriver: typeof getCryptoDriver;
+  bundleAndSignData: typeof bundleAndSignData;
 }
 
 export interface BundlrTransaction extends DataItem {

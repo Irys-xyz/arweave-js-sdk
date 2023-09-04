@@ -10,7 +10,7 @@ import type { NodeCurrency } from "./types";
 import NodeUploader from "./upload";
 import * as arbundles from "./utils";
 
-export default class NodeBundlr extends Bundlr {
+export class NodeBundlr extends Bundlr {
   public uploader: NodeUploader; // re-define type
   public currencyConfig: NodeCurrency;
 
@@ -111,3 +111,4 @@ export default class NodeBundlr extends Bundlr {
     return bundlr;
   }
 }
+export default NodeBundlr;

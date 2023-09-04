@@ -7,7 +7,8 @@ import retry from "async-retry";
 import { ChunkingUploader } from "./chunkingUploader";
 import type { Readable } from "stream";
 import Crypto from "crypto";
-import type { DataItem } from "arbundles";
+import { ArweaveSigner, type DataItem, type JWKInterface } from "arbundles";
+import base64url from "base64url";
 
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 export const CHUNKING_THRESHOLD = 50_000_000;
@@ -188,5 +189,40 @@ export default class Uploader {
     //     throw new Error("Invali")
     // }
     this.contentTypeOverride = type;
+  }
+
+  uploadMany(
+    transactions: (DataItem | Buffer | string)[],
+    opts: UploadOptions & { getReceiptSignature: true; ephemeralKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadReceipt> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
+  uploadMany(
+    transactions: (DataItem | Buffer)[],
+    opts?: UploadOptions & { ephemeralKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadResponse> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
+
+  public async uploadMany(
+    transactions: (DataItem | Buffer)[],
+    opts?: UploadOptions & { ephemeralKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadResponse> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }> {
+    const ephemeralKey = opts?.ephemeralKey ?? (await this.arbundles.getCryptoDriver().generateJWK());
+    const ephemeralSigner = new ArweaveSigner(ephemeralKey);
+    const txs = transactions.map((tx) => (this.arbundles.DataItem.isDataItem(tx) ? tx : this.arbundles.createData(tx, ephemeralSigner)));
+    const bundle = await this.arbundles.bundleAndSignData(txs, ephemeralSigner);
+
+    // upload bundle with bundle specific tags, use actual signer for this.
+    const tx = this.arbundles.createData(bundle.getRaw(), this.currencyConfig.getSigner(), {
+      tags: [
+        { name: "Bundle-Format", value: "binary" },
+        { name: "Bundle-Version", value: "2.0.0" },
+      ],
+    });
+    await tx.sign(this.currencyConfig.getSigner());
+
+    const res = await this.uploadTransaction(tx, opts);
+    const ephemeralAddress = base64url(
+      Buffer.from(await this.arbundles.getCryptoDriver().hash(base64url.toBuffer(base64url(ephemeralSigner.publicKey)))),
+    );
+
+    return { ...res, txs: bundle.getIds(), ephemeralKey, ephemeralAddress };
   }
 }
