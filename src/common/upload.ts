@@ -1,7 +1,7 @@
 import type { AxiosResponse } from "axios";
 import type Utils from "./utils";
 import type Api from "./api";
-import type { Arbundles, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
+import type { Arbundles, BundlrTransaction, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
 import { PromisePool } from "@supercharge/promise-pool";
 import retry from "async-retry";
 import { ChunkingUploader } from "./chunkingUploader";
@@ -208,7 +208,7 @@ export default class Uploader {
    * @returns Standard upload response from the bundler node, plus the throwaway key & address, manifest, and the list of bundled DataItems
    */
   public async uploadBundle(
-    transactions: (DataItem | Buffer)[],
+    transactions: (BundlrTransaction | DataItem | Buffer)[],
     opts?: UploadOptions & { throwawayKey?: JWKInterface },
   ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }> {
     const throwawayKey = opts?.throwawayKey ?? (await this.arbundles.getCryptoDriver().generateJWK());
