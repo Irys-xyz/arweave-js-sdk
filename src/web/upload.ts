@@ -43,7 +43,7 @@ export class WebUploader extends Uploader {
     await manifestTx.sign(ephemeralSigner);
     txs.push(manifestTx);
     // upload bundle
-    const bundleRes = await this.uploadMany(txs, { ephemeralKey });
+    const bundleRes = await this.uploadBundle(txs, { ephemeralKey });
 
     return { ...bundleRes, id: manifestTx.id, manifest };
   }

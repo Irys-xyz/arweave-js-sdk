@@ -191,16 +191,16 @@ export default class Uploader {
     this.contentTypeOverride = type;
   }
 
-  uploadMany(
+  uploadBundle(
     transactions: (DataItem | Buffer | string)[],
     opts: UploadOptions & { getReceiptSignature: true; ephemeralKey?: JWKInterface },
   ): Promise<AxiosResponse<UploadReceipt> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
-  uploadMany(
+  uploadBundle(
     transactions: (DataItem | Buffer)[],
     opts?: UploadOptions & { ephemeralKey?: JWKInterface },
   ): Promise<AxiosResponse<UploadResponse> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
 
-  public async uploadMany(
+  public async uploadBundle(
     transactions: (DataItem | Buffer)[],
     opts?: UploadOptions & { ephemeralKey?: JWKInterface },
   ): Promise<AxiosResponse<UploadResponse> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }> {
