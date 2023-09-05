@@ -20,7 +20,7 @@ export class WebUploader extends Uploader {
    * @param files list of `File` objects to upload - note: this code determines the paths via the File's `webkitRelativePath` property - if it's undefined, it falls back to file.name
    * @param {string} [opts.indexFileRelPath] Relative path for the index file, i.e `folder/index.html`
    * @param {string} [opts.manifestTags] List of tags to add onto the manifest transaction
-   * @returns Standard upload response from the bundler node, plus the throwaway key & address, manifest, and the list of generated transactions
+   * @returns Standard upload response from the bundler node, plus the throwaway key & address, manifest, manifest TxId and the list of generated transactions
    */
   public async uploadFolder(
     files: TaggedFile[],
