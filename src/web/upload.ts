@@ -3,6 +3,7 @@ import type WebBundlr from "./bundlr";
 import type { Manifest, UploadOptions, UploadResponse } from "../common/types";
 import type { DataItem, JWKInterface, Tag } from "arbundles";
 import { ArweaveSigner } from "arbundles";
+import { AxiosResponse } from "axios";
 
 export type TaggedFile = File & {
   tags?: Tag[];
@@ -29,7 +30,16 @@ export class WebUploader extends Uploader {
       manifestTags?: Tag[];
       throwawayKey?: JWKInterface;
     },
-  ): Promise<(UploadResponse & { throwawayKey: JWKInterface; txs: DataItem[]; throwawayKeyAddress: string; manifest: Manifest }) | undefined> {
+  ): Promise<
+    | (AxiosResponse<UploadResponse> & {
+        throwawayKey: JWKInterface;
+        txs: DataItem[];
+        throwawayKeyAddress: string;
+        manifest: Manifest;
+        manifestId: string;
+      })
+    | undefined
+  > {
     const txs: DataItem[] = [];
     const txMap = new Map();
     const throwawayKey = opts?.throwawayKey ?? (await this.bundlr.arbundles.getCryptoDriver().generateJWK());
@@ -61,6 +71,6 @@ export class WebUploader extends Uploader {
     // upload bundle
     const bundleRes = await this.uploadBundle(txs, { ...opts });
 
-    return { ...bundleRes, id: manifestTx.id, manifest };
+    return { ...bundleRes, manifestId: manifestTx.id, manifest };
   }
 }
