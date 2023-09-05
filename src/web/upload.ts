@@ -4,6 +4,10 @@ import type { Manifest, UploadResponse } from "../common/types";
 import type { DataItem, JWKInterface, Tag } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 
+export type TaggedFile = File & {
+  tags?: Tag[];
+};
+
 export class WebUploader extends Uploader {
   protected bundlr: WebBundlr;
   constructor(bundlr: WebBundlr) {
@@ -19,7 +23,7 @@ export class WebUploader extends Uploader {
    * @returns Standard upload response from the bundler node, plus the throwaway key & address, manifest, and the list of generated transactions
    */
   public async uploadFolder(
-    files: File[],
+    files: TaggedFile[],
     opts?: {
       indexFileRelPath?: string;
       manifestTags?: Tag[];
@@ -31,8 +35,12 @@ export class WebUploader extends Uploader {
     const ephemeralSigner = new ArweaveSigner(throwawayKey);
     for (const file of files) {
       const path = file.webkitRelativePath;
+      const hasContentType = file.tags ? file.tags.some(({ name }) => name.toLowerCase() === "content-type") : false;
+
+      const tags = file.tags ? (hasContentType ? file.tags : [...file.tags, { name: "Content-Type", value: file.type }]) : undefined;
+
       const tx = this.bundlr.arbundles.createData(Buffer.from(await file.arrayBuffer()), ephemeralSigner, {
-        tags: [{ name: "Content-Type", value: file.type }],
+        tags,
       });
       await tx.sign(ephemeralSigner);
       txs.push(tx);
