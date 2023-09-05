@@ -36,7 +36,7 @@ export class WebBundlr extends Bundlr {
     this.uploader = new WebUploader(this);
     this.funder = new Fund(this.utils);
     this.address = "Please run `await bundlr.ready()`";
-    this.uploadFolder = this.uploader.uploadFolder;
+    this.uploadFolder = this.uploader.uploadFolder.bind(this.uploader);
   }
 }
 export default WebBundlr;
