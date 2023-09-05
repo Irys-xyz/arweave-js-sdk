@@ -27,7 +27,7 @@ yarn add @bundlr-network/client
 
 ```js
 const polygonPrivateKey = "6d779d4..."; // your private key
-const bundlr = new Bundlr("http://node2.bundlr.network", "matic", polygonPrivateKey);
+const bundlr = new Bundlr("http://node1.bundlr.network", "matic", polygonPrivateKey);
 ```
 
 2. Fund the node using any of our [supported tokens](https://docs.bundlr.network/overview/supported-tokens)
@@ -49,6 +49,10 @@ const response = await bundlr.upload(dataToUpload);
 ```js
 console.log(`Data Available at => https://arweave.net/${response.id}`);
 ```
+
+## Devnet
+
+When building projects, use our [Devnet](https://docs.bundlr.network/developer-docs/using-devnet) where uploads are paid for with free tokens including [Mumbai](https://mumbaifaucet.com/) and [Sepolia](sepoliafaucet). 
 
 ## Bundlr in the browser
 
@@ -72,3 +76,10 @@ await bundlr.ready();
 The easiest way to get started using Bundlr in the browser is to fork the [Bundlr Provenance Toolkit](https://docs.bundlr.network/developer-docs/provenance-toolkit), a collection of UI components to kickstart your next project. 
 
 It contains UI components for managing node balances, uploading files, performing gassless uploads, and querying transactions.
+
+## Support
+
+Any questions? 
+- Check out our [docs](https://docs.bundlr.network/)
+- Hit us up in [Discord](https://discord.bundlr.network/)
+  
