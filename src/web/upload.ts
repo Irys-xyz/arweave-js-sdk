@@ -35,7 +35,7 @@ export class WebUploader extends Uploader {
     const throwawayKey = opts?.throwawayKey ?? (await this.bundlr.arbundles.getCryptoDriver().generateJWK());
     const ephemeralSigner = new ArweaveSigner(throwawayKey);
     for (const file of files) {
-      const path = file.webkitRelativePath ?? file.name;
+      const path = file.webkitRelativePath ? file.webkitRelativePath : file.name;
       const hasContentType = file.tags ? file.tags.some(({ name }) => name.toLowerCase() === "content-type") : false;
 
       const tags = file.tags ? (hasContentType ? file.tags : [...file.tags, { name: "Content-Type", value: file.type }]) : undefined;
