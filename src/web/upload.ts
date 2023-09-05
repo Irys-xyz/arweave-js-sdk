@@ -17,7 +17,7 @@ export class WebUploader extends Uploader {
   /**
    * Uploads a list of `File` objects & a generated folder manifest as a nested bundle using a temporary signing key.
    *
-   * @param files list of `File` objects to upload - note: this code determines the paths via the File's `webkitRelativePath` property
+   * @param files list of `File` objects to upload - note: this code determines the paths via the File's `webkitRelativePath` property - if it's undefined, it falls back to file.name
    * @param {string} [opts.indexFileRelPath] Relative path for the index file, i.e `folder/index.html`
    * @param {string} [opts.manifestTags] List of tags to add onto the manifest transaction
    * @returns Standard upload response from the bundler node, plus the throwaway key & address, manifest, and the list of generated transactions
@@ -34,7 +34,7 @@ export class WebUploader extends Uploader {
     const throwawayKey = await this.bundlr.arbundles.getCryptoDriver().generateJWK();
     const ephemeralSigner = new ArweaveSigner(throwawayKey);
     for (const file of files) {
-      const path = file.webkitRelativePath;
+      const path = file.webkitRelativePath ?? file.name;
       const hasContentType = file.tags ? file.tags.some(({ name }) => name.toLowerCase() === "content-type") : false;
 
       const tags = file.tags ? (hasContentType ? file.tags : [...file.tags, { name: "Content-Type", value: file.type }]) : undefined;
