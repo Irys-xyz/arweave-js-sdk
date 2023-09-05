@@ -3,7 +3,6 @@ import type WebBundlr from "./bundlr";
 import type { Manifest, UploadOptions, UploadResponse } from "../common/types";
 import type { DataItem, JWKInterface, Tag } from "arbundles";
 import { ArweaveSigner } from "arbundles";
-import { AxiosResponse } from "axios";
 
 export type TaggedFile = File & {
   tags?: Tag[];
@@ -31,7 +30,7 @@ export class WebUploader extends Uploader {
       throwawayKey?: JWKInterface;
     },
   ): Promise<
-    | (AxiosResponse<UploadResponse> & {
+    | (UploadResponse & {
         throwawayKey: JWKInterface;
         txs: DataItem[];
         throwawayKeyAddress: string;
@@ -71,6 +70,13 @@ export class WebUploader extends Uploader {
     // upload bundle
     const bundleRes = await this.uploadBundle(txs, { ...opts });
 
-    return { ...bundleRes, manifestId: manifestTx.id, manifest };
+    return {
+      ...bundleRes.data,
+      manifestId: manifestTx.id,
+      manifest,
+      throwawayKey: bundleRes.throwawayKey,
+      throwawayKeyAddress: bundleRes.throwawayKeyAddress,
+      txs: bundleRes.txs,
+    };
   }
 }
