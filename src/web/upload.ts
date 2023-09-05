@@ -1,6 +1,6 @@
 import Uploader from "../common/upload";
 import type WebBundlr from "./bundlr";
-import type { Manifest, UploadResponse } from "../common/types";
+import type { Manifest, UploadOptions, UploadResponse } from "../common/types";
 import type { DataItem, JWKInterface, Tag } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 
@@ -24,14 +24,15 @@ export class WebUploader extends Uploader {
    */
   public async uploadFolder(
     files: TaggedFile[],
-    opts?: {
+    opts?: UploadOptions & {
       indexFileRelPath?: string;
       manifestTags?: Tag[];
+      throwawayKey?: JWKInterface;
     },
   ): Promise<(UploadResponse & { throwawayKey: JWKInterface; txs: DataItem[]; throwawayKeyAddress: string; manifest: Manifest }) | undefined> {
     const txs: DataItem[] = [];
     const txMap = new Map();
-    const throwawayKey = await this.bundlr.arbundles.getCryptoDriver().generateJWK();
+    const throwawayKey = opts?.throwawayKey ?? (await this.bundlr.arbundles.getCryptoDriver().generateJWK());
     const ephemeralSigner = new ArweaveSigner(throwawayKey);
     for (const file of files) {
       const path = file.webkitRelativePath ?? file.name;
@@ -58,7 +59,7 @@ export class WebUploader extends Uploader {
     await manifestTx.sign(ephemeralSigner);
     txs.push(manifestTx);
     // upload bundle
-    const bundleRes = await this.uploadBundle(txs, { throwawayKey });
+    const bundleRes = await this.uploadBundle(txs, { ...opts });
 
     return { ...bundleRes, id: manifestTx.id, manifest };
   }
