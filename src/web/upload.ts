@@ -19,7 +19,10 @@ export class WebUploader extends Uploader {
    *
    * @param files list of `File` objects to upload - note: this code determines the paths via the File's `webkitRelativePath` property - if it's undefined, it falls back to file.name
    * @param {string} [opts.indexFileRelPath] Relative path for the index file, i.e `folder/index.html`
-   * @param {string} [opts.manifestTags] List of tags to add onto the manifest transaction
+   * @param {Tag[]} [opts.manifestTags] List of tags to add onto the manifest transaction
+   * @param {JWKInterface} [opts.throwawayKey] Provide your own throwaway JWK to use for signing the items in the bundle
+   * @param {boolean} [opts.seperateManifestTx=false] Whether to include the manifest in the nested bundle - note: transactions in a nested bundle are not indexed by bundlr GQL - if you have tags you want to use to find the manifest, set this option to true
+   *
    * @returns Standard upload response from the bundler node, plus the throwaway key & address, manifest, manifest TxId and the list of generated transactions
    */
   public async uploadFolder(
@@ -28,6 +31,7 @@ export class WebUploader extends Uploader {
       indexFileRelPath?: string;
       manifestTags?: Tag[];
       throwawayKey?: JWKInterface;
+      seperateManifestTx?: boolean;
     },
   ): Promise<
     | (UploadResponse & {
@@ -58,15 +62,24 @@ export class WebUploader extends Uploader {
     }
     // generate manifest, add to bundle
     const manifest = await this.generateManifest({ items: txMap, indexFile: opts?.indexFileRelPath });
-    const manifestTx = this.bundlr.arbundles.createData(JSON.stringify(manifest), ephemeralSigner, {
-      tags: [
-        { name: "Type", value: "manifest" },
-        { name: "Content-Type", value: "application/x.arweave-manifest+json" },
-        ...(opts?.manifestTags ?? []),
-      ],
-    });
-    await manifestTx.sign(ephemeralSigner);
-    txs.push(manifestTx);
+    const manifestTx = this.bundlr.arbundles.createData(
+      JSON.stringify(manifest),
+      opts?.seperateManifestTx ? this.bundlr.currencyConfig.getSigner() : ephemeralSigner,
+      {
+        tags: [
+          { name: "Type", value: "manifest" },
+          { name: "Content-Type", value: "application/x.arweave-manifest+json" },
+          ...(opts?.manifestTags ?? []),
+        ],
+      },
+    );
+    if (opts?.seperateManifestTx === true) {
+      await manifestTx.sign(this.bundlr.currencyConfig.getSigner());
+      await this.uploadTransaction(manifestTx, { ...opts });
+    } else {
+      await manifestTx.sign(ephemeralSigner);
+      txs.push(manifestTx);
+    }
     // upload bundle
     const bundleRes = await this.uploadBundle(txs, { ...opts });
 
