@@ -21,7 +21,7 @@ export class WebUploader extends Uploader {
    * @param {string} [opts.indexFileRelPath] Relative path for the index file, i.e `folder/index.html`
    * @param {Tag[]} [opts.manifestTags] List of tags to add onto the manifest transaction
    * @param {JWKInterface} [opts.throwawayKey] Provide your own throwaway JWK to use for signing the items in the bundle
-   * @param {boolean} [opts.seperateManifestTx=false] Whether to include the manifest in the nested bundle - note: transactions in a nested bundle are not indexed by bundlr GQL - if you have tags you want to use to find the manifest, set this option to true
+   * @param {boolean} [opts.seperateManifestTx=false] Whether upload the manifest as a seperate tx (not in the nested bundle) - note: transactions in a nested bundle are not indexed by bundlr GQL - if you have tags you want to use to find the manifest, set this option to true
    *
    * @returns Standard upload response from the bundler node, plus the throwaway key & address, manifest, manifest TxId and the list of generated transactions
    */
