@@ -11,7 +11,7 @@ import NodeUploader from "./upload";
 import * as arbundles from "./utils";
 import { NodeProvenance } from "./provenance";
 
-export default class NodeIrys extends Irys {
+export class NodeIrys extends Irys {
   public uploader: NodeUploader; // re-define type
   public tokenConfig: NodeToken;
   public declare provenance: NodeProvenance;
@@ -131,3 +131,4 @@ export default class NodeIrys extends Irys {
     return Irys;
   }
 }
+export default NodeIrys;

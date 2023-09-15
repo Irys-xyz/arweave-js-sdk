@@ -3,16 +3,18 @@ import Api from "../common/api";
 import Fund from "../common/fund";
 import Irys from "../common/irys";
 import type { IrysConfig } from "../common/types";
-import Uploader from "../common/upload";
 import Utils from "../common/utils";
 import getTokenConfig from "./tokens/index";
 import { Provenance } from "../common/provenance";
 import { Transaction } from "../common/transactions";
 import type { WebToken } from "./types";
 import * as arbundles from "./utils";
+import { WebUploader } from "./upload";
 
-export default class WebIrys extends Irys {
+export class WebIrys extends Irys {
   public tokenConfig: WebToken;
+  public uploader: WebUploader;
+  uploadFolder: InstanceType<typeof WebUploader>["uploadFolder"];
 
   constructor({ url, token, provider, config }: { url: "node1" | "node2" | "devnet" | string; token: string; provider?: any; config?: IrysConfig }) {
     switch (url) {
@@ -42,10 +44,13 @@ export default class WebIrys extends Irys {
     if (parsed.host === "devnet.irys.network" && !(config?.providerUrl || this.tokenConfig.inheritsRPC))
       throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.network/sdk/using-devnet`);
     this.utils = new Utils(this.api, this.token, this.tokenConfig);
-    this.uploader = new Uploader(this.api, this.utils, this.token, this.tokenConfig, this.IrysTransaction);
+    this.uploader = new WebUploader(this);
     this.funder = new Fund(this.utils);
+    this.uploader = new WebUploader(this);
     this.provenance = new Provenance(this);
     this.transactions = new Transaction(this);
     this.address = "Please run `await Irys.ready()`";
+    this.uploadFolder = this.uploader.uploadFolder.bind(this.uploader);
   }
 }
+export default WebIrys;

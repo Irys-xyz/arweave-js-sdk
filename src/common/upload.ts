@@ -1,15 +1,25 @@
-import { PromisePool } from "@supercharge/promise-pool";
-import type { DataItem, JWKInterface } from "arbundles";
-import { ArweaveSigner } from "arbundles";
-import retry from "async-retry";
+import PromisePool from "@supercharge/promise-pool";
+import type { DataItem, JWKInterface } from "arbundles/node";
+import { ArweaveSigner } from "arbundles/node";
 import type { AxiosResponse } from "axios";
 import base64url from "base64url";
-import Crypto from "crypto";
 import type { Readable } from "stream";
 import type Api from "./api";
 import { ChunkingUploader } from "./chunkingUploader";
-import type { Arbundles, CreateAndUploadOptions, Token, IrysTransactonCtor, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
+import type {
+  Token,
+  Arbundles,
+  IrysTransactonCtor,
+  UploadOptions,
+  UploadReceipt,
+  UploadResponse,
+  CreateAndUploadOptions,
+  Manifest,
+  IrysTransaction,
+} from "./types";
 import type Utils from "./utils";
+import { randomBytes } from "crypto";
+import retry from "async-retry";
 
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 export const CHUNKING_THRESHOLD = 50_000_000;
@@ -88,7 +98,7 @@ export default class Uploader {
       if (data.length <= CHUNKING_THRESHOLD) {
         const dataItem = this.arbundles.createData(data, this.tokenConfig.getSigner(), {
           ...opts,
-          anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32),
+          anchor: opts?.anchor ?? randomBytes(32).toString("base64").slice(0, 32),
         });
         await dataItem.sign(this.tokenConfig.getSigner());
         return (await this.uploadTransaction(dataItem, { ...opts?.upload })).data;
@@ -198,27 +208,33 @@ export default class Uploader {
     // }
     this.contentTypeOverride = type;
   }
-  // uploadTransaction(
-  //   transaction: DataItem | Readable | Buffer,
-  //   opts: UploadOptions & { getReceiptSignature: true },
-  // ): Promise<AxiosResponse<UploadReceipt>>;
-  // uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>>;
 
-  uploadMany(
+  /**
+   * Creates & Uploads a [nested bundle](https://docs.bundlr.network/faqs/dev-faq#what-is-a-nested-bundle) from the provided list of transactions. \
+   * NOTE: If a provided transaction is unsigned, the transaction is signed using a temporary (throwaway) Arweave key. \
+   * This means transactions can be associated with a single "random" address. \
+   * NOTE: If a Buffer is provided, it is converted into a transaction and then signed by the throwaway key. \
+   * The throwaway key, address, and all bundled (provided + throwaway signed + generated) transactions are returned by this method.
+   *
+   * @param transactions List of transactions (DataItems/Raw data buffers) to bundle
+   * @param opts Standard upload options, plus the `throwawayKey` paramter, for passing your own throwaway JWK
+   * @returns Standard upload response from the bundler node, plus the throwaway key & address, and the list of bundled transactions
+   */
+  uploadBundle(
     transactions: (DataItem | Buffer | string)[],
-    opts: UploadOptions & { getReceiptSignature: true },
-  ): Promise<AxiosResponse<UploadReceipt> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
-  uploadMany(
+    opts: UploadOptions & { getReceiptSignature: true; throwawayKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadReceipt> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }>;
+  uploadBundle(
     transactions: (DataItem | Buffer)[],
-    opts?: UploadOptions,
-  ): Promise<AxiosResponse<UploadResponse> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }>;
+    opts?: UploadOptions & { throwawayKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }>;
 
-  public async uploadMany(
-    transactions: (DataItem | Buffer)[],
-    opts?: UploadOptions,
-  ): Promise<AxiosResponse<UploadResponse> & { ephemeralKey: JWKInterface; ephemeralAddress: string; txs: string[] }> {
-    const ephemeralKey = await this.arbundles.getCryptoDriver().generateJWK();
-    const ephemeralSigner = new ArweaveSigner(ephemeralKey);
+  public async uploadBundle(
+    transactions: (IrysTransaction | DataItem | Buffer)[],
+    opts?: UploadOptions & { throwawayKey?: JWKInterface },
+  ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }> {
+    const throwawayKey = opts?.throwawayKey ?? (await this.arbundles.getCryptoDriver().generateJWK());
+    const ephemeralSigner = new ArweaveSigner(throwawayKey);
     const txs = transactions.map((tx) => (this.arbundles.DataItem.isDataItem(tx) ? tx : this.arbundles.createData(tx, ephemeralSigner)));
     const bundle = await this.arbundles.bundleAndSignData(txs, ephemeralSigner);
 
@@ -232,10 +248,10 @@ export default class Uploader {
     await tx.sign(this.tokenConfig.getSigner());
 
     const res = await this.uploadTransaction(tx, opts);
-    const ephemeralAddress = base64url(
+    const throwawayKeyAddress = base64url(
       Buffer.from(await this.arbundles.getCryptoDriver().hash(base64url.toBuffer(base64url(ephemeralSigner.publicKey)))),
     );
 
-    return { ...res, txs: bundle.getIds(), ephemeralKey, ephemeralAddress };
+    return { ...res, txs, throwawayKey, throwawayKeyAddress };
   }
 }

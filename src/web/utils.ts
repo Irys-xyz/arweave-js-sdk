@@ -1,2 +1,2 @@
-import { createData, DataItem, deepHash, stringToBuffer, getCryptoDriver, Arweave, bundleAndSignData } from "arbundles/web";
-export { createData, DataItem, deepHash, stringToBuffer, getCryptoDriver, Arweave, bundleAndSignData };
+import { createData, DataItem, deepHash, stringToBuffer, getCryptoDriver, bundleAndSignData /* Arweave */ } from "arbundles/web";
+export { createData, DataItem, deepHash, stringToBuffer, getCryptoDriver, bundleAndSignData /* Arweave */ };
