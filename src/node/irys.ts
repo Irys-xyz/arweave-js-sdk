@@ -1,4 +1,4 @@
-// import "../common/hack.js";
+import "../common/hack.js";
 import { Transaction } from "../common/transactions";
 import Api from "../common/api";
 import Fund from "../common/fund";

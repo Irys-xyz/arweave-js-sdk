@@ -1,6 +1,6 @@
 import PromisePool from "@supercharge/promise-pool";
 import type { DataItem, JWKInterface } from "arbundles/node";
-import { ArweaveSigner } from "arbundles/node";
+import { ArweaveSigner } from "arbundles";
 import type { AxiosResponse } from "axios";
 import base64url from "base64url";
 import type { Readable } from "stream";
