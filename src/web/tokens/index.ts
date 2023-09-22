@@ -1,5 +1,4 @@
 import type Basetoken from "../token";
-// import AlgorandConfig from "./algorand";
 import EthereumConfig from "./ethereum";
 import NearConfig from "./near";
 import SolanaConfig from "./solana";
@@ -7,72 +6,80 @@ import ERC20Config from "./erc20";
 import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
-
-// import ArweaveConfig from "./arweave";
 import type WebIrys from "../irys";
+import { EthereumEthersV5 } from "../providers/ethereum/ethersv5";
+import { EthereumEthersV6 } from "../providers/ethereum/ethersv6";
+import type { TokenConfig } from "src/common/types";
+import type BaseWebToken from "../token";
 
-export default function getTokenConfig(
-  irys: WebIrys,
-  token: string,
-  wallet: any,
-  providerUrl?: string,
-  contractAddress?: string,
-  // opts?: any,
-): Basetoken {
-  switch (token) {
-    // case "arweave":
-    //   return new ArweaveConfig({
-    //     irys: irys,
-    //     name: "arweave",
-    //     ticker: "AR",
-    //     minConfirm: 10,
-    //     providerUrl: providerUrl ?? "https://arweave.net",
-    //     wallet,
-    //     isSlow: true,
-    //     opts,
-    //   });
-
+export default function getTokenConfig(config: {
+  irys: WebIrys;
+  token: string;
+  wallet: any;
+  providerUrl?: string;
+  contractAddress?: string;
+  providerName?: string;
+}): Basetoken {
+  switch (config.token) {
     case "ethereum":
-      return new EthereumConfig({ irys: irys, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet });
+      return resolveProvider("ethereum", config.providerName, {
+        irys: config.irys,
+        name: "ethereum",
+        ticker: "ETH",
+        providerUrl: config.providerUrl ?? "https://cloudflare-eth.com/",
+        wallet: config.wallet,
+      });
     case "matic":
-      return new EthereumConfig({
-        irys: irys,
+      return resolveProvider("ethereum", config.providerName, {
+        irys: config.irys,
         name: "matic",
         ticker: "MATIC",
-        providerUrl: providerUrl ?? "https://polygon-rpc.com",
-        wallet,
+        providerUrl: config.providerUrl ?? "https://polygon-rpc.com",
+        wallet: config.wallet,
         minConfirm: 1,
       });
     case "arbitrum":
-      return new EthereumConfig({ irys: irys, name: "arbitrum", ticker: "ETH", providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc", wallet });
+      return resolveProvider("ethereum", config.providerName, {
+        irys: config.irys,
+        name: "arbitrum",
+        ticker: "ETH",
+        providerUrl: config.providerUrl ?? "https://arb1.arbitrum.io/rpc",
+        wallet: config.wallet,
+      });
     case "bnb":
-      return new EthereumConfig({ irys: irys, name: "bnb", ticker: "BNB", providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org", wallet });
+      return resolveProvider("ethereum", config.providerName, {
+        irys: config.irys,
+        name: "bnb",
+        ticker: "BNB",
+        providerUrl: config.providerUrl ?? "https://bsc-dataseed.binance.org",
+        wallet: config.wallet,
+      });
     case "avalanche":
-      return new EthereumConfig({
-        irys: irys,
+      return resolveProvider("ethereum", config.providerName, {
+        irys: config.irys,
         name: "avalanche",
         ticker: "AVAX",
-        providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc",
-        wallet,
+        providerUrl: config.providerUrl ?? "https://api.avax.network/ext/bc/C/rpc",
+        wallet: config.wallet,
       });
     case "boba-eth":
-      return new EthereumConfig({
-        irys: irys,
+      return resolveProvider("ethereum", config.providerName, {
+        irys: config.irys,
         name: "boba-eth",
         ticker: "ETH",
-        providerUrl: providerUrl ?? "https://mainnet.boba.network/",
+        providerUrl: config.providerUrl ?? "https://mainnet.boba.network/",
         minConfirm: 1,
-        wallet,
+        wallet: config.wallet,
       });
     case "boba": {
       const k = new ERC20Config({
-        irys: irys,
+        irys: config.irys,
         name: "boba",
         ticker: "BOBA",
-        providerUrl: providerUrl ?? "https://mainnet.boba.network/",
-        contractAddress: contractAddress ?? "0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7",
+        providerUrl: config.providerUrl ?? "https://mainnet.boba.network/",
+        contractAddress: config.contractAddress ?? "0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7",
         minConfirm: 1,
-        wallet,
+        wallet: config.wallet,
       });
       // for L1 mainnet: "https://main-light.eth.linkpool.io/" and "0x42bbfa2e77757c645eeaad1655e0911a7553efbc"
       k.price = async (): Promise<number> => {
@@ -90,25 +97,46 @@ export default function getTokenConfig(
 
     case "solana":
       return new SolanaConfig({
-        irys: irys,
+        irys: config.irys,
         name: "solana",
         ticker: "SOL",
-        providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/",
-        wallet,
+        providerUrl: config.providerUrl ?? "https://api.mainnet-beta.solana.com/",
+        wallet: config.wallet,
       });
     // case "algorand":
-    //     return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet })
+    //     return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: config.providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet: config.wallet })
     case "near":
-      return new NearConfig({ irys: irys, name: "near", ticker: "NEAR", providerUrl: providerUrl ?? "https://rpc.mainnet.near.org", wallet });
+      return new NearConfig({
+        irys: config.irys,
+        name: "near",
+        ticker: "NEAR",
+        providerUrl: config.providerUrl ?? "https://rpc.mainnet.near.org",
+        wallet: config.wallet,
+      });
     case "aptos":
       return new AptosConfig({
-        irys: irys,
+        irys: config.irys,
         name: "aptos",
         ticker: "APTOS",
-        providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",
-        wallet,
+        providerUrl: config.providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",
+        wallet: config.wallet,
       });
     default:
-      throw new Error(`Unknown/Unsupported token ${token}`);
+      throw new Error(`Unknown/Unsupported token ${config.token}`);
+  }
+}
+
+// @ts-expect-error todo fix
+function resolveProvider(family: string, providerName: string | undefined, config: TokenConfig): BaseWebToken {
+  switch (family) {
+    case "ethereum":
+      switch (providerName) {
+        case "ethersv5":
+          return new EthereumEthersV5(config);
+        case "ethersv6":
+          return new EthereumEthersV6(config);
+        default:
+          return new EthereumConfig(config);
+      }
   }
 }

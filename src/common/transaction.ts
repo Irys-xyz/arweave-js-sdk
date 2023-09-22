@@ -66,6 +66,10 @@ export default function buildIrysTransaction(irys: Pick<Irys, "uploader" | "toke
     async getPrice(): Promise<BigNumber> {
       return this.Irys.utils.getPrice(this.Irys.tokenConfig.name, this.size);
     }
+
+    async isValid(): Promise<boolean> {
+      return irys.arbundles.DataItem.verify(this.getRaw());
+    }
   }
   return IrysTransaction;
 }

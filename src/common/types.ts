@@ -26,6 +26,7 @@ export interface IrysTransaction extends DataItem {
   uploadWithReceipt: (opts?: UploadOptions) => Promise<UploadReceipt>;
   upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
   upload(opts?: UploadOptions): Promise<UploadResponse>;
+  isValid(): Promise<boolean>;
   // fromRaw(rawTransaction: Buffer, IrysInstance: Irys): IrysTransaction;
 }
 export type IrysTransactonCtor = new (

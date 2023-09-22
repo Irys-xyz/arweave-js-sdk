@@ -19,6 +19,7 @@ export default class ERC20Config extends EthereumConfig {
 
   async getContract(): Promise<Contract> {
     if (!this.contractInstance) {
+      // @ts-expect-error minimal type
       this.contractInstance = new Contract(this.contractAddress, erc20abi, this.w3signer);
       this.base = ["wei", Math.pow(10, await this.contractInstance.decimals())];
     }

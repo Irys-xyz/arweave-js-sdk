@@ -2,7 +2,6 @@ import "../common/hack.js";
 import Api from "../common/api";
 import Fund from "../common/fund";
 import Irys from "../common/irys";
-import type { IrysConfig } from "../common/types";
 import Utils from "../common/utils";
 import getTokenConfig from "./tokens/index";
 import { Provenance } from "../common/provenance";
@@ -10,13 +9,26 @@ import { Transaction } from "../common/transactions";
 import type { WebToken } from "./types";
 import * as arbundles from "./utils";
 import { WebUploader } from "./upload";
+import { type IrysConfig } from "src/common/types.js";
 
 export class WebIrys extends Irys {
   public tokenConfig: WebToken;
   public uploader: WebUploader;
   uploadFolder: InstanceType<typeof WebUploader>["uploadFolder"];
 
-  constructor({ url, token, provider, config }: { url: "node1" | "node2" | "devnet" | string; token: string; provider?: any; config?: IrysConfig }) {
+  constructor({
+    url,
+    token,
+    provider,
+    config,
+    providerName,
+  }: {
+    url: "node1" | "node2" | "devnet" | string;
+    token: string;
+    provider?: any;
+    providerName?: string;
+    config?: IrysConfig;
+  }) {
     switch (url) {
       case undefined:
       case "node1":
@@ -39,7 +51,14 @@ export class WebIrys extends Irys {
       timeout: config?.timeout ?? 100000,
       headers: config?.headers,
     });
-    this.tokenConfig = getTokenConfig(this, token.toLowerCase(), provider, config?.providerUrl, config?.contractAddress);
+    this.tokenConfig = getTokenConfig({
+      irys: this,
+      token: token.toLowerCase(),
+      wallet: provider,
+      providerUrl: config?.providerUrl,
+      contractAddress: config?.contractAddress,
+      providerName: providerName,
+    });
     this.token = this.tokenConfig.name;
     if (parsed.host === "devnet.irys.network" && !(config?.providerUrl || this.tokenConfig.inheritsRPC))
       throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.network/sdk/using-devnet`);
