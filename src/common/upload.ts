@@ -1,4 +1,4 @@
-import PromisePool from "@supercharge/promise-pool";
+import { PromisePool } from "@supercharge/promise-pool";
 import type { DataItem, JWKInterface } from "arbundles/node";
 import { ArweaveSigner } from "arbundles";
 import type { AxiosResponse } from "axios";
