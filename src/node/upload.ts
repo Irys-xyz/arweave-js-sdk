@@ -291,7 +291,7 @@ export default class NodeUploader extends Uploader {
         }
       }
     }
-    return this.uploadData(item, { ...opts, tags: { ...tags, ...opts?.tags } });
+    return this.uploadData(item, { ...opts, tags: [...tags, ...(opts?.tags ?? [])] });
   }
 
   /**
