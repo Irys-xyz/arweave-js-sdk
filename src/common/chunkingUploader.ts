@@ -10,19 +10,19 @@ import retry from "async-retry";
 import type { AxiosResponse } from "axios";
 import StreamToAsyncIterator from "./s2ai";
 
-interface ChunkingUploaderEvents {
+type ChunkingUploaderEvents = {
   chunkUpload: ({ id, offset, size, totalUploaded }: { id: number; offset: number; size: number; totalUploaded: number }) => void;
   chunkError: ({ id, offset, size, res }: { id: number; offset: number; size: number; res: AxiosResponse }) => void;
   resume: () => void;
   pause: () => void;
   done: (finishedUpload: any) => void;
-}
+};
 
-export declare interface ChunkingUploader {
+export declare type ChunkingUploader = {
   on<U extends keyof ChunkingUploaderEvents>(event: U, listener: ChunkingUploaderEvents[U]): this;
 
   emit<U extends keyof ChunkingUploaderEvents>(event: U, ...args: Parameters<ChunkingUploaderEvents[U]>): boolean;
-}
+};
 
 export class ChunkingUploader extends EventEmitter {
   protected tokenConfig: Token;
@@ -89,7 +89,7 @@ export class ChunkingUploader extends EventEmitter {
     this.emit("resume");
   }
 
-  public async uploadTransaction(data: Readable | Buffer | DataItem, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse, any>> {
+  public async uploadTransaction(data: Readable | Buffer | DataItem, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>> {
     this.uploadOptions = opts;
     if (this.arbundles.DataItem.isDataItem(data)) {
       return this.runUpload(data.getRaw());
@@ -101,7 +101,7 @@ export class ChunkingUploader extends EventEmitter {
   public async uploadData(
     dataStream: Readable | Buffer,
     options?: DataItemCreateOptions & { upload?: UploadOptions },
-  ): Promise<AxiosResponse<UploadResponse, any>> {
+  ): Promise<AxiosResponse<UploadResponse>> {
     this.uploadOptions = options?.upload;
     return this.runUpload(dataStream, { ...options });
   }
@@ -302,7 +302,7 @@ export class ChunkingUploader extends EventEmitter {
       await promiseFactory(heldChunk, 0, 0);
     }
 
-    if (this?.uploadOptions?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
+    if (this?.uploadOptions?.getReceiptSignature ?? true) headers["x-proof-type"] = "receipt";
 
     // potential improvement: write chunks into a file at offsets, instead of individual chunks + doing a concatenating copy
     const finishUpload = await this.api.post(`/chunks/${this.token}/${id}/-1`, null, {
