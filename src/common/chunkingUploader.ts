@@ -18,11 +18,12 @@ type ChunkingUploaderEvents = {
   done: (finishedUpload: any) => void;
 };
 
-export declare type ChunkingUploader = {
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export declare interface ChunkingUploader {
   on<U extends keyof ChunkingUploaderEvents>(event: U, listener: ChunkingUploaderEvents[U]): this;
 
   emit<U extends keyof ChunkingUploaderEvents>(event: U, ...args: Parameters<ChunkingUploaderEvents[U]>): boolean;
-};
+}
 
 export class ChunkingUploader extends EventEmitter {
   protected tokenConfig: Token;
