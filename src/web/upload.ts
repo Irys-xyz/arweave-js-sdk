@@ -1,6 +1,6 @@
 import Uploader from "../common/upload";
 import type WebIrys from "./irys";
-import type { Manifest, UploadOptions, UploadResponse } from "../common/types";
+import type { CreateAndUploadOptions, Manifest, UploadOptions, UploadResponse } from "../common/types";
 import type { DataItem, JWKInterface, Tag } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 
@@ -14,6 +14,19 @@ export class WebUploader extends Uploader {
     super(irys.api, irys.utils, irys.token, irys.tokenConfig, irys.IrysTransaction);
     this.irys = irys;
   }
+
+  /**
+   * Uploads a tagged file object, automatically adding the content-type tag if it's not present
+   * @param file - File object to upload
+   * @param opts - optional options for the upload / data item creation
+   * @returns
+   */
+  public async uploadFile(file: File, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+    const hasContentType = opts?.tags ? opts.tags.some(({ name }) => name.toLowerCase() === "content-type") : false;
+    const tags = hasContentType ? opts?.tags : [...(opts?.tags ?? []), { name: "Content-Type", value: file.type }];
+    return this.uploadData(Buffer.from(await file.arrayBuffer()), { tags, ...opts });
+  }
+
   /**
    * Uploads a list of `File` objects & a generated folder manifest as a nested bundle using a temporary signing key.
    *
