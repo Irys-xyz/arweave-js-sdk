@@ -19,14 +19,12 @@ export class WebIrys extends Irys {
   constructor({
     url,
     token,
-    provider,
+    wallet,
     config,
-    providerName,
   }: {
     url: "node1" | "node2" | "devnet" | string;
     token: string;
-    provider?: any;
-    providerName?: string;
+    wallet?: { rpcUrl?: string; name?: string; provider: object };
     config?: IrysConfig;
   }) {
     switch (url) {
@@ -54,13 +52,13 @@ export class WebIrys extends Irys {
     this.tokenConfig = getTokenConfig({
       irys: this,
       token: token.toLowerCase(),
-      wallet: provider,
-      providerUrl: config?.providerUrl,
+      wallet: wallet?.provider,
+      providerUrl: config?.providerUrl ?? wallet?.rpcUrl,
       contractAddress: config?.contractAddress,
-      providerName: providerName,
+      providerName: wallet?.name,
     });
     this.token = this.tokenConfig.name;
-    if (parsed.host === "devnet.irys.network" && !(config?.providerUrl || this.tokenConfig.inheritsRPC))
+    if (parsed.host === "devnet.irys.network" && !(config?.providerUrl ?? (wallet?.rpcUrl || this.tokenConfig.inheritsRPC)))
       throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.network/sdk/using-devnet`);
     this.utils = new Utils(this.api, this.token, this.tokenConfig);
     this.uploader = new WebUploader(this);
