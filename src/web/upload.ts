@@ -47,14 +47,13 @@ export class WebUploader extends Uploader {
       seperateManifestTx?: boolean;
     },
   ): Promise<
-    | (UploadResponse & {
-        throwawayKey: JWKInterface;
-        txs: DataItem[];
-        throwawayKeyAddress: string;
-        manifest: Manifest;
-        manifestId: string;
-      })
-    | undefined
+    UploadResponse & {
+      throwawayKey: JWKInterface;
+      txs: DataItem[];
+      throwawayKeyAddress: string;
+      manifest: Manifest;
+      manifestId: string;
+    }
   > {
     const txs: DataItem[] = [];
     const txMap = new Map();
