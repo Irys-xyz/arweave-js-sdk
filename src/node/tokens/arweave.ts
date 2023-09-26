@@ -20,12 +20,13 @@ export default class ArweaveConfig extends BaseNodeToken {
   private async getProvider(): Promise<Arweave> {
     if (!this.providerInstance) {
       const purl = new URL(this.providerUrl ?? "https://arweave.net");
-      this.providerInstance = Arweave.init({
-        host: purl.hostname,
-        protocol: purl.protocol.replaceAll(":", "").replaceAll("/", ""),
-        port: purl.port,
-        network: this?.opts?.network,
-      });
+      // this.providerInstance = Arweave.init({
+      //   host: purl.hostname,
+      //   protocol: purl.protocol.replaceAll(":", "").replaceAll("/", ""),
+      //   port: purl.port,
+      //   network: this?.opts?.network,
+      // });
+      this.providerInstance = new Arweave({ url: purl, network: this?.opts?.network });
     }
     return this.providerInstance;
   }
@@ -61,7 +62,7 @@ export default class ArweaveConfig extends BaseNodeToken {
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
-    return Arweave.crypto.sign(this.wallet, data);
+    return this.providerInstance.crypto.sign(this.wallet, data);
   }
 
   getSigner(): Signer {
@@ -72,7 +73,7 @@ export default class ArweaveConfig extends BaseNodeToken {
     if (Buffer.isBuffer(pub)) {
       pub = pub.toString();
     }
-    return Arweave.crypto.verify(pub, data, signature);
+    return this.providerInstance.crypto.verify(pub, data, signature);
   }
 
   async getCurrentHeight(): Promise<BigNumber> {
