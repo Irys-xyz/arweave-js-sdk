@@ -15,6 +15,7 @@ export class WebIrys extends Irys {
   public tokenConfig: WebToken;
   public uploader: WebUploader;
   uploadFolder: InstanceType<typeof WebUploader>["uploadFolder"];
+  uploadFile: InstanceType<typeof WebUploader>["uploadFile"];
 
   constructor({
     url,
@@ -68,6 +69,7 @@ export class WebIrys extends Irys {
     this.transactions = new Transaction(this);
     this.address = "Please run `await Irys.ready()`";
     this.uploadFolder = this.uploader.uploadFolder.bind(this.uploader);
+    this.uploadFile = this.uploader.uploadFile.bind(this.uploader);
   }
 }
 export default WebIrys;
