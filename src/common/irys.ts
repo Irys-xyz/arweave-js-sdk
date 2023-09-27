@@ -22,6 +22,7 @@ import type {
 import type Uploader from "./upload";
 import Utils from "./utils";
 import { withdrawBalance } from "./withdrawal";
+import Query from "@irys/query";
 
 export default abstract class Irys {
   public api!: Api;
@@ -37,13 +38,14 @@ export default abstract class Irys {
   public url: URL;
   public arbundles: Arbundles;
   public IrysTransaction: IrysTransactonCtor;
-
+  public query: Query;
   static VERSION = "REPLACEMEIRYSVERSION";
 
-  constructor({ url, arbundles }: { url: URL; arbundles: Arbundles }) {
+  constructor({ url, arbundles, queryConfig }: { url: URL; arbundles: Arbundles; queryConfig?: ConstructorParameters<typeof Query>[0] }) {
     this.url = url;
     this.arbundles = arbundles;
     this.IrysTransaction = buildIrysTransaction(this);
+    this.query = new Query(queryConfig ?? { url: new URL("/graphql", url) });
   }
 
   get signer(): Signer {
