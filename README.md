@@ -1,5 +1,5 @@
 
-![](https://github.com/Bundlr-Network/js-sdk/blob/master/assets/irys-SDK.png?raw=true)
+![](https://github.com/Bundlr-Network/js-sdk/blob/feat/provenance/assets/irys-SDK.png?raw=true)
 
 # Irys SDK
 
