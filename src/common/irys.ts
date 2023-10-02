@@ -38,18 +38,25 @@ export default abstract class Irys {
   public url: URL;
   public arbundles: Arbundles;
   public IrysTransaction: IrysTransactonCtor;
-  public query: Query;
   static VERSION = "REPLACEMEIRYSVERSION";
 
-  constructor({ url, arbundles, queryConfig }: { url: URL; arbundles: Arbundles; queryConfig?: ConstructorParameters<typeof Query>[0] }) {
+  constructor({ url, arbundles }: { url: URL; arbundles: Arbundles }) {
     this.url = url;
     this.arbundles = arbundles;
     this.IrysTransaction = buildIrysTransaction(this);
-    this.query = new Query(queryConfig ?? { url: new URL("/graphql", url) });
   }
 
   get signer(): Signer {
     return this.tokenConfig.getSigner();
+  }
+
+  get search(): InstanceType<typeof Query>["search"] {
+    const q = new Query({ url: new URL("/graphql", this.url) });
+    return q.search.bind(q);
+  }
+
+  public query(queryOpts?: ConstructorParameters<typeof Query>[0]): Query {
+    return new Query(queryOpts ?? { url: this.url });
   }
 
   async withdrawBalance(amount: BigNumber.Value): Promise<WithdrawalResponse> {
