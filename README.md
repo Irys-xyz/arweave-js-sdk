@@ -3,9 +3,9 @@
 
 # Irys SDK
 
-Ferociously fast, super scalable, simply seamless.
+[Irys](https://docs.irys.xyz) is the only provenance layer. It enables users to scale permanent data and precisely attribute its origin.
 
-Permanent data with strong provenance in only three lines of code with the Irys SDK.
+The [Irys SDK](http://docs.irys.xyz/developer-docs/irys-sdk) is a typesafe SDK for interacting with Irys and Arweave.
 
 ## How Irys works
 
@@ -23,7 +23,7 @@ For more details, including a video overview, [see our docs](http://docs.irys.xy
 
 ## Integrating Irys is frictionless
 
-See our [docs for full code examples](http://docs.irys.xyz/developer-docs/irys-sdk) showing how to upload data, a file and a folder of files.
+See our [docs for full code examples](http://docs.irys.xyz/developer-docs/irys-sdk) showing how to upload data, a file, and a folder of files.
 
 ```js
 const irys = new Irys({ url, token, key });
