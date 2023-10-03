@@ -23,3 +23,4 @@ arweave.json
 testData/
 testFolder-errors.txt
 bundlr-network-client-*.tgz
+.DS_Store
