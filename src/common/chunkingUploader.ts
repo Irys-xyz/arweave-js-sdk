@@ -303,8 +303,6 @@ export class ChunkingUploader extends EventEmitter {
       await promiseFactory(heldChunk, 0, 0);
     }
 
-    if (this?.uploadOptions?.getReceiptSignature ?? true) headers["x-proof-type"] = "receipt";
-
     // potential improvement: write chunks into a file at offsets, instead of individual chunks + doing a concatenating copy
     const finishUpload = await this.api.post(`/chunks/${this.token}/${id}/-1`, null, {
       headers: { "Content-Type": "application/octet-stream", ...headers },
@@ -318,14 +316,11 @@ export class ChunkingUploader extends EventEmitter {
     Utils.checkAndThrow(finishUpload, "Finalising upload", [201]);
     // Recover ID
     if (finishUpload.status === 201) {
-      if (this?.uploadOptions?.getReceiptSignature === true) {
-        throw new Error(finishUpload.data as any as string);
-      }
-      finishUpload.data = { id: finishUpload.statusText.split(" ")?.[1] };
+      throw new Error(finishUpload.data as any as string);
     }
-    if (this?.uploadOptions?.getReceiptSignature) {
-      finishUpload.data.verify = Utils.verifyReceipt.bind({}, this.arbundles, finishUpload.data.data);
-    }
+
+    finishUpload.data.verify = Utils.verifyReceipt.bind({}, this.arbundles, finishUpload.data.data);
+
     this.emit("done", finishUpload);
     return finishUpload;
   }

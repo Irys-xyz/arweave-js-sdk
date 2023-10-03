@@ -152,10 +152,8 @@ export interface WithdrawalResponse {
 }
 
 export type CreateAndUploadOptions = DataItemCreateOptions & { upload?: UploadOptions };
-export interface UploadOptions {
-  // If you want to receive the cryptographic receipt for your upload - if the upload is a duplicate (i.e A transaction with the same signature has already been uploaded), setting this to true will cause it to throw.
-  getReceiptSignature?: boolean;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface UploadOptions {}
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
 //     paths = "arweave/paths"

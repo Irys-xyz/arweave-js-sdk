@@ -56,24 +56,19 @@ export default class Uploader {
 
   public async uploadTransaction(transaction: DataItem | Readable | Buffer, opts?: UploadOptions): Promise<AxiosResponse<UploadResponse>> {
     let res: AxiosResponse<UploadResponse>;
-    const getReceiptSignature = opts?.getReceiptSignature ?? true;
     const isDataItem = this.arbundles.DataItem.isDataItem(transaction);
     if (this.forceUseChunking || (isDataItem && transaction.getRaw().length >= CHUNKING_THRESHOLD) || !isDataItem) {
       res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction, opts);
     } else {
       const { url, timeout, headers: confHeaders } = this.api.getConfig();
       const headers = { "Content-Type": "application/octet-stream", ...confHeaders };
-      if (getReceiptSignature) headers["x-proof-type"] = "receipt";
       res = await this.api.post(new URL(`/tx/${this.token}`, url).toString(), transaction.getRaw(), {
         headers: headers,
         timeout,
         maxBodyLength: Infinity,
       });
       if (res.status === 201) {
-        if (getReceiptSignature) {
-          throw new Error(res.data as any as string);
-        }
-        // res.data = { id: transaction.id };
+        throw new Error(res.data as any as string);
       }
     }
     switch (res.status) {
@@ -84,9 +79,7 @@ export default class Uploader {
           throw new Error(`whilst uploading Irys transaction: ${res.status} ${res.statusText}`);
         }
     }
-    if (opts?.getReceiptSignature) {
-      res.data.verify = async (): Promise<boolean> => this.utils.verifyReceipt(res.data as UploadReceipt);
-    }
+    res.data.verify = async (): Promise<boolean> => this.utils.verifyReceipt(res.data as UploadReceipt);
     return res;
   }
 
