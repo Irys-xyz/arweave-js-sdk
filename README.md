@@ -22,7 +22,7 @@ Next, Irys [includes your transaction in a bundle](http://docs.irys.xyz/learn/tr
 For more details, including a video overview, [see our docs](http://docs.irys.xyz/overview/about).
 
 ## Why Irys offers
-- Volumetric scaling: [Can handle > 50,000 Transactions Per Second (TPS)](https://youtu.be/JKEivHKDXAo) and [limitless data volumes](http://docs.irys.xyz/learn/volumetric-scaling).
+- Volumetric scaling: [Can handle 50K+ Transactions Per Second (TPS)](https://youtu.be/JKEivHKDXAo) and [limitless data volumes](http://docs.irys.xyz/learn/volumetric-scaling).
 - Instant uploads: Upload data to Irys in as little as 8ms.
 - Frictionless integration: [3-4 lines of code](http://docs.irys.xyz/developer-docs/irys-sdk) to integrate Irys.
 - Pay in any token: Sign and pay to use Irys in [14 supported tokens](http://docs.irys.xyz/overview/supported-tokens).
