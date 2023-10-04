@@ -1,10 +1,10 @@
 import BigNumber from "bignumber.js";
 import { Contract } from "@ethersproject/contracts";
-import type { CurrencyConfig, Tx } from "../../common/types";
-import { getRedstonePrice } from "../currency";
+import type { TokenConfig, Tx } from "../../common/types";
+import { getRedstonePrice } from "../token";
 import EthereumConfig from "./ethereum";
 
-export interface ERC20CurrencyConfig extends CurrencyConfig {
+export interface ERC20TokenConfig extends TokenConfig {
   contractAddress: string;
 }
 
@@ -12,13 +12,14 @@ export default class ERC20Config extends EthereumConfig {
   private contractInstance!: Contract;
   private contractAddress: string;
 
-  constructor(config: ERC20CurrencyConfig) {
+  constructor(config: ERC20TokenConfig) {
     super(config);
     this.contractAddress = config.contractAddress;
   }
 
   async getContract(): Promise<Contract> {
     if (!this.contractInstance) {
+      // @ts-expect-error minimal type
       this.contractInstance = new Contract(this.contractAddress, erc20abi, this.w3signer);
       this.base = ["wei", Math.pow(10, await this.contractInstance.decimals())];
     }
@@ -48,7 +49,7 @@ export default class ERC20Config extends EthereumConfig {
   }
 
   /**
-   * Returns the fee in CONTRACT CURRENCY UNITS equivalent to the fee derived via gas currency units, i.e Wei
+   * Returns the fee in CONTRACT TOKEN UNITS equivalent to the fee derived via gas token units, i.e Wei
    * @param amount
    * @param to
    * @returns
@@ -64,7 +65,7 @@ export default class ERC20Config extends EthereumConfig {
     const [fiatGasPrice] = await this.getGas(); // get price of gas units
     const value = fiatGasPrice.multipliedBy(units); // value of the fee
     // convert value
-    const ctPrice = new BigNumber(await this.price()); // price for this currency
+    const ctPrice = new BigNumber(await this.price()); // price for this token
 
     const ctAmount = new BigNumber(value).dividedToIntegerBy(ctPrice);
     // const b = ctAmount.multipliedBy(ctPrice)
@@ -84,7 +85,7 @@ export default class ERC20Config extends EthereumConfig {
     tx.gasPrice = await this.providerInstance.getGasPrice();
     tx.gasLimit = await contract.estimateGas.transfer(to, _amount);
     tx.chainId = (await this.providerInstance.getNetwork()).chainId;
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
     tx.nonce = await this.providerInstance.getTransactionCount(this.address);
     // const txr = this.w3signer.populateTransaction()
     // const signedTx = await this.wallet.signTransaction(tx);

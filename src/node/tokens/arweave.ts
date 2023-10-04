@@ -1,17 +1,17 @@
-import Arweave from "arweave";
+import { Arweave } from "../utils";
 import type { Signer } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import crypto from "crypto";
-import type { CurrencyConfig, Tx } from "../../common/types";
+import type { TokenConfig, Tx } from "../../common/types";
 import base64url from "base64url";
-import BaseNodeCurrency from "../currency";
+import { BaseNodeToken } from "../token";
 import type Transaction from "arweave/node/lib/transaction";
 
-export default class ArweaveConfig extends BaseNodeCurrency {
+export default class ArweaveConfig extends BaseNodeToken {
   protected declare providerInstance: Arweave;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     super(config);
     this.base = ["winston", 1e12];
     this.needsFee = true;
@@ -20,12 +20,13 @@ export default class ArweaveConfig extends BaseNodeCurrency {
   private async getProvider(): Promise<Arweave> {
     if (!this.providerInstance) {
       const purl = new URL(this.providerUrl ?? "https://arweave.net");
-      this.providerInstance = Arweave.init({
-        host: purl.hostname,
-        protocol: purl.protocol.replaceAll(":", "").replaceAll("/", ""),
-        port: purl.port,
-        network: this?.opts?.network,
-      });
+      // this.providerInstance = Arweave.init({
+      //   host: purl.hostname,
+      //   protocol: purl.protocol.replaceAll(":", "").replaceAll("/", ""),
+      //   port: purl.port,
+      //   network: this?.opts?.network,
+      // });
+      this.providerInstance = new Arweave({ url: purl, network: this?.opts?.network });
     }
     return this.providerInstance;
   }
@@ -61,7 +62,7 @@ export default class ArweaveConfig extends BaseNodeCurrency {
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
-    return Arweave.crypto.sign(this.wallet, data);
+    return this.providerInstance.crypto.sign(this.wallet, data);
   }
 
   getSigner(): Signer {
@@ -72,7 +73,7 @@ export default class ArweaveConfig extends BaseNodeCurrency {
     if (Buffer.isBuffer(pub)) {
       pub = pub.toString();
     }
-    return Arweave.crypto.verify(pub, data, signature);
+    return this.providerInstance.crypto.verify(pub, data, signature);
   }
 
   async getCurrentHeight(): Promise<BigNumber> {

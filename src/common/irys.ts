@@ -1,50 +1,62 @@
-import Utils from "./utils";
-import { withdrawBalance } from "./withdrawal";
-import type Uploader from "./upload";
-import type Fund from "./fund";
-import type { DataItemCreateOptions } from "arbundles";
-import type Api from "./api";
+import type { DataItemCreateOptions, Signer } from "arbundles";
 import type BigNumber from "bignumber.js";
-import type { BundlrTransaction } from "./types";
+import type { Readable } from "stream";
+import type Api from "./api";
+import type Fund from "./fund";
+import type { Provenance } from "./provenance";
+import buildIrysTransaction from "./transaction";
+import type { Transaction } from "./transactions";
 import type {
   Arbundles,
-  BundlrTransactionCreateOptions,
-  BundlrTransactonCtor,
   CreateAndUploadOptions,
-  Currency,
+  Token,
   FundResponse,
+  IrysTransaction,
+  IrysTransactionCreateOptions,
+  IrysTransactonCtor,
   UploadReceipt,
   UploadReceiptData,
   UploadResponse,
   WithdrawalResponse,
 } from "./types";
-import type { Signer } from "arbundles";
-import type { Readable } from "stream";
-import buildBundlrTransaction from "./transaction";
+import type Uploader from "./upload";
+import Utils from "./utils";
+import { withdrawBalance } from "./withdrawal";
+import Query from "@irys/query";
 
-export default abstract class Bundlr {
+export default abstract class Irys {
   public api!: Api;
   public utils!: Utils;
   public uploader!: Uploader;
   public funder!: Fund;
   public address!: string | undefined;
-  public currency!: string;
-  public currencyConfig!: Currency;
+  public token!: string;
+  public tokenConfig!: Token;
+  public provenance!: Provenance;
+  public transactions!: Transaction;
   protected _readyPromise: Promise<void> | undefined;
   public url: URL;
   public arbundles: Arbundles;
-  public bundlrTransaction: BundlrTransactonCtor;
+  public IrysTransaction: IrysTransactonCtor;
+  static VERSION = "REPLACEMEIRYSVERSION";
 
-  static VERSION = "REPLACEMEBUNDLRVERSION";
-
-  constructor(url: URL, arbundles: Arbundles) {
+  constructor({ url, arbundles }: { url: URL; arbundles: Arbundles }) {
     this.url = url;
     this.arbundles = arbundles;
-    this.bundlrTransaction = buildBundlrTransaction(this);
+    this.IrysTransaction = buildIrysTransaction(this);
   }
 
   get signer(): Signer {
-    return this.currencyConfig.getSigner();
+    return this.tokenConfig.getSigner();
+  }
+
+  get search(): InstanceType<typeof Query>["search"] {
+    const q = new Query({ url: new URL("/graphql", this.url) });
+    return q.search.bind(q);
+  }
+
+  public query(queryOpts?: ConstructorParameters<typeof Query>[0]): Query {
+    return new Query(queryOpts ?? { url: this.url });
   }
 
   async withdrawBalance(amount: BigNumber.Value): Promise<WithdrawalResponse> {
@@ -78,12 +90,12 @@ export default abstract class Bundlr {
   }
 
   /**
-   * Calculates the price for [bytes] bytes for the loaded currency and Bundlr node.
+   * Calculates the price for [bytes] bytes for the loaded token and Irys node.
    * @param bytes
    * @returns
    */
   public async getPrice(bytes: number): Promise<BigNumber> {
-    return this.utils.getPrice(this.currency, bytes);
+    return this.utils.getPrice(this.token, bytes);
   }
 
   public async verifyReceipt(receipt: UploadReceiptData): Promise<boolean> {
@@ -91,20 +103,20 @@ export default abstract class Bundlr {
   }
 
   /**
-   * Create a new BundlrTransactions (flex currency arbundles dataItem)
+   * Create a new IrysTransactions (flex token arbundles dataItem)
    * @param data
    * @param opts - dataItemCreateOptions
-   * @returns - a new BundlrTransaction instance
+   * @returns - a new IrysTransaction instance
    */
-  createTransaction(data: string | Buffer, opts?: BundlrTransactionCreateOptions): BundlrTransaction {
-    return new this.bundlrTransaction(data, this, opts);
+  createTransaction(data: string | Buffer, opts?: IrysTransactionCreateOptions): IrysTransaction {
+    return new this.IrysTransaction(data, this, opts);
   }
 
   /**
-   * Returns the signer for the loaded currency
+   * Returns the signer for the loaded token
    */
   getSigner(): Signer {
-    return this.currencyConfig.getSigner();
+    return this.tokenConfig.getSigner();
   }
 
   async upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
@@ -115,9 +127,10 @@ export default abstract class Bundlr {
     return this.uploader.uploadData(data, { ...opts, upload: { getReceiptSignature: true } }) as Promise<UploadReceipt>;
   }
 
-  async ready(): Promise<void> {
-    this.currencyConfig.ready ? await this.currencyConfig.ready() : true;
-    this.address = this.currencyConfig.address;
+  async ready(): Promise<Irys> {
+    this.tokenConfig.ready ? await this.tokenConfig.ready() : true;
+    this.address = this.tokenConfig.address;
+    return this;
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -125,8 +138,8 @@ export default abstract class Bundlr {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const oThis = this;
     return {
-      fromRaw(rawTransaction: Uint8Array): BundlrTransaction {
-        return new oThis.bundlrTransaction(rawTransaction, oThis, { dataIsRawTransaction: true });
+      fromRaw(rawTransaction: Uint8Array): IrysTransaction {
+        return new oThis.IrysTransaction(rawTransaction, oThis, { dataIsRawTransaction: true });
       },
     };
   }

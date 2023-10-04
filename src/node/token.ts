@@ -3,13 +3,13 @@ import type { Signer } from "arbundles";
 import { getCryptoDriver } from "./utils";
 import base64url from "base64url";
 import type BigNumber from "bignumber.js";
-import type { Tx, CurrencyConfig } from "../common/types";
+import type { Tx, TokenConfig } from "../common/types";
 import axios from "axios";
-import type { NodeCurrency } from "./types";
+import type { NodeToken } from "./types";
 import utils from "../common/utils";
 import type Utils from "../common/utils";
-import type NodeBundlr from "./bundlr";
-export default abstract class BaseNodeCurrency implements NodeCurrency {
+import type NodeIrys from "./irys";
+export abstract class BaseNodeToken implements NodeToken {
   public base!: [string, number];
   protected wallet: any;
   protected _address: string | undefined;
@@ -22,9 +22,9 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
   public needsFee = true;
   protected opts?: any;
   protected utils!: Utils;
-  public bundlr!: NodeBundlr;
+  public irys!: NodeIrys;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     Object.assign(this, config);
     this._address = this.wallet ? this.ownerToAddress(this.getPublicKey()) : undefined;
   }
@@ -53,8 +53,8 @@ export default abstract class BaseNodeCurrency implements NodeCurrency {
   abstract getPublicKey(): string | Buffer;
 }
 
-export async function getRedstonePrice(currency: string): Promise<number> {
-  const res = await axios.get(`https://api.redstone.finance/prices?symbol=${currency}&provider=redstone&limit=1`);
+export async function getRedstonePrice(token: string): Promise<number> {
+  const res = await axios.get(`https://api.redstone.finance/prices?symbol=${token}&provider=redstone&limit=1`);
   await utils.checkAndThrow(res, "Getting price data");
   return res.data[0].value;
 }

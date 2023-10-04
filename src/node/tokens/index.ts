@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import type { NodeCurrency } from "../types";
+import type { NodeToken } from "../types";
 import ArweaveConfig from "./arweave";
 import ERC20Config from "./erc20";
 import EthereumConfig from "./ethereum";
@@ -10,21 +10,21 @@ import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
 import MultiSignatureAptos from "./multiAptos";
-import type NodeBundlr from "../bundlr";
+import type NodeIrys from "../irys";
 
-export default function getCurrency(
-  bundlr: NodeBundlr,
-  currency: string,
+export default function getTokenConfig(
+  Irys: NodeIrys,
+  token: string,
   wallet: any,
   url: string,
   providerUrl?: string,
   contractAddress?: string,
   opts?: any,
-): NodeCurrency {
-  switch (currency) {
+): NodeToken {
+  switch (token) {
     case "arweave":
       return new ArweaveConfig({
-        bundlr,
+        irys: Irys,
         name: "arweave",
         ticker: "AR",
         minConfirm: 10,
@@ -34,10 +34,17 @@ export default function getCurrency(
         opts,
       });
     case "ethereum":
-      return new EthereumConfig({ bundlr, name: "ethereum", ticker: "ETH", providerUrl: providerUrl ?? "https://cloudflare-eth.com/", wallet, opts });
+      return new EthereumConfig({
+        irys: Irys,
+        name: "ethereum",
+        ticker: "ETH",
+        providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
+        wallet,
+        opts,
+      });
     case "matic":
       return new EthereumConfig({
-        bundlr,
+        irys: Irys,
         name: "matic",
         ticker: "MATIC",
         minConfirm: 1,
@@ -47,7 +54,7 @@ export default function getCurrency(
       });
     case "bnb":
       return new EthereumConfig({
-        bundlr,
+        irys: Irys,
         name: "bnb",
         ticker: "BNB",
         providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org/",
@@ -55,10 +62,10 @@ export default function getCurrency(
         opts,
       });
     case "fantom":
-      return new EthereumConfig({ bundlr, name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet, opts });
+      return new EthereumConfig({ irys: Irys, name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet, opts });
     case "solana":
       return new SolanaConfig({
-        bundlr,
+        irys: Irys,
         name: "solana",
         ticker: "SOL",
         providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/",
@@ -67,7 +74,7 @@ export default function getCurrency(
       });
     case "avalanche":
       return new EthereumConfig({
-        bundlr,
+        irys: Irys,
         name: "avalanche",
         ticker: "AVAX",
         providerUrl: providerUrl ?? "https://api.avax-test.network/ext/bc/C/rpc/",
@@ -76,7 +83,7 @@ export default function getCurrency(
       });
     case "boba-eth":
       return new EthereumConfig({
-        bundlr,
+        irys: Irys,
         name: "boba-eth",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -86,7 +93,7 @@ export default function getCurrency(
       });
     case "boba": {
       const k = new ERC20Config({
-        bundlr,
+        irys: Irys,
         name: "boba",
         ticker: "BOBA",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -110,7 +117,7 @@ export default function getCurrency(
     }
     case "arbitrum":
       return new EthereumConfig({
-        bundlr,
+        irys: Irys,
         name: "arbitrum",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc/",
@@ -119,7 +126,7 @@ export default function getCurrency(
       });
     case "chainlink":
       return new ERC20Config({
-        bundlr,
+        irys: Irys,
         name: "chainlink",
         ticker: "LINK",
         providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/",
@@ -129,7 +136,7 @@ export default function getCurrency(
       });
     case "kyve": {
       const k = new ERC20Config({
-        bundlr,
+        irys: Irys,
         name: "kyve",
         ticker: "KYVE",
         minConfirm: 0,
@@ -149,18 +156,18 @@ export default function getCurrency(
     }
     case "near": {
       return new NearConfig({
-        bundlr,
+        irys: Irys,
         name: "near",
         ticker: "NEAR",
         providerUrl: providerUrl ?? "https://rpc.mainnet.near.org",
         wallet,
-        bundlrUrl: url,
+        IrysUrl: url,
         opts,
       });
     }
     case "algorand": {
       return new AlgorandConfig({
-        bundlr,
+        irys: Irys,
         name: "algorand",
         ticker: "ALGO",
         providerUrl: providerUrl ?? "https://mainnet-api.algonode.cloud",
@@ -170,7 +177,7 @@ export default function getCurrency(
     }
     case "aptos": {
       return new AptosConfig({
-        bundlr,
+        irys: Irys,
         name: "aptos",
         ticker: "APTOS",
         providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com",
@@ -180,7 +187,7 @@ export default function getCurrency(
     }
     case "multiaptos": {
       return new MultiSignatureAptos({
-        bundlr,
+        irys: Irys,
         name: "aptos",
         ticker: "APTOS",
         providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",
@@ -189,6 +196,6 @@ export default function getCurrency(
       });
     }
     default:
-      throw new Error(`Unknown/Unsupported currency ${currency}`);
+      throw new Error(`Unknown/Unsupported token ${token}`);
   }
 }

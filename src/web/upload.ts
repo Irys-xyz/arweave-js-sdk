@@ -1,6 +1,6 @@
 import Uploader from "../common/upload";
-import type WebBundlr from "./bundlr";
-import type { Manifest, UploadOptions, UploadResponse } from "../common/types";
+import type WebIrys from "./irys";
+import type { CreateAndUploadOptions, Manifest, UploadOptions, UploadResponse } from "../common/types";
 import type { DataItem, JWKInterface, Tag } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 
@@ -9,11 +9,24 @@ export type TaggedFile = File & {
 };
 
 export class WebUploader extends Uploader {
-  protected bundlr: WebBundlr;
-  constructor(bundlr: WebBundlr) {
-    super(bundlr.api, bundlr.utils, bundlr.currency, bundlr.currencyConfig);
-    this.bundlr = bundlr;
+  protected irys: WebIrys;
+  constructor(irys: WebIrys) {
+    super(irys.api, irys.utils, irys.token, irys.tokenConfig, irys.IrysTransaction);
+    this.irys = irys;
   }
+
+  /**
+   * Uploads a tagged file object, automatically adding the content-type tag if it's not present
+   * @param file - File object to upload
+   * @param opts - optional options for the upload / data item creation
+   * @returns
+   */
+  public async uploadFile(file: File, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+    const hasContentType = opts?.tags ? opts.tags.some(({ name }) => name.toLowerCase() === "content-type") : false;
+    const tags = hasContentType ? opts?.tags : [...(opts?.tags ?? []), { name: "Content-Type", value: file.type }];
+    return this.uploadData(Buffer.from(await file.arrayBuffer()), { tags, ...opts });
+  }
+
   /**
    * Uploads a list of `File` objects & a generated folder manifest as a nested bundle using a temporary signing key.
    *
@@ -34,18 +47,17 @@ export class WebUploader extends Uploader {
       seperateManifestTx?: boolean;
     },
   ): Promise<
-    | (UploadResponse & {
-        throwawayKey: JWKInterface;
-        txs: DataItem[];
-        throwawayKeyAddress: string;
-        manifest: Manifest;
-        manifestId: string;
-      })
-    | undefined
+    UploadResponse & {
+      throwawayKey: JWKInterface;
+      txs: DataItem[];
+      throwawayKeyAddress: string;
+      manifest: Manifest;
+      manifestId: string;
+    }
   > {
     const txs: DataItem[] = [];
     const txMap = new Map();
-    const throwawayKey = opts?.throwawayKey ?? (await this.bundlr.arbundles.getCryptoDriver().generateJWK());
+    const throwawayKey = opts?.throwawayKey ?? (await this.irys.arbundles.getCryptoDriver().generateJWK());
     const ephemeralSigner = new ArweaveSigner(throwawayKey);
     for (const file of files) {
       const path = file.webkitRelativePath ? file.webkitRelativePath : file.name;
@@ -53,7 +65,7 @@ export class WebUploader extends Uploader {
 
       const tags = hasContentType ? file.tags : [...(file.tags ?? []), { name: "Content-Type", value: file.type }];
 
-      const tx = this.bundlr.arbundles.createData(Buffer.from(await file.arrayBuffer()), ephemeralSigner, {
+      const tx = this.irys.arbundles.createData(Buffer.from(await file.arrayBuffer()), ephemeralSigner, {
         tags,
       });
       await tx.sign(ephemeralSigner);
@@ -62,9 +74,9 @@ export class WebUploader extends Uploader {
     }
     // generate manifest, add to bundle
     const manifest = await this.generateManifest({ items: txMap, indexFile: opts?.indexFileRelPath });
-    const manifestTx = this.bundlr.arbundles.createData(
+    const manifestTx = this.irys.arbundles.createData(
       JSON.stringify(manifest),
-      opts?.seperateManifestTx ? this.bundlr.currencyConfig.getSigner() : ephemeralSigner,
+      opts?.seperateManifestTx ? this.irys.tokenConfig.getSigner() : ephemeralSigner,
       {
         tags: [
           { name: "Type", value: "manifest" },
@@ -74,7 +86,7 @@ export class WebUploader extends Uploader {
       },
     );
     if (opts?.seperateManifestTx === true) {
-      await manifestTx.sign(this.bundlr.currencyConfig.getSigner());
+      await manifestTx.sign(this.irys.tokenConfig.getSigner());
       await this.uploadTransaction(manifestTx, { ...opts });
     } else {
       await manifestTx.sign(ephemeralSigner);

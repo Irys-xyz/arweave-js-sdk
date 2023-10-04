@@ -2,12 +2,12 @@ import { AptosClient, TransactionBuilderEd25519, TransactionBuilderRemoteABI, Tx
 import type { Signer } from "arbundles";
 import { InjectedAptosSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types";
+import type { TokenConfig, Tx } from "../../common/types";
 import sha3 from "js-sha3";
 
 // import { Ed25519PublicKey } from "aptos/src/aptos_types/ed25519";
 // import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
-import BaseWebCurrency from "../currency";
+import BaseWebToken from "../token";
 
 export interface SignMessagePayload {
   address?: boolean; // Should we include the address of the account in the message
@@ -39,13 +39,13 @@ export interface AptosWallet {
   signTransaction: (transaction: any) => Promise<Uint8Array>;
 }
 
-export default class AptosConfig extends BaseWebCurrency {
+export default class AptosConfig extends BaseWebToken {
   protected declare providerInstance?: AptosClient;
   protected signerInstance!: InjectedAptosSigner;
   protected declare wallet: AptosWallet;
   protected _publicKey!: Buffer;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     // if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
     // // @ts-ignore
     // config.accountInstance = new AptosAccount(config.wallet);
@@ -113,7 +113,7 @@ export default class AptosConfig extends BaseWebCurrency {
   async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number }> {
     const client = await this.getProvider();
 
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
 
     const builder = new TransactionBuilderRemoteABI(client, { sender: this.address });
 

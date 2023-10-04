@@ -12,7 +12,7 @@ export default class Fund {
   }
 
   /**
-   * Function to Fund (send funds to) a Bundlr node - inherits instance currency and node
+   * Function to Fund (send funds to) a Irys node - inherits instance token and node
    * @param amount - amount in base units to send
    * @param multiplier - network tx fee multiplier - only works for specific currencies
    * @returns  - funding receipt
@@ -22,8 +22,8 @@ export default class Fund {
     if (!_amount.isInteger()) {
       throw new Error("must use an integer for funding amount");
     }
-    const c = this.utils.currencyConfig;
-    const to = await this.utils.getBundlerAddress(this.utils.currency);
+    const c = this.utils.tokenConfig;
+    const to = await this.utils.getBundlerAddress(this.utils.token);
     let fee!: object | BigNumber;
     if (c.needsFee) {
       // winston's fee is actually for amount of data, not funds, so we have to 0 this.
@@ -45,7 +45,7 @@ export default class Fund {
       throw new Error(`Undefined transaction ID`);
     }
 
-    Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.currency} network`);
+    Utils.checkAndThrow(nres, `Sending transaction to the ${this.utils.token} network`);
     let confirmError = await this.utils.confirmationPoll(tx.txId);
     const bres = await this.submitTransaction(tx.txId).catch((e) => {
       confirmError = e;
@@ -63,7 +63,7 @@ export default class Fund {
   private async submitTransaction(transactionId: string): Promise<AxiosResponse> {
     return await AsyncRetry(
       async () => {
-        const bres = await this.utils.api.post(`/account/balance/${this.utils.currency}`, { tx_id: transactionId });
+        const bres = await this.utils.api.post(`/account/balance/${this.utils.token}`, { tx_id: transactionId });
         Utils.checkAndThrow(bres, `Posting transaction ${transactionId} information to the bundler`, [202]);
         return bres;
       },

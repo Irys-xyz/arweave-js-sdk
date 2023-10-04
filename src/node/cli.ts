@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // Note: DO NOT REMOVE/ALTER THE ABOVE LINE - it is called a 'shebang' and is vital for CLI execution.
+import BigNumber from "bignumber.js";
 import { Command } from "commander";
 import { readFileSync } from "fs";
-import Bundlr from "./bundlr";
 import inquirer from "inquirer";
-import BigNumber from "bignumber.js";
+import type NodeIrys from "./irys";
+import Irys from "./irys";
 import { checkPath } from "./upload";
-import type NodeBundlr from "./bundlr";
 
 export const program = new Command();
 
@@ -14,12 +14,13 @@ let balpad, walpad; // padding state variables
 
 // Define the CLI flags for the program
 program
-  .option("-h, --host <string>", "Bundlr node hostname/URL (eg http://node1.bundlr.network)")
+  .option("-h, --host <string>", "Irys node hostname/URL (eg http://node1.irys.network)")
   .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "default")
-  .option("-c, --currency <string>", "The currency to use")
+  .option("-t, --token <string>", "The token to use")
+  .option("-c --currency <string>", "DEPRECATED: the currency to use (same as token)")
   .option("--timeout <number>", "The timeout (in ms) for API HTTP requests - increase if you get timeouts for upload")
   .option("--no-confirmation", "Disable confirmations for certain actions")
-  .option("-t, --tags [value...]", "Tags to include, format <name> <value>")
+  .option("--tags [value...]", "Tags to include, format <name> <value>")
   .option(
     "--multiplier <number>",
     "Adjust the multiplier used for tx rewards - the higher the faster the network will process the transaction.",
@@ -36,22 +37,23 @@ program
   .option("--contract-address <string>", "Override the contract address")
   .option("--content-type <string>", "Override the content type for *ALL* files uploaded")
   .option("--remove-deleted", "Removes previously uploaded (but now deleted) items from the manifest")
-  .option("--force-chunking", "Forces usage of chunking for all files regardless of size");
+  .option("--force-chunking", "Forces usage of chunking for all files regardless of size")
+  .option("--provenance", "Upload a file/folder with strong provenance");
 // Define commands
 // uses NPM view to query the package's version.
-program.version(Bundlr.VERSION, "-v, --version", "Gets the current package version of the bundlr client");
+program.version(Irys.VERSION, "-v, --version", "Gets the current package version of the Irys client");
 
 // Balance command - gets the provided address' balance on the specified bundler
 program
   .command("balance")
-  .description("Gets the specified user's balance for the current Bundlr node")
+  .description("Gets the specified user's balance for the current Irys node")
   .argument("<address>", "address")
   .action(async (address: string) => {
     try {
       options.address = balpad ? address.substring(1) : address;
-      const bundlr = await init(options, "balance");
-      const balance = await bundlr.utils.getBalance(options.address);
-      console.log(`Balance: ${balance} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(balance).toFixed()} ${bundlr.currency})`);
+      const Irys = await init(options, "balance");
+      const balance = await Irys.utils.getBalance(options.address);
+      console.log(`Balance: ${balance} ${Irys.tokenConfig.base[0]} (${Irys.utils.unitConverter(balance).toFixed()} ${Irys.token})`);
     } catch (err: any) {
       console.error(`Error whilst getting balance: ${options.debug ? err.stack : err.message} `);
       return;
@@ -62,19 +64,19 @@ program
 program
   .command("withdraw")
   .description("Sends a fund withdrawal request")
-  .argument("<amount>", "amount to withdraw in currency base units")
+  .argument("<amount>", "amount to withdraw in token base units")
   .action(async (amount: string) => {
     try {
-      const bundlr = await init(options, "withdraw");
+      const Irys = await init(options, "withdraw");
       const confirmed = await confirmation(
-        `Confirmation: withdraw ${amount} ${bundlr.currencyConfig.base[0]} from ${bundlr.api.config.host} (${await bundlr.utils.getBundlerAddress(
-          bundlr.currency,
+        `Confirmation: withdraw ${amount} ${Irys.tokenConfig.base[0]} from ${Irys.api.config.url.host} (${await Irys.utils.getBundlerAddress(
+          Irys.token,
         )})?\n Y / N`,
       );
       if (confirmed) {
-        const res = await bundlr.withdrawBalance(new BigNumber(amount));
+        const res = await Irys.withdrawBalance(new BigNumber(amount));
         console.log(
-          `Withdrawal request for ${res?.requested} ${bundlr.currencyConfig.base[0]} successful\nTransaction ID: ${res?.tx_id} with network fee ${res?.fee} for a total cost of ${res?.final} `,
+          `Withdrawal request for ${res?.requested} ${Irys.tokenConfig.base[0]} successful\nTransaction ID: ${res?.tx_id} with network fee ${res?.fee} for a total cost of ${res?.final} `,
         );
       } else {
         console.log("confirmation failed");
@@ -92,9 +94,9 @@ program
   .argument("<file>", "relative path to the file you want to upload")
   .action(async (file: string) => {
     try {
-      const bundlr = await init(options, "upload");
+      const Irys = await init(options, "upload");
       const tags = parseTags(options?.tags);
-      const res = await bundlr.uploadFile(file, { tags: tags ?? [] });
+      const res = await Irys.uploadFile(file, { tags: tags ?? [], upload: { getReceiptSignature: options?.provenance } });
       console.log(`Uploaded to https://arweave.net/${res?.id}`);
     } catch (err: any) {
       console.error(`Error whilst uploading file: ${options.debug ? err.stack : err.message} `);
@@ -133,6 +135,9 @@ async function uploadDir(folder: string): Promise<void> {
       logFunction: async (log): Promise<void> => {
         console.log(log);
       },
+      itemOptions: {
+        upload: { getReceiptSignature: options?.provenance },
+      },
     });
     if (!res) return console.log("Nothing to upload");
     console.log(`Uploaded to https://arweave.net/${res.id}`);
@@ -157,14 +162,14 @@ program
   .action(async (amount: string) => {
     try {
       if (isNaN(+amount)) throw new Error("Amount must be an integer");
-      const bundlr = await init(options, "fund");
+      const Irys = await init(options, "fund");
       const confirmed = await confirmation(
-        `Confirmation: send ${amount} ${bundlr.currencyConfig.base[0]} (${bundlr.utils.unitConverter(amount).toFixed()} ${bundlr.currency}) to ${
-          bundlr.api.config.host
-        } (${await bundlr.utils.getBundlerAddress(bundlr.currency)})?\n Y / N`,
+        `Confirmation: send ${amount} ${Irys.tokenConfig.base[0]} (${Irys.utils.unitConverter(amount).toFixed()} ${Irys.token}) to ${
+          Irys.api.config.url.host
+        } (${await Irys.utils.getBundlerAddress(Irys.token)})?\n Y / N`,
       );
       if (confirmed) {
-        const tx = await bundlr.fund(new BigNumber(amount), options.multiplier);
+        const tx = await Irys.fund(new BigNumber(amount), options.multiplier);
         console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `);
       } else {
         console.log("confirmation failed");
@@ -177,18 +182,18 @@ program
 
 program
   .command("price")
-  .description("Check how much of a specific currency is required for an upload of <amount> bytes")
+  .description("Check how much of a specific token is required for an upload of <amount> bytes")
   .argument("<bytes>", "The number of bytes to get the price for")
   .action(async (bytes: string) => {
     try {
       if (isNaN(+bytes)) throw new Error("Amount must be an integer");
-      const bundlr = await init(options, "price");
-      await bundlr.utils.getBundlerAddress(options.currency); // will throw if the bundler doesn't support the currency
-      const cost = await bundlr.utils.getPrice(options.currency, +bytes);
+      const Irys = await init(options, "price");
+      await Irys.utils.getBundlerAddress(options.token); // will throw if the bundler doesn't support the token
+      const cost = await Irys.utils.getPrice(options.token, +bytes);
       console.log(
-        `Price for ${bytes} bytes in ${options.currency} is ${cost.toFixed(0)} ${bundlr.currencyConfig.base[0]} (${bundlr.utils
+        `Price for ${bytes} bytes in ${options.token} is ${cost.toFixed(0)} ${Irys.tokenConfig.base[0]} (${Irys.utils
           .unitConverter(cost)
-          .toFixed()} ${bundlr.currency})`,
+          .toFixed()} ${Irys.token})`,
       );
     } catch (err: any) {
       console.error(`Error whilst getting price: ${options.debug ? err.stack : err.message} `);
@@ -209,26 +214,26 @@ async function confirmation(message: string): Promise<boolean> {
 }
 
 /**
- * Initialisation routine for the CLI, mainly for initialising a Bundlr instance
+ * Initialisation routine for the CLI, mainly for initialising a Irys instance
  * @param opts the parsed options from the cli
- * @returns a new Bundlr instance
+ * @returns a new Irys instance
  */
-async function init(opts, operation): Promise<Bundlr> {
+async function init(opts, operation): Promise<Irys> {
   let wallet;
-  let bundler: NodeBundlr;
-  // every option needs a host and currency so ensure they're present
+  let bundler: NodeIrys;
+  // every option needs a host and token so ensure they're present
   if (!opts.host) {
     throw new Error("Host parameter (-h) is required!");
   }
-  if (!opts.currency) {
-    throw new Error("currency flag (-c) is required!");
+  if (!opts.token) {
+    throw new Error("token flag (-t, --token) is required!");
   }
   // some operations do not require a wallet
   if (!["balance", "price"].includes(operation)) {
     // require a wallet
     if (opts.wallet === "default") {
       // default to wallet.json under the right conditions
-      if (opts.currency === "arweave" && (await checkPath("./wallet.json"))) {
+      if (opts.token === "arweave" && (await checkPath("./wallet.json"))) {
         wallet = await loadWallet("./wallet.json");
       } else {
         throw new Error("Wallet (-w) required for this operation!");
@@ -239,14 +244,19 @@ async function init(opts, operation): Promise<Bundlr> {
     }
   }
   try {
-    // create and ready the bundlr instance
-    bundler = new Bundlr(opts.host, opts.currency.toLowerCase(), wallet ?? "", {
-      providerUrl: opts.providerUrl,
-      contractAddress: opts.contractAddress,
+    // create and ready the Irys instance
+    bundler = new Irys({
+      url: opts.host,
+      token: opts.token.toLowerCase(),
+      key: wallet ?? "",
+      config: {
+        providerUrl: opts.providerUrl,
+        contractAddress: opts.contractAddress,
+      },
     });
     await bundler.ready();
   } catch (err: any) {
-    throw new Error(`Error initialising Bundlr client - ${options.debug ? err.stack : err.message}`);
+    throw new Error(`Error initialising Irys client - ${options.debug ? err.stack : err.message}`);
   }
   // log the loaded address
   if (wallet && bundler.address) {
@@ -283,6 +293,7 @@ async function loadWallet(path: string): Promise<any> {
 }
 
 const options = program.opts();
+if (options.currency) options.token = options.currency;
 
 const isScript = require.main === module;
 if (isScript) {

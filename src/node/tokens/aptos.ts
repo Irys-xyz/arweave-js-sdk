@@ -9,13 +9,13 @@ import {
 import type { Signer } from "arbundles";
 import { AptosSigner } from "arbundles";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types";
-import BaseNodeCurrency from "../currency";
+import type { TokenConfig, Tx } from "../../common/types";
+import { BaseNodeToken } from "../token";
 import sha3 from "js-sha3";
 import AsyncRetry from "async-retry";
 // import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
 
-export default class AptosConfig extends BaseNodeCurrency {
+export default class AptosConfig extends BaseNodeToken {
   protected declare providerInstance?: AptosClient;
   protected accountInstance: AptosAccount | undefined;
   protected signerInstance: AptosSigner | undefined;
@@ -24,7 +24,7 @@ export default class AptosConfig extends BaseNodeCurrency {
   protected txLock: Promise<unknown> = Promise.resolve();
   protected locked = false;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
     if (!config?.opts?.signingFunction && Buffer.isBuffer(config?.wallet)) {
       // @ts-expect-error custom prop
@@ -106,7 +106,7 @@ export default class AptosConfig extends BaseNodeCurrency {
   }
 
   async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number }> {
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
     const client = await this.getProvider();
 
     const builder = new TransactionBuilderRemoteABI(client, { sender: this.address });
@@ -165,9 +165,10 @@ export default class AptosConfig extends BaseNodeCurrency {
     to: string,
     fee?: { gasUnitPrice: number; maxGasAmount: number },
   ): Promise<{ txId: string | undefined; tx: any }> {
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run irys.ready()");
     // mutex so multiple aptos txs aren't in flight with the same sequence number
     const unlock = await this.lock();
+
     const client = await this.getProvider();
     const builder = new TransactionBuilderRemoteABI(client, {
       sender: this.address,

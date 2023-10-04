@@ -1,14 +1,14 @@
 import type BigNumber from "bignumber.js";
 import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions, bundleAndSignData } from "arbundles";
 import type { FileDataItem } from "arbundles/file";
-import type Bundlr from "./bundlr";
+import type Irys from "./irys";
 
 // common types shared between web and node versions
-export interface CreateTxData {
+export type CreateTxData = {
   amount: BigNumber.Value;
   to: string;
   fee?: string;
-}
+};
 
 // export type Arbundles = typeof arbundles | typeof webArbundles;
 export interface Arbundles {
@@ -20,15 +20,20 @@ export interface Arbundles {
   bundleAndSignData: typeof bundleAndSignData;
 }
 
-export interface BundlrTransaction extends DataItem {
+export interface IrysTransaction extends DataItem {
   sign: () => Promise<Buffer>;
   size: number;
   uploadWithReceipt: (opts?: UploadOptions) => Promise<UploadReceipt>;
   upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
   upload(opts?: UploadOptions): Promise<UploadResponse>;
-  // fromRaw(rawTransaction: Buffer, bundlrInstance: Bundlr): BundlrTransaction;
+  isValid(): Promise<boolean>;
+  // fromRaw(rawTransaction: Buffer, IrysInstance: Irys): IrysTransaction;
 }
-export type BundlrTransactonCtor = new (data: string | Uint8Array, bundlr: Bundlr, opts?: BundlrTransactionCreateOptions) => BundlrTransaction;
+export type IrysTransactonCtor = new (
+  data: string | Uint8Array,
+  Irys: Pick<Irys, "uploader" | "tokenConfig" | "arbundles">,
+  opts?: IrysTransactionCreateOptions,
+) => IrysTransaction;
 
 export interface Tx {
   from: string;
@@ -38,8 +43,8 @@ export interface Tx {
   pending: boolean;
   confirmed: boolean;
 }
-export interface CurrencyConfig {
-  bundlr: Bundlr;
+export interface TokenConfig {
+  irys: Irys;
   name: string;
   ticker: string;
   minConfirm?: number;
@@ -49,15 +54,15 @@ export interface CurrencyConfig {
   opts?: any;
 }
 
-export interface BundlrConfig {
+export interface IrysConfig {
   timeout?: number;
   providerUrl?: string;
   contractAddress?: string;
-  currencyOpts?: object;
+  tokenOpts?: object;
   headers?: Record<string, string>;
 }
 
-export interface Currency {
+export interface Token {
   isSlow: boolean;
   needsFee: boolean;
 
@@ -69,7 +74,7 @@ export interface Currency {
 
   ticker: string;
 
-  bundlr: Bundlr;
+  irys: Irys;
 
   getTx(txId: string): Promise<Tx>;
 
@@ -114,28 +119,23 @@ export interface Manifest {
 export interface UploadResponse {
   // The ID of the transaction
   id: string;
-
-  /**
-   * All below (bar timestamp) are optional (requiring the getReceiptSignature option)
-   */
-
   // The Arweave public key of the node that received the transaction
-  public?: string;
+  public: string;
   // The signature of this receipt
-  signature?: string;
+  signature: string;
   // the maximum expected Arweave block height for transaction inclusion
-  deadlineHeight?: number;
+  deadlineHeight: number;
   // List of validator signatures
-  validatorSignatures?: { address: string; signature: string }[];
-  // The UNIX (MS precision) timestamp of when the node received the Tx. Only optional if the upload receives a `201` error in response to a duplicate transaction upload.
-  timestamp?: number;
+  validatorSignatures: { address: string; signature: string }[];
+  // The UNIX (MS precision) timestamp of when the node received the Tx.
+  timestamp: number;
   // The receipt version
-  version?: "1.0.0";
-  // Injected verification function (same as Utils/Bundlr.verifyReceipt) - only present if getReceiptSignature is set.
-  verify?: () => Promise<boolean>;
+  version: "1.0.0";
+  // Injected verification function (same as Utils/Irys.verifyReceipt)
+  verify: () => Promise<boolean>;
 }
 
-export type UploadReceipt = Required<UploadResponse>;
+export type UploadReceipt = /* Required<UploadResponse>; */ UploadResponse;
 export type UploadReceiptData = Omit<UploadReceipt, "verify">;
 
 export interface FundResponse {
@@ -152,10 +152,8 @@ export interface WithdrawalResponse {
 }
 
 export type CreateAndUploadOptions = DataItemCreateOptions & { upload?: UploadOptions };
-export interface UploadOptions {
-  // If you want to receive the cryptographic receipt for your upload - if the upload is a duplicate (i.e A transaction with the same signature has already been uploaded), setting this to true will cause it to throw.
-  getReceiptSignature?: boolean;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface UploadOptions {}
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
 //     paths = "arweave/paths"
@@ -165,4 +163,42 @@ export interface UploadOptions {
 //     "0.1.0" = "0.1.0"
 // }
 
-export type BundlrTransactionCreateOptions = DataItemCreateOptions & { dataIsRawTransaction?: boolean };
+export type IrysTransactionCreateOptions = DataItemCreateOptions & { dataIsRawTransaction?: boolean };
+
+export type HashingAlgo = "sha256" | "sha384";
+
+export type ProvenanceProof = {
+  dataProtocol: "Provenance-Confirmation" | string;
+  hashingAlgo?: HashingAlgo | string;
+  dataHash: string;
+  uploadedFor?: string;
+  prompt?: string;
+  promptHash?: string;
+  model?: string;
+};
+
+export type TxGqlNode = {
+  id: string;
+  receipt: {
+    deadlineHeight: number;
+    signature: string;
+    timestamp: number;
+    version: string;
+  };
+  tags: { name: string; value: string }[];
+  address: string;
+  currency: string;
+  signature: string;
+  timetamp: number;
+};
+
+export type TxGqlResponse = {
+  data: {
+    transactions: {
+      edges: {
+        node: TxGqlNode;
+      }[];
+      pageInfo?: { endCursor: string | null; hasNextPage: boolean };
+    };
+  };
+};

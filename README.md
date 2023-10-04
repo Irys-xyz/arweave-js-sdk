@@ -1,85 +1,95 @@
-# JS Client
+# Irys SDK
 
-Official JavaScript implementation of [the Bundlr client](https://docs.bundlr.network/).
-
-## Docs
-
-Full documentation [here](https://docs.bundlr.network/developer-docs/sdk)
+![](./assets/irys-SDK.png?raw=true)
 
 
-## Installation
+The [Irys SDK](http://docs.irys.xyz/developer-docs/irys-sdk) is a typesafe SDK for interacting with [Irys](https://irys.xyz).
 
-Install using npm:
+## What is Irys?
+
+Irys is the only provenance layer. It enables users to scale permanent data and precisely attribute its origin. Data uploaded to Irys is permanent, precise, and unconstrained. Learn [more in our docs](http://docs.irys.xyz/overview/about).
+
+
+## How Irys works
+
+![](./assets/provenance-machine.jpg?raw=true)
+
+When you upload data to Irys, you are immediately issued a receipt. This [receipt](https://docs.irys.xyz/learn/receipts) contains an ID that can be used to instantly download your data, along with attribution, authorship details, and timestamp accurate to the millisecond. The receipt acts as cryptographic proof of time and can be trustlessly verified as a safeguard against potentially malicious behavior.
+
+Next, Irys [includes your transaction in a bundle](http://docs.irys.xyz/learn/transaction-lifecycle) and submits it to Arweave where it is permanently stored. Irys guarantees your transaction will be finalized on Arweave (>= 50 block confirmations) and seeded to >=5 miners.
+
+For more details, including a video overview, [see our docs](http://docs.irys.xyz/overview/about).
+
+## Why Irys offers
+- Volumetric scaling: [Can handle 50K+ Transactions Per Second (TPS)](https://youtu.be/JKEivHKDXAo) and [limitless data volumes](http://docs.irys.xyz/learn/volumetric-scaling).
+- Instant uploads: Upload data to Irys in as little as 8ms.
+- Frictionless integration: [3-4 lines of code](http://docs.irys.xyz/developer-docs/irys-sdk) to integrate Irys.
+- Pay in any token: Sign and pay to use Irys in [14 supported tokens](http://docs.irys.xyz/overview/supported-tokens).
+
+## Getting started
+
+### Install the SDK
+
+Using npm:
 
 ```console
-npm install @bundlr-network/client
+npm install @irys/sdk
 ```
 
 or yarn:
-
 ```console
-yarn add @bundlr-network/client
+yarn add @irys/sdk
 ```
 
-## Permanently upload data in 3 steps
+### Connect to an Irys node
 
-1. Connect to a node
-
-```js
-const polygonPrivateKey = "6d779d4..."; // your private key
-const bundlr = new Bundlr("http://node1.bundlr.network", "matic", polygonPrivateKey);
-```
-
-2. Fund the node using any of our [supported tokens](https://docs.bundlr.network/overview/supported-tokens)
+Connect to [one of our three nodes](http://docs.irys.xyz/overview/nodes):
 
 ```js
-const polygonPrivateKey = "6d779d4..."; // your private key
-const bundlr = new Bundlr("http://node1.bundlr.network", "matic", polygonPrivateKey);
-```
-
-3. Upload data
-
-```js
-const dataToUpload = "GM world.";
-const response = await bundlr.upload(dataToUpload);
-```
-
-4. Instantly download your data
-
-```js
-console.log(`Data Available at => https://arweave.net/${response.id}`);
-```
-
-## Devnet
-
-When building projects, use our [Devnet](https://docs.bundlr.network/developer-docs/using-devnet) where uploads are paid for with free tokens including [Mumbai](https://mumbaifaucet.com/) and [Sepolia](sepoliafaucet). 
-
-## Bundlr in the browser
-
-When connecting to Bundlr from the browser, use the `WebBundlr` class to connect to a node using the end user's injected provider. 
-
-
-When using ethers 5, use this code. For [other providers, see our docs](https://docs.bundlr.network/developer-docs/sdk/bundlr-in-the-browser). 
-
-```js
-import { WebBundlr } from "@bundlr-network/client";
-import { providers } from "ethers";
+const getIrys = async () => {
+	const url = "https://devnet.irys.xyz";
+	const providerUrl = "https://rpc-mumbai.maticvigil.com";
+	const token = "matic";
  
-await window.ethereum.enable();
-const provider = new providers.Web3Provider(window.ethereum);
-const bundlr = new WebBundlr("https://node1.bundlr.network", "matic", provider);
-await bundlr.ready();
+	const irys = new Irys({
+		url, // URL of the node you want to connect to
+		token, // Token used for payment
+		key: process.env.PRIVATE_KEY, // ETH or SOL private key
+		config: { providerUrl }, // Optional provider URL, only required when using Devnet
+	});
+	return irys;
+};
 ```
 
-## Provenance toolkit
+### Upload
 
-The easiest way to get started using Bundlr in the browser is to fork the [Bundlr Provenance Toolkit](https://docs.bundlr.network/developer-docs/provenance-toolkit), a collection of UI components to kickstart your next project. 
+```js
+const uploadData = async () => {
+	const irys = await getIrys();
+	const dataToUpload = "GM world.";
+	try {
+		const receipt = await irys.upload(dataToUpload);
+		console.log(`Data uploaded ==> https://arweave.net/${receipt.id}`);
+	} catch (e) {
+		console.log("Error uploading data ", e);
+	}
+};
+```
 
-It contains UI components for managing node balances, uploading files, performing gassless uploads, and querying transactions.
+For more code examples, including code showing how to upload files and folders, see [our docs](http://docs.irys.xyz/developer-docs/irys-sdk).
+
+## Irys in the browser
+
+When using [Irys in the browser](http://docs.irys.xyz/developer-docs/irys-sdk/irys-in-the-browser), the end user's injected provider is used to sign transactions and pay for uploads. See our docs for [code examples](http://docs.irys.xyz/developer-docs/irys-sdk/irys-in-the-browser). 
+
+## UI toolkit
+
+To help kickstart your next project, we've released the [Provenance Toolkit](http://docs.irys.xyz/developer-docs/provenance-toolkit), a full suite of open source UI components.
+
+## Video
+
+We also have a [video](https://www.youtube.com/watch?v=eGFYxJPaEjg) teaching how to build with Irys.
 
 ## Support
 
-Any questions? 
-- Check out our [docs](https://docs.bundlr.network/)
-- Hit us up in [Discord](https://discord.bundlr.network/)
-  
+If you have any questions or just want to brainstorm about how to integrate Irys into your project, reach out to us in [Discord](https://discord.irys.xyz).

@@ -1,33 +1,46 @@
-import type { AxiosResponse } from "axios";
-import type Utils from "./utils";
-import type Api from "./api";
-import type { Arbundles, BundlrTransaction, CreateAndUploadOptions, Currency, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "./types";
 import { PromisePool } from "@supercharge/promise-pool";
-import retry from "async-retry";
-import { ChunkingUploader } from "./chunkingUploader";
-import type { Readable } from "stream";
-import Crypto from "crypto";
-import { ArweaveSigner, type DataItem, type JWKInterface } from "arbundles";
+import type { DataItem, JWKInterface } from "arbundles/node";
+import { ArweaveSigner } from "arbundles";
+import type { AxiosResponse } from "axios";
 import base64url from "base64url";
+import type { Readable } from "stream";
+import type Api from "./api";
+import { ChunkingUploader } from "./chunkingUploader";
+import type {
+  Token,
+  Arbundles,
+  IrysTransactonCtor,
+  UploadOptions,
+  UploadReceipt,
+  UploadResponse,
+  CreateAndUploadOptions,
+  Manifest,
+  IrysTransaction,
+} from "./types";
+import type Utils from "./utils";
+import { randomBytes } from "crypto";
+import retry from "async-retry";
 
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 export const CHUNKING_THRESHOLD = 50_000_000;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export default class Uploader {
   protected readonly api: Api;
-  protected currency: string;
-  protected currencyConfig: Currency;
+  protected token: string;
+  protected tokenConfig: Token;
   protected utils: Utils;
   protected contentTypeOverride: string | undefined;
   protected forceUseChunking: boolean | undefined;
   protected arbundles: Arbundles;
+  protected irysTransaction: IrysTransactonCtor;
 
-  constructor(api: Api, utils: Utils, currency: string, currencyConfig: Currency) {
+  constructor(api: Api, utils: Utils, token: string, tokenConfig: Token, irysTransaction: IrysTransactonCtor) {
     this.api = api;
-    this.currency = currency;
-    this.currencyConfig = currencyConfig;
-    this.arbundles = this.currencyConfig.bundlr.arbundles;
+    this.token = token;
+    this.tokenConfig = tokenConfig;
+    this.arbundles = this.tokenConfig.irys.arbundles;
     this.utils = utils;
+    this.irysTransaction = irysTransaction;
   }
 
   /**
@@ -47,19 +60,15 @@ export default class Uploader {
     if (this.forceUseChunking || (isDataItem && transaction.getRaw().length >= CHUNKING_THRESHOLD) || !isDataItem) {
       res = await this.chunkedUploader.uploadTransaction(isDataItem ? transaction.getRaw() : transaction, opts);
     } else {
-      const { protocol, host, port, timeout, headers: confHeaders } = this.api.getConfig();
+      const { url, timeout, headers: confHeaders } = this.api.getConfig();
       const headers = { "Content-Type": "application/octet-stream", ...confHeaders };
-      if (opts?.getReceiptSignature === true) headers["x-proof-type"] = "receipt";
-      res = await this.api.post(`${protocol}://${host}:${port}/tx/${this.currency}`, transaction.getRaw(), {
+      res = await this.api.post(new URL(`/tx/${this.token}`, url).toString(), transaction.getRaw(), {
         headers: headers,
         timeout,
         maxBodyLength: Infinity,
       });
       if (res.status === 201) {
-        if (opts?.getReceiptSignature === true) {
-          throw new Error(res.data as any as string);
-        }
-        res.data = { id: transaction.id };
+        throw new Error(res.data as any as string);
       }
     }
     switch (res.status) {
@@ -67,12 +76,10 @@ export default class Uploader {
         throw new Error("Not enough funds to send data");
       default:
         if (res.status >= 400) {
-          throw new Error(`whilst uploading Bundlr transaction: ${res.status} ${res.statusText}`);
+          throw new Error(`whilst uploading Irys transaction: ${res.status} ${res.statusText}`);
         }
     }
-    if (opts?.getReceiptSignature) {
-      res.data.verify = async (): Promise<boolean> => this.utils.verifyReceipt(res.data as UploadReceipt);
-    }
+    res.data.verify = async (): Promise<boolean> => this.utils.verifyReceipt(res.data as UploadReceipt);
     return res;
   }
 
@@ -82,11 +89,11 @@ export default class Uploader {
     }
     if (Buffer.isBuffer(data)) {
       if (data.length <= CHUNKING_THRESHOLD) {
-        const dataItem = this.arbundles.createData(data, this.currencyConfig.getSigner(), {
+        const dataItem = this.arbundles.createData(data, this.tokenConfig.getSigner(), {
           ...opts,
-          anchor: opts?.anchor ?? Crypto.randomBytes(32).toString("base64").slice(0, 32),
+          anchor: opts?.anchor ?? randomBytes(32).toString("base64").slice(0, 32),
         });
-        await dataItem.sign(this.currencyConfig.getSigner());
+        await dataItem.sign(this.tokenConfig.getSigner());
         return (await this.uploadTransaction(dataItem, { ...opts?.upload })).data;
       }
     }
@@ -96,16 +103,20 @@ export default class Uploader {
   // concurrently uploads transactions
   public async concurrentUploader(
     data: (DataItem | Buffer | Readable)[],
-    concurrency = 5,
-    resultProcessor?: (res: any) => Promise<any>,
-    logFunction?: (log: string) => Promise<any>,
+    opts?: {
+      concurrency?: number;
+      resultProcessor?: (res: any) => Promise<any>;
+      logFunction?: (log: string) => Promise<any>;
+      itemOptions?: CreateAndUploadOptions;
+    },
   ): Promise<{ errors: any[]; results: any[] }> {
     const errors = [] as Error[];
-    const logFn = logFunction
-      ? logFunction
+    const logFn = opts?.logFunction
+      ? opts?.logFunction
       : async (_: any): Promise<any> => {
           return;
         };
+    const concurrency = opts?.concurrency ?? 5;
     const results = (await PromisePool.for(data)
       .withConcurrency(concurrency >= 1 ? concurrency : 5)
       .handleError(async (error, _) => {
@@ -118,12 +129,12 @@ export default class Uploader {
         await retry(
           async (bail) => {
             try {
-              const res = await this.processItem(item);
+              const res = await this.processItem(item, opts?.itemOptions);
               if (i % concurrency == 0) {
                 await logFn(`Processed ${i} Items`);
               }
-              if (resultProcessor) {
-                return await resultProcessor({ item, res, i });
+              if (opts?.resultProcessor) {
+                return await opts.resultProcessor({ item, res, i });
               } else {
                 return { item, res, i };
               }
@@ -174,7 +185,7 @@ export default class Uploader {
   }
 
   get chunkedUploader(): ChunkingUploader {
-    return new ChunkingUploader(this.currencyConfig, this.api);
+    return new ChunkingUploader(this.tokenConfig, this.api);
   }
 
   set useChunking(state: boolean) {
@@ -212,7 +223,7 @@ export default class Uploader {
   ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }>;
 
   public async uploadBundle(
-    transactions: (BundlrTransaction | DataItem | Buffer)[],
+    transactions: (IrysTransaction | DataItem | Buffer)[],
     opts?: UploadOptions & { throwawayKey?: JWKInterface },
   ): Promise<AxiosResponse<UploadResponse> & { throwawayKey: JWKInterface; throwawayKeyAddress: string; txs: DataItem[] }> {
     const throwawayKey = opts?.throwawayKey ?? (await this.arbundles.getCryptoDriver().generateJWK());
@@ -221,13 +232,13 @@ export default class Uploader {
     const bundle = await this.arbundles.bundleAndSignData(txs, ephemeralSigner);
 
     // upload bundle with bundle specific tags, use actual signer for this.
-    const tx = this.arbundles.createData(bundle.getRaw(), this.currencyConfig.getSigner(), {
+    const tx = this.arbundles.createData(bundle.getRaw(), this.tokenConfig.getSigner(), {
       tags: [
         { name: "Bundle-Format", value: "binary" },
         { name: "Bundle-Version", value: "2.0.0" },
       ],
     });
-    await tx.sign(this.currencyConfig.getSigner());
+    await tx.sign(this.tokenConfig.getSigner());
 
     const res = await this.uploadTransaction(tx, opts);
     const throwawayKeyAddress = base64url(

@@ -4,15 +4,15 @@ import { Wallet } from "@ethersproject/wallet";
 import BigNumber from "bignumber.js";
 import { EthereumSigner, keccak256 } from "arbundles";
 import type { Signer } from "arbundles";
-import type { CurrencyConfig, Tx } from "../../common/types";
-import BaseNodeCurrency from "../currency";
+import type { TokenConfig, Tx } from "../../common/types";
+import { BaseNodeToken } from "../token";
 
 const ethereumSigner = EthereumSigner;
 
-export default class EthereumConfig extends BaseNodeCurrency {
+export default class EthereumConfig extends BaseNodeToken {
   protected declare providerInstance: JsonRpcProvider;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     super(config);
     this.base = ["wei", 1e18];
   }

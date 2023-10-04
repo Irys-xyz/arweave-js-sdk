@@ -1,7 +1,7 @@
 import type { Signer } from "arbundles";
 import { NearSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
-import type { CurrencyConfig, Tx } from "../../common/types";
+import type { TokenConfig, Tx } from "../../common/types";
 import { KeyPair } from "@near-js/crypto";
 import { BrowserLocalStorageKeyStore } from "@near-js/keystores-browser";
 import { SCHEMA, Signature, SignedTransaction, actionCreators, createTransaction } from "@near-js/transactions";
@@ -9,17 +9,17 @@ import bs58 from "bs58";
 import { serialize } from "borsh";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";
-import BaseWebCurrency from "../currency";
+import BaseWebToken from "../token";
 import type { Provider } from "@near-js/providers";
 import type { WalletConnection, Near } from "@near-js/wallet-account";
-export default class NearConfig extends BaseWebCurrency {
+export default class NearConfig extends BaseWebToken {
   // protected keyStore: KeyPair
   protected keyPair!: KeyPair;
   protected declare wallet: WalletConnection;
   protected near: Near;
   protected declare providerInstance: Provider;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     super(config);
     this.near = this.wallet._near;
     this.base = ["yoctoNEAR", 1e25];
@@ -141,7 +141,7 @@ export default class NearConfig extends BaseWebCurrency {
   }
 
   async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any }> {
-    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run bundlr.ready()");
+    if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
     const accessKey = await this.providerInstance.query({
       request_type: "view_access_key",
       finality: "final",

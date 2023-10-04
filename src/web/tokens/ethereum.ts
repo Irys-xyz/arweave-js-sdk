@@ -1,20 +1,26 @@
 import type { JsonRpcSigner, TransactionRequest, Web3Provider } from "@ethersproject/providers";
 import { BigNumber as EthBigNumber } from "@ethersproject/bignumber";
 import BigNumber from "bignumber.js";
-import type { Tx, CurrencyConfig } from "../../common/types";
-import BaseWebCurrency from "../currency";
-import { InjectedTypedEthereumSigner } from "arbundles/web";
+import type { Tx, TokenConfig } from "../../common/types";
+import BaseWebToken from "../token";
+import { InjectedTypedEthereumSigner, type InjectedTypedEthereumSignerMinimalSigner } from "arbundles/web";
 
 const ethereumSigner = InjectedTypedEthereumSigner;
 
-export default class EthereumConfig extends BaseWebCurrency {
+type MinimalSigner = InjectedTypedEthereumSignerMinimalSigner &
+  Pick<JsonRpcSigner, "sendTransaction" | "estimateGas" | "getGasPrice" | "populateTransaction">;
+type MinimalProvider = { getSigner: () => MinimalSigner } & Pick<
+  Web3Provider,
+  "getTransaction" | "getNetwork" | "_ready" | "send" | "estimateGas" | "getGasPrice" | "getTransactionCount"
+>;
+export default class EthereumConfig extends BaseWebToken {
   protected signer!: InjectedTypedEthereumSigner;
-  protected declare wallet: Web3Provider;
-  protected w3signer!: JsonRpcSigner;
-  protected declare providerInstance: Web3Provider;
+  protected declare wallet: MinimalProvider;
+  protected w3signer!: MinimalSigner;
+  protected declare providerInstance: MinimalProvider;
   public readonly inheritsRPC = true;
 
-  constructor(config: CurrencyConfig) {
+  constructor(config: TokenConfig) {
     super(config);
     this.base = ["wei", 1e18];
   }
