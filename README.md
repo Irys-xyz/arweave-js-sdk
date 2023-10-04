@@ -54,7 +54,7 @@ const getIrys = async () => {
 	const irys = new Irys({
 		url, // URL of the node you want to connect to
 		token, // Token used for payment
-		key: process.env.PRIVATE_KEY, // ETH or SOL private key
+		key: process.env.PRIVATE_KEY, // Private key
 		config: { providerUrl }, // Optional provider URL, only required when using Devnet
 	});
 	return irys;
@@ -69,7 +69,7 @@ const uploadData = async () => {
 	const dataToUpload = "GM world.";
 	try {
 		const receipt = await irys.upload(dataToUpload);
-		console.log(`Data uploaded ==> https://arweave.net/${receipt.id}`);
+		console.log(`Data uploaded ==> https://gateway.irys.xyz/${receipt.id}`);
 	} catch (e) {
 		console.log("Error uploading data ", e);
 	}
