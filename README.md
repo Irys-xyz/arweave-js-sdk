@@ -1,7 +1,6 @@
+# Irys SDK
 
 ![](./assets/irys-SDK.png?raw=true)
-
-# Irys SDK
 
 
 The [Irys SDK](http://docs.irys.xyz/developer-docs/irys-sdk) is a typesafe SDK for interacting with [Irys](https://irys.xyz).
