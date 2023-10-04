@@ -1,5 +1,4 @@
 import "./common/hack.js";
-import NB from "./node/irys";
 export { default as WebIrys } from "./web/irys";
-export const NodeIrys = NB;
-export default NodeIrys;
+export { default as NodeIrys } from "./node/irys.js";
+export { default } from "./node/irys.js";
