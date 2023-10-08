@@ -112,10 +112,11 @@ export default class Api {
   public async request<T = any>(path: string, config?: ApiRequestConfig): Promise<AxiosResponse<T>> {
     const instance = this.instance;
     const url = config?.url ?? new URL(path, this.config.url).toString();
-    return AsyncRetry((_) => instance({ ...config, url }), {
-      ...this.config.retry,
-      ...config?.retry,
-    });
+    // return AsyncRetry((_) => instance({ ...config, url }), {
+    //   ...this.config.retry,
+    //   ...config?.retry,
+    // });
+    return instance({ ...config, url });
   }
 }
 
