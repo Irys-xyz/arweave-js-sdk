@@ -88,7 +88,7 @@ To help kickstart your next project, we've released the [Provenance Toolkit](htt
 
 ## Video
 
-We also have a [video](https://www.youtube.com/watch?v=eGFYxJPaEjg) teaching how to build with Irys.
+We also have a [video](https://youtu.be/CdWn9clSybM) teaching how to build with Irys.
 
 ## Support
 
