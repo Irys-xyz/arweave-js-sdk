@@ -69,7 +69,7 @@ const uploadData = async () => {
 	const dataToUpload = "GM world.";
 	try {
 		const receipt = await irys.upload(dataToUpload);
-		console.log(`Data uploaded ==> https://arweave.net/${receipt.id}`);
+		console.log(`Data uploaded ==> https://gatewat.irys.xyz/${receipt.id}`);
 	} catch (e) {
 		console.log("Error uploading data ", e);
 	}
