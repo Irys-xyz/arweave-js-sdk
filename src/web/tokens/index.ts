@@ -11,6 +11,7 @@ import { EthereumEthersV5 } from "../providers/ethereum/ethersv5";
 import { EthereumEthersV6 } from "../providers/ethereum/ethersv6";
 import type { TokenConfig } from "src/common/types";
 import type BaseWebToken from "../token";
+import ArweaveConfig from "./arweave";
 
 export default function getTokenConfig(config: {
   irys: WebIrys;
@@ -121,6 +122,15 @@ export default function getTokenConfig(config: {
         providerUrl: config.providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",
         wallet: config.wallet,
       });
+    case "arweave":
+      return new ArweaveConfig({
+        irys: config.irys,
+        name: "arweave",
+        ticker: "AR",
+        providerUrl: config.providerUrl ?? "https://arweave.net",
+        wallet: config.wallet,
+      });
+
     default:
       throw new Error(`Unknown/Unsupported token ${config.token}`);
   }

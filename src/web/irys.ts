@@ -53,7 +53,7 @@ export class WebIrys extends Irys {
     this.tokenConfig = getTokenConfig({
       irys: this,
       token: token.toLowerCase(),
-      wallet: wallet?.provider,
+      wallet: wallet?.provider ?? wallet,
       providerUrl: config?.providerUrl ?? wallet?.rpcUrl,
       contractAddress: config?.contractAddress,
       providerName: wallet?.name,
