@@ -12,7 +12,7 @@ async function main() {
     if (profiling) console.profile();
     const keys = JSON.parse(readFileSync("wallet.json").toString());
 
-    const nodeUrl = "http://devnet.irys.network";
+    const nodeUrl = "http://devnet.irys.xyz";
     const testFolder = "testFolder";
 
     const { key, providerUrl } = keys.testnet.ethereum;
@@ -20,7 +20,7 @@ async function main() {
     // let irys = await irys.init({ url: nodeUrl, currency: "aptos", publicKey: account.pubKey().toString(), signingFunction });
     // let irys = irys.init({ url: nodeUrl, currency: "aptos", privateKey: key })
 
-    const irys = new Irys({ url: nodeUrl, currency: "ethereum", wallet: key, config: { providerUrl } });
+    const irys = new Irys({ url: nodeUrl, token: "ethereum", key: key, config: { providerUrl } });
     await irys.ready();
     console.log(irys.address);
 
@@ -28,7 +28,7 @@ async function main() {
     let tx;
 
     console.log(`balance: ${await irys.getLoadedBalance()}`);
-    const bAddress = await irys.utils.getBundlerAddress(irys.currency);
+    const bAddress = await irys.utils.getBundlerAddress(irys.token);
     console.log(`irys address: ${bAddress}`);
 
     tx = irys.createTransaction("Hello, world!", { tags: [{ name: "Content-type", value: "text/plain" }] });
@@ -52,7 +52,7 @@ async function main() {
     res = await transaction.upload({ getReceiptSignature: false });
 
     const signingInfo = await transaction.getSignatureData();
-    const signed = await irys.currencyConfig.sign(signingInfo);
+    const signed = await irys.tokenConfig.sign(signingInfo);
     transaction.setSignature(Buffer.from(signed));
 
     console.log(transaction.id);
