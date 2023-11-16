@@ -4,10 +4,11 @@ import crypto from "crypto";
 import type { TokenConfig, Tx } from "../../common/types";
 import base64url from "base64url";
 import { Arweave } from "../utils";
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type * as _ from "arconnect";
 import BaseWebToken from "../token";
+import type { WebIrysConfig } from "../types";
+import { BaseWebIrys } from "../base";
 
 export default class ArweaveConfig extends BaseWebToken {
   protected declare providerInstance: Arweave;
@@ -15,7 +16,7 @@ export default class ArweaveConfig extends BaseWebToken {
   opts?: { provider?: "arconnect" | "arweave.app"; network?: string };
   protected declare wallet: Window["arweaveWallet"];
   protected signerInstance: ArconnectSigner;
-  constructor(config: TokenConfig) {
+  constructor(config: TokenConfig<Window["arweaveWallet"]>) {
     super(config);
     this.base = ["winston", 1e12];
     this.needsFee = true;
@@ -124,5 +125,23 @@ export default class ArweaveConfig extends BaseWebToken {
     const pubKey = await this.getPublicKey();
     const address = this.ownerToAddress(pubKey);
     this._address = address;
+  }
+}
+
+export class ArweaveWebIrys extends BaseWebIrys {
+  constructor({ url, wallet, config }: WebIrysConfig<Window["arweaveWallet"]>) {
+    super({
+      url,
+      wallet,
+      config,
+      getTokenConfig: (irys) =>
+        new ArweaveConfig({
+          irys,
+          name: "arweave",
+          ticker: "AR",
+          providerUrl: config?.providerUrl ?? "https://arweave.net",
+          wallet: wallet.provider,
+        }),
+    });
   }
 }

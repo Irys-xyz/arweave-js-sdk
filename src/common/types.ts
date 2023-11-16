@@ -43,15 +43,15 @@ export interface Tx {
   pending: boolean;
   confirmed: boolean;
 }
-export interface TokenConfig {
+export interface TokenConfig<Wallet = string | object, Opts = any> {
   irys: Irys;
   name: string;
   ticker: string;
   minConfirm?: number;
-  wallet?: string | object;
+  wallet?: Wallet;
   providerUrl: string;
   isSlow?: boolean;
-  opts?: any;
+  opts?: Opts;
 }
 
 export interface IrysConfig {
@@ -136,7 +136,7 @@ export interface UploadResponse {
 }
 
 export type UploadReceipt = /* Required<UploadResponse>; */ UploadResponse;
-export type UploadReceiptData = Omit<UploadReceipt, "verify">;
+export type UploadReceiptData = Omit<UploadReceipt, "verify" | "validatorSignatures">;
 
 export interface FundResponse {
   reward: string;

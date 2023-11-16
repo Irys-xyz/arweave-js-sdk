@@ -7,7 +7,7 @@ import type { Tx, TokenConfig } from "../common/types";
 import axios from "axios";
 import type { WebToken } from "./types";
 import utils from "../common/utils";
-import type WebIrys from "./irys";
+import type { BaseWebIrys } from "./base";
 
 export default abstract class BaseWebToken implements WebToken {
   public base!: [string, number];
@@ -17,7 +17,7 @@ export default abstract class BaseWebToken implements WebToken {
   protected providerInstance?: any;
   public ticker!: string;
   public name!: string;
-  public irys!: WebIrys;
+  public irys!: BaseWebIrys;
 
   protected minConfirm = 5;
   public isSlow = false;

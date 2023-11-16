@@ -127,7 +127,7 @@ export default abstract class Irys {
     return this.uploader.uploadData(data, { ...opts, upload: { getReceiptSignature: true } }) as Promise<UploadReceipt>;
   }
 
-  async ready(): Promise<Irys> {
+  async ready(): Promise<this> {
     this.tokenConfig.ready ? await this.tokenConfig.ready() : true;
     this.address = this.tokenConfig.address;
     return this;
