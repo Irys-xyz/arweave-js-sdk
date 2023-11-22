@@ -1,7 +1,7 @@
 import { Provenance } from "../common/provenance";
-import { UploadReceipt } from "../common/types";
-import { CreateAndUploadOptions } from "../common/types";
-import NodeIrys from "./irys";
+import type { UploadReceipt } from "../common/types";
+import type { CreateAndUploadOptions } from "../common/types";
+import type NodeIrys from "./irys";
 
 export class NodeProvenance extends Provenance {
   declare irys: NodeIrys;
@@ -10,7 +10,7 @@ export class NodeProvenance extends Provenance {
   }
 
   public async uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadReceipt> {
-    return this.irys.uploadFile(path, { ...opts, upload: { ...opts?.upload, getReceiptSignature: true } }) as Promise<UploadReceipt>;
+    return this.irys.uploadFile(path, { ...opts, upload: { ...opts?.upload } }) as Promise<UploadReceipt>;
   }
 
   public async uploadFolder(
@@ -40,7 +40,7 @@ export class NodeProvenance extends Provenance {
       interactivePreflight,
       logFunction,
       manifestTags,
-      itemOptions: { ...itemOptions, upload: { ...itemOptions?.upload, getReceiptSignature: true } },
+      itemOptions: { ...itemOptions, upload: { ...itemOptions?.upload } },
     }) as Promise<UploadReceipt & { receipts: Map<string, UploadReceipt> }>;
   }
 }

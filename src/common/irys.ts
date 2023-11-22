@@ -123,8 +123,11 @@ export default abstract class Irys {
     return this.uploader.uploadData(data, opts);
   }
 
+  /**
+   * @deprecated - use upload instead
+   */
   async uploadWithReceipt(data: string | Buffer | Readable, opts?: DataItemCreateOptions): Promise<UploadReceipt> {
-    return this.uploader.uploadData(data, { ...opts, upload: { getReceiptSignature: true } }) as Promise<UploadReceipt>;
+    return this.uploader.uploadData(data, { ...opts }) as Promise<UploadReceipt>;
   }
 
   async ready(): Promise<this> {

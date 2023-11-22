@@ -152,8 +152,8 @@ export interface WithdrawalResponse {
 }
 
 export type CreateAndUploadOptions = DataItemCreateOptions & { upload?: UploadOptions };
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface UploadOptions {}
+
+export type UploadOptions = Record<string, never>;
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
 //     paths = "arweave/paths"
