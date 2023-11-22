@@ -31,7 +31,7 @@ program
     "Adjust the upload-dir batch size (process more items at once - uses more resources (network, memory, cpu) accordingly!)",
     "5",
   )
-  .option("--debug, -d", "Increases verbosity of errors and logs additional debug information. Used for troubleshooting.", false)
+  .option("-d, --debug", "Increases verbosity of errors and logs additional debug information. Used for troubleshooting.", false)
   .option("--index-file <string>", "Name of the file to use as an index for upload-dir manifests (relative to the path provided to upload-dir).")
   .option("--provider-url <string>", "Override the provider URL")
   .option("--contract-address <string>", "Override the contract address")
