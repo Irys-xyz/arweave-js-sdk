@@ -300,7 +300,7 @@ export default class NodeUploader extends Uploader {
    * @param indexFile optional path to an index file
    * @returns the path to the generated manifest
    */
-  private async generateManifestFromCsv(path: string, nowRemoved?: Map<string, true>, indexFile?: string): Promise<string> {
+  public async generateManifestFromCsv(path: string, nowRemoved?: Map<string, true>, indexFile?: string): Promise<string> {
     const csvstrm = parse({ delimiter: ",", columns: true });
     const csvPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.csv`);
     const manifestPath = join(join(path, `${sep}..`), `${basename(path)}-manifest.json`);
