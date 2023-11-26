@@ -310,7 +310,9 @@ export class ChunkingUploader extends EventEmitter {
     });
 
     if (finishUpload.status === 402) {
-      throw new Error("Not enough funds to send data");
+      const retryAfterHeader = finishUpload?.headers?.["retry-after"];
+      const errorMsg = finishUpload.data + (retryAfterHeader ? ` - retry after ${retryAfterHeader}s` : "");
+      throw new Error(errorMsg);
     }
     // this will throw if the dataItem reconstruction fails
     Utils.checkAndThrow(finishUpload, "Finalising upload", [201]);

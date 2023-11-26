@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import { PromisePool } from "@supercharge/promise-pool";
 import type { DataItem, JWKInterface } from "arbundles/node";
 import { ArweaveSigner } from "arbundles";
@@ -73,7 +74,9 @@ export default class Uploader {
     }
     switch (res.status) {
       case 402:
-        throw new Error("Not enough funds to send data");
+        const retryAfterHeader = res?.headers?.["retry-after"];
+        const errorMsg = res.data + (retryAfterHeader ? ` - retry after ${retryAfterHeader}s` : "");
+        throw new Error(errorMsg);
       default:
         if (res.status >= 400) {
           throw new Error(`whilst uploading Irys transaction: ${res.status} ${res.statusText}`);
