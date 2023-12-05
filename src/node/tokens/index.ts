@@ -10,10 +10,10 @@ import axios from "axios";
 import utils from "../../common/utils";
 import AptosConfig from "./aptos";
 import MultiSignatureAptos from "./multiAptos";
-import type NodeIrys from "../irys";
+import type BaseNodeIrys from "../base";
 
 export default function getTokenConfig(
-  Irys: NodeIrys,
+  Irys: BaseNodeIrys,
   token: string,
   wallet: any,
   url: string,

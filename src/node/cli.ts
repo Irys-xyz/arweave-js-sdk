@@ -98,7 +98,7 @@ program
       const Irys = await init(options, "upload");
       const tags = parseTags(options?.tags);
       const res = await Irys.uploadFile(file, { tags: tags ?? [] });
-      console.log(`Uploaded to https://arweave.net/${res?.id}`);
+      console.log(`Uploaded to https://gateway.irys.xyz/${res?.id}`);
     } catch (err: any) {
       console.error(`Error whilst uploading file: ${options.debug ? err.stack : err.message} `);
       return;
@@ -141,7 +141,7 @@ async function uploadDir(folder: string): Promise<void> {
       },
     });
     if (!res) return console.log("Nothing to upload");
-    console.log(`Uploaded to https://arweave.net/${res.id}`);
+    console.log(`Uploaded to https://gateway.irys.xyz/${res.id}`);
   } catch (err: any) {
     console.error(`Error whilst uploading ${folder} - ${options.debug ? err.stack : err.message}`);
   }
@@ -253,6 +253,7 @@ async function init(opts, operation): Promise<Irys> {
       config: {
         providerUrl: opts.providerUrl,
         contractAddress: opts.contractAddress,
+        timeout: opts.timeout,
       },
     });
     await bundler.ready();
