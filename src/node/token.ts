@@ -8,7 +8,7 @@ import axios from "axios";
 import type { NodeToken } from "./types";
 import utils from "../common/utils";
 import type Utils from "../common/utils";
-import type NodeIrys from "./irys";
+import type BaseNodeIrys from "./base";
 export abstract class BaseNodeToken implements NodeToken {
   public base!: [string, number];
   protected wallet: any;
@@ -22,7 +22,7 @@ export abstract class BaseNodeToken implements NodeToken {
   public needsFee = true;
   protected opts?: any;
   protected utils!: Utils;
-  public irys!: NodeIrys;
+  public irys!: BaseNodeIrys;
 
   constructor(config: TokenConfig) {
     Object.assign(this, config);

@@ -6,6 +6,8 @@ import { EthereumSigner, keccak256 } from "arbundles";
 import type { Signer } from "arbundles";
 import type { TokenConfig, Tx } from "../../common/types";
 import { BaseNodeToken } from "../token";
+import BaseNodeIrys from "../base";
+import type { NodeIrysConfig } from "../types";
 
 const ethereumSigner = EthereumSigner;
 
@@ -132,5 +134,23 @@ export default class EthereumConfig extends BaseNodeToken {
 
   getPublicKey(): Buffer {
     return this.getSigner().publicKey;
+  }
+}
+
+export class EthereumIrys extends BaseNodeIrys {
+  constructor({ url, key, config }: NodeIrysConfig<string>) {
+    super({
+      url,
+      config,
+      getTokenConfig: (irys) =>
+        new EthereumConfig({
+          irys,
+          name: "ethereum",
+          ticker: "ETH",
+          providerUrl: config?.providerUrl ?? "https://cloudflare-eth.com/",
+          wallet: key,
+          opts: config?.tokenOpts,
+        }),
+    });
   }
 }

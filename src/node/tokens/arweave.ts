@@ -1,5 +1,5 @@
 import { Arweave } from "../utils";
-import type { Signer } from "arbundles";
+import type { JWKInterface, Signer } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import crypto from "crypto";
@@ -7,6 +7,8 @@ import type { TokenConfig, Tx } from "../../common/types";
 import base64url from "base64url";
 import { BaseNodeToken } from "../token";
 import type Transaction from "arweave/node/lib/transaction";
+import type { NodeIrysConfig } from "../types";
+import BaseNodeIrys from "../base";
 
 export default class ArweaveConfig extends BaseNodeToken {
   protected declare providerInstance: Arweave;
@@ -109,5 +111,25 @@ export default class ArweaveConfig extends BaseNodeToken {
 
   getPublicKey(): string {
     return this.wallet.n;
+  }
+}
+
+export class ArweaveIrys extends BaseNodeIrys {
+  constructor({ url, key, config }: NodeIrysConfig<JWKInterface>) {
+    super({
+      url,
+      config,
+      getTokenConfig: (irys) =>
+        new ArweaveConfig({
+          irys,
+          name: "arweave",
+          ticker: "AR",
+          minConfirm: 10,
+          providerUrl: config?.providerUrl ?? "https://arweave.net",
+          wallet: key,
+          isSlow: true,
+          opts: config?.tokenOpts,
+        }),
+    });
   }
 }
