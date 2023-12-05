@@ -9,6 +9,7 @@ import type { NodeToken } from "./types";
 import NodeUploader from "./upload";
 import * as arbundles from "./utils";
 import { NodeProvenance } from "./provenance";
+import { Offchain } from "src/common/offchain";
 
 export class BaseNodeIrys extends Irys {
   public uploader: NodeUploader; // re-define type
@@ -68,6 +69,7 @@ export class BaseNodeIrys extends Irys {
     this.uploader = new NodeUploader(this.api, this.utils, this.token, this.tokenConfig, this.IrysTransaction);
     this.provenance = new NodeProvenance(this);
     this.transactions = new Transaction(this);
+    this.offchain = new Offchain(this);
     this._readyPromise = this.tokenConfig.ready ? this.tokenConfig.ready() : new Promise((r) => r());
   }
 
