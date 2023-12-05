@@ -62,7 +62,8 @@ export default class Uploader {
     } else {
       const { url, timeout, headers: confHeaders } = this.api.getConfig();
       const headers = { "Content-Type": "application/octet-stream", ...confHeaders };
-      res = await this.api.post(new URL(`/tx/${this.token}`, url).toString(), transaction.getRaw(), {
+      if (opts?.offchainExpiresIn) headers["x-irys-expires"] = opts.offchainExpiresIn;
+      res = await this.api.post(new URL(`${opts?.offchain ? "/od" : ""}/tx/${this.token}`, url).toString(), transaction.getRaw(), {
         headers: headers,
         timeout,
         maxBodyLength: Infinity,

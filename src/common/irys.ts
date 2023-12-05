@@ -23,6 +23,7 @@ import type Uploader from "./upload";
 import Utils from "./utils";
 import { withdrawBalance } from "./withdrawal";
 import Query from "@irys/query";
+import type { Offchain } from "./offchain";
 
 export default abstract class Irys {
   public api!: Api;
@@ -34,6 +35,7 @@ export default abstract class Irys {
   public tokenConfig!: Token;
   public provenance!: Provenance;
   public transactions!: Transaction;
+  public offchain!: Offchain;
   protected _readyPromise: Promise<void> | undefined;
   public url: URL;
   public arbundles: Arbundles;

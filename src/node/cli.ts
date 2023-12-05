@@ -37,7 +37,9 @@ program
   .option("--contract-address <string>", "Override the contract address")
   .option("--content-type <string>", "Override the content type for *ALL* files uploaded")
   .option("--remove-deleted", "Removes previously uploaded (but now deleted) items from the manifest")
-  .option("--force-chunking", "Forces usage of chunking for all files regardless of size");
+  .option("--force-chunking", "Forces usage of chunking for all files regardless of size")
+  .option("--upgradeable", "Uploads file(s) as upgradable transactions");
+
 // Define commands
 // uses NPM view to query the package's version.
 program.version(Irys.VERSION, "-v, --version", "Gets the current package version of the Irys client");
