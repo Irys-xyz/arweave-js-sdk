@@ -9,7 +9,7 @@ import AptosConfig from "./aptos";
 import type WebIrys from "../irys";
 import { EthereumEthersV5 } from "../providers/ethereum/ethersv5";
 import { EthereumEthersV6 } from "../providers/ethereum/ethersv6";
-import type { TokenConfig } from "src/common/types";
+import type { TokenConfig } from "../../common/types";
 import type BaseWebToken from "../token";
 import ArweaveConfig from "./arweave";
 

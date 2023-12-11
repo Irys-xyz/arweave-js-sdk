@@ -2,7 +2,6 @@ import type BigNumber from "bignumber.js";
 import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions, bundleAndSignData } from "arbundles";
 import type { FileDataItem } from "arbundles/file";
 import type Irys from "./irys";
-import type { Override } from "./utilityTypes";
 
 // common types shared between web and node versions
 export type CreateTxData = {
@@ -11,18 +10,8 @@ export type CreateTxData = {
   fee?: string;
 };
 
-// we don't need a nonce as a delete is a one-time operation
-export type OdDeleteBody = {
-  txId: string;
-  token: string;
-  publicKey: Buffer;
-  sigType: number;
-};
-
 // encoding aliases
 export type Base64URLString = string;
-
-export type OdDeleteBodyEncoded = Override<OdDeleteBody, { publicKey: Base64URLString; signature: Base64URLString }>;
 
 // export type Arbundles = typeof arbundles | typeof webArbundles;
 export type Arbundles = {
@@ -38,8 +27,8 @@ export type IrysTransaction = {
   sign: () => Promise<Buffer>;
   size: number;
   uploadWithReceipt: (opts?: UploadOptions) => Promise<UploadReceipt>;
-  upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
-  upload(opts?: UploadOptions): Promise<UploadResponse>;
+  upload(opts: UploadOptions & { offchain: true }): Promise<UploadResponse>;
+  upload(opts?: UploadOptions): Promise<UploadReceipt>;
   isValid(): Promise<boolean>;
   // fromRaw(rawTransaction: Buffer, IrysInstance: Irys): IrysTransaction;
 } & DataItem;
@@ -134,22 +123,22 @@ export type UploadResponse = {
   // The ID of the transaction
   id: string;
   // The Arweave public key of the node that received the transaction
-  public: string;
+  public?: string;
   // The signature of this receipt
-  signature: string;
+  signature?: string;
   // the maximum expected Arweave block height for transaction inclusion
-  deadlineHeight: number;
+  deadlineHeight?: number;
   // List of validator signatures
-  validatorSignatures: { address: string; signature: string }[];
+  validatorSignatures?: { address: string; signature: string }[];
   // The UNIX (MS precision) timestamp of when the node received the Tx.
   timestamp: number;
   // The receipt version
-  version: "1.0.0";
+  version?: "1.0.0";
   // Injected verification function (same as Utils/Irys.verifyReceipt)
-  verify: () => Promise<boolean>;
+  verify?: () => Promise<boolean>;
 };
 
-export type UploadReceipt = /* Required<UploadResponse>; */ UploadResponse;
+export type UploadReceipt = Required<UploadResponse>;
 export type UploadReceiptData = Omit<UploadReceipt, "verify" | "validatorSignatures">;
 
 export type FundResponse = {

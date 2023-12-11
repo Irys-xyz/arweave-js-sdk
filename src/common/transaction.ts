@@ -56,9 +56,9 @@ export default function buildIrysTransaction(irys: Pick<Irys, "uploader" | "toke
     }
 
     // parent type union not strictly required, but might be if this type gets extended
-    upload(opts: UploadOptions & { getReceiptSignature: true }): Promise<UploadReceipt>;
-    upload(opts?: UploadOptions): Promise<UploadResponse>;
-    async upload(opts?: UploadOptions): Promise<UploadResponse> {
+    upload(opts: UploadOptions & { offchain: true }): Promise<UploadResponse>;
+    upload(opts?: UploadOptions): Promise<UploadReceipt>;
+    async upload(opts?: UploadOptions): Promise<UploadReceipt> {
       return (await this.Irys.uploader.uploadTransaction(this, opts)).data;
     }
 

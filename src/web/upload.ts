@@ -1,6 +1,6 @@
 import Uploader from "../common/upload";
 import type WebIrys from "./irys";
-import type { CreateAndUploadOptions, Manifest, UploadOptions, UploadResponse } from "../common/types";
+import type { CreateAndUploadOptions, Manifest, UploadOptions, UploadReceipt, UploadResponse } from "../common/types";
 import type { DataItem, JWKInterface, Tag } from "arbundles";
 import { ArweaveSigner } from "arbundles";
 
@@ -21,7 +21,10 @@ export class WebUploader extends Uploader {
    * @param opts - optional options for the upload / data item creation
    * @returns
    */
-  public async uploadFile(file: File, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+  uploadFile(file: File, opts?: CreateAndUploadOptions & { upload: { offchain: true } }): Promise<UploadResponse>;
+  uploadFile(file: File, opts?: CreateAndUploadOptions): Promise<UploadReceipt>;
+
+  public async uploadFile(file: File, opts?: CreateAndUploadOptions): Promise<UploadReceipt> {
     const hasContentType = opts?.tags ? opts.tags.some(({ name }) => name.toLowerCase() === "content-type") : false;
     const tags = hasContentType ? opts?.tags : [...(opts?.tags ?? []), { name: "Content-Type", value: file.type }];
     return this.uploadData(Buffer.from(await file.arrayBuffer()), { tags, ...opts });
@@ -38,6 +41,42 @@ export class WebUploader extends Uploader {
    *
    * @returns Standard upload response from the bundler node, plus the throwaway key & address, manifest, manifest TxId and the list of generated transactions
    */
+  uploadFolder(
+    files: TaggedFile[],
+    opts?: UploadOptions & {
+      indexFileRelPath?: string;
+      manifestTags?: Tag[];
+      throwawayKey?: JWKInterface;
+      seperateManifestTx?: boolean;
+      offchain: true;
+    },
+  ): Promise<
+    UploadResponse & {
+      throwawayKey: JWKInterface;
+      txs: DataItem[];
+      throwawayKeyAddress: string;
+      manifest: Manifest;
+      manifestId: string;
+    }
+  >;
+
+  uploadFolder(
+    files: TaggedFile[],
+    opts?: UploadOptions & {
+      indexFileRelPath?: string;
+      manifestTags?: Tag[];
+      throwawayKey?: JWKInterface;
+      seperateManifestTx?: boolean;
+    },
+  ): Promise<
+    UploadReceipt & {
+      throwawayKey: JWKInterface;
+      txs: DataItem[];
+      throwawayKeyAddress: string;
+      manifest: Manifest;
+      manifestId: string;
+    }
+  >;
   public async uploadFolder(
     files: TaggedFile[],
     opts?: UploadOptions & {
@@ -47,7 +86,7 @@ export class WebUploader extends Uploader {
       seperateManifestTx?: boolean;
     },
   ): Promise<
-    UploadResponse & {
+    UploadReceipt & {
       throwawayKey: JWKInterface;
       txs: DataItem[];
       throwawayKeyAddress: string;

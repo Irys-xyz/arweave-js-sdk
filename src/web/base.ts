@@ -1,4 +1,4 @@
-import "../common/hack.js";
+// import "../common/hack.js";
 import Api from "../common/api";
 import Fund from "../common/fund";
 import Irys from "../common/irys";
@@ -8,8 +8,8 @@ import { Transaction } from "../common/transactions";
 import type { WebToken } from "./types";
 import * as arbundles from "./utils";
 import { WebUploader } from "./upload";
-import { type IrysConfig } from "src/common/types.js";
-import { Offchain } from "src/common/offchain";
+import { type IrysConfig } from "../common/types";
+import { Offchain } from "../common/offchain";
 
 export class BaseWebIrys extends Irys {
   public tokenConfig: WebToken;

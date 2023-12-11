@@ -121,7 +121,10 @@ export default abstract class Irys {
     return this.tokenConfig.getSigner();
   }
 
-  async upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+  upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions & { upload: { offchain: true } }): Promise<UploadResponse>;
+  upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadReceipt>;
+
+  async upload(data: string | Buffer | Readable, opts?: CreateAndUploadOptions): Promise<UploadReceipt> {
     return this.uploader.uploadData(data, opts);
   }
 

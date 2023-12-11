@@ -28,7 +28,10 @@ export default class NodeUploader extends Uploader {
    * @param path to the file to be uploaded
    * @returns the response from the bundler
    */
-  public async uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+  uploadFile(path: string, opts?: CreateAndUploadOptions & { upload: { offchain: true } }): Promise<UploadResponse>;
+  uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadReceipt>;
+
+  public async uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadReceipt> {
     if (
       !(await promises
         .stat(path)

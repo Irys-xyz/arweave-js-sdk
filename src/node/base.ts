@@ -1,15 +1,15 @@
-import "../common/hack.js";
+// import "../common/hack.js";
 import { Transaction } from "../common/transactions";
 import Api from "../common/api";
 import Fund from "../common/fund";
 import Irys from "../common/irys";
-import type { CreateAndUploadOptions, IrysConfig, UploadResponse } from "../common/types";
+import type { CreateAndUploadOptions, IrysConfig, UploadReceipt, UploadResponse } from "../common/types";
 import Utils from "../common/utils";
 import type { NodeToken } from "./types";
 import NodeUploader from "./upload";
 import * as arbundles from "./utils";
 import { NodeProvenance } from "./provenance";
-import { Offchain } from "src/common/offchain";
+import { Offchain } from "../common/offchain";
 
 export class BaseNodeIrys extends Irys {
   public uploader: NodeUploader; // re-define type
@@ -78,7 +78,10 @@ export class BaseNodeIrys extends Irys {
    * @param path path to the file to upload
    * @returns bundler response
    */
-  async uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadResponse> {
+  uploadFile(path: string, opts?: CreateAndUploadOptions & { upload: { offchain: true } }): Promise<UploadResponse>;
+  uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadReceipt>;
+
+  async uploadFile(path: string, opts?: CreateAndUploadOptions): Promise<UploadReceipt> {
     return this.uploader.uploadFile(path, opts);
   }
 
