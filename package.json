@@ -21,6 +21,16 @@
         "default": "./build/esm/node/index.js"
       }
     },
+    "./node/*": {
+      "require": {
+        "types": "./build/cjs/node/*.d.ts",
+        "default": "./build/cjs/node/*.js"
+      },
+      "import": {
+        "types": "./build/esm/node/*.d.ts",
+        "default": "./build/esm/node/*.js"
+      }
+    },
     "./web": {
       "require": {
         "types": "./build/cjs/web/index.d.ts",
@@ -29,6 +39,26 @@
       "import": {
         "types": "./build/esm/web/index.d.ts",
         "default": "./build/esm/web/index.js"
+      }
+    },
+    "./web/*": {
+      "require": {
+        "types": "./build/cjs/web/*.d.ts",
+        "default": "./build/cjs/web/*.js"
+      },
+      "import": {
+        "types": "./build/esm/web/*.d.ts",
+        "default": "./build/esm/web/*.js"
+      }
+    },
+    "./common/*": {
+      "require": {
+        "types": "./build/cjs/common/*.d.ts",
+        "default": "./build/cjs/common/*.js"
+      },
+      "import": {
+        "types": "./build/esm/common/*.d.ts",
+        "default": "./build/esm/common/*.js"
       }
     },
     "./bundle": {
