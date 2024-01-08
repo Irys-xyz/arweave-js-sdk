@@ -1,5 +1,5 @@
-import Irys from "../irys";
-import { clientKeys } from "../../../tests/utils"; // change this to your keyfile
+import Irys from "../src/node/irys";
+import { clientKeys } from "./utils"; // change this to your keyfile
 
 const Irys_DEVNET_URL = "https://devnet.Irys.network/";
 

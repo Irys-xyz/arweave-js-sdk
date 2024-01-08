@@ -1,5 +1,5 @@
-import Irys from "../irys";
-import { clientKeys } from "../../../tests/utils";
+import Irys from "../src/node/irys";
+import { clientKeys } from "./utils";
 
 jest.setTimeout(40000);
 // for each token to test, include here the precalculated public key

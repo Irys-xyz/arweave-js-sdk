@@ -8,7 +8,7 @@ BigNumber.set({ DECIMAL_PLACES: 50 });
 
 export const sleep = (ms): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-export default class Utils {
+export class Utils {
   public api: Api;
   public token: string;
   public tokenConfig: Token;
@@ -246,3 +246,5 @@ export default class Utils {
     return receipt;
   }
 }
+
+export default Utils;

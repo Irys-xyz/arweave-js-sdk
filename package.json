@@ -82,7 +82,8 @@
     }
   },
   "files": [
-    "build/**/*"
+    "build/**/*",
+    "src/**/*"
   ],
   "scripts": {
     "dev:build": "rm -rf build && concurrently \" yarn tsc -p cjs.tsconfig.json && chmod +x ./build/cjs/node/cli.js && sh ./scripts/fix-pkg.sh cjs commonjs \"  \" yarn tsc -p esm.tsconfig.json && chmod +x ./build/esm/node/cli.js && sh ./scripts/fix-pkg.sh esm module && yarn tsc-esm-fix --tsconfig esm.tsconfig.json  \" ",

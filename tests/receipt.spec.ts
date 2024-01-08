@@ -1,4 +1,4 @@
-import Irys from "../../node";
+import Irys from "../src/node";
 
 const receipt = {
   id: "DQQbx79jsgI4rGlhO0arqwEMWhqWUMFTdLbO1i8M-PA",
