@@ -17,7 +17,7 @@ export type ApiRequestConfig = {
   retry?: AsyncRetry.Options;
 } & AxiosRequestConfig;
 
-export default class Api {
+export class Api {
   protected _instance?: AxiosInstance;
   public cookieMap = new Map();
 
@@ -120,6 +120,7 @@ export default class Api {
   }
 }
 
+export default Api;
 // /**
 //  * *** To be removed when browsers catch up with the whatwg standard. ***
 //  * [Symbol.AsyncIterator] is needed to use `for-await` on the returned ReadableStream (web stream).

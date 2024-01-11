@@ -1,5 +1,5 @@
 import { BaseWebIrys } from "./base";
-import type { IrysConfig } from "src/common/types";
+import type { IrysConfig } from "../common/types";
 import getTokenConfig from "./tokens";
 
 export class WebIrys extends BaseWebIrys {
