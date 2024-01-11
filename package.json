@@ -108,7 +108,7 @@
     "@ethersproject/contracts": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/wallet": "^5.7.0",
-    "@irys/query": "^0.0.1",
+    "@irys/query": "^0.0.3",
     "@near-js/crypto": "^0.0.3",
     "@near-js/keystores-browser": "^0.0.3",
     "@near-js/providers": "^0.0.4",
