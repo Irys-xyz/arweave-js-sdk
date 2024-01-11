@@ -91,6 +91,27 @@ export default function getTokenConfig(
         wallet,
         opts,
       });
+    case "base-eth":
+      return new EthereumConfig({
+        irys: Irys,
+        name: "base-eth",
+        ticker: "ETH",
+        providerUrl: providerUrl ?? "https://mainnet.base.org/",
+        minConfirm: 2,
+        wallet,
+        opts,
+      });
+
+    case "usdc-eth":
+      return new ERC20Config({
+        irys: Irys,
+        name: "usdc-eth",
+        ticker: "USDC",
+        providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
+        contractAddress: contractAddress ?? "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        wallet,
+        opts,
+      });
     case "boba": {
       const k = new ERC20Config({
         irys: Irys,
