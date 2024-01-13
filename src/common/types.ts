@@ -1,6 +1,5 @@
 import type BigNumber from "bignumber.js";
 import type { DataItem, Signer, createData, deepHash, getCryptoDriver, stringToBuffer, DataItemCreateOptions, bundleAndSignData } from "arbundles";
-import type { FileDataItem } from "arbundles/file";
 import type Irys from "./irys";
 
 // common types shared between web and node versions
@@ -79,8 +78,6 @@ export interface Token {
   getTx(txId: string): Promise<Tx>;
 
   ownerToAddress(owner: any): string;
-
-  getId(item: FileDataItem): Promise<string>;
 
   price(): Promise<number>;
 

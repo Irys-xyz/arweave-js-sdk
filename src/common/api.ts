@@ -1,9 +1,9 @@
 import type { AxiosResponse, AxiosRequestConfig, AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import Axios from "axios";
-import AsyncRetry from "async-retry";
+import type AsyncRetry from "async-retry";
 import Irys from "./irys";
 
-export interface ApiConfig {
+export type ApiConfig = {
   url: URL;
   timeout?: number;
   logging?: boolean;
@@ -11,7 +11,7 @@ export interface ApiConfig {
   headers?: Record<string, string>;
   withCredentials?: boolean;
   retry?: AsyncRetry.Options;
-}
+};
 
 export type ApiRequestConfig = {
   retry?: AsyncRetry.Options;
