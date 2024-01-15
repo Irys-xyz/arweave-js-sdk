@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import type Basetoken from "../token";
 import EthereumConfig from "./ethereum";
 import NearConfig from "./near";
@@ -12,6 +13,7 @@ import { EthereumEthersV6 } from "../providers/ethereum/ethersv6";
 import type { TokenConfig } from "../../common/types";
 import type BaseWebToken from "../token";
 import ArweaveConfig from "./arweave";
+import { augmentTokenPrivy } from "../shims/privy";
 
 export default function getTokenConfig({
   irys,
@@ -20,6 +22,7 @@ export default function getTokenConfig({
   providerUrl,
   contractAddress,
   providerName,
+  tokenOpts,
 }: {
   irys: WebIrys;
   token: string;
@@ -27,57 +30,88 @@ export default function getTokenConfig({
   providerUrl?: string;
   contractAddress?: string;
   providerName?: string;
+  tokenOpts?: any;
 }): Basetoken {
   switch (token) {
     case "ethereum":
-      return resolveProvider("ethereum", providerName, {
-        irys: irys,
-        name: "ethereum",
-        ticker: "ETH",
-        providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
-        wallet: wallet,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "ethereum",
+          ticker: "ETH",
+          providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
+          wallet: wallet,
+          opts: tokenOpts,
+        },
       });
     case "matic":
-      return resolveProvider("ethereum", providerName, {
-        irys: irys,
-        name: "matic",
-        ticker: "MATIC",
-        providerUrl: providerUrl ?? "https://polygon-rpc.com",
-        wallet: wallet,
-        minConfirm: 1,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "matic",
+          ticker: "MATIC",
+          providerUrl: providerUrl ?? "https://polygon-rpc.com",
+          wallet: wallet,
+          minConfirm: 1,
+          opts: tokenOpts,
+        },
       });
     case "arbitrum":
-      return resolveProvider("ethereum", providerName, {
-        irys: irys,
-        name: "arbitrum",
-        ticker: "ETH",
-        providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc",
-        wallet: wallet,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "arbitrum",
+          ticker: "ETH",
+          providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc",
+          wallet: wallet,
+          opts: tokenOpts,
+        },
       });
     case "bnb":
-      return resolveProvider("ethereum", providerName, {
-        irys: irys,
-        name: "bnb",
-        ticker: "BNB",
-        providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org",
-        wallet: wallet,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "bnb",
+          ticker: "BNB",
+          providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org",
+          wallet: wallet,
+          opts: tokenOpts,
+        },
       });
     case "avalanche":
-      return resolveProvider("ethereum", providerName, {
-        irys: irys,
-        name: "avalanche",
-        ticker: "AVAX",
-        providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc",
-        wallet: wallet,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "avalanche",
+          ticker: "AVAX",
+          providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc",
+          wallet: wallet,
+          opts: tokenOpts,
+        },
       });
     case "boba-eth":
-      return resolveProvider("ethereum", providerName, {
-        irys: irys,
-        name: "boba-eth",
-        ticker: "ETH",
-        providerUrl: providerUrl ?? "https://mainnet.boba.network/",
-        minConfirm: 1,
-        wallet: wallet,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "boba-eth",
+          ticker: "ETH",
+          providerUrl: providerUrl ?? "https://mainnet.boba.network/",
+          minConfirm: 1,
+          wallet: wallet,
+          opts: tokenOpts,
+        },
       });
     case "boba": {
       const k = new ERC20Config({
@@ -161,8 +195,7 @@ export default function getTokenConfig({
   }
 }
 
-// @ts-expect-error todo fix
-function resolveProvider(family: string, providerName: string | undefined, config: TokenConfig): BaseWebToken {
+function resolveProvider({ family, providerName, config }: { family: string; providerName: string | undefined; config: TokenConfig }): BaseWebToken {
   switch (family) {
     case "ethereum":
       switch (providerName) {
@@ -170,8 +203,14 @@ function resolveProvider(family: string, providerName: string | undefined, confi
           return new EthereumEthersV5(config);
         case "ethersv6":
           return new EthereumEthersV6(config);
+        case "privy-embedded":
+          const cfg = new EthereumEthersV5(config);
+          augmentTokenPrivy(cfg, config.opts);
+          return cfg;
         default:
           return new EthereumConfig(config);
       }
+    default:
+      throw new Error(`Unknown token family ${family}`);
   }
 }
