@@ -190,6 +190,15 @@ export default function getTokenConfig({
         contractAddress: contractAddress ?? "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         wallet,
       });
+
+    case "usdc-polygon":
+      return new ERC20Config({
+        irys,
+        name: "usdc-polygon",
+        ticker: "USDC",
+        providerUrl: providerUrl ?? "https://polygon-rpc.com",
+        contractAddress: contractAddress ?? "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+      });
     default:
       throw new Error(`Unknown/Unsupported token ${token}`);
   }
