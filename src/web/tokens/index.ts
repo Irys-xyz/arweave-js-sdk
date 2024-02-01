@@ -14,6 +14,7 @@ import type { TokenConfig } from "../../common/types";
 import type BaseWebToken from "../token";
 import ArweaveConfig from "./arweave";
 import { augmentTokenPrivy } from "../shims/privy";
+import { augmentViemV2 } from "../shims/viemv2";
 
 export default function getTokenConfig({
   irys,
@@ -204,7 +205,16 @@ export default function getTokenConfig({
   }
 }
 
-function resolveProvider({ family, providerName, config }: { family: string; providerName: string | undefined; config: TokenConfig }): BaseWebToken {
+function resolveProvider({
+  family,
+  providerName,
+  config,
+}: {
+  family: string;
+  providerName: string | undefined;
+  config: TokenConfig & { erc20?: boolean };
+}): BaseWebToken {
+  let cfg;
   switch (family) {
     case "ethereum":
       switch (providerName) {
@@ -213,8 +223,12 @@ function resolveProvider({ family, providerName, config }: { family: string; pro
         case "ethersv6":
           return new EthereumEthersV6(config);
         case "privy-embedded":
-          const cfg = new EthereumEthersV5(config);
+          cfg = new EthereumEthersV5(config);
           augmentTokenPrivy(cfg, config.opts);
+          return cfg;
+        case "viemv2":
+          cfg = new EthereumConfig(config);
+          augmentViemV2(cfg, config.opts);
           return cfg;
         default:
           return new EthereumConfig(config);

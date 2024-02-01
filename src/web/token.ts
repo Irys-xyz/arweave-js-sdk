@@ -19,7 +19,7 @@ export default abstract class BaseWebToken implements WebToken {
   public name!: string;
   public irys!: BaseWebIrys;
 
-  protected minConfirm = 5;
+  public minConfirm = 5;
   public isSlow = false;
   public needsFee = true;
   public inheritsRPC = false;

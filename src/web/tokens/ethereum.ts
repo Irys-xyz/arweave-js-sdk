@@ -14,10 +14,10 @@ type MinimalProvider = { getSigner: () => MinimalSigner } & Pick<
   "getTransaction" | "getNetwork" | "_ready" | "send" | "estimateGas" | "getGasPrice" | "getTransactionCount"
 >;
 export default class EthereumConfig extends BaseWebToken {
-  protected signer!: InjectedTypedEthereumSigner;
-  protected declare wallet: MinimalProvider;
-  protected w3signer!: MinimalSigner;
-  protected declare providerInstance: MinimalProvider;
+  public signer!: InjectedTypedEthereumSigner;
+  public declare wallet: MinimalProvider;
+  public w3signer!: MinimalSigner;
+  public declare providerInstance: MinimalProvider;
   public readonly inheritsRPC = true;
 
   constructor(config: TokenConfig) {
