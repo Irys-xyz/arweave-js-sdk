@@ -1,7 +1,6 @@
 import BigNumber from "bignumber.js";
 import { Contract } from "@ethersproject/contracts";
 import type { TokenConfig, Tx } from "../../common/types";
-import { getRedstonePrice } from "../token";
 import EthereumConfig from "./ethereum";
 import { erc20abi } from "../../common/utils";
 
@@ -10,8 +9,8 @@ export interface ERC20TokenConfig extends TokenConfig {
 }
 
 export default class ERC20Config extends EthereumConfig {
-  private contractInstance!: Contract;
-  private contractAddress: string;
+  public contractInstance!: Contract;
+  public contractAddress: string;
 
   constructor(config: ERC20TokenConfig) {
     super(config);
@@ -49,13 +48,6 @@ export default class ERC20Config extends EthereumConfig {
     };
   }
 
-  /**
-   * Returns the fee in CONTRACT TOKEN UNITS equivalent to the fee derived via gas token units, i.e Wei
-   * @param amount
-   * @param to
-   * @returns
-   */
-
   async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
     const _amount = "0x" + new BigNumber(amount).toString(16);
     const contract = await this.getContract();
@@ -64,17 +56,6 @@ export default class ERC20Config extends EthereumConfig {
     const gasLimit = await contract.estimateGas.transfer(to, _amount);
     const units = new BigNumber(gasPrice.mul(gasLimit).toString()); // price in WEI
     return units;
-    // const [fiatGasPrice] = await this.getGas(); // get price of gas units
-    // const value = fiatGasPrice.multipliedBy(units); // value of the fee
-    // // convert value
-    // const ctPrice = new BigNumber(await this.price()); // price for this token
-
-    // const ctAmount = new BigNumber(value).dividedToIntegerBy(ctPrice);
-    // // const b = ctAmount.multipliedBy(ctPrice)
-    // // const c = value.dividedBy(this.base[1])
-    // // console.log(b);
-    // // console.log(c)
-    // return ctAmount;
   }
 
   async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any }> {
@@ -93,10 +74,5 @@ export default class ERC20Config extends EthereumConfig {
     // const signedTx = await this.wallet.signTransaction(tx);
     // const txId = "0x" + keccak256(Buffer.from(signedTx.slice(2), "hex")).toString("hex");
     return { txId: undefined, tx: tx };
-  }
-
-  // TODO: create a nicer solution than just overrides (larger issue: some currencies aren't on redstone)
-  public async getGas(): Promise<[BigNumber, number]> {
-    return [new BigNumber(await getRedstonePrice("ETH")), 1e18];
   }
 }
