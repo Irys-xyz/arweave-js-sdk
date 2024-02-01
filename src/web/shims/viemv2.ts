@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import BigNumber from "bignumber.js";
 import type { http } from "viem";
-import { parseEther, type PublicClient, type WalletClient } from "viem";
+import type { PublicClient, WalletClient } from "viem";
 import type { mainnet } from "viem/chains";
 import type { Tx } from "src/common/types";
 import type EthereumConfig from "../tokens/ethereum";
@@ -50,7 +50,7 @@ export async function augmentViemV2(tokenConfig: EthereumConfig, opts: any): Pro
       const config = {
         account: tokenConfig.address,
         to,
-        value: parseEther(amount.toString(), "gwei"),
+        value: amount.toString(),
       };
 
       return {
