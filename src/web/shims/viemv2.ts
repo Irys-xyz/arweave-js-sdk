@@ -6,9 +6,10 @@ import type { mainnet } from "viem/chains";
 import type { Tx } from "src/common/types";
 import type EthereumConfig from "../tokens/ethereum";
 import type ERC20Config from "../tokens/erc20";
+import { InjectedTypedEthereumSigner } from "arbundles/web";
 
 // TODO: figure out a better way to do this.
-export async function augmentViemV2(tokenConfig: EthereumConfig, opts: any): Promise<void> {
+export function augmentViemV2(tokenConfig: EthereumConfig, opts: any): void {
   const walletClient = opts.provider as WalletClient;
   const publicClient = opts.publicClient as PublicClient<ReturnType<typeof http>, typeof mainnet>;
 
@@ -19,13 +20,23 @@ export async function augmentViemV2(tokenConfig: EthereumConfig, opts: any): Pro
   }.bind(tokenConfig);
 
   tokenConfig.getFee = async (_amount) => new BigNumber(0);
-  opts.provider.getSigner = () => ({
-    getAddress: async () => walletClient.getAddresses().then((r) => r[0]),
-    _signTypedData: async (domain, types, message): Promise<string> => {
-      message["Transaction hash"] = "0x" + Buffer.from(message["Transaction hash"]).toString("hex");
-      return await walletClient.signTypedData({ account: message.address, domain, types, primaryType: "Bundlr", message });
-    },
-  });
+
+  tokenConfig.getSigner = function () {
+    if (!this.signer) {
+      this.signer = new InjectedTypedEthereumSigner({
+        getSigner: () => ({
+          getAddress: async () => walletClient.getAddresses().then((r) => r[0]),
+          _signTypedData: async (domain, types, message): Promise<string> => {
+            message["Transaction hash"] = "0x" + Buffer.from(message["Transaction hash"]).toString("hex");
+            // @ts-expect-error types
+            return await walletClient.signTypedData({ account: message.address, domain, types, primaryType: "Bundlr", message });
+          },
+        }),
+      });
+    }
+    return this.signer;
+  }.bind(tokenConfig);
+
   tokenConfig.getCurrentHeight = async () => new BigNumber((await publicClient.getBlockNumber()).toString());
 
   // if this is ERC20
