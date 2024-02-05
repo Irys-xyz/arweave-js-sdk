@@ -12,10 +12,11 @@ import { InjectedTypedEthereumSigner } from "arbundles/web";
 export function augmentViemV2(tokenConfig: EthereumConfig, opts: any): void {
   const walletClient = opts.provider as WalletClient;
   const publicClient = opts.publicClient as PublicClient<ReturnType<typeof http>, typeof mainnet>;
+  const accountIndex = opts.accountIndex ?? 0;
 
   tokenConfig.ready = async function () {
     await this.getSigner().ready();
-    this._address = await walletClient.getAddresses().then((r) => r[0].toString().toLowerCase());
+    this._address = await walletClient.getAddresses().then((r) => r[accountIndex].toString().toLowerCase());
     this.providerInstance = this.wallet;
   }.bind(tokenConfig);
 
@@ -25,7 +26,7 @@ export function augmentViemV2(tokenConfig: EthereumConfig, opts: any): void {
     if (!this.signer) {
       this.signer = new InjectedTypedEthereumSigner({
         getSigner: () => ({
-          getAddress: async () => walletClient.getAddresses().then((r) => r[0]),
+          getAddress: async () => walletClient.getAddresses().then((r) => r[accountIndex]),
           _signTypedData: async (domain, types, message): Promise<string> => {
             message["Transaction hash"] = "0x" + Buffer.from(message["Transaction hash"]).toString("hex");
             // @ts-expect-error types
