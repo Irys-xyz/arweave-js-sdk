@@ -25,7 +25,7 @@ import retry from "async-retry";
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 export const CHUNKING_THRESHOLD = 50_000_000;
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export default class Uploader {
+export class Uploader {
   protected readonly api: Api;
   protected token: string;
   protected tokenConfig: Token;
@@ -252,3 +252,5 @@ export default class Uploader {
     return { ...res, txs, throwawayKey, throwawayKeyAddress };
   }
 }
+
+export default Uploader;

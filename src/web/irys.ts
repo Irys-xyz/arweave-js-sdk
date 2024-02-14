@@ -11,7 +11,7 @@ export class WebIrys extends BaseWebIrys {
   }: {
     url: "node1" | "node2" | "devnet" | string;
     token: string;
-    wallet?: { rpcUrl?: string; name?: string; provider: object };
+    wallet?: { rpcUrl?: string; name?: string; provider: object; [key: string]: any };
     config?: IrysConfig;
   }) {
     super({
@@ -26,6 +26,7 @@ export class WebIrys extends BaseWebIrys {
           providerUrl: config?.providerUrl ?? wallet?.rpcUrl,
           contractAddress: config?.contractAddress,
           providerName: wallet?.name,
+          tokenOpts: { ...config?.tokenOpts, ...wallet },
         }),
     });
   }

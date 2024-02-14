@@ -1,5 +1,5 @@
 import { AptosAccount, FaucetClient } from "aptos";
-import Irys from "../src/cjsIndex";
+import { NodeIrys } from "../src/node";
 
 /**
  * This Example is for signing transactions (for irys uploads & Aptos transfers) using multiple participants
@@ -27,13 +27,13 @@ import Irys from "../src/cjsIndex";
   };
 
   // Create irys instance
-  const irys = new Irys({
-    url: "https://devnet.irys.network",
-    currency: "multiAptos",
-    wallet,
+  const irys = new NodeIrys({
+    url: "https://devnet.irys.xyz",
+    token: "multiAptos",
+    key: wallet,
     config: {
       providerUrl: "https://fullnode.devnet.aptoslabs.com",
-      currencyOpts: { collectSignatures },
+      tokenOpts: { collectSignatures },
     },
   });
   // Ready the instance
@@ -51,6 +51,7 @@ import Irys from "../src/cjsIndex";
   // sign the transaction (this will call `collectSignatures`)
   await tx.sign();
 
+  console.log(await tx.isValid());
   // fund the account using the Aptos faucet
   await new FaucetClient("https://fullnode.devnet.aptoslabs.com", "https://faucet.devnet.aptoslabs.com").fundAccount(irys.address, 5_000_000);
 

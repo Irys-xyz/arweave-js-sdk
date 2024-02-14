@@ -37,17 +37,18 @@ export default class SolanaConfig extends BaseNodeToken {
 
   async getTx(txId: string): Promise<Tx> {
     const connection = await this.getProvider();
-    const stx = await connection.getTransaction(txId, { commitment: "confirmed" });
+
+    const stx = await connection.getTransaction(txId, { commitment: "confirmed", maxSupportedTransactionVersion: 0 });
     if (!stx) throw new Error("Confirmed tx not found");
 
     const currentSlot = await connection.getSlot("confirmed");
     if (!stx.meta) throw new Error(`Unable to resolve transaction ${txId}`);
 
     const amount = new BigNumber(stx.meta.postBalances[1]).minus(new BigNumber(stx.meta.preBalances[1]));
-
+    const staticAccountKeys = stx.transaction.message.getAccountKeys().staticAccountKeys;
     const tx: Tx = {
-      from: stx.transaction.message.accountKeys[0].toBase58(),
-      to: stx.transaction.message.accountKeys[1].toBase58(),
+      from: staticAccountKeys[0].toBase58(),
+      to: staticAccountKeys[1].toBase58(),
       amount: amount,
       blockHeight: new BigNumber(stx.slot),
       pending: false,

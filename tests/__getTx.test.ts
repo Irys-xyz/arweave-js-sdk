@@ -1,5 +1,5 @@
-import { clientKeys } from "../../../tests/utils";
-import Irys from "../irys";
+import { clientKeys } from "./utils";
+import Irys from "../src/node/irys";
 
 const transactionIds = {
   arweave: "zmYY3VGOWqqRN2zA_GdaD4vx0Br7Zj1nXVo3ZvcKKbg",

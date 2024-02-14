@@ -8,7 +8,7 @@ import { Transaction } from "../common/transactions";
 import type { WebToken } from "./types";
 import * as arbundles from "./utils";
 import { WebUploader } from "./upload";
-import { type IrysConfig } from "../common/types";
+import type { IrysConfig } from "../common/types";
 import { Offchain } from "../common/offchain";
 
 export class BaseWebIrys extends Irys {

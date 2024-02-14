@@ -1,4 +1,4 @@
-import type { IrysConfig } from "src/common/types";
+import type { IrysConfig } from "../common/types";
 import { BaseNodeIrys } from "./base";
 import getTokenConfig from "./tokens";
 

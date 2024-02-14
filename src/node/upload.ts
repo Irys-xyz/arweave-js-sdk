@@ -19,7 +19,7 @@ export const checkPath = async (path: PathLike): Promise<boolean> => {
     .catch((_) => false);
 };
 
-export default class NodeUploader extends Uploader {
+export class NodeUploader extends Uploader {
   constructor(api: Api, utils: Utils, token: string, tokenConfig: Token, irysTx: IrysTransactonCtor) {
     super(api, utils, token, tokenConfig, irysTx);
   }
@@ -341,3 +341,5 @@ async function confirmation(message: string): Promise<boolean> {
   const answers = await inquirer.prompt([{ type: "input", name: "confirmation", message }]);
   return answers.confirmation.toLowerCase() == "y";
 }
+
+export default NodeUploader;

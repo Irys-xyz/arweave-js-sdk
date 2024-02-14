@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import type Basetoken from "../token";
 import EthereumConfig from "./ethereum";
 import NearConfig from "./near";
@@ -12,75 +13,116 @@ import { EthereumEthersV6 } from "../providers/ethereum/ethersv6";
 import type { TokenConfig } from "../../common/types";
 import type BaseWebToken from "../token";
 import ArweaveConfig from "./arweave";
+import { augmentTokenPrivy } from "../shims/privy";
+import { augmentViemV2 } from "../shims/viemv2";
 
-export default function getTokenConfig(config: {
+export default function getTokenConfig({
+  irys,
+  token,
+  wallet,
+  providerUrl,
+  contractAddress,
+  providerName,
+  tokenOpts,
+}: {
   irys: WebIrys;
   token: string;
   wallet: any;
   providerUrl?: string;
   contractAddress?: string;
   providerName?: string;
+  tokenOpts?: any;
 }): Basetoken {
-  switch (config.token) {
+  switch (token) {
     case "ethereum":
-      return resolveProvider("ethereum", config.providerName, {
-        irys: config.irys,
-        name: "ethereum",
-        ticker: "ETH",
-        providerUrl: config.providerUrl ?? "https://cloudflare-eth.com/",
-        wallet: config.wallet,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "ethereum",
+          ticker: "ETH",
+          providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
+          wallet: wallet,
+          opts: tokenOpts,
+        },
       });
     case "matic":
-      return resolveProvider("ethereum", config.providerName, {
-        irys: config.irys,
-        name: "matic",
-        ticker: "MATIC",
-        providerUrl: config.providerUrl ?? "https://polygon-rpc.com",
-        wallet: config.wallet,
-        minConfirm: 1,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "matic",
+          ticker: "MATIC",
+          providerUrl: providerUrl ?? "https://polygon-rpc.com",
+          wallet: wallet,
+          minConfirm: 1,
+          opts: tokenOpts,
+        },
       });
     case "arbitrum":
-      return resolveProvider("ethereum", config.providerName, {
-        irys: config.irys,
-        name: "arbitrum",
-        ticker: "ETH",
-        providerUrl: config.providerUrl ?? "https://arb1.arbitrum.io/rpc",
-        wallet: config.wallet,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "arbitrum",
+          ticker: "ETH",
+          providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc",
+          wallet: wallet,
+          opts: tokenOpts,
+        },
       });
     case "bnb":
-      return resolveProvider("ethereum", config.providerName, {
-        irys: config.irys,
-        name: "bnb",
-        ticker: "BNB",
-        providerUrl: config.providerUrl ?? "https://bsc-dataseed.binance.org",
-        wallet: config.wallet,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "bnb",
+          ticker: "BNB",
+          providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org",
+          wallet: wallet,
+          opts: tokenOpts,
+        },
       });
     case "avalanche":
-      return resolveProvider("ethereum", config.providerName, {
-        irys: config.irys,
-        name: "avalanche",
-        ticker: "AVAX",
-        providerUrl: config.providerUrl ?? "https://api.avax.network/ext/bc/C/rpc",
-        wallet: config.wallet,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "avalanche",
+          ticker: "AVAX",
+          providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc",
+          wallet: wallet,
+          opts: tokenOpts,
+        },
       });
     case "boba-eth":
-      return resolveProvider("ethereum", config.providerName, {
-        irys: config.irys,
-        name: "boba-eth",
-        ticker: "ETH",
-        providerUrl: config.providerUrl ?? "https://mainnet.boba.network/",
-        minConfirm: 1,
-        wallet: config.wallet,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "boba-eth",
+          ticker: "ETH",
+          providerUrl: providerUrl ?? "https://mainnet.boba.network/",
+          minConfirm: 1,
+          wallet: wallet,
+          opts: tokenOpts,
+        },
       });
     case "boba": {
       const k = new ERC20Config({
-        irys: config.irys,
+        irys: irys,
         name: "boba",
         ticker: "BOBA",
-        providerUrl: config.providerUrl ?? "https://mainnet.boba.network/",
-        contractAddress: config.contractAddress ?? "0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7",
+        providerUrl: providerUrl ?? "https://mainnet.boba.network/",
+        contractAddress: contractAddress ?? "0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7",
         minConfirm: 1,
-        wallet: config.wallet,
+        wallet: wallet,
       });
       // for L1 mainnet: "https://main-light.eth.linkpool.io/" and "0x42bbfa2e77757c645eeaad1655e0911a7553efbc"
       k.price = async (): Promise<number> => {
@@ -98,46 +140,81 @@ export default function getTokenConfig(config: {
 
     case "solana":
       return new SolanaConfig({
-        irys: config.irys,
+        irys: irys,
         name: "solana",
         ticker: "SOL",
-        providerUrl: config.providerUrl ?? "https://api.mainnet-beta.solana.com/",
-        wallet: config.wallet,
+        providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/",
+        wallet: wallet,
       });
     // case "algorand":
-    //     return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: config.providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet: config.wallet })
+    //     return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet: wallet })
     case "near":
       return new NearConfig({
-        irys: config.irys,
+        irys: irys,
         name: "near",
         ticker: "NEAR",
-        providerUrl: config.providerUrl ?? "https://rpc.mainnet.near.org",
-        wallet: config.wallet,
+        providerUrl: providerUrl ?? "https://rpc.mainnet.near.org",
+        wallet: wallet,
       });
     case "aptos":
       return new AptosConfig({
-        irys: config.irys,
+        irys: irys,
         name: "aptos",
         ticker: "APTOS",
-        providerUrl: config.providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",
-        wallet: config.wallet,
+        providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",
+        wallet: wallet,
       });
     case "arweave":
       return new ArweaveConfig({
-        irys: config.irys,
+        irys: irys,
         name: "arweave",
         ticker: "AR",
-        providerUrl: config.providerUrl ?? "https://arweave.net",
-        wallet: config.wallet,
+        providerUrl: providerUrl ?? "https://arweave.net",
+        wallet: wallet,
+      });
+    case "base-eth":
+      return new EthereumConfig({
+        irys: irys,
+        name: "base-eth",
+        ticker: "ETH",
+        providerUrl: providerUrl ?? "https://mainnet.base.org/",
+        minConfirm: 2,
+        wallet: wallet,
       });
 
+    case "usdc-eth":
+      return new ERC20Config({
+        irys: irys,
+        name: "usdc-eth",
+        ticker: "USDC",
+        providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
+        contractAddress: contractAddress ?? "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        wallet,
+      });
+
+    case "usdc-polygon":
+      return new ERC20Config({
+        irys,
+        name: "usdc-polygon",
+        ticker: "USDC",
+        providerUrl: providerUrl ?? "https://polygon-rpc.com",
+        contractAddress: contractAddress ?? "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+      });
     default:
-      throw new Error(`Unknown/Unsupported token ${config.token}`);
+      throw new Error(`Unknown/Unsupported token ${token}`);
   }
 }
 
-// @ts-expect-error todo fix
-function resolveProvider(family: string, providerName: string | undefined, config: TokenConfig): BaseWebToken {
+function resolveProvider({
+  family,
+  providerName,
+  config,
+}: {
+  family: string;
+  providerName: string | undefined;
+  config: TokenConfig & { erc20?: boolean };
+}): BaseWebToken {
+  let cfg;
   switch (family) {
     case "ethereum":
       switch (providerName) {
@@ -145,8 +222,18 @@ function resolveProvider(family: string, providerName: string | undefined, confi
           return new EthereumEthersV5(config);
         case "ethersv6":
           return new EthereumEthersV6(config);
+        case "privy-embedded":
+          cfg = new EthereumEthersV5(config);
+          augmentTokenPrivy(cfg, config.opts);
+          return cfg;
+        case "viemv2":
+          cfg = new EthereumConfig(config);
+          augmentViemV2(cfg, config.opts);
+          return cfg;
         default:
           return new EthereumConfig(config);
       }
+    default:
+      throw new Error(`Unknown token family ${family}`);
   }
 }

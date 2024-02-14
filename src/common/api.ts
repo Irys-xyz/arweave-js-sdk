@@ -1,9 +1,9 @@
 import type { AxiosResponse, AxiosRequestConfig, AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import Axios from "axios";
-import AsyncRetry from "async-retry";
+import type AsyncRetry from "async-retry";
 import Irys from "./irys";
 
-export interface ApiConfig {
+export type ApiConfig = {
   url: URL;
   timeout?: number;
   logging?: boolean;
@@ -11,13 +11,13 @@ export interface ApiConfig {
   headers?: Record<string, string>;
   withCredentials?: boolean;
   retry?: AsyncRetry.Options;
-}
+};
 
 export type ApiRequestConfig = {
   retry?: AsyncRetry.Options;
 } & AxiosRequestConfig;
 
-export default class Api {
+export class Api {
   protected _instance?: AxiosInstance;
   public cookieMap = new Map();
 
@@ -120,6 +120,7 @@ export default class Api {
   }
 }
 
+export default Api;
 // /**
 //  * *** To be removed when browsers catch up with the whatwg standard. ***
 //  * [Symbol.AsyncIterator] is needed to use `for-await` on the returned ReadableStream (web stream).

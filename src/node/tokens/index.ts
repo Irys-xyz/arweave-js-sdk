@@ -13,7 +13,7 @@ import MultiSignatureAptos from "./multiAptos";
 import type BaseNodeIrys from "../base";
 
 export default function getTokenConfig(
-  Irys: BaseNodeIrys,
+  irys: BaseNodeIrys,
   token: string,
   wallet: any,
   url: string,
@@ -24,7 +24,7 @@ export default function getTokenConfig(
   switch (token) {
     case "arweave":
       return new ArweaveConfig({
-        irys: Irys,
+        irys: irys,
         name: "arweave",
         ticker: "AR",
         minConfirm: 10,
@@ -35,7 +35,7 @@ export default function getTokenConfig(
       });
     case "ethereum":
       return new EthereumConfig({
-        irys: Irys,
+        irys: irys,
         name: "ethereum",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
@@ -44,7 +44,7 @@ export default function getTokenConfig(
       });
     case "matic":
       return new EthereumConfig({
-        irys: Irys,
+        irys: irys,
         name: "matic",
         ticker: "MATIC",
         minConfirm: 1,
@@ -54,7 +54,7 @@ export default function getTokenConfig(
       });
     case "bnb":
       return new EthereumConfig({
-        irys: Irys,
+        irys: irys,
         name: "bnb",
         ticker: "BNB",
         providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org/",
@@ -62,10 +62,10 @@ export default function getTokenConfig(
         opts,
       });
     case "fantom":
-      return new EthereumConfig({ irys: Irys, name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet, opts });
+      return new EthereumConfig({ irys: irys, name: "fantom", ticker: "FTM", providerUrl: providerUrl ?? "https://rpc.ftm.tools/", wallet, opts });
     case "solana":
       return new SolanaConfig({
-        irys: Irys,
+        irys: irys,
         name: "solana",
         ticker: "SOL",
         providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/",
@@ -74,7 +74,7 @@ export default function getTokenConfig(
       });
     case "avalanche":
       return new EthereumConfig({
-        irys: Irys,
+        irys: irys,
         name: "avalanche",
         ticker: "AVAX",
         providerUrl: providerUrl ?? "https://api.avax-test.network/ext/bc/C/rpc/",
@@ -83,7 +83,7 @@ export default function getTokenConfig(
       });
     case "boba-eth":
       return new EthereumConfig({
-        irys: Irys,
+        irys: irys,
         name: "boba-eth",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -91,9 +91,30 @@ export default function getTokenConfig(
         wallet,
         opts,
       });
+    case "base-eth":
+      return new EthereumConfig({
+        irys: irys,
+        name: "base-eth",
+        ticker: "ETH",
+        providerUrl: providerUrl ?? "https://mainnet.base.org/",
+        minConfirm: 2,
+        wallet,
+        opts,
+      });
+
+    case "usdc-eth":
+      return new ERC20Config({
+        irys: irys,
+        name: "usdc-eth",
+        ticker: "USDC",
+        providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
+        contractAddress: contractAddress ?? "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        wallet,
+        opts,
+      });
     case "boba": {
       const k = new ERC20Config({
-        irys: Irys,
+        irys: irys,
         name: "boba",
         ticker: "BOBA",
         providerUrl: providerUrl ?? "https://mainnet.boba.network/",
@@ -117,7 +138,7 @@ export default function getTokenConfig(
     }
     case "arbitrum":
       return new EthereumConfig({
-        irys: Irys,
+        irys: irys,
         name: "arbitrum",
         ticker: "ETH",
         providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc/",
@@ -126,7 +147,7 @@ export default function getTokenConfig(
       });
     case "chainlink":
       return new ERC20Config({
-        irys: Irys,
+        irys: irys,
         name: "chainlink",
         ticker: "LINK",
         providerUrl: providerUrl ?? "https://main-light.eth.linkpool.io/",
@@ -136,7 +157,7 @@ export default function getTokenConfig(
       });
     case "kyve": {
       const k = new ERC20Config({
-        irys: Irys,
+        irys: irys,
         name: "kyve",
         ticker: "KYVE",
         minConfirm: 0,
@@ -156,7 +177,7 @@ export default function getTokenConfig(
     }
     case "near": {
       return new NearConfig({
-        irys: Irys,
+        irys: irys,
         name: "near",
         ticker: "NEAR",
         providerUrl: providerUrl ?? "https://rpc.mainnet.near.org",
@@ -167,7 +188,7 @@ export default function getTokenConfig(
     }
     case "algorand": {
       return new AlgorandConfig({
-        irys: Irys,
+        irys: irys,
         name: "algorand",
         ticker: "ALGO",
         providerUrl: providerUrl ?? "https://mainnet-api.algonode.cloud",
@@ -177,7 +198,7 @@ export default function getTokenConfig(
     }
     case "aptos": {
       return new AptosConfig({
-        irys: Irys,
+        irys: irys,
         name: "aptos",
         ticker: "APTOS",
         providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com",
@@ -187,7 +208,7 @@ export default function getTokenConfig(
     }
     case "multiaptos": {
       return new MultiSignatureAptos({
-        irys: Irys,
+        irys: irys,
         name: "aptos",
         ticker: "APTOS",
         providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",
@@ -195,6 +216,15 @@ export default function getTokenConfig(
         opts,
       });
     }
+    case "usdc-polygon":
+      return new ERC20Config({
+        irys,
+        name: "usdc-polygon",
+        ticker: "USDC",
+        wallet,
+        providerUrl: providerUrl ?? "https://polygon-rpc.com",
+        contractAddress: contractAddress ?? "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+      });
     default:
       throw new Error(`Unknown/Unsupported token ${token}`);
   }

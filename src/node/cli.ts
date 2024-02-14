@@ -52,9 +52,9 @@ program
   .action(async (address: string) => {
     try {
       options.address = balpad ? address.substring(1) : address;
-      const Irys = await init(options, "balance");
-      const balance = await Irys.utils.getBalance(options.address);
-      console.log(`Balance: ${balance} ${Irys.tokenConfig.base[0]} (${Irys.utils.unitConverter(balance).toFixed()} ${Irys.token})`);
+      const irys = await init(options, "balance");
+      const balance = await irys.utils.getBalance(options.address);
+      console.log(`Balance: ${balance} ${irys.tokenConfig.base[0]} (${irys.utils.unitConverter(balance).toFixed()} ${irys.token})`);
     } catch (err: any) {
       console.error(`Error whilst getting balance: ${options.debug ? err.stack : err.message} `);
       return;
@@ -68,16 +68,16 @@ program
   .argument("<amount>", "amount to withdraw in token base units")
   .action(async (amount: string) => {
     try {
-      const Irys = await init(options, "withdraw");
+      const irys = await init(options, "withdraw");
       const confirmed = await confirmation(
-        `Confirmation: withdraw ${amount} ${Irys.tokenConfig.base[0]} from ${Irys.api.config.url.host} (${await Irys.utils.getBundlerAddress(
-          Irys.token,
+        `Confirmation: withdraw ${amount} ${irys.tokenConfig.base[0]} from ${irys.api.config.url.host} (${await irys.utils.getBundlerAddress(
+          irys.token,
         )})?\n Y / N`,
       );
       if (confirmed) {
-        const res = await Irys.withdrawBalance(new BigNumber(amount));
+        const res = await irys.withdrawBalance(new BigNumber(amount));
         console.log(
-          `Withdrawal request for ${res?.requested} ${Irys.tokenConfig.base[0]} successful\nTransaction ID: ${res?.tx_id} with network fee ${res?.fee} for a total cost of ${res?.final} `,
+          `Withdrawal request for ${res?.requested} ${irys.tokenConfig.base[0]} successful\nTransaction ID: ${res?.tx_id} with network fee ${res?.fee} for a total cost of ${res?.final} `,
         );
       } else {
         console.log("confirmation failed");
@@ -95,9 +95,9 @@ program
   .argument("<file>", "relative path to the file you want to upload")
   .action(async (file: string) => {
     try {
-      const Irys = await init(options, "upload");
+      const irys = await init(options, "upload");
       const tags = parseTags(options?.tags);
-      const res = await Irys.uploadFile(file, { tags: tags ?? [], upload: { offchain: options.offchain } });
+      const res = await irys.uploadFile(file, { tags: tags ?? [], upload: { offchain: options.offchain } });
       console.log(`Uploaded to https://gateway.irys.xyz/${res?.id}`);
     } catch (err: any) {
       console.error(`Error whilst uploading file: ${options.debug ? err.stack : err.message} `);
@@ -125,9 +125,9 @@ program
 
 async function uploadDir(folder: string): Promise<void> {
   try {
-    const bundler = await init(options, "upload");
+    const irys = await init(options, "upload");
     const tags = parseTags(options?.tags);
-    const res = await bundler.uploadFolder(folder, {
+    const res = await irys.uploadFolder(folder, {
       indexFile: options.indexFile,
       batchSize: +options.batchSize,
       interactivePreflight: options.confirmation,
@@ -163,14 +163,14 @@ program
   .action(async (amount: string) => {
     try {
       if (isNaN(+amount)) throw new Error("Amount must be an integer");
-      const Irys = await init(options, "fund");
+      const irys = await init(options, "fund");
       const confirmed = await confirmation(
-        `Confirmation: send ${amount} ${Irys.tokenConfig.base[0]} (${Irys.utils.unitConverter(amount).toFixed()} ${Irys.token}) to ${
-          Irys.api.config.url.host
-        } (${await Irys.utils.getBundlerAddress(Irys.token)})?\n Y / N`,
+        `Confirmation: send ${amount} ${irys.tokenConfig.base[0]} (${irys.utils.unitConverter(amount).toFixed()} ${irys.token}) to ${
+          irys.api.config.url.host
+        } (${await irys.utils.getBundlerAddress(irys.token)})?\n Y / N`,
       );
       if (confirmed) {
-        const tx = await Irys.fund(new BigNumber(amount), options.multiplier);
+        const tx = await irys.fund(new BigNumber(amount), options.multiplier);
         console.log(`Funding receipt: \nAmount: ${tx.quantity} with Fee: ${tx.reward} to ${tx.target} \nTransaction ID: ${tx.id} `);
       } else {
         console.log("confirmation failed");
@@ -188,13 +188,13 @@ program
   .action(async (bytes: string) => {
     try {
       if (isNaN(+bytes)) throw new Error("Amount must be an integer");
-      const Irys = await init(options, "price");
-      await Irys.utils.getBundlerAddress(options.token); // will throw if the bundler doesn't support the token
-      const cost = await Irys.utils.getPrice(options.token, +bytes);
+      const irys = await init(options, "price");
+      await irys.utils.getBundlerAddress(options.token); // will throw if the bundler doesn't support the token
+      const cost = await irys.utils.getPrice(options.token, +bytes);
       console.log(
-        `Price for ${bytes} bytes in ${options.token} is ${cost.toFixed(0)} ${Irys.tokenConfig.base[0]} (${Irys.utils
+        `Price for ${bytes} bytes in ${options.token} is ${cost.toFixed(0)} ${irys.tokenConfig.base[0]} (${irys.utils
           .unitConverter(cost)
-          .toFixed()} ${Irys.token})`,
+          .toFixed()} ${irys.token})`,
       );
     } catch (err: any) {
       console.error(`Error whilst getting price: ${options.debug ? err.stack : err.message} `);
@@ -221,7 +221,7 @@ async function confirmation(message: string): Promise<boolean> {
  */
 async function init(opts, operation): Promise<Irys> {
   let wallet;
-  let bundler: NodeIrys;
+  let irys: NodeIrys;
   // every option needs a host and token so ensure they're present
   if (!opts.host) {
     throw new Error("Host parameter (-h) is required!");
@@ -246,7 +246,7 @@ async function init(opts, operation): Promise<Irys> {
   }
   try {
     // create and ready the Irys instance
-    bundler = new Irys({
+    irys = new Irys({
       url: opts.host,
       token: opts.token.toLowerCase(),
       key: wallet ?? "",
@@ -256,23 +256,23 @@ async function init(opts, operation): Promise<Irys> {
         timeout: opts.timeout,
       },
     });
-    await bundler.ready();
+    await irys.ready();
   } catch (err: any) {
     throw new Error(`Error initialising Irys client - ${options.debug ? err.stack : err.message}`);
   }
   // log the loaded address
-  if (wallet && bundler.address) {
-    console.log(`Loaded address: ${bundler.address}`);
+  if (wallet && irys.address) {
+    console.log(`Loaded address: ${irys.address}`);
   }
 
   if (opts.contentType) {
-    bundler.uploader.contentType = opts.contentType;
+    irys.uploader.contentType = opts.contentType;
   }
   if (opts.forceChunking) {
-    bundler.uploader.useChunking = true;
+    irys.uploader.useChunking = true;
   }
 
-  return bundler;
+  return irys;
 }
 
 /**
