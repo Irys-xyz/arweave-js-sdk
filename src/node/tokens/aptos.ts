@@ -1,24 +1,35 @@
-import {
-  AptosAccount,
-  AptosClient,
-  TransactionBuilder,
-  TransactionBuilderEd25519,
-  TransactionBuilderRemoteABI,
-  TxnBuilderTypes /* BCS, TxnBuilderTypes */,
-} from "aptos";
 import type { Signer } from "arbundles";
 import { AptosSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { TokenConfig, Tx } from "../../common/types";
 import { BaseNodeToken } from "../token";
 import sha3 from "js-sha3";
+import {
+  Aptos,
+  AptosConfig as AptosSDKConfig,
+  Account,
+  MimeType,
+  postAptosFullNode,
+  PendingTransactionResponse,
+  generateSignedTransaction,
+  Ed25519PublicKey,
+  Ed25519PrivateKey,
+  Secp256k1PrivateKey,
+  TransactionAuthenticatorEd25519,
+  AccountAuthenticatorEd25519,
+  Ed25519Signature,
+  SignedTransaction,
+  UserTransactionResponse,
+  generateSigningMessage,
+} from "@aptos-labs/ts-sdk";
 import AsyncRetry from "async-retry";
 // import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
 
 export default class AptosConfig extends BaseNodeToken {
-  protected declare providerInstance?: AptosClient;
-  protected accountInstance: AptosAccount | undefined;
+  protected declare providerInstance?: Aptos;
+  protected accountInstance: Account | undefined;
   protected signerInstance: AptosSigner | undefined;
+  protected aptosConfig: AptosSDKConfig;
   protected declare signingFn: (msg: Uint8Array) => Promise<Uint8Array>;
   declare opts: any;
   protected txLock: Promise<unknown> = Promise.resolve();
@@ -26,9 +37,9 @@ export default class AptosConfig extends BaseNodeToken {
 
   constructor(config: TokenConfig) {
     if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
-    if (!config?.opts?.signingFunction && Buffer.isBuffer(config?.wallet)) {
+    if (!config?.opts?.signingFunction && (config?.wallet instanceof Ed25519PrivateKey || config?.wallet instanceof Secp256k1PrivateKey)) {
       // @ts-expect-error custom prop
-      config.accountInstance = new AptosAccount(config.wallet);
+      config.accountInstance = Account.fromPrivateKey({ privateKey: config?.wallet });
     }
     super(config);
     // @ts-expect-error assignment doesn't carry through for some reason
@@ -36,15 +47,19 @@ export default class AptosConfig extends BaseNodeToken {
     this.signingFn = config?.opts?.signingFunction;
     this.needsFee = true;
     this.base = ["aptom", 1e8];
+
+    // In the Aptos context, this.providerUrl is the Aptos Network we want
+    // to work with. read more https://github.com/aptos-labs/aptos-ts-sdk/blob/main/src/api/aptosConfig.ts#L14
+    this.aptosConfig = new AptosSDKConfig({ network: this.providerUrl });
   }
 
-  async getProvider(): Promise<AptosClient> {
-    return (this.providerInstance ??= new AptosClient(this.providerUrl));
+  async getProvider(): Promise<Aptos> {
+    return (this.providerInstance ??= new Aptos(this.aptosConfig));
   }
 
   async getTx(txId: string): Promise<Tx> {
     const client = await this.getProvider();
-    const tx = (await client.waitForTransactionWithResult(txId /* , { checkSuccess: true } */)) as any;
+    const tx = (await client.waitForTransaction({ transactionHash: txId })) as any;
     const payload = tx?.payload as any;
 
     if (!tx.success) {
@@ -88,10 +103,7 @@ export default class AptosConfig extends BaseNodeToken {
       signer.sign = this.signingFn; // override signer fn
       return (this.signerInstance = signer);
     } else {
-      return (this.signerInstance = new AptosSigner(
-        this.accountInstance!.toPrivateKeyObject().privateKeyHex,
-        this.accountInstance!.toPrivateKeyObject().publicKeyHex!,
-      ));
+      return (this.signerInstance = new AptosSigner(this.accountInstance!.privateKey.toString(), this.accountInstance!.publicKey.toString()));
     }
   }
 
@@ -100,51 +112,49 @@ export default class AptosConfig extends BaseNodeToken {
   }
 
   async getCurrentHeight(): Promise<BigNumber> {
-    return new BigNumber(
-      ((await (await this.getProvider()).client.blocks.httpRequest.request({ method: "GET", url: "/" })) as { block_height: string }).block_height,
-    );
+    return new BigNumber(((await (await this.getProvider()).getLedgerInfo()) as { block_height: string }).block_height);
   }
 
   async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number }> {
     if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
     const client = await this.getProvider();
 
-    const builder = new TransactionBuilderRemoteABI(client, { sender: this.address });
+    const transaction = await client.transaction.build.simple({
+      sender: this.address,
+      data: {
+        function: "0x1::coin::transfer",
+        typeArguments: ["0x1::aptos_coin::AptosCoin"],
+        functionArguments: [to ?? "0x149f7dc9c8e43c14ab46d3a6b62cfe84d67668f764277411f98732bf6718acf9", new BigNumber(amount).toNumber()],
+      },
+    });
 
-    const rawTransaction = await builder.build(
-      "0x1::coin::transfer",
-      ["0x1::aptos_coin::AptosCoin"],
-      [to ?? "0x149f7dc9c8e43c14ab46d3a6b62cfe84d67668f764277411f98732bf6718acf9", new BigNumber(amount).toNumber()],
-    );
+    const accountAuthenticator = new AccountAuthenticatorEd25519(new Ed25519PublicKey(this.getPublicKey()), new Ed25519Signature(new Uint8Array(64)));
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {
-      const invalidSigBytes = new Uint8Array(64);
-      return new TxnBuilderTypes.Ed25519Signature(invalidSigBytes);
-    }, this.getPublicKey() as Buffer);
+    const transactionAuthenticator = new TransactionAuthenticatorEd25519(accountAuthenticator.public_key, accountAuthenticator.signature);
 
-    const signedSimulation = txnBuilder.sign(rawTransaction);
+    const signedSimulation = new SignedTransaction(transaction.rawTransaction, transactionAuthenticator).bcsToBytes();
 
     const queryParams = {
       estimate_gas_unit_price: true,
       estimate_max_gas_amount: true,
     };
-    const simulationResult = await AsyncRetry(
+    const [simulationResult] = await AsyncRetry(
       async (_) => {
-        const simulationResult = await client.client.request.request<any[]>({
-          url: "/transactions/simulate",
-          query: queryParams,
-          method: "POST",
+        const { data } = await postAptosFullNode<Uint8Array, Array<UserTransactionResponse>>({
+          aptosConfig: this.aptosConfig,
           body: signedSimulation,
-          mediaType: "application/x.aptos.signed_transaction+bcs",
+          path: "transactions/simulate",
+          params: queryParams,
+          originMethod: "simulateTransaction",
+          contentType: MimeType.BCS_SIGNED_TRANSACTION,
         });
-        if (!simulationResult[0].success || simulationResult[0].gas_used === "0") throw new Error(`Tx simulation failed`);
-        return simulationResult;
+        if (!data[0].success || data[0].gas_used === "0") throw new Error(`Tx simulation failed`);
+        return data;
       },
       { retries: 10 },
     ).catch((_) => [{ gas_unit_price: "100", gas_used: "10" }]);
 
-    return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: Math.ceil(+simulationResult[0].gas_used * 2) };
+    return { gasUnitPrice: +simulationResult.gas_unit_price, maxGasAmount: Math.ceil(+simulationResult.gas_used * 2) };
 
     // const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
     // return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
@@ -154,10 +164,18 @@ export default class AptosConfig extends BaseNodeToken {
 
   async sendTx(data: { tx: Uint8Array; unlock?: () => void }): Promise<string | undefined> {
     const provider = await this.getProvider();
-    const s = await provider.submitSignedBCSTransaction(data.tx);
-    await provider.waitForTransactionWithResult(s.hash);
+
+    const { data: postData } = await postAptosFullNode<Uint8Array, PendingTransactionResponse>({
+      aptosConfig: this.aptosConfig,
+      body: data.tx,
+      path: "transactions",
+      originMethod: "submitTransaction",
+      contentType: MimeType.BCS_SIGNED_TRANSACTION,
+    });
+
+    await provider.waitForTransaction({ transactionHash: postData.hash });
     data.unlock?.();
-    return s.hash;
+    return postData.hash;
   }
 
   async createTx(
@@ -170,36 +188,40 @@ export default class AptosConfig extends BaseNodeToken {
     const unlock = await this.lock();
 
     const client = await this.getProvider();
-    const builder = new TransactionBuilderRemoteABI(client, {
+
+    const transaction = await client.transaction.build.simple({
       sender: this.address,
-      gasUnitPrice: BigInt(fee?.gasUnitPrice ?? 100),
-      maxGasAmount: BigInt(fee?.maxGasAmount ?? 10),
+      data: {
+        function: "0x1::coin::transfer",
+        typeArguments: ["0x1::aptos_coin::AptosCoin"],
+        functionArguments: [to, new BigNumber(amount).toNumber()],
+      },
+      options: {
+        gasUnitPrice: fee?.gasUnitPrice ?? 100,
+        maxGasAmount: fee?.maxGasAmount ?? 10,
+      },
     });
-    const rawTransaction = await builder.build("0x1::coin::transfer", ["0x1::aptos_coin::AptosCoin"], [to, new BigNumber(amount).toNumber()]);
 
-    // const bcsTxn = AptosClient.generateBCSTransaction(this.accountInstance, rawTransaction);
+    const message = generateSigningMessage(transaction);
 
-    const signingMessage = TransactionBuilder.getSigningMessage(rawTransaction);
-    const sig = await this.sign(signingMessage);
+    const signerSignature = await this.sign(message);
 
-    const txnBuilder = new TransactionBuilderEd25519((_) => {
-      return new TxnBuilderTypes.Ed25519Signature(sig);
-    }, this.getPublicKey() as Buffer);
+    const senderAuthenticator = new AccountAuthenticatorEd25519(new Ed25519PublicKey(this.getPublicKey()), new Ed25519Signature(signerSignature));
 
-    const bcsTxn = txnBuilder.sign(rawTransaction);
+    const signedTransaction = generateSignedTransaction({ transaction, senderAuthenticator });
 
-    return { txId: undefined, tx: { tx: bcsTxn, unlock } };
+    return { txId: undefined, tx: { tx: signedTransaction, unlock } };
   }
 
   getPublicKey(): string | Buffer {
     if (this.opts?.signingFunction) return this.wallet;
-    return Buffer.from(this.accountInstance!.pubKey().toString().slice(2), "hex");
+    return Buffer.from(this.accountInstance!.publicKey.toUint8Array());
   }
 
   async ready(): Promise<void> {
     const client = await this.getProvider();
     this._address = await client
-      .lookupOriginalAddress(this.address ?? "")
+      .lookupOriginalAccountAddress({ authenticationKey: this.address ?? "" })
       .then((hs) => hs.toString())
       .catch((_) => this._address); // fallback to original
 

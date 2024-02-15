@@ -1,4 +1,5 @@
-import { AptosAccount, FaucetClient } from "aptos";
+// import { AptosAccount, FaucetClient } from "aptos";
+import { Account, Aptos } from "@aptos-labs/ts-sdk";
 import { NodeIrys } from "../src/node";
 
 /**
@@ -7,20 +8,23 @@ import { NodeIrys } from "../src/node";
  */
 (async function () {
   // Genereate 3 key pairs and account instances
-  const account1 = new AptosAccount();
-  const account2 = new AptosAccount();
-  const account3 = new AptosAccount();
+  const account1 = Account.generate();
+  const account2 = Account.generate();
+  const account3 = Account.generate();
+
+  // Initiate aptos instance
+  const aptos = new Aptos();
 
   // Create wallet object
   // note: the order of the participants is important!
 
-  const wallet = { participants: [account1, account2, account3].map((a) => a.signingKey.publicKey), threshold: 2 };
+  const wallet = { participants: [account1, account2, account3].map((a) => a.publicKey), threshold: 2 };
 
   // create signature collection function
   // this function is called whenever the client needs to collect signatures for signing
   const collectSignatures = async (message: Uint8Array) => {
     // get account 1 & 3 to sign the message
-    const signatures = [account1, account3].map((a) => Buffer.from(a.signBuffer(message).toUint8Array()));
+    const signatures = [account1, account3].map((a) => Buffer.from(a.sign(message).toUint8Array()));
     // bitmap signifies which participants (accounts) signed this message, it's 0 indexed, so this bitmap means account 1 & 3
     // !!this order must be the same as wallet.participants!!
     return { signatures: signatures, bitmap: [0, 2] };
@@ -53,7 +57,7 @@ import { NodeIrys } from "../src/node";
 
   console.log(await tx.isValid());
   // fund the account using the Aptos faucet
-  await new FaucetClient("https://fullnode.devnet.aptoslabs.com", "https://faucet.devnet.aptoslabs.com").fundAccount(irys.address, 5_000_000);
+  await aptos.fundAccount({ accountAddress: irys.address!, amount: 5_000_000 });
 
   // check the cost for uploading the tx
   const cost = await irys.getPrice(tx.size);
