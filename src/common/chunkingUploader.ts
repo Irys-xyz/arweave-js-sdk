@@ -317,7 +317,7 @@ export class ChunkingUploader extends EventEmitter {
       await promiseFactory(heldChunk, 0, 0);
     }
     const headers = { "Content-Type": "application/octet-stream", ...baseHeaders };
-    if (this.uploadOptions?.offchainExpiresIn) headers["x-irys-expires"] = this.uploadOptions.offchainExpiresIn;
+    if (this.uploadOptions?.offchainExpiresInSeconds) headers["x-irys-expires"] = this.uploadOptions.offchainExpiresInSeconds;
 
     const finishUpload = await this.api.post(addPrefix(`/chunks/${this.token}/${id}/-1`), null, {
       headers,

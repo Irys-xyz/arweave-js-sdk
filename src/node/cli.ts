@@ -7,6 +7,7 @@ import inquirer from "inquirer";
 import type NodeIrys from "./irys";
 import Irys from "./irys";
 import { checkPath } from "./upload";
+import { decodeChallenge, encodeChallengeResponse, generateChallengeResponse } from "src/common/challenge";
 
 export const program = new Command();
 
@@ -199,6 +200,22 @@ program
     } catch (err: any) {
       console.error(`Error whilst getting price: ${options.debug ? err.stack : err.message} `);
       return;
+    }
+  });
+
+program
+  .command("respond")
+  .description("Respond to an encoded challenge")
+  .argument("<challenge>", "The challenge string")
+  .action(async (challenge: string) => {
+    try {
+      const chobj = decodeChallenge(challenge);
+      const irys = await init(options, "respond");
+      const response = await generateChallengeResponse({ challenge: chobj, irys });
+      const encRes = encodeChallengeResponse(response);
+      console.log(`Challenge response: ${encRes}`);
+    } catch (e) {
+      console.error(`Error while responding to challenge - ${e}`);
     }
   });
 

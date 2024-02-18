@@ -1,8 +1,8 @@
-import base64url from "base64url";
 import type Irys from "./irys";
-import type { Base64URLString, Common, UploadReceipt, UploadReceiptData } from "./types";
-import type { Override } from "./utilityTypes";
+import type { UploadReceipt, UploadReceiptData } from "./types";
 import Utils from "./utils";
+import type { ChallengeResponse } from "./challenge";
+import { generateChallengeResponse, verifyChallenge } from "./challenge";
 
 export class Offchain {
   constructor(protected irys: Irys) {}
@@ -36,128 +36,42 @@ export class Offchain {
    * @param expiresBy - the date at which this transaction should expire
    */
   async modifyTxExpiry(id: string, expiresBy: Date | false): Promise<void> {
-    const encoded = await this.authOffchainAction(id, { action: OffchainAction.MODIFY_EXPIRE, expireBy: expiresBy });
+    const encoded = await this.authOffchainAction(id, {
+      action: OffchainAction.MODIFY_EXPIRE,
+      expireBy: expiresBy ? expiresBy.getTime() : expiresBy,
+    });
     const res = await this.irys.api.request(`/od/tx/${id}/expire`, { method: "PUT", data: encoded });
     await Utils.checkAndThrow(res);
-    // return res;
-  }
-
-  protected async getOffchainExpireChangeNonce(): Promise<OdTxExpireChangeNonceResponseBody> {
-    const address = this.irys.address!;
-    const token = this.irys.token;
-    const body: OdTxExpireChangeNonceRequestBody = { address, token };
-    const res = await this.irys.api.post<OdTxExpireChangeNonceResponseBody>("/account/nonce/od/change-expire", body);
-    await Utils.checkAndThrow(res);
-    return res.data;
   }
 
   protected authOffchainAction(
     txId: string,
     opts: { action: OffchainAction.DELETE | OffchainAction.UPGRADE } | { action: OffchainAction.MODIFY_EXPIRE; expireBy: ExpiresBy },
   );
-  protected async authOffchainAction(txId: string, opts: { action: OffchainAction; expireBy?: ExpiresBy }): Promise<OdActionRequestBodyEncoded> {
-    const tokenConfig = this.irys.tokenConfig;
-    const signer = tokenConfig.getSigner();
-    const publicKey = await tokenConfig.getPublicKey();
-    const { deepHash, stringToBuffer } = this.irys.arbundles;
+  protected async authOffchainAction(txId: string, opts: { action: OffchainAction; expireBy?: ExpiresBy }): Promise<ChallengeResponse> {
+    // get challenge
+    const res = await this.irys.api.post(`/challenge/${opts.action}`, { address: this.irys.address, token: this.irys.token, txId }).catch((e) => e);
 
-    let data: OdActionRequestBodiesCommon = {
-      publicKey: !Buffer.isBuffer(publicKey) ? Buffer.from(publicKey) : publicKey,
-      token: this.irys.token,
-      txId,
-      sigType: signer.signatureType,
-      version: OffchainActionPayloadVersion.V1,
-    };
-    const hashElements = [stringToBuffer(txId), stringToBuffer(opts.action)];
-    if (!Buffer.isBuffer(publicKey)) {
-      data.publicKey = Buffer.from(publicKey);
-    }
-
-    // TODO: make this infer nicer somehow?
+    console.log(res);
+    const challenge = res.data;
+    await verifyChallenge({ challenge, irys: this.irys });
     if (opts.action === OffchainAction.MODIFY_EXPIRE) {
-      const body: OdExpireChangeActionRequestBody = {
-        ...data,
-        action: OffchainAction.MODIFY_EXPIRE,
-        nonce: (await this.getOffchainExpireChangeNonce()).nonce,
-        expireBy: opts.expireBy === false ? "false" : opts.expireBy!.getTime().toString(),
-      };
-      hashElements.push(stringToBuffer(body.nonce));
-      hashElements.push(stringToBuffer(body.expireBy.toString()));
-      data = body;
+      challenge.extra = { expireBy: opts.expireBy!.toString() };
     }
+    const response = await generateChallengeResponse({ challenge, irys: this.irys });
 
-    const hash = await deepHash(hashElements);
-    const signature = await signer.sign(hash);
-
-    const encoded: OdActionRequestBodyEncoded = {
-      ...data,
-      action: opts.action,
-      publicKey: base64url.encode(data.publicKey),
-      signature: base64url.encode(Buffer.from(signature)),
-    };
-
-    const h2 = await deepHash(hashElements);
-    console.log(hashElements);
-    const bpub = base64url.toBuffer(encoded.publicKey);
-    const bsig = base64url.toBuffer(encoded.signature);
-    const isValid = await tokenConfig.verify(bpub, h2, bsig);
-
-    const address = tokenConfig.ownerToAddress(
-      tokenConfig.name === "arweave" ? base64url.decode(encoded.publicKey) : base64url.toBuffer(encoded.publicKey),
-    );
-
-    if (address !== this.irys.address) console.warn(`[offchain:auth] derived address does not equal Irys instance address`);
-    if (!isValid) console.warn(`[offchain:auth] signature verification failed`);
-
-    return encoded;
+    console.log(response);
+    return response;
   }
 }
 
-enum OffchainAction {
-  DELETE = "delete",
-  UPGRADE = "upgrade",
-  MODIFY_EXPIRE = "modifyExpire",
+export enum OffchainAction {
+  DELETE = "OdDelete",
+  UPGRADE = "OdUpgrade",
+  MODIFY_EXPIRE = "OdModifyExpire",
 }
-
-type ExpiresBy = Date | false;
-
-enum OffchainActionPayloadVersion {
-  V1 = "1.0.0",
-}
-export const OFFCHAIN_ACTION_VERSION = "1.0.0" as const;
+type ExpiresBy = number | false;
 
 type OdDeleteResponseBody = {
   deleteProvenanceRecordId: string;
-};
-
-export type OdActionRequestBodyBase = {
-  txId: string;
-  token: string;
-  publicKey: Buffer;
-  sigType: number;
-  action: OffchainAction;
-  version: OffchainActionPayloadVersion;
-};
-export type OdActionRequestBody = {
-  action: OffchainAction.DELETE | OffchainAction.UPGRADE;
-} & OdActionRequestBodyBase;
-
-export type OdExpireChangeActionRequestBody = {
-  action: OffchainAction.MODIFY_EXPIRE;
-  nonce: string;
-  expireBy: string;
-} & OdActionRequestBodyBase;
-
-export type OdActionRequestBodies = OdExpireChangeActionRequestBody | OdActionRequestBody;
-export type OdActionRequestBodiesCommon = Common<OdExpireChangeActionRequestBody, OdActionRequestBody>;
-
-export type OdActionRequestBodyEncoded = Override<OdActionRequestBodies, { publicKey: Base64URLString; signature: Base64URLString }>;
-
-type OdTxExpireChangeNonceRequestBody = {
-  address: string;
-  token: string;
-};
-
-type OdTxExpireChangeNonceResponseBody = {
-  nonce: string;
 };

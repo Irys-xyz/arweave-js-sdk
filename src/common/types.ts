@@ -153,7 +153,7 @@ export type WithdrawalResponse = {
 
 export type CreateAndUploadOptions = DataItemCreateOptions & { upload?: UploadOptions };
 
-export type UploadOptions = { offchain?: boolean; offchainExpiresIn?: number };
+export type UploadOptions = { offchain?: boolean; offchainExpiresInSeconds?: number };
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
 //     paths = "arweave/paths"
