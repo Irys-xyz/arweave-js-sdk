@@ -127,6 +127,7 @@
     "csv": "5.5.3",
     "inquirer": "^8.2.0",
     "js-sha256": "^0.9.0",
+    "tslib": "^2.6.2",
     "mime-types": "^2.1.34",
     "near-seed-phrase": "^0.2.0"
   },
@@ -173,7 +174,6 @@
     "ts-node": "^10.9.1",
     "tsc-esm-fix": "^2.20.12",
     "tsconfig-paths": "^4.2.0",
-    "tslib": "^2.3.1",
     "typescript": "=5.1.5",
     "viem": "^2.7.1",
     "webpack": "^5.65.0",

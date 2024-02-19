@@ -22,6 +22,7 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictNullChecks": true,
+    "importHelpers": true,
     "baseUrl": ".",
     "rootDir": ".",
     "experimentalDecorators": true,

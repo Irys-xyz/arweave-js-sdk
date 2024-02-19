@@ -37,7 +37,7 @@ export class Api {
   }
 
   private async requestInterceptor(request: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> {
-    const cookies = this.cookieMap.get(new URL(request.baseURL ?? "").host);
+    const cookies = this.cookieMap.get(new URL(request.baseURL ?? "").hostname);
     if (cookies) request.headers!.cookie = cookies;
     return request;
   }
