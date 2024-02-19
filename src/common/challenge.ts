@@ -45,6 +45,8 @@ export async function hashChallenge({ challenge, irys }: { challenge: Challenge;
     stableStringify(challenge.extra),
   ].map((d) => Buffer.from(d));
 
+  if (challenge.extra) hashComponents.push(Buffer.from(stableStringify(challenge.extra)));
+
   const hash = await irys.arbundles.deepHash(hashComponents);
   return hash;
 }
@@ -78,7 +80,7 @@ export type Challenge = {
   nonce: string;
   type: string;
   data: Record<string, string>;
-  extra: Record<string, string>;
+  extra?: Record<string, string>;
   domain: string;
   signature: {
     signature: string;
@@ -93,7 +95,7 @@ export type ChallengeResponse = {
   nonce: string;
   type: string;
   data: Record<string, string>;
-  extra: Record<string, string>;
+  extra?: Record<string, string>;
   domain: string;
   signature: {
     signature: string;
