@@ -9,6 +9,7 @@ import type { WebToken } from "./types";
 import * as arbundles from "./utils";
 import { WebUploader } from "./upload";
 import type { IrysConfig } from "../common/types";
+import { Checkpointing } from "src/common/checkpointing";
 
 export class BaseWebIrys extends Irys {
   public tokenConfig: WebToken;
@@ -59,6 +60,7 @@ export class BaseWebIrys extends Irys {
     this.uploader = new WebUploader(this);
     this.provenance = new Provenance(this);
     this.transactions = new Transaction(this);
+    this.checkpointing = new Checkpointing(this);
     this.address = "Please run `await Irys.ready()`";
     this.uploadFolder = this.uploader.uploadFolder.bind(this.uploader);
     this.uploadFile = this.uploader.uploadFile.bind(this.uploader);

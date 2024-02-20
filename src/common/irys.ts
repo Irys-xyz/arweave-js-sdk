@@ -23,6 +23,7 @@ import type Uploader from "./upload";
 import Utils from "./utils";
 import { withdrawBalance } from "./withdrawal";
 import Query from "@irys/query";
+import type { Checkpointing } from "./checkpointing";
 
 export default abstract class Irys {
   public api!: Api;
@@ -37,6 +38,7 @@ export default abstract class Irys {
   protected _readyPromise: Promise<void> | undefined;
   public url: URL;
   public arbundles: Arbundles;
+  public checkpointing: Checkpointing;
   public IrysTransaction: IrysTransactonCtor;
   static VERSION = "REPLACEMEIRYSVERSION";
 
