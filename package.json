@@ -115,7 +115,7 @@
     "@near-js/transactions": "^0.1.0",
     "@solana/web3.js": "^1.36.0",
     "@supercharge/promise-pool": "^3.0.0",
-    "@witnessco/client": "^0.1.13",
+    "@witnessco/client": "^0.1.14",
     "algosdk": "^1.13.1",
     "aptos": "=1.8.5",
     "arbundles": "^0.10.0",

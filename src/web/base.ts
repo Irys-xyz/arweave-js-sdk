@@ -9,7 +9,7 @@ import type { WebToken } from "./types";
 import * as arbundles from "./utils";
 import { WebUploader } from "./upload";
 import type { IrysConfig } from "../common/types";
-import { Checkpointing } from "src/common/checkpointing";
+import { Checkpointing } from "../common/checkpointing";
 
 export class BaseWebIrys extends Irys {
   public tokenConfig: WebToken;

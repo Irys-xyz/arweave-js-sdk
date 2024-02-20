@@ -3,10 +3,10 @@ import BigNumber from "bignumber.js";
 import type { http } from "viem";
 import type { PublicClient, WalletClient } from "viem";
 import type { mainnet } from "viem/chains";
-import type { Tx } from "src/common/types";
 import type EthereumConfig from "../tokens/ethereum";
 import type ERC20Config from "../tokens/erc20";
 import { InjectedTypedEthereumSigner } from "arbundles/web";
+import type { Tx } from "../../common/types";
 
 // TODO: figure out a better way to do this.
 export function augmentViemV2(tokenConfig: EthereumConfig, opts: any): void {

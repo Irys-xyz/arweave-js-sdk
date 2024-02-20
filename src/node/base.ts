@@ -9,7 +9,7 @@ import type { NodeToken } from "./types";
 import NodeUploader from "./upload";
 import * as arbundles from "./utils";
 import { NodeProvenance } from "./provenance";
-import { Checkpointing } from "src/common/checkpointing";
+import { Checkpointing } from "../common/checkpointing";
 
 export class BaseNodeIrys extends Irys {
   public uploader: NodeUploader; // re-define type

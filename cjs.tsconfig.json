@@ -2,7 +2,7 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
         "module": "CommonJS",
-        "target": "es2015",
+        "target": "es2020",
         "outDir": "./build/cjs",
         "rootDir": "./src",
         "moduleResolution": "NodeNext"
