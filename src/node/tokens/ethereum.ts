@@ -21,7 +21,7 @@ export default class EthereumConfig extends BaseNodeToken {
     if (!this.providerInstance) {
       this.providerInstance = new JsonRpcProvider({
         // https://github.com/ethers-io/ethers.js/issues/4469#issuecomment-1932145334
-        fetchOptions: this.opts.fetchOptions ?? {
+        fetchOptions: this?.opts?.fetchOptions ?? {
           referrer: "",
         },
         url: this.providerUrl,
