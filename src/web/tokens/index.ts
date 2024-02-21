@@ -200,6 +200,21 @@ export default function getTokenConfig({
         providerUrl: providerUrl ?? "https://polygon-rpc.com",
         contractAddress: contractAddress ?? "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
       });
+    case "bera":
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "bera",
+          ticker: "BERA",
+          // TODO: make sure this is set to mainnet
+          providerUrl: providerUrl ?? "https://artio.rpc.berachain.com/",
+          wallet: wallet,
+          opts: tokenOpts,
+        },
+      });
+
     default:
       throw new Error(`Unknown/Unsupported token ${token}`);
   }
