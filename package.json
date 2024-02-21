@@ -1,6 +1,6 @@
 {
   "name": "@irys/sdk",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "JS client for Irys",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Irys",
@@ -127,9 +127,9 @@
     "csv": "5.5.3",
     "inquirer": "^8.2.0",
     "js-sha256": "^0.9.0",
-    "tslib": "^2.6.2",
     "mime-types": "^2.1.34",
-    "near-seed-phrase": "^0.2.0"
+    "near-seed-phrase": "^0.2.0",
+    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.16.7",
