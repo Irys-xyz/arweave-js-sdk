@@ -1,4 +1,4 @@
-// import { AptosClient, TransactionBuilderEd25519, TransactionBuilderRemoteABI, TxnBuilderTypes } from "aptos";
+import type { Network, UserTransactionResponse } from "@aptos-labs/ts-sdk";
 import {
   Aptos,
   AptosConfig as AptosSDKConfig,
@@ -9,27 +9,23 @@ import {
   AccountAuthenticatorEd25519,
   Ed25519Signature,
   SignedTransaction,
-  UserTransactionResponse,
 } from "@aptos-labs/ts-sdk";
 import type { Signer } from "arbundles";
 import { InjectedAptosSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { TokenConfig, Tx } from "../../common/types";
 import sha3 from "js-sha3";
-
-// import { Ed25519PublicKey } from "aptos/src/aptos_types/ed25519";
-// import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
 import BaseWebToken from "../token";
 
-export interface SignMessagePayload {
+export type SignMessagePayload = {
   address?: boolean; // Should we include the address of the account in the message
   application?: boolean; // Should we include the domain of the dapp
   chainId?: boolean; // Should we include the current chain id the wallet is connected to
   message: string; // The message to be signed and displayed to the user
   nonce: string; // A nonce the dapp should generate
-}
+};
 
-export interface SignMessageResponse {
+export type SignMessageResponse = {
   address: string;
   application: string;
   chainId: number;
@@ -38,18 +34,18 @@ export interface SignMessageResponse {
   nonce: string;
   prefix: string; // Should always be APTOS
   signature: string; // The signed full message
-}
+};
 
-export interface AptosWallet {
+export type AptosWallet = {
   account: () => Promise<{ address: string; publicKey: string }>;
   connect: () => Promise<{ address: string; publicKey: string }>;
   disconnect: () => Promise<void>;
   isConnected: () => Promise<boolean>;
-  network: () => Promise<"Testnet" | "Mainnet">;
+  network: () => Promise<Network>;
   signAndSubmitTransaction: (transaction: any) => Promise<any>;
   signMessage: (payload: SignMessagePayload) => Promise<SignMessageResponse>;
   signTransaction: (transaction: any) => Promise<Uint8Array>;
-}
+};
 
 export default class AptosConfig extends BaseWebToken {
   protected declare providerInstance?: Aptos;
@@ -59,15 +55,8 @@ export default class AptosConfig extends BaseWebToken {
   protected aptosConfig: AptosSDKConfig;
 
   constructor(config: TokenConfig) {
-    // if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
-    // // @ts-ignore
-    // config.accountInstance = new AptosAccount(config.wallet);
     super(config);
     this.base = ["aptom", 1e8];
-
-    // In the Aptos context, this.providerUrl is the Aptos Network we want
-    // to work with. read more https://github.com/aptos-labs/aptos-ts-sdk/blob/main/src/api/aptosConfig.ts#L14
-    this.aptosConfig = new AptosSDKConfig({ network: this.providerUrl });
   }
 
   async getProvider(): Promise<Aptos> {
@@ -153,7 +142,7 @@ export default class AptosConfig extends BaseWebToken {
       estimate_max_gas_amount: true,
     };
 
-    const { data } = await postAptosFullNode<Uint8Array, Array<UserTransactionResponse>>({
+    const { data } = await postAptosFullNode<Uint8Array, UserTransactionResponse[]>({
       aptosConfig: this.aptosConfig,
       body: signedSimulation,
       path: "transactions/simulate",
@@ -203,9 +192,11 @@ export default class AptosConfig extends BaseWebToken {
   }
 
   public async ready(): Promise<void> {
+
+    this.aptosConfig = new AptosSDKConfig({ fullnode: this.providerUrl, network: await this.wallet.network() });
+    const client = await this.getProvider();
     this._publicKey = (await this.getPublicKey()) as Buffer;
     this._address = this.ownerToAddress(this._publicKey);
-    const client = await this.getProvider();
 
     this._address = await client
       .lookupOriginalAccountAddress({ authenticationKey: this.address ?? "" })
