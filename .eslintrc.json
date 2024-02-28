@@ -30,6 +30,7 @@
     "plugin:@typescript-eslint/strict"
   ],
   "rules": {
+    "@typescript-eslint/no-import-type-side-effects": "error",
     "@typescript-eslint/no-unnecessary-condition": "off",
     "@typescript-eslint/consistent-type-imports": [
       "error",
