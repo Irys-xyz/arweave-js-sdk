@@ -46,11 +46,11 @@ export default class AptosConfig extends BaseNodeToken {
     this.accountInstance = config.accountInstance;
     this.signingFn = config?.opts?.signingFunction;
     this.needsFee = true;
-    this.base = ["aptom", 1e8];
+    this.base = ["octa", 1e8];
 
     // In the Aptos context, this.providerUrl is the Aptos Network we want
     // to work with. read more https://github.com/aptos-labs/aptos-ts-sdk/blob/main/src/api/aptosConfig.ts#L14
-    this.aptosConfig = new AptosSDKConfig({ fullnode: this.providerUrl, network: config?.opts?.aptosNetwork ?? Network.MAINNET });
+    this.aptosConfig = new AptosSDKConfig({ fullnode: this.providerUrl, ...config?.opts?.aptosSdkConfig });
   }
 
   async getProvider(): Promise<Aptos> {

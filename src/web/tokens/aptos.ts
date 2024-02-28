@@ -56,7 +56,7 @@ export default class AptosConfig extends BaseWebToken {
 
   constructor(config: TokenConfig) {
     super(config);
-    this.base = ["aptom", 1e8];
+    this.base = ["octa", 1e8];
   }
 
   async getProvider(): Promise<Aptos> {
@@ -193,7 +193,7 @@ export default class AptosConfig extends BaseWebToken {
 
   public async ready(): Promise<void> {
 
-    this.aptosConfig = new AptosSDKConfig({ fullnode: this.providerUrl, network: await this.wallet.network() });
+    this.aptosConfig = new AptosSDKConfig({ fullnode: this.providerUrl, network: await this.wallet.network(), ...this.config?.opts?.aptosSdkConfig });
     const client = await this.getProvider();
     this._publicKey = (await this.getPublicKey()) as Buffer;
     this._address = this.ownerToAddress(this._publicKey);
