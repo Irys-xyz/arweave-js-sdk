@@ -1,4 +1,3 @@
-// import { AptosAccount, FaucetClient } from "aptos";
 import { Account, Aptos } from "@aptos-labs/ts-sdk";
 import { NodeIrys } from "../src/node";
 

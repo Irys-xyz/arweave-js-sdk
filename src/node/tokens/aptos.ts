@@ -19,10 +19,8 @@ import {
   Ed25519Signature,
   SignedTransaction,
   generateSigningMessage,
-  Network,
 } from "@aptos-labs/ts-sdk";
 import AsyncRetry from "async-retry";
-// import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
 
 export default class AptosConfig extends BaseNodeToken {
   protected declare providerInstance?: Aptos;
