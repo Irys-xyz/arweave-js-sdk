@@ -4,23 +4,22 @@ import BigNumber from "bignumber.js";
 import type { TokenConfig, Tx } from "../../common/types";
 import { BaseNodeToken } from "../token";
 import sha3 from "js-sha3";
+import type { PendingTransactionResponse, UserTransactionResponse } from "@aptos-labs/ts-sdk";
 import {
   Aptos,
   AptosConfig as AptosSDKConfig,
   Account,
   MimeType,
   postAptosFullNode,
-  PendingTransactionResponse,
   generateSignedTransaction,
   Ed25519PublicKey,
   Ed25519PrivateKey,
-  Secp256k1PrivateKey,
   TransactionAuthenticatorEd25519,
   AccountAuthenticatorEd25519,
   Ed25519Signature,
   SignedTransaction,
-  UserTransactionResponse,
   generateSigningMessage,
+  Network,
 } from "@aptos-labs/ts-sdk";
 import AsyncRetry from "async-retry";
 // import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, UserTransaction, } from "aptos/src/generated";
@@ -36,8 +35,9 @@ export default class AptosConfig extends BaseNodeToken {
   protected locked = false;
 
   constructor(config: TokenConfig) {
-    if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
-    if (!config?.opts?.signingFunction && (config?.wallet instanceof Ed25519PrivateKey || config?.wallet instanceof Secp256k1PrivateKey)) {
+    if (typeof config.wallet === "string" && config.wallet.length === 66)
+      config.wallet = new Ed25519PrivateKey(config.wallet); /* = Buffer.from(config.wallet.slice(2), "hex"); */
+    if (!config?.opts?.signingFunction && config?.wallet instanceof Ed25519PrivateKey) {
       // @ts-expect-error custom prop
       config.accountInstance = Account.fromPrivateKey({ privateKey: config?.wallet });
     }
@@ -50,7 +50,7 @@ export default class AptosConfig extends BaseNodeToken {
 
     // In the Aptos context, this.providerUrl is the Aptos Network we want
     // to work with. read more https://github.com/aptos-labs/aptos-ts-sdk/blob/main/src/api/aptosConfig.ts#L14
-    this.aptosConfig = new AptosSDKConfig({ network: this.providerUrl });
+    this.aptosConfig = new AptosSDKConfig({ fullnode: this.providerUrl, network: config?.opts?.aptosNetwork ?? Network.MAINNET });
   }
 
   async getProvider(): Promise<Aptos> {
@@ -140,7 +140,7 @@ export default class AptosConfig extends BaseNodeToken {
     };
     const [simulationResult] = await AsyncRetry(
       async (_) => {
-        const { data } = await postAptosFullNode<Uint8Array, Array<UserTransactionResponse>>({
+        const { data } = await postAptosFullNode<Uint8Array, UserTransactionResponse[]>({
           aptosConfig: this.aptosConfig,
           body: signedSimulation,
           path: "transactions/simulate",
