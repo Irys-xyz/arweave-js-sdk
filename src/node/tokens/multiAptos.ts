@@ -3,6 +3,7 @@ import type { TokenConfig } from "../../common/types";
 import Aptos from "./aptos";
 import type { Signer } from "arbundles";
 import { MultiSignatureAptosSigner } from "arbundles";
+import type { PendingTransactionResponse, UserTransactionResponse } from "@aptos-labs/ts-sdk";
 import {
   AccountAddress,
   AuthenticationKey,
@@ -13,7 +14,6 @@ import {
   EntryFunction,
   MultiEd25519PublicKey,
   MultiEd25519Signature,
-  PendingTransactionResponse,
   RawTransaction,
   SignedTransaction,
   SigningScheme,
@@ -25,7 +25,6 @@ import {
   postAptosFullNode,
   AccountAuthenticatorEd25519,
   TransactionAuthenticatorEd25519,
-  UserTransactionResponse,
 } from "@aptos-labs/ts-sdk";
 // import Utils from "../../common/utils";
 
@@ -103,7 +102,7 @@ export default class MultiSignatureAptos extends Aptos {
       estimate_max_gas_amount: true,
     };
 
-    const { data } = await postAptosFullNode<Uint8Array, Array<UserTransactionResponse>>({
+    const { data } = await postAptosFullNode<Uint8Array, UserTransactionResponse[]>({
       aptosConfig: this.aptosConfig,
       body: signedSimulation,
       path: "transactions/simulate",
