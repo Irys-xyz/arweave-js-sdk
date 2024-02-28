@@ -3,7 +3,7 @@ import type { Readable } from "stream";
 import { PassThrough } from "stream";
 import { EventEmitter } from "events";
 import type Api from "./api";
-import type { Arbundles, Token, UploadOptions, UploadResponse } from "./types";
+import { UploadHeaders, type Arbundles, type Token, type UploadOptions, type UploadResponse } from "./types";
 import Utils from "./utils";
 import Crypto from "crypto";
 import retry from "async-retry";
@@ -107,7 +107,10 @@ export class ChunkingUploader extends EventEmitter {
     return this.runUpload(dataStream, { ...options });
   }
 
-  async runUpload(dataStream: Readable | Buffer, transactionOpts?: DataItemCreateOptions): Promise<AxiosResponse<UploadResponse>> {
+  async runUpload(
+    dataStream: Readable | Buffer,
+    transactionOpts?: DataItemCreateOptions & { upload?: UploadOptions },
+  ): Promise<AxiosResponse<UploadResponse>> {
     let id = this.uploadID;
 
     const isTransaction = transactionOpts === undefined;
@@ -302,10 +305,11 @@ export class ChunkingUploader extends EventEmitter {
 
       await promiseFactory(heldChunk, 0, 0);
     }
-
+    const finalHeaders = { "Content-Type": "application/octet-stream", ...headers };
+    if (transactionOpts?.upload?.paidBy) finalHeaders[UploadHeaders.PAID_BY] = transactionOpts.upload.paidBy;
     // potential improvement: write chunks into a file at offsets, instead of individual chunks + doing a concatenating copy
     const finishUpload = await this.api.post(`/chunks/${this.token}/${id}/-1`, null, {
-      headers: { "Content-Type": "application/octet-stream", ...headers },
+      headers: finalHeaders,
       timeout: this.api.config?.timeout ?? 40_000 * 10, // server side reconstruction can take a while
     });
 

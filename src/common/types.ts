@@ -10,16 +10,16 @@ export type CreateTxData = {
 };
 
 // export type Arbundles = typeof arbundles | typeof webArbundles;
-export interface Arbundles {
+export type Arbundles = {
   createData: typeof createData;
   DataItem: typeof DataItem;
   deepHash: typeof deepHash;
   stringToBuffer: typeof stringToBuffer;
   getCryptoDriver: typeof getCryptoDriver;
   bundleAndSignData: typeof bundleAndSignData;
-}
+};
 
-export interface IrysTransaction extends DataItem {
+export type IrysTransaction = {
   sign: () => Promise<Buffer>;
   size: number;
   uploadWithReceipt: (opts?: UploadOptions) => Promise<UploadReceipt>;
@@ -27,22 +27,22 @@ export interface IrysTransaction extends DataItem {
   upload(opts?: UploadOptions): Promise<UploadResponse>;
   isValid(): Promise<boolean>;
   // fromRaw(rawTransaction: Buffer, IrysInstance: Irys): IrysTransaction;
-}
+} & DataItem;
 export type IrysTransactonCtor = new (
   data: string | Uint8Array,
   Irys: Pick<Irys, "uploader" | "tokenConfig" | "arbundles">,
   opts?: IrysTransactionCreateOptions,
 ) => IrysTransaction;
 
-export interface Tx {
+export type Tx = {
   from: string;
   to: string;
   amount: BigNumber;
   blockHeight?: BigNumber;
   pending: boolean;
   confirmed: boolean;
-}
-export interface TokenConfig<Wallet = string | object, Opts = any> {
+};
+export type TokenConfig<Wallet = string | object, Opts = any> = {
   irys: Irys;
   name: string;
   ticker: string;
@@ -51,17 +51,17 @@ export interface TokenConfig<Wallet = string | object, Opts = any> {
   providerUrl: string;
   isSlow?: boolean;
   opts?: Opts;
-}
+};
 
-export interface IrysConfig {
+export type IrysConfig = {
   timeout?: number;
   providerUrl?: string;
   contractAddress?: string;
   tokenOpts?: object;
   headers?: Record<string, string>;
-}
+};
 
-export interface Token {
+export type Token = {
   isSlow: boolean;
   needsFee: boolean;
 
@@ -104,16 +104,16 @@ export interface Token {
   // addSignature?(multiTx: any, opts: any): Promise<any>;
 
   // submitMultiSigTx?(multiTx: any, opts: any): Promise<any>;
-}
+};
 
-export interface Manifest {
+export type Manifest = {
   manifest: string;
   version: string;
   paths: Record<string, Record<string, Record<"id", string>>>;
   index?: Record<"path", string>;
-}
+};
 
-export interface UploadResponse {
+export type UploadResponse = {
   // The ID of the transaction
   id: string;
   // The Arweave public key of the node that received the transaction
@@ -130,27 +130,32 @@ export interface UploadResponse {
   version: "1.0.0";
   // Injected verification function (same as Utils/Irys.verifyReceipt)
   verify: () => Promise<boolean>;
-}
+};
 
 export type UploadReceipt = /* Required<UploadResponse>; */ UploadResponse;
 export type UploadReceiptData = Omit<UploadReceipt, "verify" | "validatorSignatures">;
 
-export interface FundResponse {
+export type FundResponse = {
   reward: string;
   target: string;
   quantity: string;
   id: string;
-}
-export interface WithdrawalResponse {
+};
+export type WithdrawalResponse = {
   tx_id: string;
   requested: number;
   fee: number;
   final: number;
-}
+};
 
 export type CreateAndUploadOptions = DataItemCreateOptions & { upload?: UploadOptions };
 
-export type UploadOptions = Record<string, never>;
+export type UploadOptions = { paidBy?: string };
+
+export enum UploadHeaders {
+  PAID_BY = "x-irys-paid-by",
+}
+
 // // TS doesn't like string template literals it seems
 // export enum manifestType {
 //     paths = "arweave/paths"

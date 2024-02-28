@@ -7,16 +7,17 @@ import base64url from "base64url";
 import type { Readable } from "stream";
 import type Api from "./api";
 import { ChunkingUploader } from "./chunkingUploader";
-import type {
-  Token,
-  Arbundles,
-  IrysTransactonCtor,
-  UploadOptions,
-  UploadReceipt,
-  UploadResponse,
-  CreateAndUploadOptions,
-  Manifest,
-  IrysTransaction,
+import {
+  type Token,
+  type Arbundles,
+  type IrysTransactonCtor,
+  type UploadOptions,
+  type UploadReceipt,
+  type UploadResponse,
+  type CreateAndUploadOptions,
+  type Manifest,
+  type IrysTransaction,
+  UploadHeaders,
 } from "./types";
 import type Utils from "./utils";
 import { randomBytes } from "crypto";
@@ -63,6 +64,7 @@ export class Uploader {
     } else {
       const { url, timeout, headers: confHeaders } = this.api.getConfig();
       const headers = { "Content-Type": "application/octet-stream", ...confHeaders };
+      if (opts?.paidBy) headers[UploadHeaders.PAID_BY] = opts.paidBy;
       res = await this.api.post(new URL(`/tx/${this.token}`, url).toString(), transaction.getRaw(), {
         headers: headers,
         timeout,
