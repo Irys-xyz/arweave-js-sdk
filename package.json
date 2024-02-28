@@ -103,8 +103,13 @@
   "engines": {
     "node": ">=16.10.0"
   },
+  "resolutions": {
+    "clipboardy": "3.0.0",
+    "string-width": "4.2.2",
+    "strip-ansi": "6.0.0"
+  },
   "dependencies": {
-    "@aptos-labs/ts-sdk": "^1.6.0",
+    "@aptos-labs/ts-sdk": "^1.9.0",
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/contracts": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
