@@ -27,22 +27,31 @@ export class Approval {
     expiresInSeconds,
   }: {
     approvedAddress: string;
-    amount: BigNumber.Value;
+    amount: string | number | BigNumber;
     expiresInSeconds?: number | string;
   }): Promise<UploadResponse> {
-    const tags = [{ name: UploadTags.APPROVE_PAYMENT, value: [approvedAddress, amount, expiresInSeconds].join(",") }];
+    const tags = [
+      { name: UploadApprovalTags.APPROVE_PAYMENT, value: approvedAddress },
+      { name: UploadApprovalMetaTags.AMOUNT, value: amount.toString() },
+    ];
+    if (expiresInSeconds) tags.push({ name: UploadApprovalMetaTags.EXPIRE_SECONDS, value: expiresInSeconds.toString() });
     return await this.irys.upload("", { tags });
   }
 
   public async revokeApproval({ approvedAddress }: { approvedAddress: string }): Promise<UploadResponse> {
-    const tags = [{ name: UploadTags.DELETE_APPROVAL, value: approvedAddress }];
+    const tags = [{ name: UploadApprovalTags.DELETE_APPROVAL, value: approvedAddress }];
     return await this.irys.upload("", { tags });
   }
 }
 
 type GetApprovedBalanceResponseBody = { amount: string; expiresBy?: string };
 
-export enum UploadTags {
+export enum UploadApprovalTags {
   APPROVE_PAYMENT = "x-irys-approve-payment",
   DELETE_APPROVAL = "x-irys-delete-payment-approval",
+}
+
+export enum UploadApprovalMetaTags {
+  AMOUNT = "x-amount",
+  EXPIRE_SECONDS = "x-expire-seconds",
 }
