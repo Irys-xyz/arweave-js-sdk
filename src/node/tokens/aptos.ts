@@ -10,7 +10,6 @@ import {
   Account,
   MimeType,
   postAptosFullNode,
-  PendingTransactionResponse,
   generateSignedTransaction,
   Ed25519PublicKey,
   Ed25519PrivateKey,
@@ -18,9 +17,9 @@ import {
   AccountAuthenticatorEd25519,
   Ed25519Signature,
   SignedTransaction,
-  UserTransactionResponse,
   generateSigningMessage,
 } from "@aptos-labs/ts-sdk";
+import type { UserTransactionResponse, PendingTransactionResponse } from "@aptos-labs/ts-sdk";
 import AsyncRetry from "async-retry";
 
 export default class AptosConfig extends BaseNodeToken {
