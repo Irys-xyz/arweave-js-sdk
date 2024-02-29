@@ -11,6 +11,7 @@ import utils from "../../common/utils";
 import AptosConfig from "./aptos";
 import MultiSignatureAptos from "./multiAptos";
 import type BaseNodeIrys from "../base";
+import { Network } from "@aptos-labs/ts-sdk";
 
 export default function getTokenConfig(
   irys: BaseNodeIrys,
@@ -201,7 +202,7 @@ export default function getTokenConfig(
         irys: irys,
         name: "aptos",
         ticker: "APTOS",
-        providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com",
+        providerUrl: providerUrl ?? Network.MAINNET,
         wallet,
         opts,
       });
@@ -211,7 +212,7 @@ export default function getTokenConfig(
         irys: irys,
         name: "aptos",
         ticker: "APTOS",
-        providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",
+        providerUrl: providerUrl ?? Network.MAINNET,
         wallet,
         opts,
       });

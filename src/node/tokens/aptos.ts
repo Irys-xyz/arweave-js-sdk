@@ -144,7 +144,7 @@ export default class AptosConfig extends BaseNodeToken {
     };
     const [simulationResult] = await AsyncRetry(
       async (_) => {
-        const { data } = await postAptosFullNode<Uint8Array, Array<UserTransactionResponse>>({
+        const { data } = await postAptosFullNode<Uint8Array, UserTransactionResponse[]>({
           aptosConfig: this.aptosConfig,
           body: signedSimulation,
           path: "transactions/simulate",
