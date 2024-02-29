@@ -15,6 +15,7 @@ import type BaseWebToken from "../token";
 import ArweaveConfig from "./arweave";
 import { augmentTokenPrivy } from "../shims/privy";
 import { augmentViemV2 } from "../shims/viemv2";
+import { Network } from "@aptos-labs/ts-sdk";
 
 export default function getTokenConfig({
   irys,
@@ -161,7 +162,7 @@ export default function getTokenConfig({
         irys: irys,
         name: "aptos",
         ticker: "APTOS",
-        providerUrl: providerUrl ?? "https://fullnode.mainnet.aptoslabs.com/v1",
+        providerUrl: providerUrl ?? Network.MAINNET,
         wallet: wallet,
       });
     case "arweave":

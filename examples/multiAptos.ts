@@ -1,4 +1,4 @@
-import { Account, Aptos } from "@aptos-labs/ts-sdk";
+import { Account, Aptos, Network } from "@aptos-labs/ts-sdk";
 import { NodeIrys } from "../src/node";
 
 /**
@@ -35,7 +35,7 @@ import { NodeIrys } from "../src/node";
     token: "multiAptos",
     key: wallet,
     config: {
-      providerUrl: "https://fullnode.devnet.aptoslabs.com",
+      providerUrl: Network.DEVNET,
       tokenOpts: { collectSignatures },
     },
   });

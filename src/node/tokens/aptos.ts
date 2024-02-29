@@ -4,7 +4,6 @@ import BigNumber from "bignumber.js";
 import type { TokenConfig, Tx } from "../../common/types";
 import { BaseNodeToken } from "../token";
 import sha3 from "js-sha3";
-import type { PendingTransactionResponse, UserTransactionResponse } from "@aptos-labs/ts-sdk";
 import {
   Aptos,
   AptosConfig as AptosSDKConfig,
@@ -20,6 +19,7 @@ import {
   SignedTransaction,
   generateSigningMessage,
 } from "@aptos-labs/ts-sdk";
+import type { UserTransactionResponse, PendingTransactionResponse } from "@aptos-labs/ts-sdk";
 import AsyncRetry from "async-retry";
 
 export default class AptosConfig extends BaseNodeToken {
@@ -33,11 +33,15 @@ export default class AptosConfig extends BaseNodeToken {
   protected locked = false;
 
   constructor(config: TokenConfig) {
-    if (typeof config.wallet === "string" && config.wallet.length === 66)
-      config.wallet = new Ed25519PrivateKey(config.wallet); /* = Buffer.from(config.wallet.slice(2), "hex"); */
-    if (!config?.opts?.signingFunction && config?.wallet instanceof Ed25519PrivateKey) {
-      // @ts-expect-error custom prop
-      config.accountInstance = Account.fromPrivateKey({ privateKey: config?.wallet });
+    if (typeof config.wallet === "string" && config.wallet.length === 66) {
+      // If signingFunction is provided, the given `wallet` is a public key
+      if (config?.opts?.signingFunction) {
+        config.wallet = Buffer.from(config.wallet.slice(2), "hex");
+      } else {
+        config.wallet = new Ed25519PrivateKey(config.wallet);
+        // @ts-expect-error custom prop
+        config.accountInstance = Account.fromPrivateKey({ privateKey: config?.wallet });
+      }
     }
     super(config);
     // @ts-expect-error assignment doesn't carry through for some reason
@@ -46,9 +50,10 @@ export default class AptosConfig extends BaseNodeToken {
     this.needsFee = true;
     this.base = ["octa", 1e8];
 
-    // In the Aptos context, this.providerUrl is the Aptos Network we want
+    // In the Aptos context, this.providerUrl is the Aptos Network enum type we want
     // to work with. read more https://github.com/aptos-labs/aptos-ts-sdk/blob/main/src/api/aptosConfig.ts#L14
-    this.aptosConfig = new AptosSDKConfig({ fullnode: this.providerUrl, ...config?.opts?.aptosSdkConfig });
+    // this.providerUrl is a Network enum type represents the current configured network
+    this.aptosConfig = new AptosSDKConfig({ network: this.providerUrl, ...config?.opts?.aptosSdkConfig });
   }
 
   async getProvider(): Promise<Aptos> {
