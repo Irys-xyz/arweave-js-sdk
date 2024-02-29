@@ -18,7 +18,7 @@ export default abstract class BaseWebToken implements WebToken {
   public ticker!: string;
   public name!: string;
   public irys!: BaseWebIrys;
-
+  public config!: TokenConfig;
   public minConfirm = 5;
   public isSlow = false;
   public needsFee = true;
@@ -26,6 +26,7 @@ export default abstract class BaseWebToken implements WebToken {
 
   constructor(config: TokenConfig) {
     Object.assign(this, config);
+    this.config = config;
   }
 
   // common methods

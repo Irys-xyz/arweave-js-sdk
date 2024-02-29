@@ -1,23 +1,31 @@
-import { AptosClient, TransactionBuilderEd25519, TransactionBuilderRemoteABI, TxnBuilderTypes } from "aptos";
+import type { Network, UserTransactionResponse } from "@aptos-labs/ts-sdk";
+import {
+  Aptos,
+  AptosConfig as AptosSDKConfig,
+  MimeType,
+  postAptosFullNode,
+  Ed25519PublicKey,
+  TransactionAuthenticatorEd25519,
+  AccountAuthenticatorEd25519,
+  Ed25519Signature,
+  SignedTransaction,
+} from "@aptos-labs/ts-sdk";
 import type { Signer } from "arbundles";
 import { InjectedAptosSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { TokenConfig, Tx } from "../../common/types";
 import sha3 from "js-sha3";
-
-// import { Ed25519PublicKey } from "aptos/src/aptos_types/ed25519";
-// import { Transaction_UserTransaction, TransactionPayload_EntryFunctionPayload, TransactionPayload, PendingTransaction, UserTransaction } from "aptos/src/generated";
 import BaseWebToken from "../token";
 
-export interface SignMessagePayload {
+export type SignMessagePayload = {
   address?: boolean; // Should we include the address of the account in the message
   application?: boolean; // Should we include the domain of the dapp
   chainId?: boolean; // Should we include the current chain id the wallet is connected to
   message: string; // The message to be signed and displayed to the user
   nonce: string; // A nonce the dapp should generate
-}
+};
 
-export interface SignMessageResponse {
+export type SignMessageResponse = {
   address: string;
   application: string;
   chainId: number;
@@ -26,40 +34,38 @@ export interface SignMessageResponse {
   nonce: string;
   prefix: string; // Should always be APTOS
   signature: string; // The signed full message
-}
+};
 
-export interface AptosWallet {
+export type AptosWallet = {
   account: () => Promise<{ address: string; publicKey: string }>;
   connect: () => Promise<{ address: string; publicKey: string }>;
   disconnect: () => Promise<void>;
   isConnected: () => Promise<boolean>;
-  network: () => Promise<"Testnet" | "Mainnet">;
+  network: () => Promise<Network>;
   signAndSubmitTransaction: (transaction: any) => Promise<any>;
   signMessage: (payload: SignMessagePayload) => Promise<SignMessageResponse>;
   signTransaction: (transaction: any) => Promise<Uint8Array>;
-}
+};
 
 export default class AptosConfig extends BaseWebToken {
-  protected declare providerInstance?: AptosClient;
+  protected declare providerInstance?: Aptos;
   protected signerInstance!: InjectedAptosSigner;
   protected declare wallet: AptosWallet;
   protected _publicKey!: Buffer;
+  protected aptosConfig: AptosSDKConfig;
 
   constructor(config: TokenConfig) {
-    // if (typeof config.wallet === "string" && config.wallet.length === 66) config.wallet = Buffer.from(config.wallet.slice(2), "hex");
-    // // @ts-ignore
-    // config.accountInstance = new AptosAccount(config.wallet);
     super(config);
-    this.base = ["aptom", 1e8];
+    this.base = ["octa", 1e8];
   }
 
-  async getProvider(): Promise<AptosClient> {
-    return (this.providerInstance ??= new AptosClient(this.providerUrl));
+  async getProvider(): Promise<Aptos> {
+    return (this.providerInstance ??= new Aptos(this.aptosConfig));
   }
 
   async getTx(txId: string): Promise<Tx> {
     const client = await this.getProvider();
-    const tx = (await client.waitForTransactionWithResult(txId, /* { checkSuccess: true } */ { timeoutSecs: 1, checkSuccess: true })) as any;
+    const tx = (await client.waitForTransaction({ transactionHash: txId })) as any;
     const payload = tx?.payload as any;
 
     if (!tx.success) {
@@ -105,9 +111,7 @@ export default class AptosConfig extends BaseWebToken {
   }
 
   async getCurrentHeight(): Promise<BigNumber> {
-    return new BigNumber(
-      ((await (await this.getProvider()).client.blocks.httpRequest.request({ method: "GET", url: "/" })) as { block_height: string }).block_height,
-    );
+    return new BigNumber(((await (await this.getProvider()).getLedgerInfo()) as { block_height: string }).block_height);
   }
 
   async getFee(amount: BigNumber.Value, to?: string): Promise<{ gasUnitPrice: number; maxGasAmount: number }> {
@@ -115,36 +119,39 @@ export default class AptosConfig extends BaseWebToken {
 
     if (!this.address) throw new Error("Address is undefined - you might be missing a wallet, or have not run Irys.ready()");
 
-    const builder = new TransactionBuilderRemoteABI(client, { sender: this.address });
+    const transaction = await client.transaction.build.simple({
+      sender: this.address,
+      data: {
+        function: "0x1::coin::transfer",
+        typeArguments: ["0x1::aptos_coin::AptosCoin"],
+        functionArguments: [to ?? "0x149f7dc9c8e43c14ab46d3a6b62cfe84d67668f764277411f98732bf6718acf9", new BigNumber(amount).toNumber()],
+      },
+    });
 
-    const rawTransaction = await builder.build(
-      "0x1::coin::transfer",
-      ["0x1::aptos_coin::AptosCoin"],
-      [to ?? "0x149f7dc9c8e43c14ab46d3a6b62cfe84d67668f764277411f98732bf6718acf9", new BigNumber(amount).toNumber()],
+    const accountAuthenticator = new AccountAuthenticatorEd25519(
+      new Ed25519PublicKey(await this.getPublicKey()),
+      new Ed25519Signature(new Uint8Array(64)),
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const txnBuilder = new TransactionBuilderEd25519((_signingMessage: TxnBuilderTypes.SigningMessage) => {
-      const invalidSigBytes = new Uint8Array(64);
-      return new TxnBuilderTypes.Ed25519Signature(invalidSigBytes);
-    }, (await this.getPublicKey()) as Buffer);
+    const transactionAuthenticator = new TransactionAuthenticatorEd25519(accountAuthenticator.public_key, accountAuthenticator.signature);
 
-    const signedSimulation = txnBuilder.sign(rawTransaction);
+    const signedSimulation = new SignedTransaction(transaction.rawTransaction, transactionAuthenticator).bcsToBytes();
 
     const queryParams = {
       estimate_gas_unit_price: true,
       estimate_max_gas_amount: true,
     };
 
-    const simulationResult = await client.client.request.request<any[]>({
-      url: "/transactions/simulate",
-      query: queryParams,
-      method: "POST",
+    const { data } = await postAptosFullNode<Uint8Array, UserTransactionResponse[]>({
+      aptosConfig: this.aptosConfig,
       body: signedSimulation,
-      mediaType: "application/x.aptos.signed_transaction+bcs",
+      path: "transactions/simulate",
+      params: queryParams,
+      originMethod: "simulateTransaction",
+      contentType: MimeType.BCS_SIGNED_TRANSACTION,
     });
 
-    return { gasUnitPrice: +simulationResult[0].gas_unit_price, maxGasAmount: +simulationResult[0].max_gas_amount };
+    return { gasUnitPrice: +data[0].gas_unit_price, maxGasAmount: +data[0].max_gas_amount };
 
     // const simulationResult = await client.simulateTransaction(this.accountInstance, rawTransaction, { estimateGasUnitPrice: true, estimateMaxGasAmount: true });
     // return new BigNumber(simulationResult?.[0].gas_unit_price).multipliedBy(simulationResult?.[0].gas_used);
@@ -185,12 +192,14 @@ export default class AptosConfig extends BaseWebToken {
   }
 
   public async ready(): Promise<void> {
+
+    this.aptosConfig = new AptosSDKConfig({ fullnode: this.providerUrl, network: await this.wallet.network(), ...this.config?.opts?.aptosSdkConfig });
+    const client = await this.getProvider();
     this._publicKey = (await this.getPublicKey()) as Buffer;
     this._address = this.ownerToAddress(this._publicKey);
-    const client = await this.getProvider();
 
     this._address = await client
-      .lookupOriginalAddress(this.address ?? "")
+      .lookupOriginalAccountAddress({ authenticationKey: this.address ?? "" })
       .then((hs) => hs.toString())
       .catch((_) => this._address); // fallback to original
 
