@@ -192,8 +192,10 @@ export default class AptosConfig extends BaseWebToken {
   }
 
   public async ready(): Promise<void> {
-
-    this.aptosConfig = new AptosSDKConfig({ fullnode: this.providerUrl, network: await this.wallet.network(), ...this.config?.opts?.aptosSdkConfig });
+    // In the Aptos context, this.providerUrl is the Aptos Network enum type we want
+    // to work with. read more https://github.com/aptos-labs/aptos-ts-sdk/blob/main/src/api/aptosConfig.ts#L14
+    // this.providerUrl is a Network enum type represents the current configured network
+    this.aptosConfig = new AptosSDKConfig({ network: this.providerUrl, ...this.config?.opts?.aptosSdkConfig });
     const client = await this.getProvider();
     this._publicKey = (await this.getPublicKey()) as Buffer;
     this._address = this.ownerToAddress(this._publicKey);
