@@ -11,7 +11,7 @@ import {
   SignedTransaction,
 } from "@aptos-labs/ts-sdk";
 import type { Signer } from "arbundles";
-import { InjectedAptosSigner } from "arbundles/web";
+import { InjectedAptosSigner, AptosSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { TokenConfig, Tx } from "../../common/types";
 import sha3 from "js-sha3";
@@ -49,13 +49,16 @@ export type AptosWallet = {
 
 export default class AptosConfig extends BaseWebToken {
   protected declare providerInstance?: Aptos;
-  protected signerInstance!: InjectedAptosSigner;
+  protected signerInstance!: InjectedAptosSigner | AptosSigner;
   protected declare wallet: AptosWallet;
   protected _publicKey!: Buffer;
   protected aptosConfig: AptosSDKConfig;
+  protected signingFn?: (msg: Uint8Array) => Promise<Uint8Array>;
 
   constructor(config: TokenConfig) {
     super(config);
+    this.signingFn = config?.opts?.signingFunction;
+
     this.base = ["octa", 1e8];
   }
 
@@ -103,7 +106,13 @@ export default class AptosConfig extends BaseWebToken {
   }
 
   getSigner(): Signer {
-    return (this.signerInstance ??= new InjectedAptosSigner(this.wallet, this._publicKey));
+    if (this.signerInstance) return this.signerInstance;
+    if (this.signingFn) {
+      const signer = new AptosSigner("", "0x" + this._publicKey.toString("hex"));
+      signer.sign = this.signingFn; // override signer fn
+      return (this.signerInstance = signer);
+    }
+    return (this.signerInstance = new InjectedAptosSigner(this.wallet, this._publicKey));
   }
 
   async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
@@ -188,7 +197,9 @@ export default class AptosConfig extends BaseWebToken {
   }
 
   async getPublicKey(): Promise<string | Buffer> {
-    return (this._publicKey ??= Buffer.from((await this.wallet.account()).publicKey.toString().slice(2), "hex"));
+    return (this._publicKey ??= this.signingFn
+      ? (Buffer.from((this.wallet as unknown as string).slice(2), "hex") as unknown as Buffer)
+      : Buffer.from((await this.wallet.account()).publicKey.toString().slice(2), "hex"));
   }
 
   public async ready(): Promise<void> {
@@ -196,9 +207,10 @@ export default class AptosConfig extends BaseWebToken {
     // to work with. read more https://github.com/aptos-labs/aptos-ts-sdk/blob/main/src/api/aptosConfig.ts#L14
     // this.providerUrl is a Network enum type represents the current configured network
     this.aptosConfig = new AptosSDKConfig({ network: this.providerUrl, ...this.config?.opts?.aptosSdkConfig });
-    const client = await this.getProvider();
     this._publicKey = (await this.getPublicKey()) as Buffer;
     this._address = this.ownerToAddress(this._publicKey);
+
+    const client = await this.getProvider();
 
     this._address = await client
       .lookupOriginalAccountAddress({ authenticationKey: this.address ?? "" })
