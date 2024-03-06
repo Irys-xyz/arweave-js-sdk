@@ -1,4 +1,4 @@
-import type { Network, UserTransactionResponse } from "@aptos-labs/ts-sdk";
+import type { Network, PendingTransactionResponse, UserTransactionResponse } from "@aptos-labs/ts-sdk";
 import {
   Aptos,
   AptosConfig as AptosSDKConfig,
@@ -9,6 +9,8 @@ import {
   AccountAuthenticatorEd25519,
   Ed25519Signature,
   SignedTransaction,
+  generateSigningMessage,
+  generateSignedTransaction,
 } from "@aptos-labs/ts-sdk";
 import type { Signer } from "arbundles";
 import { InjectedAptosSigner, AptosSigner } from "arbundles/web";
@@ -169,31 +171,77 @@ export default class AptosConfig extends BaseWebToken {
   }
 
   async sendTx(data: any): Promise<string | undefined> {
-    return (await this.wallet.signAndSubmitTransaction(data)).hash;
+    if (!this.signingFn) return (await this.wallet.signAndSubmitTransaction(data)).hash;
     // return (await (await (this.getProvider())).submitSignedBCSTransaction(data)).hash;
+    const provider = await this.getProvider();
+
+    const { data: postData } = await postAptosFullNode<Uint8Array, PendingTransactionResponse>({
+      aptosConfig: this.aptosConfig,
+      body: data,
+      path: "transactions",
+      originMethod: "submitTransaction",
+      contentType: MimeType.BCS_SIGNED_TRANSACTION,
+    });
+
+    await provider.waitForTransaction({ transactionHash: postData.hash });
+    return postData.hash;
   }
 
-  async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any }> {
+  async createTx(
+    amount: BigNumber.Value,
+    to: string,
+    fee?: { gasUnitPrice: number; maxGasAmount: number },
+  ): Promise<{ txId: string | undefined; tx: any }> {
     // const client = await this.getProvider();
     // const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
     //     "0x1::coin::transfer",
     //     ["0x1::aptos_coin::AptosCoin"],
     //     [to, new BigNumber(amount).toNumber()],
     // );
+    if (!this.signingFn) {
+      return {
+        txId: undefined,
+        tx: {
+          arguments: [to, new BigNumber(amount).toNumber()],
+          function: "0x1::coin::transfer",
+          type: "entry_function_payload",
+          type_arguments: ["0x1::aptos_coin::AptosCoin"],
+        },
+      };
+    }
 
-    const tx = {
-      arguments: [to, new BigNumber(amount).toNumber()],
-      function: "0x1::coin::transfer",
-      type: "entry_function_payload",
-      type_arguments: ["0x1::aptos_coin::AptosCoin"],
-    };
+    const client = await this.getProvider();
 
+    const transaction = await client.transaction.build.simple({
+      sender: this.address!,
+      data: {
+        function: "0x1::coin::transfer",
+        typeArguments: ["0x1::aptos_coin::AptosCoin"],
+        functionArguments: [to, new BigNumber(amount).toNumber()],
+      },
+      options: {
+        gasUnitPrice: fee?.gasUnitPrice ?? 100,
+        maxGasAmount: fee?.maxGasAmount ?? 10,
+      },
+    });
+
+    const message = generateSigningMessage(transaction);
+
+    const signerSignature = await this.sign(message);
+
+    const senderAuthenticator = new AccountAuthenticatorEd25519(
+      new Ed25519PublicKey(await this.getPublicKey()),
+      new Ed25519Signature(signerSignature),
+    );
+
+    const signedTransaction = generateSignedTransaction({ transaction, senderAuthenticator });
+    return { txId: undefined, tx: signedTransaction };
     // const rawTransaction = await client.generateRawTransaction(this.accountInstance.address(), payload);
     // const bcsTxn = AptosClient.generateBCSTransaction(this.accountInstance, rawTransaction);
 
     // const tx = await this.wallet.signTransaction(transaction);
 
-    return { txId: undefined, tx };
+    // return { txId: undefined, tx };
   }
 
   async getPublicKey(): Promise<string | Buffer> {

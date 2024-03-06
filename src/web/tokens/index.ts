@@ -24,7 +24,7 @@ export default function getTokenConfig({
   providerUrl,
   contractAddress,
   providerName,
-  tokenOpts,
+  tokenOpts: opts,
 }: {
   irys: WebIrys;
   token: string;
@@ -45,7 +45,7 @@ export default function getTokenConfig({
           ticker: "ETH",
           providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
           wallet: wallet,
-          opts: tokenOpts,
+          opts,
         },
       });
     case "matic":
@@ -59,7 +59,7 @@ export default function getTokenConfig({
           providerUrl: providerUrl ?? "https://polygon-rpc.com",
           wallet: wallet,
           minConfirm: 1,
-          opts: tokenOpts,
+          opts,
         },
       });
     case "arbitrum":
@@ -72,7 +72,7 @@ export default function getTokenConfig({
           ticker: "ETH",
           providerUrl: providerUrl ?? "https://arb1.arbitrum.io/rpc",
           wallet: wallet,
-          opts: tokenOpts,
+          opts,
         },
       });
     case "bnb":
@@ -85,7 +85,7 @@ export default function getTokenConfig({
           ticker: "BNB",
           providerUrl: providerUrl ?? "https://bsc-dataseed.binance.org",
           wallet: wallet,
-          opts: tokenOpts,
+          opts,
         },
       });
     case "avalanche":
@@ -98,7 +98,7 @@ export default function getTokenConfig({
           ticker: "AVAX",
           providerUrl: providerUrl ?? "https://api.avax.network/ext/bc/C/rpc",
           wallet: wallet,
-          opts: tokenOpts,
+          opts,
         },
       });
     case "boba-eth":
@@ -112,7 +112,7 @@ export default function getTokenConfig({
           providerUrl: providerUrl ?? "https://mainnet.boba.network/",
           minConfirm: 1,
           wallet: wallet,
-          opts: tokenOpts,
+          opts,
         },
       });
     case "boba": {
@@ -124,6 +124,7 @@ export default function getTokenConfig({
         contractAddress: contractAddress ?? "0xa18bF3994C0Cc6E3b63ac420308E5383f53120D7",
         minConfirm: 1,
         wallet: wallet,
+        opts,
       });
       // for L1 mainnet: "https://main-light.eth.linkpool.io/" and "0x42bbfa2e77757c645eeaad1655e0911a7553efbc"
       k.price = async (): Promise<number> => {
@@ -146,6 +147,7 @@ export default function getTokenConfig({
         ticker: "SOL",
         providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/",
         wallet: wallet,
+        opts,
       });
     // case "algorand":
     //     return new AlgorandConfig({ name: "algorand", ticker: "ALGO", providerUrl: providerUrl ?? "https://api.mainnet-beta.solana.com/", wallet: wallet })
@@ -156,6 +158,7 @@ export default function getTokenConfig({
         ticker: "NEAR",
         providerUrl: providerUrl ?? "https://rpc.mainnet.near.org",
         wallet: wallet,
+        opts,
       });
     case "aptos":
       return new AptosConfig({
@@ -164,6 +167,7 @@ export default function getTokenConfig({
         ticker: "APTOS",
         providerUrl: providerUrl ?? Network.MAINNET,
         wallet: wallet,
+        opts,
       });
     case "arweave":
       return new ArweaveConfig({
@@ -172,6 +176,7 @@ export default function getTokenConfig({
         ticker: "AR",
         providerUrl: providerUrl ?? "https://arweave.net",
         wallet: wallet,
+        opts,
       });
     case "base-eth":
       return new EthereumConfig({
@@ -181,6 +186,7 @@ export default function getTokenConfig({
         providerUrl: providerUrl ?? "https://mainnet.base.org/",
         minConfirm: 2,
         wallet: wallet,
+        opts,
       });
 
     case "usdc-eth":
@@ -191,6 +197,7 @@ export default function getTokenConfig({
         providerUrl: providerUrl ?? "https://cloudflare-eth.com/",
         contractAddress: contractAddress ?? "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         wallet,
+        opts,
       });
 
     case "usdc-polygon":
@@ -200,6 +207,7 @@ export default function getTokenConfig({
         ticker: "USDC",
         providerUrl: providerUrl ?? "https://polygon-rpc.com",
         contractAddress: contractAddress ?? "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359",
+        opts,
       });
     case "bera":
       return resolveProvider({
@@ -212,7 +220,7 @@ export default function getTokenConfig({
           // TODO: make sure this is set to mainnet
           providerUrl: providerUrl ?? "https://artio.rpc.berachain.com/",
           wallet: wallet,
-          opts: tokenOpts,
+          opts,
         },
       });
 
