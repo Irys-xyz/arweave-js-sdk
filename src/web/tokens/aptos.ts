@@ -1,4 +1,4 @@
-import type { Network, UserTransactionResponse } from "@aptos-labs/ts-sdk";
+import type { Network, PendingTransactionResponse, UserTransactionResponse } from "@aptos-labs/ts-sdk";
 import {
   Aptos,
   AptosConfig as AptosSDKConfig,
@@ -9,9 +9,11 @@ import {
   AccountAuthenticatorEd25519,
   Ed25519Signature,
   SignedTransaction,
+  generateSigningMessage,
+  generateSignedTransaction,
 } from "@aptos-labs/ts-sdk";
 import type { Signer } from "arbundles";
-import { InjectedAptosSigner } from "arbundles/web";
+import { InjectedAptosSigner, AptosSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { TokenConfig, Tx } from "../../common/types";
 import sha3 from "js-sha3";
@@ -49,13 +51,16 @@ export type AptosWallet = {
 
 export default class AptosConfig extends BaseWebToken {
   protected declare providerInstance?: Aptos;
-  protected signerInstance!: InjectedAptosSigner;
+  protected signerInstance!: InjectedAptosSigner | AptosSigner;
   protected declare wallet: AptosWallet;
   protected _publicKey!: Buffer;
   protected aptosConfig: AptosSDKConfig;
+  protected signingFn?: (msg: Uint8Array) => Promise<Uint8Array>;
 
   constructor(config: TokenConfig) {
     super(config);
+    this.signingFn = config?.opts?.signingFunction;
+
     this.base = ["octa", 1e8];
   }
 
@@ -103,7 +108,13 @@ export default class AptosConfig extends BaseWebToken {
   }
 
   getSigner(): Signer {
-    return (this.signerInstance ??= new InjectedAptosSigner(this.wallet, this._publicKey));
+    if (this.signerInstance) return this.signerInstance;
+    if (this.signingFn) {
+      const signer = new AptosSigner("", "0x" + this._publicKey.toString("hex"));
+      signer.sign = this.signingFn; // override signer fn
+      return (this.signerInstance = signer);
+    }
+    return (this.signerInstance = new InjectedAptosSigner(this.wallet, this._publicKey));
   }
 
   async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
@@ -160,35 +171,83 @@ export default class AptosConfig extends BaseWebToken {
   }
 
   async sendTx(data: any): Promise<string | undefined> {
-    return (await this.wallet.signAndSubmitTransaction(data)).hash;
+    if (!this.signingFn) return (await this.wallet.signAndSubmitTransaction(data)).hash;
     // return (await (await (this.getProvider())).submitSignedBCSTransaction(data)).hash;
+    const provider = await this.getProvider();
+
+    const { data: postData } = await postAptosFullNode<Uint8Array, PendingTransactionResponse>({
+      aptosConfig: this.aptosConfig,
+      body: data,
+      path: "transactions",
+      originMethod: "submitTransaction",
+      contentType: MimeType.BCS_SIGNED_TRANSACTION,
+    });
+
+    await provider.waitForTransaction({ transactionHash: postData.hash });
+    return postData.hash;
   }
 
-  async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any }> {
+  async createTx(
+    amount: BigNumber.Value,
+    to: string,
+    fee?: { gasUnitPrice: number; maxGasAmount: number },
+  ): Promise<{ txId: string | undefined; tx: any }> {
     // const client = await this.getProvider();
     // const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
     //     "0x1::coin::transfer",
     //     ["0x1::aptos_coin::AptosCoin"],
     //     [to, new BigNumber(amount).toNumber()],
     // );
+    if (!this.signingFn) {
+      return {
+        txId: undefined,
+        tx: {
+          arguments: [to, new BigNumber(amount).toNumber()],
+          function: "0x1::coin::transfer",
+          type: "entry_function_payload",
+          type_arguments: ["0x1::aptos_coin::AptosCoin"],
+        },
+      };
+    }
 
-    const tx = {
-      arguments: [to, new BigNumber(amount).toNumber()],
-      function: "0x1::coin::transfer",
-      type: "entry_function_payload",
-      type_arguments: ["0x1::aptos_coin::AptosCoin"],
-    };
+    const client = await this.getProvider();
 
+    const transaction = await client.transaction.build.simple({
+      sender: this.address!,
+      data: {
+        function: "0x1::coin::transfer",
+        typeArguments: ["0x1::aptos_coin::AptosCoin"],
+        functionArguments: [to, new BigNumber(amount).toNumber()],
+      },
+      options: {
+        gasUnitPrice: fee?.gasUnitPrice ?? 100,
+        maxGasAmount: fee?.maxGasAmount ?? 10,
+      },
+    });
+
+    const message = generateSigningMessage(transaction);
+
+    const signerSignature = await this.sign(message);
+
+    const senderAuthenticator = new AccountAuthenticatorEd25519(
+      new Ed25519PublicKey(await this.getPublicKey()),
+      new Ed25519Signature(signerSignature),
+    );
+
+    const signedTransaction = generateSignedTransaction({ transaction, senderAuthenticator });
+    return { txId: undefined, tx: signedTransaction };
     // const rawTransaction = await client.generateRawTransaction(this.accountInstance.address(), payload);
     // const bcsTxn = AptosClient.generateBCSTransaction(this.accountInstance, rawTransaction);
 
     // const tx = await this.wallet.signTransaction(transaction);
 
-    return { txId: undefined, tx };
+    // return { txId: undefined, tx };
   }
 
   async getPublicKey(): Promise<string | Buffer> {
-    return (this._publicKey ??= Buffer.from((await this.wallet.account()).publicKey.toString().slice(2), "hex"));
+    return (this._publicKey ??= this.signingFn
+      ? (Buffer.from((this.wallet as unknown as string).slice(2), "hex") as unknown as Buffer)
+      : Buffer.from((await this.wallet.account()).publicKey.toString().slice(2), "hex"));
   }
 
   public async ready(): Promise<void> {
@@ -196,9 +255,10 @@ export default class AptosConfig extends BaseWebToken {
     // to work with. read more https://github.com/aptos-labs/aptos-ts-sdk/blob/main/src/api/aptosConfig.ts#L14
     // this.providerUrl is a Network enum type represents the current configured network
     this.aptosConfig = new AptosSDKConfig({ network: this.providerUrl, ...this.config?.opts?.aptosSdkConfig });
-    const client = await this.getProvider();
     this._publicKey = (await this.getPublicKey()) as Buffer;
     this._address = this.ownerToAddress(this._publicKey);
+
+    const client = await this.getProvider();
 
     this._address = await client
       .lookupOriginalAccountAddress({ authenticationKey: this.address ?? "" })

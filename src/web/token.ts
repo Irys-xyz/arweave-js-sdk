@@ -19,6 +19,7 @@ export default abstract class BaseWebToken implements WebToken {
   public name!: string;
   public irys!: BaseWebIrys;
   public config!: TokenConfig;
+  protected opts?: any;
   public minConfirm = 5;
   public isSlow = false;
   public needsFee = true;
@@ -53,7 +54,7 @@ export default abstract class BaseWebToken implements WebToken {
   abstract getCurrentHeight(): Promise<BigNumber>;
   abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber | object>;
   abstract sendTx(_data: any): Promise<string | undefined>;
-  abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any }>;
+  abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: any): Promise<{ txId: string | undefined; tx: any }>;
   abstract getPublicKey(): Promise<string | Buffer>;
 }
 
