@@ -13,7 +13,7 @@ import { BaseWebIrys } from "../base";
 export default class ArweaveConfig extends BaseWebToken {
   protected declare providerInstance: Arweave;
   public isSlow = true;
-  opts?: { provider?: "arconnect" | "arweave.app"; network?: string };
+  declare opts?: { provider?: "arconnect" | "arweave.app"; network?: string };
   protected declare wallet: Window["arweaveWallet"];
   protected signerInstance: ArconnectSigner;
   constructor(config: TokenConfig<Window["arweaveWallet"]>) {
