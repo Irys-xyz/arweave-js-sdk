@@ -6,22 +6,25 @@ import nacl from "tweetnacl";
 import type { TokenConfig, Tx } from "../../common/types";
 import { BaseNodeToken } from "../token";
 import retry from "async-retry";
+import type { Finality } from "@solana/web3.js";
 import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
 
 export default class SolanaConfig extends BaseNodeToken {
   protected declare providerInstance: Connection;
   minConfirm = 1;
+  protected finality: Finality = "finalized";
 
   constructor(config: TokenConfig) {
     super(config);
     this.base = ["lamports", 1e9];
+    this.finality = this?.opts?.finality ?? "finalized";
   }
 
   private async getProvider(): Promise<Connection> {
     if (!this.providerInstance) {
       this.providerInstance = new Connection(this.providerUrl, {
         confirmTransactionInitialTimeout: 60_000,
-        commitment: "confirmed",
+        commitment: this.finality,
       });
     }
     return this.providerInstance;
@@ -38,10 +41,10 @@ export default class SolanaConfig extends BaseNodeToken {
   async getTx(txId: string): Promise<Tx> {
     const connection = await this.getProvider();
 
-    const stx = await connection.getTransaction(txId, { commitment: "confirmed", maxSupportedTransactionVersion: 0 });
+    const stx = await connection.getTransaction(txId, { commitment: this.finality, maxSupportedTransactionVersion: 0 });
     if (!stx) throw new Error("Confirmed tx not found");
 
-    const currentSlot = await connection.getSlot("confirmed");
+    const currentSlot = await connection.getSlot(this.finality);
     if (!stx.meta) throw new Error(`Unable to resolve transaction ${txId}`);
 
     const amount = new BigNumber(stx.meta.postBalances[1]).minus(new BigNumber(stx.meta.preBalances[1]));
@@ -92,13 +95,13 @@ export default class SolanaConfig extends BaseNodeToken {
   async sendTx(data: any): Promise<string | undefined> {
     const connection = await this.getProvider();
     try {
-      return await sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: "confirmed" });
+      return await sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: this.finality });
     } catch (e: any) {
       if (e.message.includes("30.")) {
         const txId = (e.message as string).match(/[A-Za-z0-9]{87,88}/g);
         if (!txId) throw e;
         try {
-          const conf = await connection.confirmTransaction(txId[0], "confirmed");
+          const conf = await connection.confirmTransaction(txId[0], this.finality);
           if (conf) return undefined;
           throw {
             message: e.message,
@@ -123,7 +126,7 @@ export default class SolanaConfig extends BaseNodeToken {
     const blockHashInfo = await retry(
       async (bail) => {
         try {
-          return await (await this.getProvider()).getRecentBlockhash();
+          return await (await this.getProvider()).getLatestBlockhash();
         } catch (e: any) {
           if (e.message?.includes("blockhash")) throw e;
           else bail(e);
@@ -133,7 +136,7 @@ export default class SolanaConfig extends BaseNodeToken {
       { retries: 3, minTimeout: 1000 },
     );
 
-    const transaction = new Transaction({ recentBlockhash: blockHashInfo.blockhash, feePayer: keys.publicKey });
+    const transaction = new Transaction({ ...blockHashInfo, feePayer: keys.publicKey });
 
     transaction.add(
       SystemProgram.transfer({

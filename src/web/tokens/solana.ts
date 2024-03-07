@@ -7,23 +7,26 @@ import bs58 from "bs58";
 // @ts-expect-error only importing as type
 import type { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
+import type { Finality } from "@solana/web3.js";
 import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 
 export default class SolanaConfig extends BaseWebToken {
   private signer!: HexInjectedSolanaSigner;
   protected declare wallet: MessageSignerWalletAdapter;
   minConfirm = 1;
+  protected finality: Finality = "finalized";
 
   constructor(config: TokenConfig) {
     super(config);
     this.base = ["lamports", 1e9];
+    this.finality = this?.opts?.finality ?? "finalized";
   }
 
   private async getProvider(): Promise<Connection> {
     if (!this.providerInstance) {
       this.providerInstance = new Connection(this.providerUrl, {
         confirmTransactionInitialTimeout: 60_000,
-        commitment: "confirmed",
+        commitment: this.finality,
       });
     }
     return this.providerInstance;
@@ -31,10 +34,10 @@ export default class SolanaConfig extends BaseWebToken {
 
   async getTx(txId: string): Promise<Tx> {
     const connection = await this.getProvider();
-    const stx = await connection.getTransaction(txId, { commitment: "confirmed", maxSupportedTransactionVersion: 0 });
+    const stx = await connection.getTransaction(txId, { commitment: this.finality, maxSupportedTransactionVersion: 0 });
     if (!stx) throw new Error("Confirmed tx not found");
 
-    const currentSlot = await connection.getSlot("confirmed");
+    const currentSlot = await connection.getSlot(this.finality);
     if (!stx.meta) throw new Error(`Unable to resolve transaction ${txId}`);
 
     const amount = new BigNumber(stx.meta.postBalances[1]).minus(new BigNumber(stx.meta.preBalances[1]));
@@ -106,7 +109,7 @@ export default class SolanaConfig extends BaseWebToken {
     const blockHashInfo = await retry(
       async (bail) => {
         try {
-          return await (await this.getProvider()).getRecentBlockhash();
+          return await (await this.getProvider()).getLatestBlockhash(this.finality);
         } catch (e: any) {
           if (e.message?.includes("blockhash")) throw e;
           else bail(e);
@@ -115,9 +118,8 @@ export default class SolanaConfig extends BaseWebToken {
       },
       { retries: 3, minTimeout: 1000 },
     );
-
-    const transaction = new Transaction({ recentBlockhash: blockHashInfo.blockhash, feePayer: pubkey });
-
+    // const transaction = new Transaction({ recentBlockhash: blockHashInfo.blockhash, feePayer: pubkey });
+    const transaction = new Transaction({ ...blockHashInfo, feePayer: pubkey });
     transaction.add(
       SystemProgram.transfer({
         fromPubkey: pubkey,
