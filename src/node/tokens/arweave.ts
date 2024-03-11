@@ -9,7 +9,7 @@ import { BaseNodeToken } from "../token";
 import { Arweave } from "../utils";
 
 export default class ArweaveConfig extends BaseNodeToken {
-  protected declare providerInstance: Arweave;
+  protected declare providerInstance?: Arweave;
 
   constructor(config: TokenConfig) {
     super(config);
@@ -62,7 +62,7 @@ export default class ArweaveConfig extends BaseNodeToken {
   }
 
   async sign(data: Uint8Array): Promise<Uint8Array> {
-    return this.providerInstance.crypto.sign(this.wallet, data);
+    return (await this.getProvider()).crypto.sign(this.wallet, data);
   }
 
   getSigner(): Signer {
@@ -73,7 +73,7 @@ export default class ArweaveConfig extends BaseNodeToken {
     if (Buffer.isBuffer(pub)) {
       pub = pub.toString();
     }
-    return this.providerInstance.crypto.verify(pub, data, signature);
+    return (await this.getProvider()).crypto.verify(pub, data, signature);
   }
 
   async getCurrentHeight(): Promise<BigNumber> {
