@@ -94,7 +94,7 @@ export default class SolanaConfig extends BaseNodeToken {
     const recentPrio = await connection.getRecentPrioritizationFees().catch((_) => [{ prioritizationFee: 0 }]);
     const prioAvg = (recentPrio as { prioritizationFee: number }[])
       .reduce((n: BigNumber, p) => n.plus(p.prioritizationFee), new BigNumber(0))
-      .dividedToIntegerBy(recentPrio.length);
+      .dividedToIntegerBy(recentPrio.length ?? 1);
     return { computeBudget, computeUnitPrice: prioAvg.multipliedBy(multiplier ?? 1).integerValue(BigNumber.ROUND_CEIL) };
   }
 
@@ -133,7 +133,7 @@ export default class SolanaConfig extends BaseNodeToken {
     const blockHashInfo = await retry(
       async (bail) => {
         try {
-          return await (await this.getProvider()).getLatestBlockhash();
+          return await (await this.getProvider()).getLatestBlockhash(this.finality);
         } catch (e: any) {
           if (e.message?.includes("blockhash")) throw e;
           else bail(e);
