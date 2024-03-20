@@ -24,8 +24,10 @@ export class Fund {
     }
     const c = this.utils.tokenConfig;
     const to = await this.utils.getBundlerAddress(this.utils.token);
-    const fee = c.needsFee ? await c.getFee(amount, to, multiplier) : undefined;
-
+    let fee = c.needsFee ? await c.getFee(amount, to, multiplier) : undefined;
+    // if fee is defined, is a bigNumber, and getFee doesn't accept the multiplier arg, apply multiplier here.
+    // tokens should now handle multipliers within getFee, this is a temporary transitionary measure.
+    if (fee && BigNumber.isBigNumber(fee) && c.getFee.length < 3) fee = fee.multipliedBy(multiplier).integerValue();
     const tx = await c.createTx(amount, to, fee);
     const sendTxRes = await c.sendTx(tx.tx);
     tx.txId ??= sendTxRes;
