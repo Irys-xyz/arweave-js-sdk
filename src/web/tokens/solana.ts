@@ -14,14 +14,16 @@ export type GetFeeResult = {
   computeBudget: BigNumber;
   computeUnitPrice: BigNumber;
 };
+type Config = TokenConfig<MessageSignerWalletAdapter, { finality?: Finality; disablePriorityFees?: boolean }>;
 
 export default class SolanaConfig extends BaseWebToken {
   private signer!: HexInjectedSolanaSigner;
   protected declare wallet: MessageSignerWalletAdapter;
   minConfirm = 1;
   protected finality: Finality = "finalized";
+  declare config: Config;
 
-  constructor(config: TokenConfig) {
+  constructor(config: Config) {
     super(config);
     this.base = ["lamports", 1e9];
     this.finality = this?.opts?.finality ?? "finalized";
@@ -134,7 +136,7 @@ export default class SolanaConfig extends BaseWebToken {
         lamports: +new BigNumber(amount).toNumber(),
       }),
     );
-    if (fee) {
+    if (!this?.config?.opts?.disablePriorityFees && fee) {
       transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: fee.computeUnitPrice.toNumber() }));
       transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: fee.computeBudget.toNumber() }));
     }

@@ -14,12 +14,15 @@ export type GetFeeResult = {
   computeUnitPrice: BigNumber;
 };
 
+type Config = TokenConfig<any, { finality?: Finality; disablePriorityFees?: boolean }>;
+
 export default class SolanaConfig extends BaseNodeToken {
   protected declare providerInstance: Connection;
   minConfirm = 1;
   protected finality: Finality = "finalized";
+  declare config: Config;
 
-  constructor(config: TokenConfig) {
+  constructor(config: Config) {
     super(config);
     this.base = ["lamports", 1e9];
     this.finality = this?.opts?.finality ?? "finalized";
@@ -152,7 +155,7 @@ export default class SolanaConfig extends BaseNodeToken {
         lamports: +new BigNumber(amount).toNumber(),
       }),
     );
-    if (fee) {
+    if (!this?.config?.opts?.disablePriorityFees && fee) {
       transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: fee.computeUnitPrice.toNumber() }));
       transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: fee.computeBudget.toNumber() }));
     }
