@@ -8,15 +8,22 @@ import bs58 from "bs58";
 import type { MessageSignerWalletAdapter } from "@solana/wallet-adapter-base";
 import retry from "async-retry";
 import type { Finality } from "@solana/web3.js";
-import { Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { ComputeBudgetProgram, Connection, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+
+export type GetFeeResult = {
+  computeBudget: BigNumber;
+  computeUnitPrice: BigNumber;
+};
+type Config = TokenConfig<MessageSignerWalletAdapter, { finality?: Finality; disablePriorityFees?: boolean }>;
 
 export default class SolanaConfig extends BaseWebToken {
   private signer!: HexInjectedSolanaSigner;
   protected declare wallet: MessageSignerWalletAdapter;
   minConfirm = 1;
   protected finality: Finality = "finalized";
+  declare config: Config;
 
-  constructor(config: TokenConfig) {
+  constructor(config: Config) {
     super(config);
     this.base = ["lamports", 1e9];
     this.finality = this?.opts?.finality ?? "finalized";
@@ -89,23 +96,24 @@ export default class SolanaConfig extends BaseWebToken {
     return new BigNumber((await (await this.getProvider()).getEpochInfo()).blockHeight ?? 0);
   }
 
-  async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
-    // const connection = await this.getProvider()
-    // const block = await connection.getRecentBlockhash();
-    // const feeCalc = await connection.getFeeCalculatorForBlockhash(
-    //     block.blockhash,
-    // );
-    // return new BigNumber(feeCalc.value.lamportsPerSignature);
-    return new BigNumber(5000); // hardcode it for now
+  async getFee(amount: BigNumber.Value, to?: string, multiplier?: BigNumber.Value): Promise<GetFeeResult> {
+    const connection = await this.getProvider();
+    const unsignedTx = await this._createTxUnsigned(amount, to ?? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD");
+    const computeBudget = new BigNumber((await unsignedTx.getEstimatedFee(connection)) ?? 5000);
+    const recentPrio = await connection.getRecentPrioritizationFees().catch((_) => [{ prioritizationFee: 0 }]);
+    const prioAvg = (recentPrio as { prioritizationFee: number }[])
+      .reduce((n: BigNumber, p) => n.plus(p.prioritizationFee), new BigNumber(0))
+      .dividedToIntegerBy(recentPrio.length ?? 1);
+    return { computeBudget, computeUnitPrice: prioAvg.multipliedBy(multiplier ?? 1).integerValue(BigNumber.ROUND_CEIL) };
   }
 
   async sendTx(data: any): Promise<string | undefined> {
     return await this.wallet.sendTransaction(data, await this.getProvider(), { skipPreflight: true });
   }
 
-  async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any }> {
-    // TODO: figure out how to manually set fees
+  async _createTxUnsigned(amount: BigNumber.Value, to: string, fee?: GetFeeResult): Promise<Transaction> {
     const pubkey = new PublicKey(await this.getPublicKey());
+
     const blockHashInfo = await retry(
       async (bail) => {
         try {
@@ -118,8 +126,9 @@ export default class SolanaConfig extends BaseWebToken {
       },
       { retries: 3, minTimeout: 1000 },
     );
-    // const transaction = new Transaction({ recentBlockhash: blockHashInfo.blockhash, feePayer: pubkey });
+
     const transaction = new Transaction({ ...blockHashInfo, feePayer: pubkey });
+
     transaction.add(
       SystemProgram.transfer({
         fromPubkey: pubkey,
@@ -127,6 +136,15 @@ export default class SolanaConfig extends BaseWebToken {
         lamports: +new BigNumber(amount).toNumber(),
       }),
     );
+    if (!this?.config?.opts?.disablePriorityFees && fee) {
+      transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: fee.computeUnitPrice.toNumber() }));
+      transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: fee.computeBudget.toNumber() }));
+    }
+    return transaction;
+  }
+
+  async createTx(amount: BigNumber.Value, to: string, _fee?: GetFeeResult): Promise<{ txId: string | undefined; tx: any }> {
+    const transaction = await this._createTxUnsigned(amount, to, _fee);
 
     return { tx: transaction, txId: undefined };
   }

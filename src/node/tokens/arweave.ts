@@ -80,10 +80,9 @@ export default class ArweaveConfig extends BaseNodeToken {
     return (await this.getProvider()).network.getInfo().then((r) => new BigNumber(r.height));
   }
 
-  async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
-    return new BigNumber(await (await this.getProvider()).transactions.getPrice(new BigNumber(amount).toNumber(), to)).integerValue(
-      BigNumber.ROUND_CEIL,
-    );
+  async getFee(_amount: BigNumber.Value, to?: string): Promise<BigNumber> {
+    // amount is the amount of winston being transferred, but arweave prices based on the size of the transaction. so we set size to 0 here
+    return new BigNumber(await (await this.getProvider()).transactions.getPrice(0, to)).integerValue(BigNumber.ROUND_CEIL);
   }
 
   async sendTx(data: Transaction): Promise<any> {

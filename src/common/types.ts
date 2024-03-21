@@ -89,7 +89,7 @@ export type Token = {
 
   getCurrentHeight(): Promise<BigNumber>;
 
-  getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber | object>;
+  getFee(amount: BigNumber.Value, to?: string, multiplier?: BigNumber.Value): Promise<BigNumber | object>;
 
   sendTx(data: any): Promise<string | undefined>;
 

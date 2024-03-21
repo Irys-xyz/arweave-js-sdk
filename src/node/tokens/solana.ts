@@ -1,5 +1,5 @@
 import type { Signer } from "arbundles";
-import { SolanaSigner } from "arbundles";
+import { HexSolanaSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
@@ -7,14 +7,22 @@ import type { TokenConfig, Tx } from "../../common/types";
 import { BaseNodeToken } from "../token";
 import retry from "async-retry";
 import type { Finality } from "@solana/web3.js";
-import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
+import { ComputeBudgetProgram, Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
+
+export type GetFeeResult = {
+  computeBudget: BigNumber;
+  computeUnitPrice: BigNumber;
+};
+
+type Config = TokenConfig<any, { finality?: Finality; disablePriorityFees?: boolean }>;
 
 export default class SolanaConfig extends BaseNodeToken {
   protected declare providerInstance: Connection;
   minConfirm = 1;
   protected finality: Finality = "finalized";
+  declare config: Config;
 
-  constructor(config: TokenConfig) {
+  constructor(config: Config) {
     super(config);
     this.base = ["lamports", 1e9];
     this.finality = this?.opts?.finality ?? "finalized";
@@ -71,28 +79,29 @@ export default class SolanaConfig extends BaseNodeToken {
   getSigner(): Signer {
     const keyp = this.getKeyPair();
     const keypb = bs58.encode(Buffer.concat([Buffer.from(keyp.secretKey), keyp.publicKey.toBuffer()]));
-    return new SolanaSigner(keypb);
+    return new HexSolanaSigner(keypb);
   }
 
   verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
-    return SolanaSigner.verify(pub, data, signature);
+    return HexSolanaSigner.verify(pub, data, signature);
   }
 
   async getCurrentHeight(): Promise<BigNumber> {
     return new BigNumber((await (await this.getProvider()).getEpochInfo()).blockHeight ?? 0);
   }
 
-  async getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber> {
-    // const connection = await this.getProvider()
-    // const block = await connection.getRecentBlockhash();
-    // const feeCalc = await connection.getFeeCalculatorForBlockhash(
-    //     block.blockhash,
-    // );
-    // return new BigNumber(feeCalc.value.lamportsPerSignature);
-    return new BigNumber(5000); // hardcode it for now
+  async getFee(amount: BigNumber.Value, to?: string, multiplier?: BigNumber.Value): Promise<GetFeeResult> {
+    const connection = await this.getProvider();
+    const unsignedTx = await this._createTxUnsigned(amount, to ?? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD");
+    const computeBudget = new BigNumber((await unsignedTx.getEstimatedFee(connection)) ?? 5000);
+    const recentPrio = await connection.getRecentPrioritizationFees().catch((_) => [{ prioritizationFee: 0 }]);
+    const prioAvg = (recentPrio as { prioritizationFee: number }[])
+      .reduce((n: BigNumber, p) => n.plus(p.prioritizationFee), new BigNumber(0))
+      .dividedToIntegerBy(recentPrio.length ?? 1);
+    return { computeBudget, computeUnitPrice: prioAvg.multipliedBy(multiplier ?? 1).integerValue(BigNumber.ROUND_CEIL) };
   }
 
-  async sendTx(data: any): Promise<string | undefined> {
+  async sendTx(data: Transaction): Promise<string | undefined> {
     const connection = await this.getProvider();
     try {
       return await sendAndConfirmTransaction(connection, data, [this.getKeyPair()], { commitment: this.finality });
@@ -101,7 +110,10 @@ export default class SolanaConfig extends BaseNodeToken {
         const txId = (e.message as string).match(/[A-Za-z0-9]{87,88}/g);
         if (!txId) throw e;
         try {
-          const conf = await connection.confirmTransaction(txId[0], this.finality);
+          const conf = await connection.confirmTransaction(
+            { signature: txId[0], blockhash: data.recentBlockhash!, lastValidBlockHeight: data.lastValidBlockHeight! },
+            this.finality,
+          );
           if (conf) return undefined;
           throw {
             message: e.message,
@@ -118,15 +130,13 @@ export default class SolanaConfig extends BaseNodeToken {
     }
   }
 
-  async createTx(amount: BigNumber.Value, to: string, _fee?: string): Promise<{ txId: string | undefined; tx: any }> {
-    // TODO: figure out how to manually set fees
-
+  async _createTxUnsigned(amount: BigNumber.Value, to: string, fee?: GetFeeResult): Promise<Transaction> {
     const keys = this.getKeyPair();
 
     const blockHashInfo = await retry(
       async (bail) => {
         try {
-          return await (await this.getProvider()).getLatestBlockhash();
+          return await (await this.getProvider()).getLatestBlockhash(this.finality);
         } catch (e: any) {
           if (e.message?.includes("blockhash")) throw e;
           else bail(e);
@@ -145,11 +155,21 @@ export default class SolanaConfig extends BaseNodeToken {
         lamports: +new BigNumber(amount).toNumber(),
       }),
     );
+    if (!this?.config?.opts?.disablePriorityFees && fee) {
+      transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: fee.computeUnitPrice.toNumber() }));
+      transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: fee.computeBudget.toNumber() }));
+    }
+    return transaction;
+  }
 
-    const transactionBuffer = transaction.serializeMessage();
+  async createTx(amount: BigNumber.Value, to: string, fee?: GetFeeResult): Promise<{ txId: string | undefined; tx: any }> {
+    const keys = this.getKeyPair();
+    const unsignedTx = await this._createTxUnsigned(amount, to, fee);
+
+    const transactionBuffer = unsignedTx.serializeMessage();
     const signature = nacl.sign.detached(transactionBuffer, keys.secretKey);
-    transaction.addSignature(keys.publicKey, Buffer.from(signature));
-    return { tx: transaction, txId: undefined };
+    unsignedTx.addSignature(keys.publicKey, Buffer.from(signature));
+    return { tx: unsignedTx, txId: undefined };
   }
 
   getPublicKey(): string | Buffer {
