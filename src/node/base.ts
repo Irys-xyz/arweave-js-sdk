@@ -3,7 +3,7 @@ import { Transaction } from "../common/transactions";
 import Api from "../common/api";
 import Fund from "../common/fund";
 import Irys from "../common/irys";
-import type { CreateAndUploadOptions, IrysConfig, UploadResponse } from "../common/types";
+import type { CreateAndUploadOptions, IrysConfig, Network, UploadResponse } from "../common/types";
 import Utils from "../common/utils";
 import type { NodeToken } from "./types";
 import NodeUploader from "./upload";
@@ -23,44 +23,24 @@ export class BaseNodeIrys extends Irys {
    */
   constructor({
     url,
+    network,
     config,
     getTokenConfig,
   }: {
-    url: "node1" | "node2" | "devnet" | string;
+    url?: string;
+    network?: Network;
     config?: IrysConfig;
     getTokenConfig: (irys: BaseNodeIrys) => NodeToken;
   }) {
-    switch (url) {
-      case undefined:
-      case "node1":
-        url = "https://node1.irys.xyz";
-        break;
-      case "node2":
-        url = "https://node2.irys.xyz";
-        break;
-      case "devnet":
-        url = "https://devnet.irys.xyz";
-        break;
-    }
+    super({ url, network, arbundles });
+    if (this.url.host.includes("devnet.irys.xyz") && !config?.providerUrl)
+      throw new Error(`Using ${this.url.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
 
-    const parsed = new URL(url);
-    super({ url: parsed, arbundles });
-    if (parsed.host === "devnet.irys.xyz" && !config?.providerUrl)
-      throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
     this.api = new Api({
-      url: parsed,
+      url: this.url,
       timeout: config?.timeout ?? 100000,
       headers: config?.headers,
     });
-    // this.tokenConfig = getTokenConfig(
-    //   this,
-    //   token.toLowerCase(),
-    //   key,
-    //   parsed.toString(),
-    //   config?.providerUrl,
-    //   config?.contractAddress,
-    //   config?.tokenOpts,
-    // );
     this.tokenConfig = getTokenConfig(this);
     this.token = this.tokenConfig.name;
     this.address = this.tokenConfig.address;

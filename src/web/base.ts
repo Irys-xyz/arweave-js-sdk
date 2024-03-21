@@ -8,7 +8,7 @@ import { Transaction } from "../common/transactions";
 import type { WebToken } from "./types";
 import * as arbundles from "./utils";
 import { WebUploader } from "./upload";
-import type { IrysConfig } from "../common/types";
+import type { IrysConfig, Network } from "../common/types";
 import { Approval } from "../common/approval";
 
 export class BaseWebIrys extends Irys {
@@ -24,35 +24,25 @@ export class BaseWebIrys extends Irys {
     config,
     getTokenConfig,
   }: {
-    network?: "mainnet" | "devnet";
+    network?: Network;
     url?: string;
     wallet?: { rpcUrl?: string; name?: string; provider: object };
     config?: IrysConfig;
     getTokenConfig: (irys: BaseWebIrys) => WebToken;
   }) {
-    switch (network) {
-      // case undefined:
-      case "mainnet":
-        url = "https://arweave.mainnet.irys.xyz";
-        break;
-      case "devnet":
-        url = "https://arweave.devnet.irys.xyz";
-        break;
-    }
-    if (!url) throw new Error(`Missing required Irys constructor parameter: URL or Network`);
-    const parsed = new URL(url);
     // @ts-expect-error types
-    super({ url: parsed, arbundles });
+    super({ url, network, arbundles });
 
+    if (this.url.host.includes("devnet.irys.xyz") && !(config?.providerUrl ?? (wallet?.rpcUrl || this.tokenConfig.inheritsRPC)))
+      throw new Error(`Using ${this.url.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
     this.api = new Api({
-      url: parsed,
+      url: this.url,
       timeout: config?.timeout ?? 100000,
       headers: config?.headers,
     });
     this.tokenConfig = getTokenConfig(this);
     this.token = this.tokenConfig.name;
-    if (parsed.host.includes("devnet.irys.xyz") && !(config?.providerUrl ?? (wallet?.rpcUrl || this.tokenConfig.inheritsRPC)))
-      throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
+
     this.utils = new Utils(this.api, this.token, this.tokenConfig);
     this.uploader = new WebUploader(this);
     this.funder = new Fund(this.utils);

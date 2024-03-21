@@ -18,6 +18,7 @@ import type {
   UploadReceiptData,
   UploadResponse,
   WithdrawalResponse,
+  Network,
 } from "./types";
 import type Uploader from "./upload";
 import Utils from "./utils";
@@ -42,8 +43,20 @@ export default abstract class Irys {
   public IrysTransaction: IrysTransactonCtor;
   static VERSION = "REPLACEMEIRYSVERSION";
 
-  constructor({ url, arbundles }: { url: URL; arbundles: Arbundles }) {
-    this.url = url;
+  constructor({ url, network, arbundles }: { url?: string; network?: Network; arbundles: Arbundles }) {
+    switch (network) {
+      // case undefined:
+      case "mainnet":
+        url = "https://arweave.mainnet.irys.xyz";
+        break;
+      case "devnet":
+        url = "https://arweave.devnet.irys.xyz";
+        break;
+    }
+    if (!url) throw new Error(`Missing required Irys constructor parameter: URL or Network`);
+    const parsed = new URL(url);
+
+    this.url = parsed;
     this.arbundles = arbundles;
     this.IrysTransaction = buildIrysTransaction(this);
   }

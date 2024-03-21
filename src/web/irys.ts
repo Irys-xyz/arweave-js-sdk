@@ -1,15 +1,17 @@
 import { BaseWebIrys } from "./base";
-import type { IrysConfig } from "../common/types";
+import type { IrysConfig, Network } from "../common/types";
 import getTokenConfig from "./tokens";
 
 export class WebIrys extends BaseWebIrys {
   constructor({
     url,
+    network,
     token,
     wallet,
     config,
   }: {
-    url: "node1" | "node2" | "devnet" | string;
+    url?: string;
+    network?: Network;
     token: string;
     wallet?: { rpcUrl?: string; name?: string; provider: object; [key: string]: any };
     config?: IrysConfig;
@@ -18,6 +20,7 @@ export class WebIrys extends BaseWebIrys {
       url,
       wallet,
       config,
+      network,
       getTokenConfig: (irys) =>
         getTokenConfig({
           irys,

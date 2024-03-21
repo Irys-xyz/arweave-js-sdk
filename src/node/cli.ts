@@ -14,7 +14,8 @@ let balpad, walpad; // padding state variables
 
 // Define the CLI flags for the program
 program
-  .option("-h, --host <string>", "Irys node hostname/URL (eg http://node1.irys.network)")
+  .option("-h, --host <string>", "Irys node hostname/URL (eg http://node1.irys.xyz)")
+  .option("-n, --network <string>", "The network to use", "mainnet")
   .option("-w, --wallet <string>", "Path to keyfile or the private key itself", "default")
   .option("-t, --token <string>", "The token to use")
   .option("-c --currency <string>", "DEPRECATED: the currency to use (same as token)")
@@ -220,9 +221,9 @@ async function confirmation(message: string): Promise<boolean> {
 async function init(opts, operation): Promise<Irys> {
   let wallet;
   let irys: NodeIrys;
-  // every option needs a host and token so ensure they're present
-  if (!opts.host) {
-    throw new Error("Host parameter (-h) is required!");
+  // every option needs a host/network and token so ensure they're present
+  if (!(opts.host || opts.network)) {
+    throw new Error("Host (-h) or network (-n) parameter is required!");
   }
   if (!opts.token) {
     throw new Error("token flag (-t, --token) is required!");
@@ -246,6 +247,7 @@ async function init(opts, operation): Promise<Irys> {
     // create and ready the Irys instance
     irys = new Irys({
       url: opts.host,
+      network: opts.network,
       token: opts.token.toLowerCase(),
       key: wallet ?? "",
       config: {
