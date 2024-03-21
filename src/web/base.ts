@@ -19,28 +19,27 @@ export class BaseWebIrys extends Irys {
 
   constructor({
     url,
+    network,
     wallet,
     config,
     getTokenConfig,
   }: {
-    url: "node1" | "node2" | "devnet" | string;
+    network?: "mainnet" | "devnet";
+    url?: string;
     wallet?: { rpcUrl?: string; name?: string; provider: object };
     config?: IrysConfig;
     getTokenConfig: (irys: BaseWebIrys) => WebToken;
   }) {
-    switch (url) {
-      case undefined:
-      case "node1":
-        url = "https://node1.irys.xyz";
-        break;
-      case "node2":
-        url = "https://node2.irys.xyz";
+    switch (network) {
+      // case undefined:
+      case "mainnet":
+        url = "https://arweave.mainnet.irys.xyz";
         break;
       case "devnet":
-        url = "https://devnet.irys.xyz";
+        url = "https://arweave.devnet.irys.xyz";
         break;
     }
-
+    if (!url) throw new Error(`Missing required Irys constructor parameter: URL or Network`);
     const parsed = new URL(url);
     // @ts-expect-error types
     super({ url: parsed, arbundles });
@@ -52,8 +51,8 @@ export class BaseWebIrys extends Irys {
     });
     this.tokenConfig = getTokenConfig(this);
     this.token = this.tokenConfig.name;
-    if (parsed.host === "devnet.irys.network" && !(config?.providerUrl ?? (wallet?.rpcUrl || this.tokenConfig.inheritsRPC)))
-      throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.network/sdk/using-devnet`);
+    if (parsed.host.includes("devnet.irys.xyz") && !(config?.providerUrl ?? (wallet?.rpcUrl || this.tokenConfig.inheritsRPC)))
+      throw new Error(`Using ${parsed.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
     this.utils = new Utils(this.api, this.token, this.tokenConfig);
     this.uploader = new WebUploader(this);
     this.funder = new Fund(this.utils);
