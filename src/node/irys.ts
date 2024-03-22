@@ -1,4 +1,4 @@
-import type { IrysConfig } from "../common/types";
+import type { IrysConfig, Network } from "../common/types";
 import { BaseNodeIrys } from "./base";
 import getTokenConfig from "./tokens";
 
@@ -8,10 +8,11 @@ export class NodeIrys extends BaseNodeIrys {
    * @param url - URL to the bundler
    * @param key - private key (in whatever form required)
    */
-  constructor({ url, token, key, config }: { url: "node1" | "node2" | "devnet" | string; token: string; key?: any; config?: IrysConfig }) {
+  constructor({ url, token, network, key, config }: { url?: string; network?: Network; token: string; key?: any; config?: IrysConfig }) {
     super({
       url,
       config,
+      network,
       getTokenConfig: (irys) => {
         return getTokenConfig(
           irys,
