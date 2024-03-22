@@ -20,11 +20,9 @@ export default class EthereumConfig extends BaseNodeToken {
   protected async getProvider(): Promise<JsonRpcProvider> {
     if (!this.providerInstance) {
       this.providerInstance = new JsonRpcProvider({
-        // https://github.com/ethers-io/ethers.js/issues/4469#issuecomment-1932145334
-        fetchOptions: this?.opts?.fetchOptions ?? {
-          referrer: "",
-        },
         url: this.providerUrl,
+        skipFetchSetup: true,
+        ...this?.opts?.providerOptions,
       });
       await this.providerInstance.ready;
     }
