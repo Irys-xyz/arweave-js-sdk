@@ -33,16 +33,17 @@ export class BaseWebIrys extends Irys {
     // @ts-expect-error types
     super({ url, network, arbundles });
 
-    if (this.url.host.includes("devnet.irys.xyz") && !(config?.providerUrl ?? (wallet?.rpcUrl || this.tokenConfig.inheritsRPC)))
-      throw new Error(`Using ${this.url.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
     this.api = new Api({
       url: this.url,
       timeout: config?.timeout ?? 100000,
       headers: config?.headers,
     });
     this.tokenConfig = getTokenConfig(this);
-    this.token = this.tokenConfig.name;
 
+    if (this.url.host.includes("devnet.irys.xyz") && !(config?.providerUrl ?? (wallet?.rpcUrl || this?.tokenConfig?.inheritsRPC)))
+      throw new Error(`Using ${this.url.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
+
+    this.token = this.tokenConfig.name;
     this.utils = new Utils(this.api, this.token, this.tokenConfig);
     this.uploader = new WebUploader(this);
     this.funder = new Fund(this.utils);

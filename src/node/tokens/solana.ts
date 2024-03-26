@@ -94,7 +94,7 @@ export default class SolanaConfig extends BaseNodeToken {
     const connection = await this.getProvider();
     const unsignedTx = await this._createTxUnsigned(amount, to ?? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD");
     const computeBudget = new BigNumber((await unsignedTx.getEstimatedFee(connection)) ?? 5000);
-    const recentPrio = await connection.getRecentPrioritizationFees().catch((_) => [{ prioritizationFee: 0 }]);
+    const recentPrio = await connection?.getRecentPrioritizationFees?.().catch((_) => [{ prioritizationFee: 0 }]);
     const prioAvg = (recentPrio as { prioritizationFee: number }[])
       .reduce((n: BigNumber, p) => n.plus(p.prioritizationFee), new BigNumber(0))
       .dividedToIntegerBy(recentPrio.length ?? 1);

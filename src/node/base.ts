@@ -33,8 +33,6 @@ export class BaseNodeIrys extends Irys {
     getTokenConfig: (irys: BaseNodeIrys) => NodeToken;
   }) {
     super({ url, network, arbundles });
-    if (this.url.host.includes("devnet.irys.xyz") && !config?.providerUrl)
-      throw new Error(`Using ${this.url.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
 
     this.api = new Api({
       url: this.url,
@@ -42,6 +40,10 @@ export class BaseNodeIrys extends Irys {
       headers: config?.headers,
     });
     this.tokenConfig = getTokenConfig(this);
+
+    if (this.url.host.includes("devnet.irys.xyz") && !config?.providerUrl)
+      throw new Error(`Using ${this.url.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
+
     this.token = this.tokenConfig.name;
     this.address = this.tokenConfig.address;
     this.utils = new Utils(this.api, this.token, this.tokenConfig);
