@@ -53,7 +53,7 @@ export default abstract class Irys {
         url = "https://arweave.devnet.irys.xyz";
         break;
     }
-    if (!url) throw new Error(`Missing required Irys constructor parameter: URL or Network`);
+    if (!url) throw new Error(`Missing required Irys constructor parameter: URL or valid Network`);
     const parsed = new URL(url);
 
     this.url = parsed;
