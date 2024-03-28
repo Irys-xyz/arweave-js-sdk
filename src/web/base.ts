@@ -39,8 +39,7 @@ export class BaseWebIrys extends Irys {
       headers: config?.headers,
     });
     this.tokenConfig = getTokenConfig(this);
-
-    if (this.url.host.includes("devnet.irys.xyz") && !(config?.providerUrl ?? (wallet?.rpcUrl || this?.tokenConfig?.inheritsRPC)))
+    if (this.url.host.includes("devnet.irys.xyz") && !(config?.providerUrl || wallet?.rpcUrl || this?.tokenConfig?.inheritsRPC))
       throw new Error(`Using ${this.url.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
 
     this.token = this.tokenConfig.name;
