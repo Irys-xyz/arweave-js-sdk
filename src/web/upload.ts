@@ -34,7 +34,7 @@ export class WebUploader extends Uploader {
    * @param {string} [opts.indexFileRelPath] Relative path for the index file, i.e `folder/index.html`
    * @param {Tag[]} [opts.manifestTags] List of tags to add onto the manifest transaction
    * @param {JWKInterface} [opts.throwawayKey] Provide your own throwaway JWK to use for signing the items in the bundle
-   * @param {boolean} [opts.seperateManifestTx=false] Whether upload the manifest as a seperate tx (not in the nested bundle) - note: transactions in a nested bundle are not indexed by bundlr GQL - if you have tags you want to use to find the manifest, set this option to true
+   * @param {boolean} [opts.separateManifestTx=false] Whether upload the manifest as a separate tx (not in the nested bundle) - note: transactions in a nested bundle are not indexed by bundlr GQL - if you have tags you want to use to find the manifest, set this option to true
    *
    * @returns Standard upload response from the bundler node, plus the throwaway key & address, manifest, manifest TxId and the list of generated transactions
    */
@@ -44,7 +44,7 @@ export class WebUploader extends Uploader {
       indexFileRelPath?: string;
       manifestTags?: Tag[];
       throwawayKey?: JWKInterface;
-      seperateManifestTx?: boolean;
+      separateManifestTx?: boolean;
     },
   ): Promise<
     UploadResponse & {
@@ -76,7 +76,7 @@ export class WebUploader extends Uploader {
     const manifest = await this.generateManifest({ items: txMap, indexFile: opts?.indexFileRelPath });
     const manifestTx = this.irys.arbundles.createData(
       JSON.stringify(manifest),
-      opts?.seperateManifestTx ? this.irys.tokenConfig.getSigner() : ephemeralSigner,
+      opts?.separateManifestTx ? this.irys.tokenConfig.getSigner() : ephemeralSigner,
       {
         tags: [
           { name: "Type", value: "manifest" },
@@ -85,7 +85,7 @@ export class WebUploader extends Uploader {
         ],
       },
     );
-    if (opts?.seperateManifestTx === true) {
+    if (opts?.separateManifestTx === true) {
       await manifestTx.sign(this.irys.tokenConfig.getSigner());
       await this.uploadTransaction(manifestTx, { ...opts });
     } else {
