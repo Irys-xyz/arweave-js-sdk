@@ -237,6 +237,15 @@ export default function getTokenConfig(
         wallet,
         opts,
       });
+    case "scroll-eth":
+      return new EthereumConfig({
+        irys: irys,
+        name: "scroll-eth",
+        ticker: "ETH",
+        providerUrl: providerUrl ?? "https://rpc.scroll.io",
+        wallet,
+        opts,
+      });
     default:
       throw new Error(`Unknown/Unsupported token ${token}`);
   }

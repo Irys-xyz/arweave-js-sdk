@@ -224,6 +224,20 @@ export default function getTokenConfig({
         },
       });
 
+    case "scroll-eth":
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "scroll-eth",
+          ticker: "ETH",
+          providerUrl: providerUrl ?? "https://rpc.scroll.io",
+          wallet: wallet,
+          opts,
+        },
+      });
+
     default:
       throw new Error(`Unknown/Unsupported token ${token}`);
   }
