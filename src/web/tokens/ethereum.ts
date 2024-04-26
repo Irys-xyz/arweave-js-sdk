@@ -7,9 +7,9 @@ import { InjectedTypedEthereumSigner, type InjectedTypedEthereumSignerMinimalSig
 
 const ethereumSigner = InjectedTypedEthereumSigner;
 
-type MinimalSigner = InjectedTypedEthereumSignerMinimalSigner &
+export type MinimalSigner = InjectedTypedEthereumSignerMinimalSigner &
   Pick<JsonRpcSigner, "sendTransaction" | "estimateGas" | "getGasPrice" | "populateTransaction">;
-type MinimalProvider = { getSigner: () => MinimalSigner } & Pick<
+export type MinimalProvider = { getSigner: () => MinimalSigner } & Pick<
   Web3Provider,
   "getTransaction" | "getNetwork" | "_ready" | "send" | "estimateGas" | "getGasPrice" | "getTransactionCount"
 >;

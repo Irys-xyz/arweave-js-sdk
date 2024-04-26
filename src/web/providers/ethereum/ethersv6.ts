@@ -1,7 +1,9 @@
 import type { InjectedTypedEthereumSignerMinimalSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
+import { BigNumber as EthBigNumber } from "@ethersproject/bignumber";
 import type { BrowserProvider, JsonRpcSigner, TypedDataDomain } from "ethersv6";
 import type { Tx } from "../../../common/types";
+import type { MinimalProvider } from "../../tokens/ethereum";
 import EthereumConfig from "../../tokens/ethereum";
 
 export class EthereumEthersV6 extends EthereumConfig {
@@ -33,6 +35,19 @@ export class EthereumEthersV6 extends EthereumConfig {
     };
   }
 
+  async getFee(amount: BigNumber.Value, to?: string): Promise<BigNumber> {
+    const provider = this.providerInstance;
+    const tx = {
+      to,
+      from: this.address,
+      value: "0x" + new BigNumber(amount).toString(16),
+    };
+
+    const estimatedGas = await provider.estimateGas(tx);
+    const gasPrice = await provider.getGasPrice();
+    return new BigNumber(gasPrice.mul(estimatedGas).toString());
+  }
+
   public async ready(): Promise<void> {
     const provider = this.wallet as any as BrowserProvider;
     this.provider = provider;
@@ -43,6 +58,10 @@ export class EthereumEthersV6 extends EthereumConfig {
     provider.getSigner = (): JsonRpcSigner => signer;
     // @ts-expect-error fix
     this.wallet = provider;
+    (provider as unknown as MinimalProvider).getGasPrice = async (): Promise<EthBigNumber> =>
+      provider.getFeeData().then((r) => EthBigNumber.from(r.gasPrice ?? 0));
+    // @ts-expect-error fix
+    this.providerInstance = provider;
     await super.ready();
   }
 }
