@@ -2,7 +2,7 @@ import type { Signer } from "arbundles";
 import { AlgorandSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { TokenConfig, Tx } from "../../common/types";
-import { BaseNodeToken } from "../token";
+import { BaseNodeToken } from "./base";
 
 import axios from "axios";
 import type { Account } from "algosdk";

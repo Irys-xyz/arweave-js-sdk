@@ -2,7 +2,7 @@ import type { JsonRpcSigner, TransactionRequest, Web3Provider } from "@etherspro
 import { BigNumber as EthBigNumber } from "@ethersproject/bignumber";
 import BigNumber from "bignumber.js";
 import type { Tx, TokenConfig } from "../../common/types";
-import BaseWebToken from "../token";
+import BaseWebToken from "./base";
 import { InjectedTypedEthereumSigner, type InjectedTypedEthereumSignerMinimalSigner } from "arbundles/web";
 
 const ethereumSigner = InjectedTypedEthereumSigner;

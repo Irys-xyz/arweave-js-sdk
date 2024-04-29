@@ -1,5 +1,5 @@
 import type { PrivyInterface } from "@privy-io/react-auth";
-import type BaseWebToken from "../token";
+import type BaseWebToken from "../tokens/base";
 export async function augmentTokenPrivy(tokenConfig: BaseWebToken, opts: any): Promise<void> {
   if (!opts.sendTransaction)
     throw new Error("missing required sendTransaction function - add sendTransaction from the usePrivy hook to the wallet object");

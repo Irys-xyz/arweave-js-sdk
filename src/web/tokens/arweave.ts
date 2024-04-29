@@ -6,7 +6,7 @@ import base64url from "base64url";
 import { Arweave } from "../utils";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type * as _ from "arconnect";
-import BaseWebToken from "../token";
+import BaseWebToken from "./base";
 import type { WebIrysConfig } from "../types";
 import { BaseWebIrys } from "../base";
 

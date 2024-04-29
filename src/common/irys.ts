@@ -31,7 +31,7 @@ export default abstract class Irys {
   public utils!: Utils;
   public uploader!: Uploader;
   public funder!: Fund;
-  public address!: string | undefined;
+  public _address: string | undefined;
   public token!: string;
   public tokenConfig!: Token;
   public provenance!: Provenance;
@@ -59,6 +59,15 @@ export default abstract class Irys {
     this.url = parsed;
     this.arbundles = arbundles;
     this.IrysTransaction = buildIrysTransaction(this);
+  }
+
+  get address(): string {
+    if (!this._address) throw new Error("Address is undefined, please provide a wallet or run `await irys.ready()`");
+    return this._address;
+  }
+
+  set address(address: string) {
+    this._address = address;
   }
 
   get signer(): Signer {
@@ -147,7 +156,7 @@ export default abstract class Irys {
 
   async ready(): Promise<this> {
     this.tokenConfig.ready ? await this.tokenConfig.ready() : true;
-    this.address = this.tokenConfig.address;
+    this.address = this.tokenConfig.address!;
     return this;
   }
 

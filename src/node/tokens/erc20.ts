@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js";
 import { Contract } from "@ethersproject/contracts";
 import { Wallet } from "@ethersproject/wallet";
 import { keccak256 } from "arbundles";
-import { getRedstonePrice } from "../token";
+import { getRedstonePrice } from "./base";
 import EthereumConfig from "./ethereum";
 import type { TokenConfig, Tx } from "../../common/types";
 import { erc20abi } from "../../common/utils";

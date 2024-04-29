@@ -9,7 +9,7 @@ import bs58 from "bs58";
 import { serialize } from "borsh";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";
-import BaseWebToken from "../token";
+import BaseWebToken from "./base";
 import type { Provider } from "@near-js/providers";
 import type { WalletConnection, Near } from "@near-js/wallet-account";
 export default class NearConfig extends BaseWebToken {

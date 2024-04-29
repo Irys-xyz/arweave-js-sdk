@@ -5,7 +5,7 @@ import type { Signer } from "arbundles";
 import { NearSigner } from "arbundles";
 import BigNumber from "bignumber.js";
 import type { TokenConfig, Tx } from "../../common/types";
-import { BaseNodeToken } from "../token";
+import { BaseNodeToken } from "./base";
 import bs58 from "bs58";
 import BN from "bn.js";
 import { sha256 } from "js-sha256";

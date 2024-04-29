@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations */
-import type Basetoken from "../token";
+import type Basetoken from "./base";
 import EthereumConfig from "./ethereum";
 import NearConfig from "./near";
 import SolanaConfig from "./solana";
@@ -11,7 +11,7 @@ import type WebIrys from "../irys";
 import { EthereumEthersV5 } from "../providers/ethereum/ethersv5";
 import { EthereumEthersV6 } from "../providers/ethereum/ethersv6";
 import type { TokenConfig } from "../../common/types";
-import type BaseWebToken from "../token";
+import type BaseWebToken from "./base";
 import ArweaveConfig from "./arweave";
 import { augmentTokenPrivy } from "../shims/privy";
 import { augmentViemV2 } from "../shims/viemv2";

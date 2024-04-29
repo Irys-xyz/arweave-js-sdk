@@ -1,12 +1,15 @@
+import type { FileDataItem } from "arbundles/file";
 import type { Signer } from "arbundles";
+import { getCryptoDriver } from "../utils";
+import base64url from "base64url";
 import type BigNumber from "bignumber.js";
-import type { Tx, TokenConfig } from "../common/types";
+import type { Tx, TokenConfig } from "../../common/types";
 import axios from "axios";
-import type { NodeToken } from "./types";
-import utils from "../common/utils";
-import type Utils from "../common/utils";
-import type BaseNodeIrys from "./base";
-export abstract class BaseNodeToken implements NodeToken {
+import type { WebToken } from "../types";
+import utils from "../../common/utils";
+import type { BaseWebIrys } from "../base";
+
+export default abstract class BaseWebToken implements WebToken {
   public base!: [string, number];
   protected wallet: any;
   protected _address: string | undefined;
@@ -14,16 +17,17 @@ export abstract class BaseNodeToken implements NodeToken {
   protected providerInstance?: any;
   public ticker!: string;
   public name!: string;
-  protected minConfirm = 5;
+  public irys!: BaseWebIrys;
+  public config!: TokenConfig;
+  protected opts?: any;
+  public minConfirm = 5;
   public isSlow = false;
   public needsFee = true;
-  protected opts?: any;
-  protected utils!: Utils;
-  public irys!: BaseNodeIrys;
+  public inheritsRPC = false;
 
   constructor(config: TokenConfig) {
     Object.assign(this, config);
-    this._address = this.wallet ? this.ownerToAddress(this.getPublicKey()) : undefined;
+    this.config = config;
   }
 
   // common methods
@@ -32,6 +36,13 @@ export abstract class BaseNodeToken implements NodeToken {
     return this._address;
   }
 
+  public async ready(): Promise<void> {
+    this._address = this.wallet ? this.ownerToAddress(await this.getPublicKey()) : undefined;
+  }
+
+  async getId(item: FileDataItem): Promise<string> {
+    return base64url.encode(Buffer.from(await getCryptoDriver().hash(await item.rawSignature())));
+  }
   async price(): Promise<number> {
     return getRedstonePrice(this.ticker);
   }
@@ -41,10 +52,10 @@ export abstract class BaseNodeToken implements NodeToken {
   abstract getSigner(): Signer;
   abstract verify(_pub: any, _data: Uint8Array, _signature: Uint8Array): Promise<boolean>;
   abstract getCurrentHeight(): Promise<BigNumber>;
-  abstract getFee(_amount: BigNumber.Value, _to?: string, _multiplier?: BigNumber.Value): Promise<BigNumber | object>;
+  abstract getFee(_amount: BigNumber.Value, _to?: string): Promise<BigNumber | object>;
   abstract sendTx(_data: any): Promise<string | undefined>;
-  abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: string | object): Promise<{ txId: string | undefined; tx: any }>;
-  abstract getPublicKey(): string | Buffer;
+  abstract createTx(_amount: BigNumber.Value, _to: string, _fee?: any): Promise<{ txId: string | undefined; tx: any }>;
+  abstract getPublicKey(): Promise<string | Buffer>;
 }
 
 export async function getRedstonePrice(token: string): Promise<number> {

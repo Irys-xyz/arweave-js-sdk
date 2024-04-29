@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 import bs58 from "bs58";
 import nacl from "tweetnacl";
 import type { TokenConfig, Tx } from "../../common/types";
-import { BaseNodeToken } from "../token";
+import { BaseNodeToken } from "./base";
 import retry from "async-retry";
 import type { Finality } from "@solana/web3.js";
 import { ComputeBudgetProgram, Connection, Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";

@@ -5,7 +5,7 @@ import base64url from "base64url";
 import BigNumber from "bignumber.js";
 import crypto from "crypto";
 import type { TokenConfig, Tx } from "../../common/types";
-import { BaseNodeToken } from "../token";
+import { BaseNodeToken } from "./base";
 import { Arweave } from "../utils";
 
 export default class ArweaveConfig extends BaseNodeToken {

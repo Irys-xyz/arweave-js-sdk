@@ -45,7 +45,7 @@ export class BaseNodeIrys extends Irys {
       throw new Error(`Using ${this.url.host} requires a dev/testnet RPC to be configured! see https://docs.irys.xyz/developer-docs/using-devnet`);
 
     this.token = this.tokenConfig.name;
-    this.address = this.tokenConfig.address;
+    this.address = this.tokenConfig.address!;
     this.utils = new Utils(this.api, this.token, this.tokenConfig);
     this.funder = new Fund(this.utils);
     this.uploader = new NodeUploader(this.api, this.utils, this.token, this.tokenConfig, this.IrysTransaction);

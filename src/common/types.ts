@@ -206,3 +206,9 @@ export type TxGqlResponse = {
     };
   };
 };
+
+export type UnixEpochMs = number;
+
+// decoration type
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type StringifiedNumber<NumberType extends number> = string;

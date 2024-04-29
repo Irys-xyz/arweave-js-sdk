@@ -5,7 +5,7 @@ import BigNumber from "bignumber.js";
 import { EthereumSigner, keccak256 } from "arbundles";
 import type { Signer } from "arbundles";
 import type { TokenConfig, Tx } from "../../common/types";
-import { BaseNodeToken } from "../token";
+import { BaseNodeToken } from "./base";
 
 const ethereumSigner = EthereumSigner;
 

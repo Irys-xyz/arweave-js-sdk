@@ -17,7 +17,7 @@ import { InjectedAptosSigner, AptosSigner } from "arbundles/web";
 import BigNumber from "bignumber.js";
 import type { TokenConfig, Tx } from "../../common/types";
 import sha3 from "js-sha3";
-import BaseWebToken from "../token";
+import BaseWebToken from "./base";
 
 export type SignMessagePayload = {
   address?: boolean; // Should we include the address of the account in the message
