@@ -209,6 +209,6 @@ export type TxGqlResponse = {
 
 export type UnixEpochMs = number;
 
-// decoration type
+// decoration type with internal type to hint at the data type
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export type StringifiedNumber<NumberType extends number> = string;
+export type StringifiedNumber<_NumberType extends number> = string;
