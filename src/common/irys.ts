@@ -80,7 +80,7 @@ export default abstract class Irys {
   }
 
   public query(queryOpts?: ConstructorParameters<typeof Query>[0]): Query {
-    return new Query(queryOpts ?? { url: this.url });
+    return new Query(queryOpts ?? { url: new URL("graphql", this.url) });
   }
 
   async withdrawBalance(amount: BigNumber.Value): Promise<WithdrawalResponse> {
