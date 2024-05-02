@@ -7,6 +7,7 @@ import AsyncRetry from "async-retry";
 BigNumber.set({ DECIMAL_PLACES: 50 });
 
 export const sleep = (ms): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+export const httpErrData = (res: AxiosResponse): string => (typeof res.data !== "string" ? res.statusText : res.data);
 
 export class Utils {
   public api: Api;

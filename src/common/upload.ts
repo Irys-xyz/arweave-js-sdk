@@ -22,6 +22,7 @@ import {
 import type Utils from "./utils";
 import { randomBytes } from "crypto";
 import retry from "async-retry";
+import { httpErrData } from "./utils";
 
 export const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 export const CHUNKING_THRESHOLD = 50_000_000;
@@ -81,7 +82,7 @@ export class Uploader {
         throw new Error(errorMsg);
       default:
         if (res.status >= 400) {
-          throw new Error(`whilst uploading Irys transaction: ${res.status} ${res.statusText}`);
+          throw new Error(`whilst uploading Irys transaction: ${res.status} ${httpErrData(res)}`);
         }
     }
     res.data.verify = async (): Promise<boolean> => this.utils.verifyReceipt(res.data as UploadReceipt);
