@@ -237,7 +237,19 @@ export default function getTokenConfig({
           opts,
         },
       });
-
+    case "linea-eth":
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "linea-eth",
+          ticker: "ETH",
+          providerUrl: providerUrl ?? "https://rpc.linea.build",
+          wallet: wallet,
+          opts,
+        },
+      });
     default:
       throw new Error(`Unknown/Unsupported token ${token}`);
   }
