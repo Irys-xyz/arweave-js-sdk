@@ -38,12 +38,18 @@ export type SignMessageResponse = {
   signature: string; // The signed full message
 };
 
+type NetworkInfo = {
+  name: Network;
+  chainId?: string;
+  url?: string;
+};
+
 export type AptosWallet = {
-  account: () => Promise<{ address: string; publicKey: string }>;
-  connect: () => Promise<{ address: string; publicKey: string }>;
-  disconnect: () => Promise<void>;
-  isConnected: () => Promise<boolean>;
-  network: () => Promise<Network>;
+  account: { address: string; publicKey: string };
+  connect: () => void;
+  disconnect: () => void;
+  connected: boolean;
+  network: NetworkInfo;
   signAndSubmitTransaction: (transaction: any) => Promise<any>;
   signMessage: (payload: SignMessagePayload) => Promise<SignMessageResponse>;
   signTransaction: (transaction: any) => Promise<Uint8Array>;
@@ -192,27 +198,7 @@ export default class AptosConfig extends BaseWebToken {
     to: string,
     fee?: { gasUnitPrice: number; maxGasAmount: number },
   ): Promise<{ txId: string | undefined; tx: any }> {
-    // const client = await this.getProvider();
-    // const payload = new CoinClient(client).transactionBuilder.buildTransactionPayload(
-    //     "0x1::coin::transfer",
-    //     ["0x1::aptos_coin::AptosCoin"],
-    //     [to, new BigNumber(amount).toNumber()],
-    // );
-    if (!this.signingFn) {
-      return {
-        txId: undefined,
-        tx: {
-          arguments: [to, new BigNumber(amount).toNumber()],
-          function: "0x1::coin::transfer",
-          type: "entry_function_payload",
-          type_arguments: ["0x1::aptos_coin::AptosCoin"],
-        },
-      };
-    }
-
-    const client = await this.getProvider();
-
-    const transaction = await client.transaction.build.simple({
+    const txData = {
       sender: this.address!,
       data: {
         function: "0x1::coin::transfer",
@@ -223,7 +209,14 @@ export default class AptosConfig extends BaseWebToken {
         gasUnitPrice: fee?.gasUnitPrice ?? 100,
         maxGasAmount: fee?.maxGasAmount ?? 10,
       },
-    });
+    };
+
+    if (!this.signingFn) return { txId: undefined, tx: txData };
+
+    const client = await this.getProvider();
+
+    // @ts-expect-error type issue
+    const transaction = await client.transaction.build.simple(txData);
 
     const message = generateSigningMessage(transaction);
 
@@ -247,7 +240,7 @@ export default class AptosConfig extends BaseWebToken {
   async getPublicKey(): Promise<string | Buffer> {
     return (this._publicKey ??= this.signingFn
       ? (Buffer.from((this.wallet as unknown as string).slice(2), "hex") as unknown as Buffer)
-      : Buffer.from((await this.wallet.account()).publicKey.toString().slice(2), "hex"));
+      : Buffer.from(this.wallet.account.publicKey.toString().slice(2), "hex"));
   }
 
   public async ready(): Promise<void> {
