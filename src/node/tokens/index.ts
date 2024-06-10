@@ -255,6 +255,15 @@ export default function getTokenConfig(
         wallet,
         opts,
       });
+    case "iotex":
+      return new EthereumConfig({
+        irys: irys,
+        name: "iotex",
+        ticker: "IOTX",
+        providerUrl: providerUrl ?? "https://babel-api.mainnet.iotex.io/",
+        wallet,
+        opts,
+      });
     default:
       throw new Error(`Unknown/Unsupported token ${token}`);
   }

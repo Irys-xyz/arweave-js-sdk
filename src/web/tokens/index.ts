@@ -250,6 +250,19 @@ export default function getTokenConfig({
           opts,
         },
       });
+    case "iotex":
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "iotex",
+          ticker: "IOTX",
+          providerUrl: providerUrl ?? "https://babel-api.mainnet.iotex.io/",
+          wallet: wallet,
+          opts,
+        },
+      });
     default:
       throw new Error(`Unknown/Unsupported token ${token}`);
   }
