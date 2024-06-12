@@ -83,8 +83,12 @@ export default abstract class Irys {
     return new Query(queryOpts ?? { url: new URL("graphql", this.url) });
   }
 
-  async withdrawBalance(amount: BigNumber.Value): Promise<WithdrawalResponse> {
+  async withdrawBalance(amount: BigNumber.Value | "all"): Promise<WithdrawalResponse> {
     return withdrawBalance(this.utils, this.api, amount);
+  }
+
+  async withdrawAll(): Promise<WithdrawalResponse> {
+    return withdrawBalance(this.utils, this.api, "all");
   }
 
   /**

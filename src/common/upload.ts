@@ -78,7 +78,7 @@ export class Uploader {
     switch (res.status) {
       case 402:
         const retryAfterHeader = res?.headers?.["retry-after"];
-        const errorMsg = res.data + (retryAfterHeader ? ` - retry after ${retryAfterHeader}s` : "");
+        const errorMsg = "402 error: " + res.data + (retryAfterHeader ? ` - retry after ${retryAfterHeader}s` : "");
         throw new Error(errorMsg);
       default:
         if (res.status >= 400) {
@@ -125,13 +125,14 @@ export class Uploader {
     const concurrency = opts?.concurrency ?? 5;
     const results = (await PromisePool.for(data)
       .withConcurrency(concurrency >= 1 ? concurrency : 5)
-      .handleError(async (error, _) => {
+      .handleError(async (error, _, pool) => {
         errors.push(error);
-        if (error.message === "Not enough funds to send data") {
+        if (error.message.includes("402 error")) {
+          pool.stop();
           throw error;
         }
       })
-      .process(async (item, i, _) => {
+      .process(async (item, i) => {
         await retry(
           async (bail) => {
             try {
@@ -145,7 +146,7 @@ export class Uploader {
                 return { item, res, i };
               }
             } catch (e: any) {
-              if (e?.message === "Not enough funds to send data") {
+              if (e?.message.includes("402 error")) {
                 bail(e);
               }
               throw e;
