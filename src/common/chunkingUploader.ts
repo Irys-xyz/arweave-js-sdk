@@ -150,7 +150,11 @@ export class ChunkingUploader extends EventEmitter {
               if (re?.status >= 300) {
                 const e = { res: re, id: c, offset: o, size: d.length };
                 this.emit("chunkError", e);
-                if (re?.status === 402) bail(new Error("Not enough funds to send data"));
+                if (re?.status === 402) {
+                  const retryAfterHeader = finishUpload?.headers?.["retry-after"];
+                  const errorMsg = "402 error: " + finishUpload.data + (retryAfterHeader ? ` - retry after ${retryAfterHeader}s` : "");
+                  bail(new Error(errorMsg));
+                }
                 throw e;
               }
               this.emit("chunkUpload", { id: c, offset: o, size: d.length, totalUploaded: (totalUploaded += d.length) });
@@ -315,7 +319,7 @@ export class ChunkingUploader extends EventEmitter {
 
     if (finishUpload.status === 402) {
       const retryAfterHeader = finishUpload?.headers?.["retry-after"];
-      const errorMsg = finishUpload.data + (retryAfterHeader ? ` - retry after ${retryAfterHeader}s` : "");
+      const errorMsg = "402 error: " + finishUpload.data + (retryAfterHeader ? ` - retry after ${retryAfterHeader}s` : "");
       throw new Error(errorMsg);
     }
     // this will throw if the dataItem reconstruction fails

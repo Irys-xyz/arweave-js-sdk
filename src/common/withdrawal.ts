@@ -12,14 +12,15 @@ import type { WithdrawalResponse } from "./types";
  * @param amount amount to withdraw in winston
  * @returns the response from the bundler
  */
-export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.Value): Promise<WithdrawalResponse> {
+export async function withdrawBalance(utils: Utils, api: Api, amount: BigNumber.Value | "all"): Promise<WithdrawalResponse> {
   const c = utils.tokenConfig;
   const { deepHash, stringToBuffer } = c.irys.arbundles;
   const pkey = await c.getPublicKey();
+  const withdrawAll = amount === "all";
   const data = {
     publicKey: pkey,
     currency: utils.token,
-    amount: new BigNumber(amount).toString(),
+    amount: withdrawAll ? "all" : new BigNumber(amount).toString(),
     nonce: await utils.getNonce(),
     signature: "",
     sigType: c.getSigner().signatureType,
