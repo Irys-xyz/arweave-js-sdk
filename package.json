@@ -1,6 +1,6 @@
 {
   "name": "@irys/sdk",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "JS client for Irys",
   "repository": "https://github.com/Bundlr-Network/js-client.git",
   "author": "Irys",
