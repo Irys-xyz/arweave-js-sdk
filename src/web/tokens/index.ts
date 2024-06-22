@@ -179,14 +179,18 @@ export default function getTokenConfig({
         opts,
       });
     case "base-eth":
-      return new EthereumConfig({
-        irys: irys,
-        name: "base-eth",
-        ticker: "ETH",
-        providerUrl: providerUrl ?? "https://mainnet.base.org/",
-        minConfirm: 2,
-        wallet: wallet,
-        opts,
+      return resolveProvider({
+        family: "ethereum",
+        providerName,
+        config: {
+          irys: irys,
+          name: "base-eth",
+          ticker: "ETH",
+          providerUrl: providerUrl ?? "https://mainnet.base.org/",
+          minConfirm: 2,
+          wallet: wallet,
+          opts,
+        },
       });
 
     case "usdc-eth":
