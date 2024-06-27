@@ -24,7 +24,7 @@ export class Approval {
       token: string;
     }[]
   > {
-    return await this.queryApproval.payingAddresses(payingAddresses).tokens(tokens).approvedAddresses(approvedAddresses);
+    return this.queryApproval.payingAddresses(payingAddresses).tokens(tokens).approvedAddresses(approvedAddresses);
   }
 
   public async getCreatedApprovals({
@@ -45,7 +45,7 @@ export class Approval {
       token: string;
     }[]
   > {
-    return this.getApprovals({ payingAddresses, tokens, approvedAddresses });
+    return this.queryApproval.payingAddresses(payingAddresses).tokens(tokens).approvedAddresses(approvedAddresses);
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
