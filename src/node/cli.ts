@@ -254,6 +254,7 @@ async function init(opts, operation): Promise<Irys> {
         providerUrl: opts.providerUrl,
         contractAddress: opts.contractAddress,
         timeout: opts.timeout,
+        debug: opts.debug,
       },
     });
     await irys.ready();

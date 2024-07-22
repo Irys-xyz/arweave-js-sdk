@@ -152,11 +152,14 @@ export default class AptosConfig extends BaseNodeToken {
           originMethod: "simulateTransaction",
           contentType: MimeType.BCS_SIGNED_TRANSACTION,
         });
-        if (!data[0].success || data[0].gas_used === "0") throw new Error(`Tx simulation failed`);
+        if (!data[0].success || data[0].gas_used === "0") throw new Error(`${data[0]?.vm_status} - ${JSON.stringify(data[0])}`);
         return data;
       },
-      { retries: 10 },
-    ).catch((_) => [{ gas_unit_price: "100", gas_used: "10" }]);
+      { retries: 3, maxTimeout: 1_000, minTimeout: 200 },
+    ).catch((e) => {
+      if (this.irys.debug) console.warn(`Tx simulation failed (3 attempts): ${e?.message ?? e}`);
+      return [{ gas_unit_price: "100", gas_used: "10" }];
+    });
 
     return { gasUnitPrice: +simulationResult.gas_unit_price, maxGasAmount: Math.ceil(+simulationResult.gas_used * 2) };
 

@@ -33,6 +33,8 @@ export class BaseWebIrys extends Irys {
     // @ts-expect-error types
     super({ url, network, arbundles });
 
+    this.debug = config?.debug ?? false;
+
     this.api = new Api({
       url: this.url,
       timeout: config?.timeout ?? 100000,
