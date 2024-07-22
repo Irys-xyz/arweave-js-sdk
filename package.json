@@ -109,7 +109,7 @@
     "strip-ansi": "6.0.0"
   },
   "dependencies": {
-    "@aptos-labs/ts-sdk": "^1.9.0",
+    "@aptos-labs/ts-sdk": "^1.26.0",
     "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/contracts": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",

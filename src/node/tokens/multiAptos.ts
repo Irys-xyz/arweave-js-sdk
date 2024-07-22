@@ -20,11 +20,11 @@ import {
   TransactionAuthenticatorMultiEd25519,
   TransactionPayloadEntryFunction,
   U64,
-  generateSigningMessage,
   parseTypeTag,
   postAptosFullNode,
   AccountAuthenticatorEd25519,
   TransactionAuthenticatorEd25519,
+  generateSigningMessageForTransaction,
 } from "@aptos-labs/ts-sdk";
 // import Utils from "../../common/utils";
 
@@ -160,7 +160,7 @@ export default class MultiSignatureAptos extends Aptos {
 
   async sendTx(data: any): Promise<string> {
     const client = await this.getProvider();
-    const signingMessage = generateSigningMessage(data);
+    const signingMessage = generateSigningMessageForTransaction(data);
     const { signatures, bitmap } = await this.collectSignatures(signingMessage);
 
     const encodedBitmap = MultiEd25519Signature.createBitmap({ bits: bitmap });
@@ -202,5 +202,4 @@ export default class MultiSignatureAptos extends Aptos {
   async verify(pub: any, data: Uint8Array, signature: Uint8Array): Promise<boolean> {
     return await MultiSignatureAptosSigner.verify(pub, data, signature);
   }
-
 }

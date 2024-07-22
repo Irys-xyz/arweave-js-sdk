@@ -17,7 +17,7 @@ import {
   AccountAuthenticatorEd25519,
   Ed25519Signature,
   SignedTransaction,
-  generateSigningMessage,
+  generateSigningMessageForTransaction,
 } from "@aptos-labs/ts-sdk";
 import type { UserTransactionResponse, PendingTransactionResponse } from "@aptos-labs/ts-sdk";
 import AsyncRetry from "async-retry";
@@ -106,6 +106,7 @@ export default class AptosConfig extends BaseNodeToken {
       signer.sign = this.signingFn; // override signer fn
       return (this.signerInstance = signer);
     } else {
+      // @ts-expect-error private field use
       return (this.signerInstance = new AptosSigner(this.accountInstance!.privateKey.toString(), this.accountInstance!.publicKey.toString()));
     }
   }
@@ -205,7 +206,7 @@ export default class AptosConfig extends BaseNodeToken {
       },
     });
 
-    const message = generateSigningMessage(transaction);
+    const message = generateSigningMessageForTransaction(transaction);
 
     const signerSignature = await this.sign(message);
 
