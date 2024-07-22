@@ -9,8 +9,8 @@ import {
   AccountAuthenticatorEd25519,
   Ed25519Signature,
   SignedTransaction,
-  generateSigningMessage,
   generateSignedTransaction,
+  generateSigningMessageForTransaction,
 } from "@aptos-labs/ts-sdk";
 import type { Signer } from "arbundles";
 import { InjectedAptosSigner, AptosSigner } from "arbundles/web";
@@ -218,7 +218,7 @@ export default class AptosConfig extends BaseWebToken {
     // @ts-expect-error type issue
     const transaction = await client.transaction.build.simple(txData);
 
-    const message = generateSigningMessage(transaction);
+    const message = generateSigningMessageForTransaction(transaction);
 
     const signerSignature = await this.sign(message);
 
