@@ -33,6 +33,7 @@ export class BaseNodeIrys extends Irys {
     getTokenConfig: (irys: BaseNodeIrys) => NodeToken;
   }) {
     super({ url, network, arbundles });
+    this.debug = config?.debug ?? false;
 
     this.api = new Api({
       url: this.url,

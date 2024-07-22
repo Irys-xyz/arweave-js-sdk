@@ -61,6 +61,7 @@ export type IrysConfig = {
   contractAddress?: string;
   tokenOpts?: object;
   headers?: Record<string, string>;
+  debug?: boolean;
 };
 
 export type Token = {

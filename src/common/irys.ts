@@ -42,6 +42,7 @@ export default abstract class Irys {
   public arbundles: Arbundles;
   public IrysTransaction: IrysTransactonCtor;
   static VERSION = "REPLACEMEIRYSVERSION";
+  public debug = false;
 
   constructor({ url, network, arbundles }: { url?: string; network?: Network; arbundles: Arbundles }) {
     switch (network) {
