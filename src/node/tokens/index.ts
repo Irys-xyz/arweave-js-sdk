@@ -232,7 +232,7 @@ export default function getTokenConfig(
         name: "bera",
         ticker: "BERA",
         // TODO: make sure this is set to mainnet
-        providerUrl: providerUrl ?? "https://artio.rpc.berachain.com/",
+        providerUrl: providerUrl ?? "https://bartio.rpc.berachain.com/",
         minConfirm: 1,
         wallet,
         opts,
