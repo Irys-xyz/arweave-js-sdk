@@ -1,5 +1,8 @@
 # Irys SDK
 
+# DEPRECATED
+This package and the Arweave bundlers - which we will continue to operate - have been deprecated and are no longer actively supported. We recommend migrating to [Irys - the world’s first programmable datachain](https://migrate-to.irys.xyz). 
+
 ![](./assets/irys-SDK.png?raw=true)
 
 
